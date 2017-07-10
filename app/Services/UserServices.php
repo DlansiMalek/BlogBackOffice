@@ -46,7 +46,7 @@ class UserServices
 
     public function sendConfirmationMail($user)
     {
-        $link = "http://137.74.165.25:4600/api/users" . $user->user_id . "/validate/" . $user->validation_code;
+        $link = "http://congress-api.vayetek.com/api/users" . $user->user_id . "/validate/" . $user->validation_code;
         $email = $user->email;
         Mail::send('validationEmail', ['nom' => $user->first_name,
             'prenom' => $user->last_name, 'CIN' => $user->cin,
