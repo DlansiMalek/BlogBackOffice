@@ -13,6 +13,7 @@ Route::group(['prefix' => 'api'], function () {
         Route::delete('{user_id}', 'UserController@delete');
         Route::post('register', 'UserController@register');
         Route::get('{user_id}/validate/{validation_code}', 'UserController@validateUser');
+        Route::get('{user_id}/sendConfirmationEmail', 'UserController@resendConfirmationMail');
     });
 
     //Geo API

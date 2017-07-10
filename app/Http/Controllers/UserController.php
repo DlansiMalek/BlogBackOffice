@@ -86,4 +86,15 @@ class UserController extends Controller
         return response()->json(['response' => 'invalid validation code'], 400);
     }
 
+    public function resendConfirmationMail($user_id)
+    {
+        $user = $this->userServices->getUserById($user_id);
+        if (!$user) {
+            return response()->json(['response' => 'user not found'], 404);
+        }
+
+        $this->userServices->sendConfirmationMail($user);
+        return response()->json(['response' => 'email send to user' . $user->email], 202);
+    }
+
 }

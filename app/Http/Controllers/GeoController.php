@@ -15,12 +15,12 @@ class GeoController extends Controller
 
     function getAllCountries()
     {
-        return $this->geoServices->getAllCountries();
+        return response()->json($this->geoServices->getAllCountries(), 200);
     }
 
     function getAllCities()
     {
-        return $this->geoServices->getAllCities();
+        return response()->json($this->geoServices->getAllCities(), 200);
     }
 
     function getCitiesByCountry($country_id)

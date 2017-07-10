@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 class UserServices
 {
@@ -39,15 +40,19 @@ class UserServices
         $newUser->valide = false;
         $newUser->validation_code = str_random(40);
         $newUser->save();
-        /*
-        $link = $request->root() . "api/users" . $newUser->id . "/validate/" . $newUser->validation_code;
-        Mail::send('validationEmail', ['nom' => $newUser->first_name,
-            'prenom' => $newUser->last_name, 'CIN' => $newUser->cin,
-            'carte_Etudiant' => $newUser->carte_Etudiant, 'link' => $link], function ($message) use ($email) {
+        $this->sendConfirmationMail($newUser);
+        return $newUser;
+    }
+
+    public function sendConfirmationMail($user)
+    {
+        $link = "http://localhost/api/users" . $user->user_id . "/validate/" . $user->validation_code;
+        $email = $user->email;
+        Mail::send('validationEmail', ['nom' => $user->first_name,
+            'prenom' => $user->last_name, 'CIN' => $user->cin,
+            'carte_Etudiant' => $user->carte_Etudiant, 'link' => $link], function ($message) use ($email) {
             $message->to($email)->subject('Validation du compte');
         });
-        */
-        return $newUser;
     }
 
     public function getUserById($user_id)
@@ -55,9 +60,8 @@ class UserServices
         return User::find($user_id);
     }
 
-    public function updateUser($request, $user_id)
+    public function updateUser($request, $updateUser)
     {
-        $updateUser = User::find($user_id);
         if (!$updateUser) {
             return null;
         }
