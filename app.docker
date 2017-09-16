@@ -4,6 +4,11 @@ RUN apt-get update && apt-get install -y libmcrypt-dev \
     mysql-client libmagickwand-dev --no-install-recommends \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
-    && docker-php-ext-install mcrypt pdo_mysql
+    && docker-php-ext-install mcrypt pdo_mysql \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install gd
+
+#path to phpini => php -i | grep php.ini
+ADD ./php.ini /usr/local/etc/php/php.ini
 
 WORKDIR /var/www
