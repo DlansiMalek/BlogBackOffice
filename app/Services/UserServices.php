@@ -94,14 +94,14 @@ class UserServices
     public function impressionBadge($user)
     {
         $pdf = PDF::loadView('pdf.badge');
-        return $pdf->save(storage_path('app/badge/badge.pdf'));
+        return $pdf->save(public_path() . "/badge/badge.pdf");
     }
 
     public function sendMail($user)
     {
 
         $email = $user->email;
-        $pathToFile = storage_path('app/badge/badge.pdf');
+        $pathToFile = public_path() . "/badge/badge.pdf";
         Mail::send('emailInscription', ['nom' => $user->last_name,
             'prenom' => $user->first_name, 'CIN' => $user->cin,
             'carte_Etudiant' => $user->carte_Etudiant], function ($message) use ($email, $pathToFile) {
