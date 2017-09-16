@@ -12,6 +12,6 @@
     <li><strong>CIN</strong> : {{ $CIN }}</li>
 </ul>
 <p>Pour confirmer veuillez activer votre compte avec ce lien : </p>
-<p><u>{{$link}}</u></p>
+<p><u><a href="{{$link}}">Confirmer votre mail</a> </u></p>
 </body>
 </html>

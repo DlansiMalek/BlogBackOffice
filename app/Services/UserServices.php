@@ -46,10 +46,10 @@ class UserServices
 
     public function sendConfirmationMail($user)
     {
-        $link = "http://congress-api.vayetek.com/api/users" . $user->user_id . "/validate/" . $user->validation_code;
+        $link = "https://congress-api.vayetek.com/api/users/" . $user->id_User . "/validate/" . $user->validation_code;
         $email = $user->email;
-        Mail::send('validationEmail', ['nom' => $user->first_name,
-            'prenom' => $user->last_name, 'CIN' => $user->cin,
+        Mail::send('validationEmail', ['nom' => $user->last_name,
+            'prenom' => $user->first_name, 'CIN' => $user->cin,
             'carte_Etudiant' => $user->carte_Etudiant, 'link' => $link], function ($message) use ($email) {
             $message->to($email)->subject('Validation du compte');
         });

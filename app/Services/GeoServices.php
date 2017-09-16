@@ -25,6 +25,6 @@ class GeoServices
 
     public function getCitiesByCountry($country_id)
     {
-        return City::where('country_id', '=', $country_id)->get();
+        return City::where('CountryCode', '=', $country_id)->get();
     }
 }

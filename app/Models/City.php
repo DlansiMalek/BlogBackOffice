@@ -1,9 +1,9 @@
 <?php
 /**
- * Created by IntelliJ IDEA.
- * User: S4M37
- * Date: 07/07/2017
- * Time: 13:47
+ * Created by PhpStorm.
+ * User: Abbes
+ * Date: 25/08/2016
+ * Time: 23:15
  */
 
 namespace App\Models;
@@ -13,15 +13,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class City extends Model
 {
+    protected $table = 'City';
+    protected $primaryKey = 'id_City';
+    protected $fillable = ['Name', 'CountryCode'];
 
-    protected $table = 'cities';
-    protected $primaryKey = 'city_id';
-    protected $fillable = [
-        'name', 'country_id'
-    ];
+    public $timestamps = false;
 
-    function country()
+    public function country()
     {
-        return $this->hasOne('App\Models\Country', 'country_id', 'country_id');
+        return $this->belongsTo('App\Models\Country', 'CountryCode', 'Code');
     }
 }

@@ -8,8 +8,8 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use Notifiable;
-    protected $table = 'users';
-    protected $primaryKey = 'user_id';
+    protected $table = 'User';
+    protected $primaryKey = 'id_User';
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +32,6 @@ class User extends Authenticatable
 
     function city()
     {
-        return $this->hasOne('App\Models\City', 'city_id', 'city_id');
+        return $this->hasOne('App\Models\City', 'id_City', 'city_id');
     }
 }
