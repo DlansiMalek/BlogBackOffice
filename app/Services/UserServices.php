@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Metiers\Utils;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+
+use Barryvdh\DomPDF\Facade as PDF;
 
 class UserServices
 {
@@ -22,6 +25,8 @@ class UserServices
         if ($existUser) {
             return null;
         }
+
+
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
@@ -40,7 +45,12 @@ class UserServices
         $newUser->valide = false;
         $newUser->validation_code = str_random(40);
         $newUser->save();
-        $this->sendConfirmationMail($newUser);
+
+        /* Generation QRcode */
+        $qrcode = Utils::generateCode($newUser->id_User);
+        $newUser->qr_code = $qrcode;
+        $newUser->save();
+
         return $newUser;
     }
 
@@ -79,5 +89,26 @@ class UserServices
         $updateUser->city_id = $request->input('city_id');
         $updateUser->update();
         return $updateUser;
+    }
+
+    public function impressionBadge($user)
+    {
+        $pdf = PDF::loadView('pdf.badge');
+        return $pdf->save(storage_path() . '/app/badge/badge.pdf');
+    }
+
+    public function sendMail($user)
+    {
+
+        $email = $user->email;
+        $pathToFile = storage_path() . "/app/badge/badge.pdf";
+        Mail::send('emailInscription', ['nom' => $user->last_name,
+            'prenom' => $user->first_name, 'CIN' => $user->cin,
+            'carte_Etudiant' => $user->carte_Etudiant], function ($message) use ($email, $pathToFile) {
+
+
+            $message->attach($pathToFile);
+            $message->to($email)->subject('Validation du compte');
+        });
     }
 }

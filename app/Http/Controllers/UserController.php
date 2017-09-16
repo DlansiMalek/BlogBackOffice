@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Metiers\Utils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
@@ -32,6 +33,10 @@ class UserController extends Controller
                     'address', 'postal', 'tel', 'mobile', 'fax', 'email', 'cin',]], 400);
         }
         $createdUser = $this->userServices->registerUser($request);
+        Utils::generateQRcode($createdUser->qr_code);
+        $this->userServices->impressionBadge($createdUser);
+        $this->userServices->sendMail($createdUser);
+
         if (!$createdUser) {
             return response()->json(['response' => 'user exist'], 400);
         }
@@ -93,8 +98,24 @@ class UserController extends Controller
             return response()->json(['response' => 'user not found'], 404);
         }
 
+
         $this->userServices->sendConfirmationMail($user);
         return response()->json(['response' => 'email send to user' . $user->email], 202);
+    }
+
+
+    public function sendingMailWithAttachement($userId)
+    {
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(["error" => "User not found"], 404);
+        }
+
+        $this->userServices->impressionBadge($user);
+
+        $this->userServices->sendMail($user);
+
+
+        return response()->json(["message" => "email sending success"], 200);
     }
 
 }

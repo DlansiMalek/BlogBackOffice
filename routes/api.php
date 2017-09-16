@@ -13,15 +13,22 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-    Route::get('{user_id}', 'UserController@getUserById');
-    Route::put('{user_id}', 'UserController@update');
-    Route::delete('{user_id}', 'UserController@delete');
     Route::post('register', 'UserController@register');
-    Route::get('{user_id}/validate/{validation_code}', 'UserController@validateUser');
-    Route::get('{user_id}/sendConfirmationEmail', 'UserController@resendConfirmationMail');
+    Route::group(['prefix' => '{user_id}'], function () {
+        Route::get('', 'UserController@getUserById');
+        Route::put('', 'UserController@update');
+        Route::delete('', 'UserController@delete');
+        Route::get('validate/{validation_code}', 'UserController@validateUser');
+        Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
+        Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
+    });
+
+
 });
 
 //Geo API
