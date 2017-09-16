@@ -33,13 +33,15 @@ class UserController extends Controller
                     'address', 'postal', 'tel', 'mobile', 'fax', 'email', 'cin',]], 400);
         }
         $createdUser = $this->userServices->registerUser($request);
+        if (!$createdUser) {
+            return response()->json(['response' => 'user exist'], 400);
+        }
+
         Utils::generateQRcode($createdUser->qr_code);
         $this->userServices->impressionBadge($createdUser);
         $this->userServices->sendMail($createdUser);
 
-        if (!$createdUser) {
-            return response()->json(['response' => 'user exist'], 400);
-        }
+
         return response()->json($createdUser, 201);
     }
 
