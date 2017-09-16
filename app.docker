@@ -9,6 +9,6 @@ RUN apt-get update && apt-get install -y libmcrypt-dev \
     && docker-php-ext-install gd
 
 #path to phpini => php -i | grep php.ini
-ADD ./php.ini /usr/local/etc/php/php.ini
+
 
 WORKDIR /var/www
