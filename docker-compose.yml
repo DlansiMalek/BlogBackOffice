@@ -16,5 +16,6 @@ services:
             dockerfile: app.docker
         volumes:
             - ./:/var/www
+            - ../../data/congress_modules:/var/www/storage/app
         env_file: .env
 
