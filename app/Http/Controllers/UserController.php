@@ -25,12 +25,12 @@ class UserController extends Controller
     {
         if (!$request->has(['gender', 'first_name', 'last_name',
             'profession', 'domain', 'establishment', 'city_id',
-            'address', 'postal', 'tel', 'mobile', 'fax', 'email', 'cin',])
+            'address', 'postal', 'tel', 'mobile', 'email', 'cin',])
         ) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['gender', 'first_name', 'last_name',
                     'profession', 'domain', 'establishment', 'city_id',
-                    'address', 'postal', 'tel', 'mobile', 'fax', 'email', 'cin',]], 400);
+                    'address', 'postal', 'tel', 'mobile', 'email', 'cin',]], 400);
         }
         $createdUser = $this->userServices->registerUser($request);
         if (!$createdUser) {

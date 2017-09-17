@@ -4,9 +4,8 @@ namespace App\Services;
 
 use App\Metiers\Utils;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
-
 use Barryvdh\DomPDF\Facade as PDF;
+use Illuminate\Support\Facades\Mail;
 
 class UserServices
 {
@@ -99,14 +98,13 @@ class UserServices
 
     public function sendMail($user)
     {
-
         $email = $user->email;
         $pathToFile = public_path() . "/badge/badge.pdf";
+        $link = "https://congress-api.vayetek.com/api/users/" . $user->id_User . '/validate/' . $user->validation_code;
         Mail::send('emailInscription', ['nom' => $user->last_name,
             'prenom' => $user->first_name, 'CIN' => $user->cin,
+            'link' => $link,
             'carte_Etudiant' => $user->carte_Etudiant], function ($message) use ($email, $pathToFile) {
-
-
             $message->attach($pathToFile);
             $message->to($email)->subject('Validation du compte');
         });
