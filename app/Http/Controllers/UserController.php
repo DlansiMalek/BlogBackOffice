@@ -47,7 +47,7 @@ class UserController extends Controller
 
     public function getUserById($user_id)
     {
-        $user = $this->userServices->getUserById($user_id);
+        $user = $this->userServices->getParticipatorById($user_id);
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
@@ -62,7 +62,7 @@ class UserController extends Controller
                     'profession', 'domain', 'establishment', 'city_id',
                     'address', 'postal', 'tel', 'mobile', 'fax',]], 400);
         }
-        $user = $this->userServices->getUserById($user_id);
+        $user = $this->userServices->getParticipatorById($user_id);
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
@@ -71,7 +71,7 @@ class UserController extends Controller
 
     public function delete($user_id)
     {
-        $user = $this->userServices->getUserById($user_id);
+        $user = $this->userServices->getParticipatorById($user_id);
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
@@ -81,7 +81,7 @@ class UserController extends Controller
 
     public function validateUser($user_id, $validation_code)
     {
-        $user = $this->userServices->getUserById($user_id);
+        $user = $this->userServices->getParticipatorById($user_id);
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
@@ -95,7 +95,7 @@ class UserController extends Controller
 
     public function resendConfirmationMail($user_id)
     {
-        $user = $this->userServices->getUserById($user_id);
+        $user = $this->userServices->getParticipatorById($user_id);
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
@@ -108,7 +108,7 @@ class UserController extends Controller
 
     public function sendingMailWithAttachement($userId)
     {
-        if (!$user = $this->userServices->getUserById($userId)) {
+        if (!$user = $this->userServices->getParticipatorById($userId)) {
             return response()->json(["error" => "User not found"], 404);
         }
 

@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('auth/login/congress', 'Auth\LoginController@loginCongress');
+
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
@@ -28,6 +30,19 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
     });
 
+
+});
+
+//Admin API
+Route::group(['prefix' => 'admin'], function () {
+    Route::group(['prefix' => 'qrcode'], function () {
+        Route::post('scan', 'AdminController@scanParticipatorQrCode');
+    });
+    Route::group(['prefix' => 'participator'], function () {
+        Route::group(['prefix' => '{id_Participator}'], function () {
+            Route::post('status/update', 'AdminController@updateParticipatorStatus');
+        });
+    });
 
 });
 

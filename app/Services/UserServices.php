@@ -64,7 +64,7 @@ class UserServices
         });
     }
 
-    public function getUserById($user_id)
+    public function getParticipatorById($user_id)
     {
         return User::find($user_id);
     }
