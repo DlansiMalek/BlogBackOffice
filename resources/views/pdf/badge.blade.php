@@ -28,7 +28,7 @@
 </head>
 <body>
 <div class="images">
-    <img style="width: 100% ;height: 100%" src="{{public_path().'/badge/badge.jpg'}}"/>
+    <img style="height: 100%" src="{{public_path().'/badge/badge.jpg'}}"/>
     <h1>{{$name}}</h1>
     <img class="qrCode" src="{{public_path().'/QRcode/qrcode.png'}}">
 </div>
