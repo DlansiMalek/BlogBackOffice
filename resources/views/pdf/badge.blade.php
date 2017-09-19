@@ -20,8 +20,7 @@
         .images .qrCode {
             position: absolute;
             width: 150px;
-            margin-top: 670px;
-            top: 0;
+            bottom: 0;
             left: 0;
 
         }
