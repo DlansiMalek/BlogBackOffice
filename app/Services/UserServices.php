@@ -92,7 +92,10 @@ class UserServices
 
     public function impressionBadge($user)
     {
-        $pdf = PDF::loadView('pdf.badge');
+        $data = [
+            "name" => $user->first_name . " " . $user->last_name
+        ];
+        $pdf = PDF::loadView('pdf.badge', $data);
         return $pdf->save(public_path() . "/badge/badge.pdf");
     }
 
