@@ -11,8 +11,9 @@
 
         .images h1 {
             position: absolute;
+            width: 100%;
             text-align: center;
-            bottom: 450px;
+            bottom: 415px;
             left: 0;
         }
 
