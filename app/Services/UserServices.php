@@ -17,10 +17,9 @@ class UserServices
 
     public function registerUser($request)
     {
-        $cin = $request->input('cin');
         $email = $request->input('email');
 
-        $existUser = User::where('cin', 'like', $cin)->orWhere('email', 'like', $email)->first();
+        $existUser = User::where('email', 'like', $email)->first();
         if ($existUser) {
             return null;
         }
@@ -29,18 +28,28 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        $newUser->gender = $request->input('gender');
-        $newUser->establishment = $request->input('establishment');
-        $newUser->profession = $request->input('profession');
-        $newUser->tel = $request->input('tel');
+        if ($request->has('gender'))
+            $newUser->gender = $request->input('gender');
+        if ($request->has('establishment'))
+            $newUser->establishment = $request->input('establishment');
+        if ($request->has('profession'))
+            $newUser->profession = $request->input('profession');
+        if ($request->has('tel'))
+            $newUser->tel = $request->input('tel');
         $newUser->mobile = $request->input('mobile');
-        $newUser->fax = $request->input('fax');
-        $newUser->address = $request->input('address');
-        $newUser->postal = $request->input('postal');
-        $newUser->domain = $request->input('domain');
-        $newUser->city_id = $request->input('city_id');
+        if ($request->has('fax'))
+            $newUser->fax = $request->input('fax');
+        if ($request->has('address'))
+            $newUser->address = $request->input('address');
+        if ($request->has('postal'))
+            $newUser->postal = $request->input('postal');
+        if ($request->has('domain'))
+            $newUser->domain = $request->input('domain');
+        if ($request->has('city_id'))
+            $newUser->city_id = $request->input('city_id');
         $newUser->email = $email;
-        $newUser->cin = $cin;
+        if ($request->has('cin'))
+            $newUser->cin = $request->input('cin');
         $newUser->valide = false;
         $newUser->validation_code = str_random(40);
         $newUser->save();
