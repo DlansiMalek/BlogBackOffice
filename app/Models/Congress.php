@@ -8,16 +8,11 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class Congress extends Authenticatable
+class Congress
 {
     protected $table = 'Congress';
     protected $primaryKey = 'id_Congress';
-    protected $fillable = ['name', 'date', 'login', 'password', 'passwordDecrypte'];
+    protected $fillable = ['name', 'date'];
 
     public $timestamps = false;
-
-    public $incrementing = false;
-    protected $hidden = ['password', 'passwordDecrypte'];
 }

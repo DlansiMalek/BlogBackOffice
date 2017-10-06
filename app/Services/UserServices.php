@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Metiers\Utils;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade as PDF;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class UserServices
@@ -120,5 +121,26 @@ class UserServices
             $message->attach($pathToFile);
             $message->to($email)->subject('Validation du compte');
         });
+    }
+
+    public function getAllPresentParticipator()
+    {
+        return User::where("isPresent", "=", 1)
+            ->get();
+    }
+
+    public function sendingAllParticipator($allPresents)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://localhost:3000/api/congress/users/send', [
+                'form_params' => [
+                    'users' => json_decode(json_encode($allPresents))
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
     }
 }

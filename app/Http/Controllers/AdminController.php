@@ -42,6 +42,9 @@ class AdminController extends Controller
         $participator->isPresent = $request->input('isPresent');
         $participator->hasPaid = $request->input('hasPaid');
         $participator->update();
-        return $participator;
+
+        $allPresents = $this->userServices->getAllPresentParticipator();
+
+        return $this->userServices->sendingAllParticipator($allPresents);
     }
 }
