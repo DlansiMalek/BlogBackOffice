@@ -162,7 +162,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://137.74.165.25:3002//api/congress/users/send-all', [
+            'http://137.74.165.25:3002/api/congress/users/send-all', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allParticipants)),
                     'congressId' => $congressId
