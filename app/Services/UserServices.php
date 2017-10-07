@@ -146,7 +146,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://localhost:3000/api/congress/users/send-present', [
+            'http://137.74.165.25:3002/api/congress/users/send-present', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allPresents)),
                     'congressId' => $congressId
@@ -162,7 +162,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://localhost:3000/api/congress/users/send-all', [
+            'http://137.74.165.25:3002//api/congress/users/send-all', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allParticipants)),
                     'congressId' => $congressId
