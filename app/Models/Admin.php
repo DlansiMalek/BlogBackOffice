@@ -10,8 +10,6 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Admin extends Authenticatable
 {
     protected $table = 'Admin';
@@ -25,6 +23,11 @@ class Admin extends Authenticatable
     public function privileges()
     {
         return $this->hasMany('App\Models\Admin_Privilege', 'id_Admin', 'id_Admin');
+    }
+
+    public function congresses()
+    {
+        return $this->belongsToMany('App\Models\Congress', 'Congress_Admin', 'id_Admin', 'id_Congress');
     }
 
 }

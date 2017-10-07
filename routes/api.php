@@ -38,6 +38,7 @@ Route::group(['prefix' => 'admin'], function () {
 
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhentificatedAdmin');
+        Route::get('congress', 'AdminController@getAdminCongresses');
     });
     Route::group(['prefix' => 'qrcode'], function () {
         Route::post('scan', 'AdminController@scanParticipatorQrCode');
