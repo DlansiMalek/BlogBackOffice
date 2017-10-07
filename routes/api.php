@@ -42,6 +42,9 @@ Route::group(['prefix' => 'admin'], function () {
     Route::group(['prefix' => 'qrcode'], function () {
         Route::post('scan', 'AdminController@scanParticipatorQrCode');
     });
+    Route::group(['prefix' => 'congress'], function () {
+        Route::get('all', 'AdminController@getCongressByAdmin');
+    });
     Route::group(['prefix' => 'participator'], function () {
         Route::group(['prefix' => '{id_Participator}'], function () {
             Route::post('status/update', 'AdminController@updateParticipatorStatus');
