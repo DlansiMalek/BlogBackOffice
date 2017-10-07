@@ -40,7 +40,7 @@ class AdminServices
     public function getAdminById($id_Admin)
     {
         return Admin::where("id_Admin", "=", $id_Admin)
-            ->with(["privileges",'congresses'])
+            ->with(["privileges", 'congresses'])
             ->first();
     }
 
@@ -48,7 +48,8 @@ class AdminServices
     {
         return Congress::whereHas('admin', function ($query) use ($id_Admin) {
             $query->where('Congress_Admin.id_Admin', '=', $id_Admin);
-        })->get();
+        })->orderBy('date', 'desc')
+            ->get();
     }
 
 }
