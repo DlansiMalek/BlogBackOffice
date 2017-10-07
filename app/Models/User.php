@@ -34,4 +34,9 @@ class User extends Authenticatable
     {
         return $this->hasOne('App\Models\City', 'id_City', 'city_id');
     }
+
+    function congresses()
+    {
+        return $this->belongsToMany("App\Models\Congress", "Congress_User", "id_User", "id_Congress");
+    }
 }
