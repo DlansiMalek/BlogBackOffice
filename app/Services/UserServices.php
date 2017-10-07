@@ -123,21 +123,48 @@ class UserServices
         });
     }
 
-    public function getAllPresentParticipator()
+    public function getAllPresentParticipatorByCongress($congressId)
     {
-        return User::where("isPresent", "=", 1)
+        return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
+            ->where("isPresent", "=", 1)
+            ->where("id_Congress", "=", $congressId)
             ->get();
     }
 
-    public function sendingAllParticipator($allPresents)
+
+    public function getAllParticipatorByCongress($congressId)
+    {
+        return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
+            ->where("id_Congress", "=", $congressId)
+            ->get();
+    }
+
+    public function sendingToOrganisateur($allPresents, $congressId)
     {
         $client = new \GuzzleHttp\Client();
 
 
         $res = $client->request('POST',
-            'http://localhost:3000/api/congress/users/send', [
+            'http://localhost:3000/api/congress/users/send-present', [
                 'form_params' => [
-                    'users' => json_decode(json_encode($allPresents))
+                    'users' => json_decode(json_encode($allPresents)),
+                    'congressId' => $congressId
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function sendingToAdmin($allParticipants, $congressId)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://localhost:3000/api/congress/users/send-all', [
+                'form_params' => [
+                    'users' => json_decode(json_encode($allParticipants)),
+                    'congressId' => $congressId
                 ]
             ]);
 

@@ -3,26 +3,24 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Metiers\CongressServices;
-use App\Models\Congress;
+use App\Metiers\AdminServices;
 use Illuminate\Http\Request;
 use JWTAuth;
 
 class LoginController extends Controller
 {
 
-    protected $congressServices;
+    protected $adminServices;
 
-
-    function __construct(CongressServices $congressServices)
+    public function __construct(AdminServices $adminServices)
     {
-        $this->congressServices = $congressServices;
+        $this->adminServices = $adminServices;
     }
 
-    public function loginCongress(Request $request)
+    public function loginAdmin(Request $request)
     {
-        $credentials = $request->only('login', 'password');
-        $congress = Congress::whereLogin($request->input("login"))->first();
+        $credentials = $request->only('email', 'password');
+        $admin = $this->adminServices->getAdminByLogin($request->input("email"));
 
         try {
             // verify the credentials and create a token for the user
@@ -32,6 +30,6 @@ class LoginController extends Controller
         } catch (\JWTException $e) {
             return response()->json(['error' => 'could not create token'], 500);
         }
-        return response()->json(['congress' => $congress, 'token' => $token], 200);
+        return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 }

@@ -7,6 +7,7 @@
  */
 
 namespace App\Models;
+
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 use Illuminate\Database\Eloquent\Model;
@@ -19,5 +20,11 @@ class Admin extends Authenticatable
 
     protected $hidden = ["password", "passwordDecrypt"];
     public $timestamps = false;
+
+
+    public function privileges()
+    {
+        return $this->hasMany('App\Models\Admin_Privilege', 'id_Admin', 'id_Admin');
+    }
 
 }

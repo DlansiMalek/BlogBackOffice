@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Metiers\AdminServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     protected $userServices;
+    protected $adminServices;
 
-    public function __construct(UserServices $userServices)
+    public function __construct(UserServices $userServices,
+                                AdminServices $adminServices)
     {
         $this->userServices = $userServices;
+        $this->adminServices = $adminServices;
     }
 
     public function scanParticipatorQrCode(Request $request)
@@ -32,7 +36,7 @@ class AdminController extends Controller
 
     public function updateParticipatorStatus(Request $request, $id_Participator)
     {
-        if (!$request->has(['isPresent', 'hasPaid'])) {
+        if (!$request->has(['isPresent', 'hasPaid', 'congressId'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'hasPaid']], 400);
         }
         $participator = $this->userServices->getParticipatorById($id_Participator);
@@ -43,8 +47,25 @@ class AdminController extends Controller
         $participator->hasPaid = $request->input('hasPaid');
         $participator->update();
 
-        $allPresents = $this->userServices->getAllPresentParticipator();
+        $allPresents = $this->userServices->getAllPresentParticipatorByCongress($request->input("congressId"));
 
-        return $this->userServices->sendingAllParticipator($allPresents);
+        $this->userServices->sendingToOrganisateur($allPresents, $request->input("congressId"));
+
+        $allParticipants = $this->userServices->getAllParticipatorByCongress($request->input("congressId"));
+
+        $this->userServices->sendingToAdmin($allParticipants, $request->input("congressId"));
+
+        return response()->json(["message" => "success sending and scaning"], 200);
+    }
+
+    public function getAuhentificatedAdmin()
+    {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $admin = $this->adminServices->getAdminById($admin->id_Admin);
+
+        // the token is valid and we have found the user via the sub claim
+        return response()->json(compact('admin'));
     }
 }

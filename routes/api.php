@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('auth/login/congress', 'Auth\LoginController@loginCongress');
+Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
@@ -35,6 +35,10 @@ Route::group(['prefix' => 'users'], function () {
 
 //Admin API
 Route::group(['prefix' => 'admin'], function () {
+
+    Route::group(['prefix' => 'me'], function () {
+        Route::get('', 'AdminController@getAuhentificatedAdmin');
+    });
     Route::group(['prefix' => 'qrcode'], function () {
         Route::post('scan', 'AdminController@scanParticipatorQrCode');
     });
