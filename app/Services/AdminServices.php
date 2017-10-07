@@ -10,6 +10,7 @@ namespace App\Metiers;
 
 
 use App\Models\Admin;
+use App\Models\Congress;
 use JWTAuth;
 
 class AdminServices
@@ -39,8 +40,15 @@ class AdminServices
     public function getAdminById($id_Admin)
     {
         return Admin::where("id_Admin", "=", $id_Admin)
-            ->with(["privileges"])
+            ->with(["privileges",'congresses'])
             ->first();
+    }
+
+    public function getAdminCongresses($id_Admin)
+    {
+        return Congress::whereHas('admin', function ($query) use ($id_Admin) {
+            $query->where('Congress_Admin.id_Admin', '=', $id_Admin);
+        })->get();
     }
 
 }

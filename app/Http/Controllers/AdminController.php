@@ -68,5 +68,12 @@ class AdminController extends Controller
         // the token is valid and we have found the user via the sub claim
         return response()->json(compact('admin'));
     }
-    
+
+
+    public function getAdminCongresses(){
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        return $this->adminServices->getAdminCongresses($admin->id_Admin);
+    }
 }
