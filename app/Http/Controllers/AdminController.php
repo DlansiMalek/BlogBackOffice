@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Metiers\AdminServices;
+use App\Metiers\CongressServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
@@ -10,17 +11,20 @@ class AdminController extends Controller
 {
     protected $userServices;
     protected $adminServices;
+    protected $congressService;
 
     public function __construct(UserServices $userServices,
-                                AdminServices $adminServices)
+                                AdminServices $adminServices,
+                                CongressServices $congressService)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
+        $this->congressService = $congressService;
     }
 
     public function scanParticipatorQrCode(Request $request)
     {
-        if (!$request->has(['qrcode'])) {
+        if (!$request->has(['qrcode', 'congressId'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode']], 400);
         }
         $qrcode = $request->input('qrcode');
@@ -28,6 +32,7 @@ class AdminController extends Controller
             //return response()->json(['resposne' => 'bad qrcode'], 400);
         }
         $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
+        $participator = $this->userServices->getParticipatorByIdByCongress($participator->id_User, $request->input("congressId"));
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
@@ -43,10 +48,10 @@ class AdminController extends Controller
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
-        $participator->isPresent = $request->input('isPresent');
-        $participator->hasPaid = $request->input('hasPaid');
-        $participator->update();
 
+        if (!$congress_user = $this->userServices->affectUserToCongress($request->input("congressId"), $participator->id_User, $request->input('isPresent'), $request->input('hasPaid'))) {
+            return response()->json(['response' => 'participator not participated in this congress'], 404);
+        }
         $allPresents = $this->userServices->getAllPresentParticipatorByCongress($request->input("congressId"));
 
         $this->userServices->sendingToOrganisateur($allPresents, $request->input("congressId"));
@@ -68,10 +73,29 @@ class AdminController extends Controller
         // the token is valid and we have found the user via the sub claim
         return response()->json(compact('admin'));
     }
-    public function getAdminCongresses(){
+
+
+    public function getAdminCongresses()
+    {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         return $this->adminServices->getAdminCongresses($admin->id_Admin);
+    }
+
+    public function getAllParticipantsByCongress($congressId)
+    {
+        $participants = $this->userServices->getAllParticipatorByCongress($congressId);
+
+        return response()->json($participants, 200);
+
+    }
+
+    public function getAllPresenceByCongress($congressId)
+    {
+        $presences = $this->userServices->getAllPresentParticipatorByCongress($congressId);
+
+        return response()->json($presences, 200);
+
     }
 }

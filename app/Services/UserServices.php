@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Metiers\Utils;
+use App\Models\Congress_User;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Support\Facades\Mail;
@@ -125,7 +126,7 @@ class UserServices
     public function getAllPresentParticipatorByCongress($congressId)
     {
         return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
-            ->where("isPresent", "=", 1)
+            ->where("Congress_User.isPresent", "=", 1)
             ->where("id_Congress", "=", $congressId)
             ->get();
     }
@@ -144,7 +145,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://localhost:3000/api/congress/users/send-present', [
+            'http://137.74.165.25:3002/api/congress/users/send-present', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allPresents)),
                     'congressId' => $congressId
@@ -160,7 +161,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://localhost:3000/api/congress/users/send-all', [
+            'http://137.74.165.25:3002/api/congress/users/send-all', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allParticipants)),
                     'congressId' => $congressId
@@ -172,6 +173,36 @@ class UserServices
 
     public function getParticipatorByQrCode($qr_code)
     {
-        return $this->getParticipatorById(User::where('qr_code', 'like', $qr_code)->first()->id_User);
+        return User::where('qr_code', 'like', $qr_code)->first();
+    }
+
+    public function affectUserToCongress($congressId, $id_User, $isPresent, $hasPaid)
+    {
+        $congressUser = Congress_User::where("id_User", "=", $id_User)
+            ->where("id_Congress", "=", $congressId)
+            ->first();
+
+        if ($congressUser) {
+            $congressUser->isPresent = $isPresent;
+            $congressUser->isPaid = $hasPaid;
+            $congressUser->update();
+        }
+
+        return $congressUser;
+    }
+
+    public function getParticipatorByIdByCongress($userId, $congressId)
+    {
+        return User::
+        withCount(['congresses as isPresent' => function ($query) use ($congressId) {
+            $query->where("Congress_User.id_Congress", "=", $congressId)
+                ->where("Congress_User.isPresent", "=", 1);
+        }])->
+        withCount(['congresses as isPaid' => function ($query) use ($congressId) {
+            $query->where("Congress_User.id_Congress", "=", $congressId)
+                ->where("Congress_User.isPaid", "=", 1);;
+        }])->where("id_User", "=", $userId)
+            ->first();
+
     }
 }
