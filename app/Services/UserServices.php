@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Metiers\Utils;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade as PDF;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class UserServices
@@ -169,5 +168,10 @@ class UserServices
             ]);
 
         return json_decode($res->getBody(), true);
+    }
+
+    public function getParticipatorByQrCode($qr_code)
+    {
+        return $this->getParticipatorById(User::where('qr_code', 'like', $qr_code)->first()->id_User);
     }
 }

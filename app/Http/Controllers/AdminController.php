@@ -25,9 +25,9 @@ class AdminController extends Controller
         }
         $qrcode = $request->input('qrcode');
         if (strlen($qrcode) < 7) {
-            return response()->json(['resposne' => 'bad qrcode'], 400);
+            //return response()->json(['resposne' => 'bad qrcode'], 400);
         }
-        $participator = $this->userServices->getParticipatorById(substr($request->input('qrcode'), 6));
+        $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
