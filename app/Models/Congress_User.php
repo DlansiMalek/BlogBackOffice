@@ -15,7 +15,14 @@ class Congress_User extends Model
 {
     protected $table = 'Congress_User';
     protected $primaryKey = 'id_Congress_User';
-    protected $fillable = ['id_User', 'id_Congress', 'isPresent', 'isPaid'];
+    protected $fillable = ['id_User', 'id_Congress', 'isPresent', 'isPaid', 'Mode_exercice',
+        'pack',
+        'reservation',
+        'atelier',
+        'Mode_payement',
+        'prix_pack',
+        'prix_reservation',
+        'prix_total'];
 
     public $timestamps = true;
 

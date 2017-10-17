@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Metiers\AdminServices;
 use App\Metiers\CongressServices;
+use App\Models\Congress_User;
+use App\Models\User;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
+use PDF;
 
 class AdminController extends Controller
 {
@@ -97,5 +100,38 @@ class AdminController extends Controller
 
         return response()->json($presences, 200);
 
+    }
+
+    public function updateUserWithCongress()
+    {
+        set_time_limit(3600);
+        $users = User::all();
+        foreach ($users as $user) {
+            $userCongress = Congress_User::where('id_User', '=', $user->id_User)->first();
+            if (is_null($userCongress)) {
+                Congress_User::create([
+                    'id_User' => $user->id_User,
+                    'id_Congress' => 1,
+                    'Mode_exercice' => $user->Mode_exercice,
+                    'pack' => $user->pack,
+                    'reservation' => $user->reservation,
+                    'atelier' => $user->atelier,
+                    'Mode_payement' => $user->Mode_payement,
+                    'prix_pack' => $user->prix_pack,
+                    'prix_reservation' => $user->prix_reservation,
+                    'prix_total' => $user->prix_total,
+                ])->save();
+            }
+        }
+        return response()->json(['response' => 'all user congresses updated'], 200);
+    }
+
+    public function generateBadges()
+    {
+        $data = [
+            'users' => User::all()
+        ];
+        $pdf = PDF::loadView('pdf.badges', $data);
+        return $pdf->stream('badges.pdf');
     }
 }

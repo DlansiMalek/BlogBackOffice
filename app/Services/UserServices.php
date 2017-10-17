@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Metiers\Utils;
 use App\Models\Congress_User;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade as PDF;
+use PDF;
 use Illuminate\Support\Facades\Mail;
 
 class UserServices
