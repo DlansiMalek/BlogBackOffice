@@ -51,6 +51,7 @@ Route::group(['prefix' => 'admin'], function () {
         });
         Route::group(['prefix' => '{id_Participator}'], function () {
             Route::post('status/update', 'AdminController@updateParticipatorStatus');
+            Route::post('paied-status', 'AdminController@updatePaiedParticipator');
         });
     });
 

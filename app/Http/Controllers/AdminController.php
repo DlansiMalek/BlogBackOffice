@@ -134,4 +134,17 @@ class AdminController extends Controller
         $pdf = PDF::loadView('pdf.badges', $data);
         return $pdf->stream('badges.pdf');
     }
+
+    public function updatePaiedParticipator($userId, Request $request)
+    {
+        if (!$request->has(['status', 'congressId'])) {
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['status', 'congressId']], 400);
+        }
+        if (!$congressUser = $this->adminServices->updateStatusPaied($userId, $request->input("status"), $request->input("congressId"))) {
+            return response()->json(["error" => "User not inscrit Congress"]);
+        }
+
+        return response()->json(["message" => "status update success"]);
+
+    }
 }

@@ -11,6 +11,7 @@ namespace App\Metiers;
 
 use App\Models\Admin;
 use App\Models\Congress;
+use App\Models\Congress_User;
 use JWTAuth;
 
 class AdminServices
@@ -50,6 +51,20 @@ class AdminServices
             $query->where('Congress_Admin.id_Admin', '=', $id_Admin);
         })->orderBy('date', 'desc')
             ->get();
+    }
+
+    public function updateStatusPaied($userId, $status, $congressId)
+    {
+
+        $userCongress = Congress_User::where("id_User","=",$userId)
+            ->where("id_Congress","=",$congressId)
+            ->first();
+
+        if($userCongress){
+            $userCongress->isPaid = $status ;
+            $userCongress->update();
+        }
+        return $userCongress;
     }
 
 }
