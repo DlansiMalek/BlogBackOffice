@@ -18,11 +18,14 @@ class Utils
         return $output_file;
     }
 
-    public static function generateQRcode($QRcode)
+    public static function generateQRcode($QRcode, $qrcodeName = null)
     {
+        if (!$qrcodeName) {
+            $qrcodeName = "qrcode.png";
+        }
         QrCode::format("png")
             ->size(200)
-            ->generate($QRcode, public_path() . '/QRcode/qrcode.png');
+            ->generate($QRcode, public_path() . '/QRcode/' . $qrcodeName . '.png');
     }
 
     public static function generateCode($id, $length = 6)

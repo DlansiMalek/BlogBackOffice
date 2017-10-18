@@ -181,8 +181,8 @@ return [
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
 
         'Tymon\JWTAuth\Providers\JWTAuthServiceProvider',
-        niklasravnsborg\LaravelPdf\PdfServiceProvider::class
-
+        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
+        'Chumper\Zipper\ZipperServiceProvider'
     ],
 
     /*
@@ -235,7 +235,8 @@ return [
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
-        'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class
+        'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
+        'Zipper' => 'Chumper\Zipper\Zipper'
 
     ],
 
