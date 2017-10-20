@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Metiers\AdminServices;
 use App\Metiers\CongressServices;
+use App\Metiers\Utils;
 use App\Models\Congress_User;
 use App\Models\User;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use PDF;
+use Zipper;
 
 class AdminController extends Controller
 {
@@ -128,11 +131,27 @@ class AdminController extends Controller
 
     public function generateBadges()
     {
-        $data = [
-            'users' => User::all()
-        ];
-        $pdf = PDF::loadView('pdf.badges', $data);
-        return $pdf->stream('badges.pdf');
+        $users = User::all()->toArray();
+        File::cleanDirectory(public_path() . '/badge/jnn');
+        for ($i = 0; $i < sizeof($users) / 4; $i++) {
+            $tempUsers = array_slice($users, $i * 4, 4);
+            $j = 1;
+            $pdfFileName = '';
+            foreach ($tempUsers as $tempUser) {
+                Utils::generateQRcode($tempUser['qr_code'], 'qrcode_' . $j);
+                $pdfFileName .= '_' . $tempUser['id_User'];
+                $j++;
+            }
+            $data = [
+                'users' => json_decode(json_encode($tempUsers), false)];
+            $pdf = PDF::loadView('pdf.badges', $data);
+
+            $pdf->save(public_path() . '/badge/jnn/badges' . $pdfFileName . '.pdf');
+        }
+        $files = glob(public_path() . '/badge/jnn/*');
+        Zipper::make(public_path() . '/badge/jnn/jnn_badges.zip')->add($files)->close();
+        return response()->download(public_path() . '/badge/jnn/jnn_badges.zip')->deleteFileAfterSend(true);
+        //return $pdf->stream('badges.pdf');
     }
 
     public function updatePaiedParticipator($userId, Request $request)

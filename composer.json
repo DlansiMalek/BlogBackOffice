@@ -15,7 +15,8 @@
     "laravel/framework": "5.4.*",
     "laravel/tinker": "~1.0",
     "simplesoftwareio/simple-qrcode": "^1.5",
-    "tymon/jwt-auth": "0.5.*"
+    "tymon/jwt-auth": "0.5.*",
+    "chumper/zipper": "1.0.x"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
