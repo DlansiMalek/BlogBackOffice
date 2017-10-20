@@ -128,6 +128,7 @@ class UserServices
         return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
             ->where("Congress_User.isPresent", "=", 1)
             ->where("id_Congress", "=", $congressId)
+            ->orderBy("Congress_User.updated_at", "desc")
             ->get();
     }
 
