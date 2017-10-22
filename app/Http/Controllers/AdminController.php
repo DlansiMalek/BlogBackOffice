@@ -60,11 +60,11 @@ class AdminController extends Controller
         }
         $allPresents = $this->userServices->getAllPresentParticipatorByCongress($request->input("congressId"));
 
-        $this->userServices->sendingToOrganisateur($allPresents, $request->input("congressId"));
+        $this->userServices->sendingToOrganisateur($participator, $request->input("congressId"));
 
-        $allParticipants = $this->userServices->getAllParticipatorByCongress($request->input("congressId"));
+        /*$allParticipants = $this->userServices->getAllParticipatorByCongress($request->input("congressId"));
 
-        $this->userServices->sendingToAdmin($allParticipants, $request->input("congressId"));
+        $this->userServices->sendingToAdmin($allParticipants, $request->input("congressId"));*/
 
         return response()->json(["message" => "success sending and scaning"], 200);
     }

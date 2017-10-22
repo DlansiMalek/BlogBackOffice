@@ -140,7 +140,7 @@ class UserServices
             ->get();
     }
 
-    public function sendingToOrganisateur($allPresents, $congressId)
+    public function sendingToOrganisateur($participator, $congressId)
     {
         $client = new \GuzzleHttp\Client();
 
@@ -148,7 +148,7 @@ class UserServices
         $res = $client->request('POST',
             'http://137.74.165.25:3002/api/congress/users/send-present', [
                 'form_params' => [
-                    'users' => json_decode(json_encode($allPresents)),
+                    'user' => json_decode(json_encode($participator)),
                     'congressId' => $congressId
                 ]
             ]);
