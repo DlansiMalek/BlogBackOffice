@@ -186,8 +186,14 @@ class AdminController extends Controller
         }
         $files = glob(public_path() . '/badge/jnn/*');
         Zipper::make(public_path() . '/badge/jnn/jnn_badges.zip')->add($files)->close();
-        return response()->download(public_path() . '/badge/jnn/jnn_badges.zip')->deleteFileAfterSend(true);
+        return response()->download(public_path() . '/badge/jnn/jnn_badges.zip');
         //return $pdf->stream('badges.pdf');
+    }
+
+    public function cleanBadges()
+    {
+        File::cleanDirectory(public_path() . '/badge/jnn');
+        return response()->json(["message" => "Badges deleted"]);
     }
 
     public function updatePaiedParticipator($userId, Request $request)
