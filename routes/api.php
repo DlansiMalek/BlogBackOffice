@@ -69,6 +69,8 @@ Route::group(['prefix' => 'geo'], function () {
 });
 Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');
 Route::get('generateBadges', 'AdminController@generateBadges');
+Route::get('updateUsers', 'AdminController@updateUsers');
+Route::get('generateUserQrCode', 'AdminController@generateUserQrCode');
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
