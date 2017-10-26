@@ -128,6 +128,7 @@ class UserServices
         return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
             ->where("Congress_User.isPresent", "=", 1)
             ->where("id_Congress", "=", $congressId)
+            ->orderBy("Congress_User.updated_at", "desc")
             ->get();
     }
 
@@ -139,7 +140,7 @@ class UserServices
             ->get();
     }
 
-    public function sendingToOrganisateur($allPresents, $congressId)
+    public function sendingToOrganisateur($participator, $congressId)
     {
         $client = new \GuzzleHttp\Client();
 
@@ -147,7 +148,7 @@ class UserServices
         $res = $client->request('POST',
             'http://137.74.165.25:3002/api/congress/users/send-present', [
                 'form_params' => [
-                    'users' => json_decode(json_encode($allPresents)),
+                    'user' => json_decode(json_encode($participator)),
                     'congressId' => $congressId
                 ]
             ]);
