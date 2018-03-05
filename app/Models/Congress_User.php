@@ -19,6 +19,7 @@ class Congress_User extends Model
         'pack',
         'reservation',
         'atelier',
+        'laboratoire',
         'Mode_payement',
         'prix_pack',
         'prix_reservation',

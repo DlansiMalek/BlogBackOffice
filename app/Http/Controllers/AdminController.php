@@ -7,6 +7,7 @@ use App\Metiers\CongressServices;
 use App\Metiers\Utils;
 use App\Models\Congress_User;
 use App\Models\User;
+use App\Models\User_Tmp;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -117,24 +118,59 @@ class AdminController extends Controller
                     'id_Congress' => 1,
                     'Mode_exercice' => $user->Mode_exercice,
                     'pack' => $user->pack,
-                    'reservation' => $user->reservation,
-                    'atelier' => $user->atelier,
-                    'Mode_payement' => $user->Mode_payement,
+                    //'reservation' => $user->reservation,
+                    //'atelier' => $user->atelier,
+                    //'Mode_payement' => $user->Mode_payement,
+                    'Mode_exercice' => $user->Mode_exercice,
                     'prix_pack' => $user->prix_pack,
-                    'prix_reservation' => $user->prix_reservation,
-                    'prix_total' => $user->prix_total,
+                    'laboratoire' => $user->laboratoire,
+                    //'prix_reservation' => $user->prix_reservation,
+                    //'prix_total' => $user->prix_total,
                 ])->save();
             }
         }
         return response()->json(['response' => 'all user congresses updated'], 200);
     }
 
+    public function updateUsers()
+    {
+        $users = User_Tmp::all();
+        foreach ($users as $user) {
+            $userNew = User::create([
+                'id_User' => $user->id_User,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'Mode_exercice' => $user->Mode_exercice,
+                'pack' => $user->pack,
+                'laboratoire' => $user->laboratoire,
+                'city' => $user->city
+            ])->save();
+        }
+        return response()->json(['response' => 'all users updated'], 200);
+    }
+
+    public function generateUserQrCode()
+    {
+        $users = User::all();
+        foreach ($users as $user) {
+            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $charactersLength = strlen($characters);
+            $randomString = '';
+            for ($i = 0; $i < 10; $i++) {
+                $randomString .= $characters[rand(0, $charactersLength - 1)];
+            }
+            $user->qr_code = $randomString;
+            $user->update();
+        }
+    }
+
     public function generateBadges()
     {
+        set_time_limit(3600);
         $users = User::all()->toArray();
         File::cleanDirectory(public_path() . '/badge/jnn');
-        for ($i = 0; $i < sizeof($users) / 4; $i++) {
-            $tempUsers = array_slice($users, $i * 4, 4);
+        for ($i = 0; $i < sizeof($users) / 6; $i++) {
+            $tempUsers = array_slice($users, $i * 6, 6);
             $j = 1;
             $pdfFileName = '';
             foreach ($tempUsers as $tempUser) {
@@ -145,13 +181,19 @@ class AdminController extends Controller
             $data = [
                 'users' => json_decode(json_encode($tempUsers), false)];
             $pdf = PDF::loadView('pdf.badges', $data);
-
+            return $pdf->stream('badges.pdf');
             $pdf->save(public_path() . '/badge/jnn/badges' . $pdfFileName . '.pdf');
         }
         $files = glob(public_path() . '/badge/jnn/*');
         Zipper::make(public_path() . '/badge/jnn/jnn_badges.zip')->add($files)->close();
-        return response()->download(public_path() . '/badge/jnn/jnn_badges.zip')->deleteFileAfterSend(true);
+        return response()->download(public_path() . '/badge/jnn/jnn_badges.zip');
         //return $pdf->stream('badges.pdf');
+    }
+
+    public function cleanBadges()
+    {
+        File::cleanDirectory(public_path() . '/badge/jnn');
+        return response()->json(["message" => "Badges deleted"]);
     }
 
     public function updatePaiedParticipator($userId, Request $request)

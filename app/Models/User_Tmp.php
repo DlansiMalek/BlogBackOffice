@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User_Tmp extends Authenticatable
 {
     use Notifiable;
-    protected $table = 'User';
+    protected $table = 'User_Tmp';
     protected $primaryKey = 'id_User';
 
     /**
@@ -17,9 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'gender', 'first_name', 'last_name', 'profession', 'domain', 'establishment', 'city_id', 'valide',
-        'address', 'postal', 'tel', 'mobile', 'fax', 'email', 'cin', 'validation_code', 'qr_code', 'isPresent', 'hasPaid',
-        'laboratoire', 'Mode_exercice', 'pack', 'city'
+        'first_name', 'last_name', 'laboratoire', 'pack', 'Mode_exercice', 'city'
     ];
 
     /**
@@ -31,12 +29,10 @@ class User extends Authenticatable
         'password', 'remember_token', 'validation_code'
     ];
 
-    /*
     function city()
     {
         return $this->hasOne('App\Models\City', 'id_City', 'city_id');
     }
-    */
 
     function congresses()
     {
