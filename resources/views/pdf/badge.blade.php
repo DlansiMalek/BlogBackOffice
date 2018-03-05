@@ -35,8 +35,8 @@
         <td>
             <div class="badge">
                 <img class="badge-img" src="{{public_path().'/badge/ticket.jpg'}}"/>
-                <div class="badge-qrCode ">
-                    <img class="img-qr_code" src="{{public_path().'/QRcode/qrcode.png'}}">
+                <div class="badge-qrCode img-qr_code">
+                    <img src="{{public_path().'/QRcode/qrcode.png'}}">
                 </div>
             </div>
         </td>
