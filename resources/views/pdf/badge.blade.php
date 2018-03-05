@@ -23,6 +23,9 @@
 
         .badge-qrCode {
             position: absolute;
+            right: 105px;
+            top: 205px;
+            margin-top: 5px;
         }
 
     </style>
