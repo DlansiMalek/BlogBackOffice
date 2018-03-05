@@ -56,12 +56,11 @@ class AdminController extends Controller
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
-        if (!$congress_user = $this->userServices->affectUserToCongress($request->input("congressId"), $participator->id_User, $request->input('isPresent'), $request->input('hasPaid'))) {
+        if (!$congress_user = $this->userServices->affectUserToCongress($request->input("congressId"), $participator, $request->input('isPresent'), $request->input('hasPaid'))) {
             return response()->json(['response' => 'participator not participated in this congress'], 404);
         }
         //$allPresents = $this->userServices->getAllPresentParticipatorByCongress($request->input("congressId"));
 
-        $this->userServices->sendingToOrganisateur($participator, $request->input("congressId"));
 
         /*$allParticipants = $this->userServices->getAllParticipatorByCongress($request->input("congressId"));
 

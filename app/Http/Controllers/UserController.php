@@ -23,10 +23,10 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
-        if (!$request->has(['first_name', 'last_name', 'mobile', 'email'])
+        if (!$request->has(['first_name', 'last_name', 'mobile', 'email', 'congressId'])
         ) {
             return response()->json(['response' => 'invalid request',
-                'content' => ['first_name', 'last_name', 'tel', 'mobile', 'email']], 400);
+                'content' => ['first_name', 'last_name', 'mobile', 'email', 'congressId']], 400);
         }
         $createdUser = $this->userServices->registerUser($request);
         if (!$createdUser) {
