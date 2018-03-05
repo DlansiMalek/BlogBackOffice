@@ -10,7 +10,7 @@
         }
 
         .badge-img {
-           
+            width: 100%;
             position: absolute;
             left: 0;
             top: 0;
@@ -24,7 +24,7 @@
         .badge-qrCode {
             position: absolute;
             right: 105px;
-            top: 210px;
+            top: 200px;
         }
 
     </style>
