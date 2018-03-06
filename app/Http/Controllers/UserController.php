@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Metiers\CongressServices;
 use App\Metiers\Utils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
@@ -10,10 +11,12 @@ class UserController extends Controller
 {
 
     protected $userServices;
+    protected $congressServices;
 
-    function __construct(UserServices $userServices)
+    function __construct(UserServices $userServices, CongressServices $congressServices)
     {
         $this->userServices = $userServices;
+        $this->congressServices = $congressServices;
     }
 
     public function index()
@@ -35,7 +38,8 @@ class UserController extends Controller
 
         Utils::generateQRcode($createdUser->qr_code);
         $this->userServices->impressionBadge($createdUser);
-        $this->userServices->sendMail($createdUser);
+        $congress = $this->congressServices->getCongressById($request->input("congressId"));
+        $this->userServices->sendMail($createdUser, $congress);
 
 
         return response()->json($createdUser, 201);

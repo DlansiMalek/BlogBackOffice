@@ -4,11 +4,14 @@
     <meta charset="utf-8">
 </head>
 <body>
-<h2>Invitation Congrès</h2>
-<p>Vous étes :</p>
-<ul>
-    <li><strong>Nom</strong> : {{ $nom }}</li>
-    <li><strong>Prenom</strong> : {{ $prenom }}</li>
-</ul>
+<p>
+    Bonjour Mr {{$nom}} {{$prenom}} , <br/>
+    Votre inscription à l’événement {{$congressName}} a été enregistrée avec succès. <br/>
+    Pour le jour de l’événement, nous vous prions d’imprimer votre invitation ci-joint pour accéder à l'événement, cela
+    <br/>
+    vous évitera toute attente lors de votre venue. <br/>
+    Dans l’attente de vous voir <br/>
+    Cordialement,
+</p>
 </body>
 </html>

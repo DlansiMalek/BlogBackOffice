@@ -114,20 +114,18 @@ class UserServices
             "name" => $user->first_name . " " . $user->last_name
         ];
         $pdf = PDF::loadView('pdf.badge', $data);
-        return $pdf->save(public_path() . "/badge/badge.pdf");
+        return $pdf->save(public_path() . "/badge/invitation.pdf");
     }
 
-    public function sendMail($user)
+    public function sendMail($user, $congress)
     {
         $email = $user->email;
-        $pathToFile = public_path() . "/badge/badge.pdf";
-        $link = "https://congress-api.vayetek.com/api/users/" . $user->id_User . '/validate/' . $user->validation_code;
+        $pathToFile = public_path() . "/badge/invitation.pdf";
         Mail::send('emailInscription', ['nom' => $user->last_name,
-            'prenom' => $user->first_name, 'CIN' => $user->cin,
-            'link' => $link,
-            'carte_Etudiant' => $user->carte_Etudiant], function ($message) use ($email, $pathToFile) {
+            'prenom' => $user->first_name, 'congressName' => $congress->name
+        ], function ($message) use ($email, $congress, $pathToFile) {
             $message->attach($pathToFile);
-            $message->to($email)->subject('Validation du compte');
+            $message->to($email)->subject($congress->name);
         });
     }
 
