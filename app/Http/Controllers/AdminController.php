@@ -6,6 +6,7 @@ use App\Metiers\AdminServices;
 use App\Metiers\CongressServices;
 use App\Metiers\Utils;
 use App\Models\Congress_User;
+use App\Models\Inscription_Neuro2018;
 use App\Models\User;
 use App\Models\User_Tmp;
 use App\Services\UserServices;
@@ -114,17 +115,7 @@ class AdminController extends Controller
             if (is_null($userCongress)) {
                 Congress_User::create([
                     'id_User' => $user->id_User,
-                    'id_Congress' => 1,
-                    'Mode_exercice' => $user->Mode_exercice,
-                    'pack' => $user->pack,
-                    //'reservation' => $user->reservation,
-                    //'atelier' => $user->atelier,
-                    //'Mode_payement' => $user->Mode_payement,
-                    'Mode_exercice' => $user->Mode_exercice,
-                    'prix_pack' => $user->prix_pack,
-                    'laboratoire' => $user->laboratoire,
-                    //'prix_reservation' => $user->prix_reservation,
-                    //'prix_total' => $user->prix_total,
+                    'id_Congress' => 4
                 ])->save();
             }
         }
@@ -133,16 +124,25 @@ class AdminController extends Controller
 
     public function updateUsers()
     {
-        $users = User_Tmp::all();
+        $users = Inscription_Neuro2018::all();
         foreach ($users as $user) {
             $userNew = User::create([
-                'id_User' => $user->id_User,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'Mode_exercice' => $user->Mode_exercice,
-                'pack' => $user->pack,
-                'laboratoire' => $user->laboratoire,
-                'city' => $user->city
+                'first_name' => $user->prenom,
+                'last_name' => $user->nom,
+                'profession' => $user->status,
+                'email' => $user->email,
+                'address' => $user->adresse,
+                'mobile' => $user->tel,
+                'transport' => $user->transport,
+                'repas' => $user->repas,
+                'diner' => $user->diner,
+                'hebergement' => $user->hebergement,
+                'chambre' => $user->chambre,
+                'conjoint' => $user->conjoint,
+                'date_arrivee' => $user->date_arrivee,
+                'date_depart' => $user->date_depart,
+                'date' => $user->date,
+                'qr_code' => $user->qr_code
             ])->save();
         }
         return response()->json(['response' => 'all users updated'], 200);
@@ -166,8 +166,8 @@ class AdminController extends Controller
     public function generateBadges()
     {
         set_time_limit(3600);
-        $users = User::all()->toArray();
-        File::cleanDirectory(public_path() . '/badge/jnn');
+        $users = $this->userServices->getUsersByCongress(4);
+        File::cleanDirectory(public_path() . '/badge/neuro');
         for ($i = 0; $i < sizeof($users) / 6; $i++) {
             $tempUsers = array_slice($users, $i * 6, 6);
             $j = 1;
@@ -179,13 +179,13 @@ class AdminController extends Controller
             }
             $data = [
                 'users' => json_decode(json_encode($tempUsers), false)];
-            $pdf = PDF::loadView('pdf.badges', $data);
-            return $pdf->stream('badges.pdf');
-            $pdf->save(public_path() . '/badge/jnn/badges' . $pdfFileName . '.pdf');
+            $pdf = PDF::loadView('pdf.badges-09-03', $data);
+            return $pdf->stream('badges-09-03.pdf');
+            $pdf->save(public_path() . '/badge/neuro/badges' . $pdfFileName . '.pdf');
         }
-        $files = glob(public_path() . '/badge/jnn/*');
-        Zipper::make(public_path() . '/badge/jnn/jnn_badges.zip')->add($files)->close();
-        return response()->download(public_path() . '/badge/jnn/jnn_badges.zip');
+        $files = glob(public_path() . '/badge/neuro/*');
+        Zipper::make(public_path() . '/badge/neuro/neuro_badges.zip')->add($files)->close();
+        return response()->download(public_path() . '/badge/neuro/neuro_badges.zip');
         //return $pdf->stream('badges.pdf');
     }
 

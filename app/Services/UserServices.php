@@ -230,4 +230,12 @@ class UserServices
         $user_congress->save();
         return $user_congress;
     }
+
+    public function getUsersByCongress($congressId)
+    {
+        return User::join("Congress_User", "User.id_User", "=", "Congress_User.id_User")
+            ->where("id_Congress", "=", $congressId)
+            ->get()
+            ->toArray();
+    }
 }

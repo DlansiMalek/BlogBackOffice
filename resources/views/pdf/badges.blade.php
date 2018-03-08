@@ -60,6 +60,7 @@
             margin-top: 48px;
             width: 100%;
         }
+
         .badge-label-5 {
             position: absolute;
             bottom: 165px;
@@ -69,7 +70,8 @@
             margin-top: 48px;
             width: 100%;
         }
-         .badge-label-6 {
+
+        .badge-label-6 {
             position: absolute;
             bottom: 165px;
             left: 445px;
@@ -77,7 +79,6 @@
             margin-top: 48px;
             width: 100%;
         }
-
 
         .badge-qrCode-1 {
             position: absolute;
@@ -107,91 +108,7 @@
     </style>
 </head>
 <body>
-<img src="{{public_path().'/badge/Badge_preinscription_03.png'}}"/>
-<table>
-    <tr>
-        <td>
-            <div class="badge">
-                {{--
-                                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-                <h1 class="badge-label-1">{{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
-                .' '.strtoupper($users[0]->last_name)}}</h1>
-                <div class="badge-qrCode-1 img-qr_code">
-                    {{--<img src="{{public_path().'/QRcode/qrcode_1.png'}}">--}}
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="badge">
-                {{--
-                                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
+<img style="width: 100%" src="{{public_path().'/badge/Badge_preinscription_03.png'}}"/>
 
-                <h1 class="badge-label-2">{{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
-                .' '.strtoupper($users[1]->last_name)}}</h1>
-                <div class="badge-qrCode-2 img-qr_code">
-                    {{--<img src="{{public_path().'/QRcode/qrcode_2.png'}}">--}}
-                </div>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <div class="badge">
-                {{--
-                                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-
-                <h1 class="badge-label-3">{{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
-                .' '.strtoupper($users[2]->last_name)}}</h1>
-                <div class="badge-qrCode-3 img-qr_code">
-                    {{--<img src="{{public_path().'/QRcode/qrcode_3.png'}}">--}}
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="badge">
-                {{--
-                                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-
-                <h1 class="badge-label-4">{{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)
-                .' '.strtoupper($users[3]->last_name)}}</h1>
-                <div class="badge-qrCode-4 img-qr_code">
-                    {{--<img src="{{public_path().'/QRcode/qrcode_4.png'}}">--}}
-                </div>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <div class="badge">
-                {{--
-                                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-
-                <h1 class="badge-label-5">{{strtoupper(substr($users[4]->first_name,0,1)).substr($users[4]->first_name,1)
-                .' '.strtoupper($users[4]->last_name)}}</h1>
-                <div class="badge-qrCode-3 img-qr_code">
-                    {{--<img src="{{public_path().'/QRcode/qrcode_3.png'}}">--}}
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="badge">
-                {{--
-                                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-
-                <h1 class="badge-label-6">{{strtoupper(substr($users[5]->first_name,0,1)).substr($users[5]->first_name,1)
-                .' '.strtoupper($users[5]->last_name)}}</h1>
-                <div class="badge-qrCode-4 img-qr_code">
-                    {{--<img src="{{public_path().'/QRcode/qrcode_4.png'}}">--}}
-                </div>
-            </div>
-        </td>
-    </tr>
-</table>
 </body>
 </html>

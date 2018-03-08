@@ -19,7 +19,8 @@ class User extends Authenticatable
     protected $fillable = [
         'gender', 'first_name', 'last_name', 'profession', 'domain', 'establishment', 'city_id', 'valide',
         'address', 'postal', 'tel', 'mobile', 'fax', 'email', 'cin', 'validation_code', 'qr_code', 'isPresent', 'hasPaid',
-        'laboratoire', 'Mode_exercice', 'pack', 'city'
+        'laboratoire', 'Mode_exercice', 'pack', 'city',
+        'transport', 'repas', 'diner', 'hebergement', 'chambre', 'conjoint', 'date_arrivee', 'date_depart', 'date'
     ];
 
     /**
