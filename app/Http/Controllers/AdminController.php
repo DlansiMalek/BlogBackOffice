@@ -123,7 +123,7 @@ class AdminController extends Controller
             if (is_null($userCongress)) {
                 Congress_User::create([
                     'id_User' => $user->id_User,
-                    'id_Congress' => 2,
+                    'id_Congress' => 4
                 ])->save();
             }
         }
@@ -182,6 +182,7 @@ class AdminController extends Controller
         $itemCount=6;
         for ($i = 0; $i < sizeof($users) / $itemCount; $i++) {
             $tempUsers = array_slice($users, $i * $itemCount, $itemCount);
+
             $j = 1;
             $pdfFileName = '';
             foreach ($tempUsers as $tempUser) {
@@ -192,7 +193,7 @@ class AdminController extends Controller
             $data = [
                 'users' => json_decode(json_encode($tempUsers), false)];
 
-            $pdf = PDF::loadView('pdf.badges-18-10', $data);
+            $pdf = PDF::loadView('pdf.badges-09-03', $data);
             return $pdf->stream('badges-09-03.pdf');
             $pdf->save(public_path() . '/badge/neuro/badges' . $pdfFileName . '.pdf');
         }

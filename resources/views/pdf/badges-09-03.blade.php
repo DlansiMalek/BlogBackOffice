@@ -94,11 +94,40 @@
                 {{--
                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
-                <h1 class="">
+
+                <h1 class="badge-label-1">
                     {{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
                     .' '.strtoupper($users[0]->last_name)}}</h1>
-                <div class="">
+                <div class="badge-qrCode-1 img-qr_code">
                     <img src="{{public_path().'/QRcode/qrcode_1.png'}}">
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="badge">
+                {{--
+                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
+                --}}
+
+                <h1 class="badge-label-2">
+                    {{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
+                    .' '.strtoupper($users[1]->last_name)}}</h1>
+                <div class="badge-qrCode-2 img-qr_code">
+                    <img src="{{public_path().'/QRcode/qrcode_2.png'}}">
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="badge">
+                {{--
+                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
+                --}}
+
+                <h1 class="badge-label-4">
+                    {{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
+                    .' '.strtoupper($users[2]->last_name)}}</h1>
+                <div class="badge-qrCode-4 img-qr_code">
+                    <img src="{{public_path().'/QRcode/qrcode_3.png'}}">
                 </div>
             </div>
         </td>
