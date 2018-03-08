@@ -69,7 +69,7 @@
             margin-top: 48px;
             width: 100%;
         }
-         .badge-label-6 {
+        .badge-label-6 {
             position: absolute;
             bottom: 165px;
             left: 445px;
@@ -107,7 +107,7 @@
     </style>
 </head>
 <body>
-<img src="{{public_path().'/badge/Badge_preinscription_03.png'}}"/>
+<img src="{{public_path().'/badge/Badge_preinscription_02.png'}}"/>
 <table>
     <tr>
         <td>

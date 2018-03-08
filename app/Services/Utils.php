@@ -25,7 +25,7 @@ class Utils
         }
         QrCode::format("png")
             ->size(200)
-            ->generate($QRcode, public_path() . '/QRcode/' . $qrcodeName . '.png');
+            ->generate($QRcode, public_path() . '/QRcode/' . $qrcodeName);
     }
 
     public static function generateCode($id, $length = 6)

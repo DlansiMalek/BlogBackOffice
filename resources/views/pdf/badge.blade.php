@@ -2,36 +2,41 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-
     <style>
-        .images {
+        .badge {
             position: relative;
-            display: inline-block;
         }
-
-        .images h1 {
-            position: absolute;
+        .badge-img {
             width: 100%;
-            text-align: center;
-            bottom: 415px;
-            left: 0;
-        }
-
-        .images .qrCode {
             position: absolute;
-            width: 150px;
-            margin-top: 670px;
-            top: 0;
             left: 0;
-
+            top: 0;
         }
+        .img-qr_code {
+            width: 90px;
+            height: 90px;
+        }
+        .badge-qrCode {
+            position: absolute;
+            right: 60px;
+            top: 180px;
+        }
+
     </style>
 </head>
 <body>
-<div class="images">
-    <img src="{{public_path().'/badge/badge.jpg'}}"/>
-    <h1>{{$name}}</h1>
-    <img class="qrCode" src="{{public_path().'/QRcode/qrcode.png'}}">
-</div>
+<table>
+    <tr>
+        <td>
+            <div class="badge">
+                <img class="badge-img" src="{{public_path().'/badge/ticket.jpg'}}"/>
+                <div class="badge-qrCode">
+                    <img class="img-qr_code" src="{{public_path().'/QRcode/qrcode.png'}}">
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>
