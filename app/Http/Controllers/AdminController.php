@@ -8,7 +8,6 @@ use App\Metiers\Utils;
 use App\Models\Congress_User;
 use App\Models\Inscription_Neuro2018;
 use App\Models\User;
-use App\Models\User_Tmp;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -109,6 +108,7 @@ class AdminController extends Controller
     public function updateUserWithCongress()
     {
         set_time_limit(3600);
+
         $users = User::where("id_User", ">", "970")
             ->get();
         foreach ($users as $user) {
@@ -151,6 +151,7 @@ class AdminController extends Controller
 
     public function generateUserQrCode()
     {
+        set_time_limit(3600);
         $users = User::all();
         foreach ($users as $user) {
             $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -166,7 +167,9 @@ class AdminController extends Controller
 
     public function generateBadges()
     {
+        ini_set("memory_limit", "-1");
         set_time_limit(3600);
+
         $users = $this->userServices->getUsersByCongress(4);
         File::cleanDirectory(public_path() . '/badge/neuro');
         for ($i = 0; $i < sizeof($users) / 3; $i++) {
@@ -180,6 +183,7 @@ class AdminController extends Controller
             }
             $data = [
                 'users' => json_decode(json_encode($tempUsers), false)];
+
             $pdf = PDF::loadView('pdf.badges-09-03', $data);
             return $pdf->stream('badges-09-03.pdf');
             $pdf->save(public_path() . '/badge/neuro/badges' . $pdfFileName . '.pdf');
@@ -207,5 +211,23 @@ class AdminController extends Controller
 
         return response()->json(["message" => "status update success"]);
 
+    }
+
+    public function generateTickets()
+    {
+        set_time_limit(3600);
+        for ($i = 231; $i <= 400; $i++) {
+            User::create([
+                "first_name" => "Ticket",
+                "last_name" => $i,
+            ])->save();
+        }
+        for ($i = 1; $i <= 100; $i++) {
+            User::create([
+                "first_name" => "Invitation",
+                "last_name" => $i,
+            ])->save();
+        }
+        return response()->json(['response' => 'tickets registred'], 200);
     }
 }
