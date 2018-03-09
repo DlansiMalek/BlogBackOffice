@@ -109,7 +109,8 @@ class AdminController extends Controller
     public function updateUserWithCongress()
     {
         set_time_limit(3600);
-        $users = User::all();
+        $users = User::where("id_User", ">", "970")
+            ->get();
         foreach ($users as $user) {
             $userCongress = Congress_User::where('id_User', '=', $user->id_User)->first();
             if (is_null($userCongress)) {
@@ -124,7 +125,7 @@ class AdminController extends Controller
 
     public function updateUsers()
     {
-        $users = Inscription_Neuro2018::all();
+        $users = Inscription_Neuro2018::where("id_inscription", ">", "129")->get();
         foreach ($users as $user) {
             $userNew = User::create([
                 'first_name' => $user->prenom,
