@@ -108,16 +108,9 @@ class AdminController extends Controller
     public function updateUserWithCongress()
     {
         set_time_limit(3600);
-        $users = User::where('id_User', '>', 297)->get();
-        /*foreach ($users as $user) {
-            $userCongress = Congress_User::where('id_User', '=', $user->id_User)->first();
-            if (is_null($userCongress)) {
-                Congress_User::create([
-                    'id_User' => $user->id_User,
-                    'id_Congress' => 4
-                ])->save();
-            }
-        }*/
+
+        $users = User::where("id_User", ">", "970")
+            ->get();
         foreach ($users as $user) {
             $userCongress = Congress_User::where('id_User', '=', $user->id_User)->first();
             if (is_null($userCongress)) {
@@ -132,7 +125,7 @@ class AdminController extends Controller
 
     public function updateUsers()
     {
-        $users = Inscription_Neuro2018::all();
+        $users = Inscription_Neuro2018::where("id_inscription", ">", "129")->get();
         foreach ($users as $user) {
             $userNew = User::create([
                 'first_name' => $user->prenom,
@@ -179,10 +172,8 @@ class AdminController extends Controller
 
         $users = $this->userServices->getUsersByCongress(4);
         File::cleanDirectory(public_path() . '/badge/neuro');
-        $itemCount=6;
-        for ($i = 0; $i < sizeof($users) / $itemCount; $i++) {
-            $tempUsers = array_slice($users, $i * $itemCount, $itemCount);
-
+        for ($i = 0; $i < sizeof($users) / 3; $i++) {
+            $tempUsers = array_slice($users, $i * 3, 3);
             $j = 1;
             $pdfFileName = '';
             foreach ($tempUsers as $tempUser) {

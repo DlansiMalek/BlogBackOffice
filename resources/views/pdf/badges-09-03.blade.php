@@ -83,10 +83,13 @@
             right: 10px;
             bottom: 60px;
         }
+
     </style>
 </head>
 <body>
-<img style="width: 100%;" src="{{public_path().'/badge/badge-09-03.png'}}"/>
+
+<img style="width: 90%;" src="{{public_path().'/badge/badge-09-03.png'}}"/>
+
 <table>
     <tr>
         <td>
@@ -103,35 +106,8 @@
                 </div>
             </div>
         </td>
-        <td>
-            <div class="badge">
-                {{--
-                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-
-                <h1 class="badge-label-2">
-                    {{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
-                    .' '.strtoupper($users[1]->last_name)}}</h1>
-                <div class="badge-qrCode-2 img-qr_code">
-                    <img src="{{public_path().'/QRcode/qrcode_2.png'}}">
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="badge">
-                {{--
-                <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
-                --}}
-
-                <h1 class="badge-label-4">
-                    {{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
-                    .' '.strtoupper($users[2]->last_name)}}</h1>
-                <div class="badge-qrCode-4 img-qr_code">
-                    <img src="{{public_path().'/QRcode/qrcode_3.png'}}">
-                </div>
-            </div>
-        </td>
     </tr>
 </table>
+
 </body>
 </html>
