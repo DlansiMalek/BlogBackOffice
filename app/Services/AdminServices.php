@@ -30,7 +30,10 @@ class AdminServices
         try {
             return JWTAuth::parseToken()->toUser();
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            return null;
+            $refreshed = JWTAuth::refresh(JWTAuth::getToken());
+            $user = JWTAuth::setToken($refreshed)->toUser();
+            header('Authorization: Bearer ' . $refreshed);
+            return $user;
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
             return null;
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
@@ -56,12 +59,12 @@ class AdminServices
     public function updateStatusPaied($userId, $status, $congressId)
     {
 
-        $userCongress = Congress_User::where("id_User","=",$userId)
-            ->where("id_Congress","=",$congressId)
+        $userCongress = Congress_User::where("id_User", "=", $userId)
+            ->where("id_Congress", "=", $congressId)
             ->first();
 
-        if($userCongress){
-            $userCongress->isPaid = $status ;
+        if ($userCongress) {
+            $userCongress->isPaid = $status;
             $userCongress->update();
         }
         return $userCongress;
