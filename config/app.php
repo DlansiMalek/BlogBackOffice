@@ -180,7 +180,7 @@ return [
         //Barryvdh\DomPDF\ServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
 
-        'Tymon\JWTAuth\Providers\JWTAuthServiceProvider',
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         //niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
         'Chumper\Zipper\ZipperServiceProvider'
     ],

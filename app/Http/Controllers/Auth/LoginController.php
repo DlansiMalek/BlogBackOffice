@@ -5,10 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Metiers\AdminServices;
 use Illuminate\Http\Request;
-use JWTAuth;
-use Tymon\JWTAuth\Exceptions\TokenExpiredException;
-use Tymon\JWTAuth\Exceptions\TokenInvalidException;
-use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -22,17 +19,15 @@ class LoginController extends Controller
 
     public function loginAdmin(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = request(['email', 'password']);
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
 
-        try {
-            // verify the credentials and create a token for the user
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'invalid credentials'], 401);
-            }
-        } catch (\JWTException $e) {
-            return response()->json(['error' => 'could not create token'], 500);
+
+        // verify the credentials and create a token for the user
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
         }
+
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 }
