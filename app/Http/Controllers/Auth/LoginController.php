@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Metiers\AdminServices;
 use Illuminate\Http\Request;
 use JWTAuth;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class LoginController extends Controller
 {
