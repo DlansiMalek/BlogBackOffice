@@ -181,7 +181,7 @@ return [
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
 
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
-        //niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
+        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
         'Chumper\Zipper\ZipperServiceProvider'
     ],
 

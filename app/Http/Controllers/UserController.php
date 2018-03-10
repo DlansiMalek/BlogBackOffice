@@ -36,10 +36,10 @@ class UserController extends Controller
             return response()->json(['response' => 'user exist'], 400);
         }
 
-        Utils::generateQRcode($createdUser->qr_code);
-        $this->userServices->impressionBadge($createdUser);
-        $congress = $this->congressServices->getCongressById($request->input("congressId"));
-        $this->userServices->sendMail($createdUser, $congress);
+        //Utils::generateQRcode($createdUser->qr_code);
+        //$this->userServices->impressionBadge($createdUser);
+        //$congress = $this->congressServices->getCongressById($request->input("congressId"));
+        //$this->userServices->sendMail($createdUser, $congress);
 
 
         return response()->json($createdUser, 201);

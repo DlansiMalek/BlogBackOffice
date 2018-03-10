@@ -20,55 +20,48 @@ class UserServices
     {
         $email = $request->input('email');
 
-        $user = User::where('email', 'like', $email)->first();
+        //$user = User::where('email', 'like', $email)->first();
 
-        if ($user) {
-            if ($existCongress = $this->isExistCongress($user, $request->input("congressId"))) {
-                return null;
-            } else {
-                $this->settingInCongress($user, $request->input("congressId"));
-                return $user;
-            }
-        } else {
-            $newUser = new User();
-            $newUser->first_name = $request->input('first_name');
-            $newUser->last_name = $request->input('last_name');
-            if ($request->has('gender'))
-                $newUser->gender = $request->input('gender');
-            if ($request->has('establishment'))
-                $newUser->establishment = $request->input('establishment');
-            if ($request->has('profession'))
-                $newUser->profession = $request->input('profession');
-            if ($request->has('tel'))
-                $newUser->tel = $request->input('tel');
-            $newUser->mobile = $request->input('mobile');
-            if ($request->has('fax'))
-                $newUser->fax = $request->input('fax');
-            if ($request->has('address'))
-                $newUser->address = $request->input('address');
-            if ($request->has('postal'))
-                $newUser->postal = $request->input('postal');
-            if ($request->has('domain'))
-                $newUser->domain = $request->input('domain');
-            if ($request->has('city_id'))
-                $newUser->city_id = $request->input('city_id');
-            $newUser->email = $email;
-            if ($request->has('cin'))
-                $newUser->cin = $request->input('cin');
-            $newUser->valide = false;
-            $newUser->validation_code = str_random(40);
-            $newUser->save();
 
-            /* Generation QRcode */
-            $qrcode = Utils::generateCode($newUser->id_User);
-            $newUser->qr_code = $qrcode;
-            $newUser->save();
+        $newUser = new User();
+        $newUser->first_name = $request->input('first_name');
+        $newUser->last_name = $request->input('last_name');
+        if ($request->has('gender'))
+            $newUser->gender = $request->input('gender');
+        if ($request->has('establishment'))
+            $newUser->establishment = $request->input('establishment');
+        if ($request->has('profession'))
+            $newUser->profession = $request->input('profession');
+        if ($request->has('tel'))
+            $newUser->tel = $request->input('tel');
+        $newUser->mobile = $request->input('mobile');
+        if ($request->has('fax'))
+            $newUser->fax = $request->input('fax');
+        if ($request->has('address'))
+            $newUser->address = $request->input('address');
+        if ($request->has('postal'))
+            $newUser->postal = $request->input('postal');
+        if ($request->has('domain'))
+            $newUser->domain = $request->input('domain');
+        if ($request->has('city_id'))
+            $newUser->city_id = $request->input('city_id');
+        $newUser->email = $email;
+        if ($request->has('cin'))
+            $newUser->cin = $request->input('cin');
+        $newUser->valide = false;
+        $newUser->validation_code = str_random(40);
+        $newUser->save();
 
-            $this->settingInCongress($newUser, $request->input("congressId"));
+        /* Generation QRcode */
+        $qrcode = Utils::generateCode($newUser->id_User);
+        $newUser->qr_code = $qrcode;
+        $newUser->save();
 
-            return $newUser;
-        }
+        $this->settingInCongress($newUser, $request->input("congressId"));
+
+        return $newUser;
     }
+
 
     public function sendConfirmationMail($user)
     {
@@ -235,6 +228,7 @@ class UserServices
     {
         return User::join("Congress_User", "User.id_User", "=", "Congress_User.id_User")
             ->where("id_Congress", "=", $congressId)
+            ->where("User.id_User", ">", "999")
             ->get()
             ->toArray();
     }
