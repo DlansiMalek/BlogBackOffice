@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use PDF;
+use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use Zipper;
 
 class AdminController extends Controller
@@ -165,12 +165,12 @@ class AdminController extends Controller
         }
     }
 
-    public function generateBadges()
+    public function generateBadges($userPos)
     {
         ini_set("memory_limit", "-1");
         set_time_limit(3600);
 
-        $users = $this->userServices->getUsersByCongress(4);
+        $users = $this->userServices->getUsersByCongress(4,$userPos);
         File::cleanDirectory(public_path() . '/badge/neuro');
         for ($i = 0; $i < sizeof($users) / 3; $i++) {
             $tempUsers = array_slice($users, $i * 3, 3);
@@ -185,7 +185,7 @@ class AdminController extends Controller
                 'users' => json_decode(json_encode($tempUsers), false)];
 
             $pdf = PDF::loadView('pdf.badges-09-03', $data);
-            return $pdf->stream('badges-09-03.pdf');
+            //return $pdf->stream('badges-09-03.pdf');
             $pdf->save(public_path() . '/badge/neuro/badges' . $pdfFileName . '.pdf');
         }
         $files = glob(public_path() . '/badge/neuro/*');

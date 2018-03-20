@@ -224,11 +224,11 @@ class UserServices
         return $user_congress;
     }
 
-    public function getUsersByCongress($congressId)
+    public function getUsersByCongress($congressId, $userPos)
     {
         return User::join("Congress_User", "User.id_User", "=", "Congress_User.id_User")
             ->where("id_Congress", "=", $congressId)
-            ->where("User.id_User", ">", "999")
+            ->where("User.id_User", ">", $userPos)
             ->get()
             ->toArray();
     }
