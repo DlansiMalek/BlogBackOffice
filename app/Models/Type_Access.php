@@ -8,16 +8,17 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Model;
 
-class Privilege extends Model
+class Type_Access extends Model
 {
-    protected $table = 'Privilege';
-    protected $primaryKey = 'privilege_id';
+    protected $table = 'Type_Access';
+    protected $primaryKey = 'type_access_id';
     protected $fillable = ['name'];
 
-    protected $dates = ['created_at', 'updated_at'];
+
     public $timestamps = true;
+    protected $dates = ['created_at', 'updated_at'];
+
 
 }

@@ -7,6 +7,7 @@ use App\Metiers\AdminServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class LoginController extends Controller
 {
 
@@ -17,6 +18,31 @@ class LoginController extends Controller
         $this->adminServices = $adminServices;
     }
 
+    /**
+     * @SWG\Post(
+     *   path="/auth/login/admin",
+     *   summary="Login Admin",
+     *   operationId="loginAdmin",
+     *   @SWG\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Email Admin.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="password",
+     *     in="query",
+     *     description="Password Admin.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function loginAdmin(Request $request)
     {
         $credentials = request(['email', 'password']);

@@ -14,21 +14,22 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class Admin extends Authenticatable implements JWTSubject
 {
     protected $table = 'Admin';
-    protected $primaryKey = 'id_Admin';
-    protected $fillable = ['email', 'password', 'passwordDecrypt', 'name'];
+    protected $primaryKey = 'admin_id';
+    protected $fillable = ['email', 'mobile', 'name', 'responsible'];
 
     protected $hidden = ["password", "passwordDecrypt"];
-    public $timestamps = false;
+    protected $dates = ['created_at', 'updated_at'];
+    public $timestamps = true;
 
 
     public function privileges()
     {
-        return $this->hasMany('App\Models\Admin_Privilege', 'id_Admin', 'id_Admin');
+        return $this->hasMany('App\Models\Admin_Privilege', 'admin_id', 'admin_id');
     }
 
     public function congresses()
     {
-        return $this->belongsToMany('App\Models\Congress', 'Congress_Admin', 'id_Admin', 'id_Congress');
+        return $this->hasMany('App\Models\Congress', 'admin_id', 'admin_id');
     }
 
     /**

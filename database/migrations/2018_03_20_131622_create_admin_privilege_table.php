@@ -21,6 +21,10 @@ class CreateAdminPrivilegeTable extends Migration
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
 
+            $table->integer('privilege_id')->unsigned();
+            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege')
+                ->onDelete('cascade');
+
 
             $table->timestamps();
         });

@@ -13,10 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 class Congress extends Model
 {
     protected $table = 'Congress';
-    protected $primaryKey = 'id_Congress';
+    protected $primaryKey = 'congress_id';
     protected $fillable = ['name', 'date'];
 
-    public $timestamps = false;
+    protected $dates = ['created_at', 'updated_at'];
+    public $timestamps = true;
 
     public function admin()
     {

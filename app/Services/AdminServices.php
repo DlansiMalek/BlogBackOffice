@@ -28,7 +28,7 @@ class AdminServices
     public function retrieveAdminFromToken()
     {
         try {
-            return JWTAuth::parseToken()->toUser();
+            return auth()->user();
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
             $refreshed = JWTAuth::refresh(JWTAuth::getToken());
             $user = JWTAuth::setToken($refreshed)->toUser();
@@ -41,9 +41,9 @@ class AdminServices
         }
     }
 
-    public function getAdminById($id_Admin)
+    public function getAdminById($admin_id)
     {
-        return Admin::where("id_Admin", "=", $id_Admin)
+        return Admin::where("admin_id", "=", $admin_id)
             ->with(["privileges", 'congresses'])
             ->first();
     }

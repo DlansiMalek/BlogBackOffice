@@ -14,9 +14,10 @@ use Illuminate\Database\Eloquent\Model;
 class Admin_Privilege extends Model
 {
     protected $table = 'Admin_Privilege';
-    protected $primaryKey = 'id_Admin_Privilege';
-    protected $fillable = ['id_Admin', 'id_Privilege'];
+    protected $primaryKey = 'admin_privilege_id';
+    protected $fillable = ['admin_id', 'privilege_id'];
 
-    public $timestamps = false;
+    protected $dates = ['created_at', 'updated_at'];
+    public $timestamps = true;
 
 }
