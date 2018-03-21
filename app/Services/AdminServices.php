@@ -6,10 +6,11 @@
  * Time: 18:37
  */
 
-namespace App\Metiers;
+namespace App\Services;
 
 
 use App\Models\Admin;
+use App\Models\Admin_Congress;
 use App\Models\Congress;
 use App\Models\Congress_User;
 use JWTAuth;
@@ -48,11 +49,9 @@ class AdminServices
             ->first();
     }
 
-    public function getAdminCongresses($id_Admin)
+    public function getAdminCongresses($admin_id)
     {
-        return Congress::whereHas('admin', function ($query) use ($id_Admin) {
-            $query->where('Congress_Admin.id_Admin', '=', $id_Admin);
-        })->orderBy('date', 'desc')
+        return Congress::where("admin_id", "=", $admin_id)
             ->get();
     }
 
@@ -68,6 +67,22 @@ class AdminServices
             $userCongress->update();
         }
         return $userCongress;
+    }
+
+    public function getListPersonelsByAdmin($admin_id)
+    {
+        return Admin::where("responsible", "=", $admin_id)
+            ->get();
+    }
+
+    public function addResponsibleCongress($responsibleIds, $congress_id)
+    {
+        foreach ($responsibleIds as $responsibleId) {
+            $congressAdmin = new Admin_Congress();
+            $congressAdmin->admin_id = $responsibleId;
+            $congressAdmin->congress_id = $congress_id;
+            $congressAdmin->save();
+        }
     }
 
 }

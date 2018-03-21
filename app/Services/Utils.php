@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Metiers;
+namespace App\Services;
 
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Metiers;
+namespace App\Services;
 
 use App\Models\Congress;
 use Illuminate\Support\Facades\Config;
@@ -11,7 +11,9 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::find($id_Congress);
+        return Congress::with(["responsibles", "accesss", "add_infos"])
+            ->where("congress_id", "=", $id_Congress)
+            ->get();
     }
 
     function retrieveCongressFromToken()
@@ -27,6 +29,16 @@ class CongressServices
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return null;
         }
+    }
+
+    public function addCongress($name, $date, $admin_id)
+    {
+        $congress = new Congress();
+        $congress->name = $name;
+        $congress->date = $date;
+        $congress->admin_id = $admin_id;
+        $congress->save();
+        return $congress;
     }
 
 }

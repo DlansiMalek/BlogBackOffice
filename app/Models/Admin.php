@@ -32,6 +32,7 @@ class Admin extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Congress', 'admin_id', 'admin_id');
     }
 
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

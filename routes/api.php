@@ -39,6 +39,12 @@ Route::group(['prefix' => 'admin'], function () {
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhentificatedAdmin');
         Route::get('congress', 'AdminController@getAdminCongresses');
+        Route::group(['prefix' => 'personels'], function () {
+            Route::get('list', 'AdminController@getListPersonels');
+        });
+        Route::group(['prefix' => 'congress'], function () {
+            Route::post('add', 'CongressController@addCongress');
+        });
     });
     Route::group(['prefix' => 'qrcode'], function () {
         Route::post('scan', 'AdminController@scanParticipatorQrCode');
@@ -53,6 +59,21 @@ Route::group(['prefix' => 'admin'], function () {
             Route::post('status/update', 'AdminController@updateParticipatorStatus');
             Route::post('paied-status', 'AdminController@updatePaiedParticipator');
         });
+    });
+
+});
+//Additional Info API
+Route::group(['prefix' => 'add-info'], function () {
+
+    Route::group(['prefix' => 'type'], function () {
+        Route::get('list', 'AddInfoController@getAllTypesInfo');
+    });
+
+});
+//Access API
+Route::group(['prefix' => 'access'], function () {
+    Route::group(['prefix' => 'type'], function () {
+        Route::get('list', 'AccessController@getAllTypesAccess');
     });
 
 });

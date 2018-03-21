@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Metiers\AdminServices;
-use App\Metiers\CongressServices;
-use App\Metiers\Utils;
-use App\Models\Congress_User;
-use App\Models\Inscription_Neuro2018;
+
 use App\Models\User;
+use App\Services\AdminServices;
+use App\Services\CongressServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -96,12 +94,26 @@ class AdminController extends Controller
     }
 
 
+    /**
+     * @SWG\Get(
+     *   path="/admin/me/congress",
+     *   summary="Get Congress By Admin",
+     *   operationId="getAdminCongresses",
+     *   security={
+     *     {"Bearer": {}}
+     *   },
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function getAdminCongresses()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        return $this->adminServices->getAdminCongresses($admin->id_Admin);
+        return $this->adminServices->getAdminCongresses($admin->admin_id);
     }
 
     public function getAllParticipantsByCongress($congressId)
@@ -185,7 +197,7 @@ class AdminController extends Controller
         ini_set("memory_limit", "-1");
         set_time_limit(3600);
 
-        $users = $this->userServices->getUsersByCongress(4,$userPos);
+        $users = $this->userServices->getUsersByCongress(4, $userPos);
         File::cleanDirectory(public_path() . '/badge/neuro');
         for ($i = 0; $i < sizeof($users) / 3; $i++) {
             $tempUsers = array_slice($users, $i * 3, 3);
@@ -244,5 +256,30 @@ class AdminController extends Controller
             ])->save();
         }
         return response()->json(['response' => 'tickets registred'], 200);
+    }
+
+    /**
+     * @SWG\Get(
+     *   path="/admin/me/personels/list",
+     *   summary="Get personels by Admin",
+     *   operationId="getListPersonels",
+     *   security={
+     *     {"Bearer": {}}
+     *   },
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function getListPersonels()
+    {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $personels = $this->adminServices->getListPersonelsByAdmin($admin->admin_id);
+
+        return response()->json($personels);
+
     }
 }
