@@ -35,9 +35,14 @@ Route::group(['prefix' => 'users'], function () {
 
 //Congress API
 Route::group(['prefix' => 'congress'], function () {
-
     Route::get('{congress_id}', 'CongressController@getCongressById');
-
+});
+//User API
+Route::group(['prefix' => 'user'], function () {
+    Route::group(['prefix' => 'congress'], function () {
+        Route::get('{congress_id}/list', 'UserController@getUsersByCongress');
+    });
+    Route::get('{congress_id}', 'CongressController@getCongressById');
 });
 //Admin API
 Route::group(['prefix' => 'admin'], function () {

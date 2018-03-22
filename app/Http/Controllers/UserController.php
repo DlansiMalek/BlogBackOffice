@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Metiers\CongressServices;
-use App\Metiers\Utils;
+
+use App\Services\CongressServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
@@ -118,6 +118,16 @@ class UserController extends Controller
 
 
         return response()->json(["message" => "email sending success"], 200);
+    }
+
+    public function getUsersByCongress($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        $users = $this->userServices->getUsersByCongress($congressId);
+
+        return response()->json($users);
     }
 
 }
