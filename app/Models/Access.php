@@ -20,5 +20,10 @@ class Access extends Model
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 
+    public function responsibles()
+    {
+        return $this->hasMany('App\Models\Admin_Access', 'access_id','access_id');
+    }
+
 
 }

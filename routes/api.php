@@ -33,6 +33,12 @@ Route::group(['prefix' => 'users'], function () {
 
 });
 
+//Congress API
+Route::group(['prefix' => 'congress'], function () {
+
+    Route::get('{congress_id}', 'CongressController@getCongressById');
+
+});
 //Admin API
 Route::group(['prefix' => 'admin'], function () {
 
@@ -44,6 +50,7 @@ Route::group(['prefix' => 'admin'], function () {
         });
         Route::group(['prefix' => 'congress'], function () {
             Route::post('add', 'CongressController@addCongress');
+            Route::post('{congressId}/edit', 'CongressController@editCongress');
         });
     });
     Route::group(['prefix' => 'qrcode'], function () {

@@ -11,9 +11,9 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["responsibles", "accesss", "add_infos"])
+        return Congress::with(["responsibles", "accesss.responsibles", "add_infos"])
             ->where("congress_id", "=", $id_Congress)
-            ->get();
+            ->first();
     }
 
     function retrieveCongressFromToken()
