@@ -32,37 +32,50 @@ class AdminController extends Controller
         if (!$request->has(['qrcode', 'congressId'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode']], 400);
         }
-        $qrcode = $request->input('qrcode');
-        if (strlen($qrcode) < 7) {
-            //return response()->json(['resposne' => 'bad qrcode'], 400);
-        }
+
         $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
-        $participator = $this->userServices->getParticipatorByIdByCongress($participator->id_User, $request->input("congressId"));
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
         return $participator;
     }
 
-    public function updateParticipatorStatus(Request $request, $id_Participator)
+    public function makeUserPresentCongress(Request $request, $userId)
     {
-        if (!$request->has(['isPresent', 'hasPaid', 'congressId'])) {
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'hasPaid']], 400);
+        if (!$request->has(['isPresent', 'congressId'])) {
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'congressId']], 400);
         }
-        $participator = $this->userServices->getParticipatorById($id_Participator);
+        $participator = $this->userServices->getUserById($userId);
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
-        if (!$congress_user = $this->userServices->affectUserToCongress($request->input("congressId"), $participator, $request->input('isPresent'), $request->input('hasPaid'))) {
+        if ($participator->congress_id != $request->input("congressId")) {
             return response()->json(['response' => 'participator not participated in this congress'], 404);
         }
-        //$allPresents = $this->userServices->getAllPresentParticipatorByCongress($request->input("congressId"));
+        $this->userServices->makePresentToCongress($participator, $request->input('isPresent'));
 
+        return response()->json(["message" => "success sending and scaning"], 200);
+    }
 
-        /*$allParticipants = $this->userServices->getAllParticipatorByCongress($request->input("congressId"));
+    public function makeUserPresentAccess(Request $request, $userId)
+    {
+        if (!$request->has(['isPresent', 'accessId'])) {
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
+        }
+        $participator = $this->userServices->getUserById($userId);
+        if (!$participator) {
+            return response()->json(['resposne' => 'participator not found'], 404);
+        }
+        if($participator->isPresent==0){
+            return response()->json(['response'=> 'participator not present in congress'],404);
+        }
 
-        $this->userServices->sendingToAdmin($allParticipants, $request->input("congressId"));*/
+        if (!$this->userServices->isAllowedAccess($participator, $request->input("accessId"))) {
+            return response()->json(["message" => "user not allowed to this access"], 401);
+        }
+        $this->userServices->makePresentToAccess($participator,
+            $request->input('accessId'), $request->input('isPresent'));
 
         return response()->json(["message" => "success sending and scaning"], 200);
     }
@@ -280,6 +293,28 @@ class AdminController extends Controller
         $personels = $this->adminServices->getListPersonelsByAdmin($admin->admin_id);
 
         return response()->json($personels);
+
+    }
+
+    public function addPersonnel(Request $request)
+    {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $personels = $this->adminServices->addPersonnel($request, $admin->admin_id);
+
+        return response()->json($personels);
+
+
+    }
+
+    public function deletePersonnel($personnelId)
+    {
+        if (!$admin = $this->adminServices->getAdminById($personnelId)) {
+            return response()->json(["message" => "admin not found"], 404);
+        }
+        $this->adminServices->deleteAdminById($admin);
+        return response()->json(["message" => "deleted success"]);
 
     }
 }

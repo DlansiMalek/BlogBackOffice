@@ -13,6 +13,7 @@ use App\Models\Admin;
 use App\Models\Admin_Congress;
 use App\Models\Congress;
 use App\Models\Congress_User;
+use Illuminate\Http\Request;
 use JWTAuth;
 
 class AdminServices
@@ -51,7 +52,8 @@ class AdminServices
 
     public function getAdminCongresses($admin_id)
     {
-        return Congress::where("admin_id", "=", $admin_id)
+        return Congress::with(["responsibles", "accesss.type_access", "add_infos"])
+            ->where("admin_id", "=", $admin_id)
             ->get();
     }
 
@@ -83,6 +85,29 @@ class AdminServices
             $congressAdmin->congress_id = $congress_id;
             $congressAdmin->save();
         }
+    }
+
+    public function addPersonnel(Request $request, $admin_id)
+    {
+        $personnel = new Admin();
+        $personnel->name = $request->input("name");
+        $personnel->email = $request->input("email");
+        $personnel->mobile = $request->input("mobile");
+
+        $personnel->responsible = $admin_id;
+
+        $password = str_random(8);
+        $personnel->passwordDecrypt = $password;
+        $personnel->password = bcrypt($password);
+
+        $personnel->save();
+
+        return $personnel;
+    }
+
+    public function deleteAdminById($admin)
+    {
+        $admin->delete();
     }
 
 }

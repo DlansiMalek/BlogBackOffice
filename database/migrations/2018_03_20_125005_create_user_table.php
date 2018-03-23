@@ -20,6 +20,10 @@ class CreateUserTable extends Migration
             $table->integer('gender');
             $table->string('mobile');
             $table->string('email');
+
+            $table->string('qr_code');
+            $table->tinyInteger('isPresent')->unsigned();
+
             $table->integer('city_id')->unsigned()->default(null);
 
             $table->integer('congress_id')->unsigned();

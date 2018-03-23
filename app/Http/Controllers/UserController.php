@@ -130,4 +130,37 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function addUserToCongress(Request $request, $congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $user = $this->userServices->addParticipant($request, $congressId);
+
+        $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
+
+        return response()->json(['message' => "add success", 'data' => $this->userServices->getUserById($user->user_id)]);
+    }
+
+    public function getUsersByAccess($accessId)
+    {
+        $users = $this->userServices->getUsersByAccess($accessId);
+
+        return response()->json($users);
+    }
+
+    public function getPresencesByAccess($accessId)
+    {
+        $users = $this->userServices->getPresencesByAccess($accessId);
+
+        return response()->json($users);
+    }
+
+    public function getPresencesByCongress($congressId)
+    {
+        $users = $this->userServices->getAllPresencesByCongress($congressId);
+
+        return response()->json($users);
+    }
+
 }

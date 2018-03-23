@@ -22,7 +22,12 @@ class Access extends Model
 
     public function responsibles()
     {
-        return $this->hasMany('App\Models\Admin_Access', 'access_id','access_id');
+        return $this->hasMany('App\Models\Admin_Access', 'access_id', 'access_id');
+    }
+
+    public function type_access()
+    {
+        return $this->hasOne('App\Models\Type_Access', 'type_access_id', 'type_access_id');
     }
 
 

@@ -40,9 +40,22 @@ Route::group(['prefix' => 'congress'], function () {
 //User API
 Route::group(['prefix' => 'user'], function () {
     Route::group(['prefix' => 'congress'], function () {
-        Route::get('{congress_id}/list', 'UserController@getUsersByCongress');
+        Route::group(['prefix' => '{congress_id}'], function () {
+            Route::get('list', 'UserController@getUsersByCongress');
+            Route::post('add', 'UserController@addUserToCongress');
+            Route::get('presence/list', 'UserController@getPresencesByCongress');
+        });
+
+
     });
-    Route::get('{congress_id}', 'CongressController@getCongressById');
+    Route::group(['prefix' => 'access'], function () {
+        Route::group(['prefix' => '{access_id}'], function () {
+            Route::get('list', 'UserController@getUsersByAccess');
+            Route::get('presence/list', 'UserController@getPresencesByAccess');
+        });
+
+
+    });
 });
 //Admin API
 Route::group(['prefix' => 'admin'], function () {
@@ -52,6 +65,8 @@ Route::group(['prefix' => 'admin'], function () {
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list', 'AdminController@getListPersonels');
+            Route::post('add', 'AdminController@addPersonnel');
+            Route::delete('{admin_id}/delete', 'AdminController@deletePersonnel');
         });
         Route::group(['prefix' => 'congress'], function () {
             Route::post('add', 'CongressController@addCongress');
@@ -68,7 +83,8 @@ Route::group(['prefix' => 'admin'], function () {
             Route::get('presence', 'AdminController@getAllPresenceByCongress');
         });
         Route::group(['prefix' => '{id_Participator}'], function () {
-            Route::post('status/update', 'AdminController@updateParticipatorStatus');
+            Route::post('status/update', 'AdminController@makeUserPresentCongress');
+            Route::post('status/update/access', 'AdminController@makeUserPresentAccess');
             Route::post('paied-status', 'AdminController@updatePaiedParticipator');
         });
     });
@@ -86,6 +102,9 @@ Route::group(['prefix' => 'add-info'], function () {
 Route::group(['prefix' => 'access'], function () {
     Route::group(['prefix' => 'type'], function () {
         Route::get('list', 'AccessController@getAllTypesAccess');
+    });
+    Route::group(['prefix' => 'congress'], function () {
+        Route::get('{congress_id}/list', 'AccessController@getAllAccessByCongress');
     });
 
 });

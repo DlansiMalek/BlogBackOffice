@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Metiers\Utils;
 use App\Models\Congress_User;
 use App\Models\User;
+use App\Models\User_Access;
+use Illuminate\Http\Request;
 use PDF;
 use Illuminate\Support\Facades\Mail;
 
@@ -139,59 +141,21 @@ class UserServices
             ->get();
     }
 
-    public function sendingToOrganisateur($participator, $congressId)
-    {
-        $client = new \GuzzleHttp\Client();
-
-
-        $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-present', [
-                'form_params' => [
-                    'user' => json_decode(json_encode($participator)),
-                    'congressId' => $congressId
-                ]
-            ]);
-
-        return json_decode($res->getBody(), true);
-    }
-
-    public function sendingToAdmin($allParticipants, $congressId)
-    {
-        $client = new \GuzzleHttp\Client();
-
-
-        $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-all', [
-                'form_params' => [
-                    'users' => json_decode(json_encode($allParticipants)),
-                    'congressId' => $congressId
-                ]
-            ]);
-
-        return json_decode($res->getBody(), true);
-    }
 
     public function getParticipatorByQrCode($qr_code)
     {
         return User::where('qr_code', 'like', $qr_code)->first();
     }
 
-    public function affectUserToCongress($congressId, $user, $isPresent, $hasPaid)
+    public function makePresentToCongress($user, $isPresent)
     {
-        $congressUser = Congress_User::where("id_User", "=", $user->id_User)
-            ->where("id_Congress", "=", $congressId)
-            ->first();
-
-        if ($congressUser->isPresent != 1 && $isPresent == 1) {
-            $this->sendingToOrganisateur($user, $congressId);
+        if ($user->isPresent != 1 && $isPresent == 1) {
+            $this->sendingToOrganisateur($user);
         }
-        if ($congressUser) {
-            $congressUser->isPresent = $isPresent;
-            $congressUser->isPaid = $hasPaid;
-            $congressUser->update();
-        }
+        $user->isPresent = $isPresent;
+        $user->update();
 
-        return $congressUser;
+        return $user;
     }
 
     public function getParticipatorByIdByCongress($userId, $congressId)
@@ -207,6 +171,60 @@ class UserServices
         }])->where("id_User", "=", $userId)
             ->first();
 
+    }
+
+    public function addParticipant(Request $request, $congress_id)
+    {
+        $user = new User();
+        $user->first_name = $request->input("first_name");
+        $user->last_name = $request->input("last_name");
+
+        if ($request->has('email'))
+            $user->email = $request->input('email');
+        if ($request->has('mobile'))
+            $user->mobile = $request->input('mobile');
+
+        $user->qr_code = str_random(7);
+        $user->congress_id = $congress_id;
+
+        $user->save();
+
+        return $user;
+
+    }
+
+    public function affectAccess($user_id, $accessIds)
+    {
+        foreach ($accessIds as $accessId) {
+            $user_access = new User_Access();
+            $user_access->access_id = $accessId;
+            $user_access->user_id = $user_id;
+            $user_access->save();
+        }
+    }
+
+    public function getUserById($user_id)
+    {
+        return User::with(["accesss"])
+            ->where("user_id", "=", $user_id)
+            ->first();
+    }
+
+    public function isAllowedAccess($participator, $accessId)
+    {
+        foreach ($participator->accesss as $access) {
+            if ($access->access_id == $accessId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getAllPresencesByCongress($congressId)
+    {
+        return User::where("congress_id", "=", $congressId)
+            ->where("isPresent", "=", 1)
+            ->get();
     }
 
     private function isExistCongress($user, $congressId)
@@ -228,5 +246,86 @@ class UserServices
     {
         return User::where("congress_id", "=", $congressId)
             ->get();
+    }
+
+    public function getUsersByAccess($accessId)
+    {
+        return User::join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
+            ->where("access_id", '=', $accessId)
+            ->get();
+
+    }
+
+    public function getPresencesByAccess($accessId)
+    {
+        return User::join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
+            ->where("access_id", '=', $accessId)
+            ->where("User_Access.isPresent", "=", 1)
+            ->get();
+    }
+
+    public function makePresentToAccess($user, $accessId, $isPresent)
+    {
+        $user_access = $this->getUserAccessByUser($user->user_id, $accessId);
+
+        if ($user_access->isPresent != 1 && $isPresent == 1) {
+            $this->sendingRTAccess($user, $accessId);
+        }
+        $user_access->isPresent = $isPresent;
+        $user_access->update();
+    }
+
+    public function getUserAccessByUser($userId, $accessId)
+    {
+        return User_Access::where("user_id", "=", $userId)
+            ->where("access_id", "=", $accessId)
+            ->first();
+    }
+
+    public function sendingToAdmin($allParticipants, $congressId)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://137.74.165.25:3002/api/congress/users/send-all', [
+                'form_params' => [
+                    'users' => json_decode(json_encode($allParticipants)),
+                    'congressId' => $congressId
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function sendingToOrganisateur($participator)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://137.74.165.25:3002/api/congress/users/send-present', [
+                'form_params' => [
+                    'user' => json_decode(json_encode($participator))
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    private function sendingRTAccess($user, $accessId)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://137.74.165.25:3002/api/congress/users/send-present-access', [
+                'form_params' => [
+                    'user' => json_decode(json_encode($user)),
+                    'accessId' => $accessId
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
     }
 }

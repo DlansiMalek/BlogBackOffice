@@ -38,5 +38,12 @@ class AccessController extends Controller
         return response()->json($typesAccess);
     }
 
+    function getAllAccessByCongress($congressId)
+    {
+
+        return response()->json($this->accessServices->getAllAccessByCongress($congressId));
+
+    }
+
 
 }

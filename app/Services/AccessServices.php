@@ -45,4 +45,11 @@ class AccessServices
             $admin_access->save();
         }
     }
+
+    public function getAllAccessByCongress($congressId)
+    {
+        return Access::with(["type_access"])
+            ->where("congress_id", "=", $congressId)
+            ->get();
+    }
 }

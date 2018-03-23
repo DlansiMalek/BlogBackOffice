@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'first_name', 'last_name', 'gender', 'mobile', 'city_id'
+        'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent'
     ];
 
     /**
@@ -32,10 +32,10 @@ class User extends Authenticatable
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
 
-    /*
-    function city()
+
+    function accesss()
     {
-        return $this->hasOne('App\Models\City', 'id_City', 'city_id');
+        return $this->hasMany('App\Models\User_Access', 'user_id', 'user_id');
     }
-    */
+
 }

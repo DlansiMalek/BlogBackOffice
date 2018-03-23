@@ -32,7 +32,7 @@ class CongressController extends Controller
 
     public function addCongress(Request $request)
     {
-        $this->addFullCongress($request);
+        $congress = $this->addFullCongress($request);
 
 
         return response()->json(["message" => "add congress sucess", "data" => $this->congressServices->getCongressById($congress->congress_id)]);
@@ -71,6 +71,8 @@ class CongressController extends Controller
         $this->adminServices->addResponsibleCongress($request->input("responsibleIds"), $congress->congress_id);
         $this->addInfoServices->addInfoToCongress($congress->congress_id, $request->input("addInfoIds"));
         $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+
+        return $congress;
     }
 
 }
