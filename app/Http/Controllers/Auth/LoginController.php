@@ -63,7 +63,7 @@ class LoginController extends Controller
 
 
     /**
-     * @SWG\POST(
+     * @SWG\Post(
      *   path="/mobile/login",
      *   summary="Login",
      *   tags={"Mobile"},

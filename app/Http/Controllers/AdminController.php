@@ -33,7 +33,7 @@ class AdminController extends Controller
 
 
     /**
-     * @SWG\POST(
+     * @SWG\Post(
      *   path="/mobile/scan/participant",
      *   summary="Scan Participant",
      *   tags={"Mobile"},
@@ -68,7 +68,7 @@ class AdminController extends Controller
     }
 
     /**
-     * @SWG\POST(
+     * @SWG\Post(
      *        path="/mobile/presence/{participantId}/status/update",
      *        tags={"Mobile"},
      *        operationId="makeUserPresentCongress",
@@ -122,7 +122,7 @@ class AdminController extends Controller
     }
 
     /**
-     * @SWG\POST(
+     * @SWG\Post(
      *        path="/mobile/presence/{participantId}/status/update/access",
      *        tags={"Mobile"},
      *        operationId="makeUserPresentAccess",
