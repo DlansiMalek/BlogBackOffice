@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
+use App\Services\PrivilegeServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -17,19 +18,45 @@ class AdminController extends Controller
     protected $userServices;
     protected $adminServices;
     protected $congressService;
+    protected $privilegeServices;
 
     public function __construct(UserServices $userServices,
                                 AdminServices $adminServices,
-                                CongressServices $congressService)
+                                CongressServices $congressService,
+                                PrivilegeServices $privilegeServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
         $this->congressService = $congressService;
+        $this->privilegeServices = $privilegeServices;
     }
 
+
+    /**
+     * @SWG\POST(
+     *   path="/mobile/scan/participant",
+     *   summary="Scan Participant",
+     *   tags={"Mobile"},
+     *   operationId="scanParticipatorQrCode",
+     *   security={
+     *     {"Bearer": {}}
+     *   },
+     *   @SWG\Parameter(
+     *     name="QrCode",
+     *     in="query",
+     *     description="QR code",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function scanParticipatorQrCode(Request $request)
     {
-        if (!$request->has(['qrcode', 'congressId'])) {
+        if (!$request->has(['qrcode'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode']], 400);
         }
 
@@ -40,6 +67,42 @@ class AdminController extends Controller
         return $participator;
     }
 
+    /**
+     * @SWG\POST(
+     *        path="/mobile/presence/{participantId}/status/update",
+     *        tags={"Mobile"},
+     *        operationId="makeUserPresentCongress",
+     *        summary="makeUserPresentCongress",
+     *        security={
+     *          {"Bearer": {}}
+     *        },
+     * 		@SWG\Parameter(
+     *            name="participantId",
+     *            in="path",
+     *            required=true,
+     *            type="integer",
+     *            description="participantId",
+     *        ),
+     *      @SWG\Parameter(
+     *        name="isPresent",
+     *        in="query",
+     *        description="isPresent",
+     *        required=true,
+     *        type="integer"
+     *      ),
+     *      @SWG\Parameter(
+     *        name="congressId",
+     *        in="query",
+     *        description="L'id du congrès",
+     *        required=true,
+     *        type="integer"
+     *      ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function makeUserPresentCongress(Request $request, $userId)
     {
         if (!$request->has(['isPresent', 'congressId'])) {
@@ -58,6 +121,42 @@ class AdminController extends Controller
         return response()->json(["message" => "success sending and scaning"], 200);
     }
 
+    /**
+     * @SWG\POST(
+     *        path="/mobile/presence/{participantId}/status/update/access",
+     *        tags={"Mobile"},
+     *        operationId="makeUserPresentAccess",
+     *        summary="makeUserPresentAccess",
+     *        security={
+     *          {"Bearer": {}}
+     *        },
+     * 		@SWG\Parameter(
+     *            name="participantId",
+     *            in="path",
+     *            required=true,
+     *            type="integer",
+     *            description="participantId",
+     *        ),
+     *      @SWG\Parameter(
+     *        name="isPresent",
+     *        in="query",
+     *        description="isPresent",
+     *        required=true,
+     *        type="integer"
+     *      ),
+     *      @SWG\Parameter(
+     *        name="accessId",
+     *        in="query",
+     *        description="L'id de l'accées",
+     *        required=true,
+     *        type="integer"
+     *      ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function makeUserPresentAccess(Request $request, $userId)
     {
         if (!$request->has(['isPresent', 'accessId'])) {
@@ -67,8 +166,8 @@ class AdminController extends Controller
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
-        if($participator->isPresent==0){
-            return response()->json(['response'=> 'participator not present in congress'],404);
+        if ($participator->isPresent == 0) {
+            return response()->json(['response' => 'participator not present in congress'], 404);
         }
 
         if (!$this->userServices->isAllowedAccess($participator, $request->input("accessId"))) {
@@ -303,9 +402,9 @@ class AdminController extends Controller
         }
         $personels = $this->adminServices->addPersonnel($request, $admin->admin_id);
 
+        $this->privilegeServices->affectPrivilegeToAdmin(2, $personels->admin_id);
+
         return response()->json($personels);
-
-
     }
 
     public function deletePersonnel($personnelId)

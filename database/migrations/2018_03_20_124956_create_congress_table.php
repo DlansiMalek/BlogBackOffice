@@ -19,8 +19,9 @@ class CreateCongressTable extends Migration
             $table->date('date');
 
             $table->integer('admin_id')->unsigned();
-            $table->foreign('admin_id')->references('admin_id')->on('Congress')
+            $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
+
 
             $table->timestamps();
         });

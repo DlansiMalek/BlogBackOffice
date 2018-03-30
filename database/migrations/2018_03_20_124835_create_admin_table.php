@@ -21,7 +21,7 @@ class CreateAdminTable extends Migration
             $table->string('password');
             $table->string('passwordDecrypt');
 
-            $table->integer('responsible')->unsigned()->default(null);
+            $table->integer('responsible')->unsigned()->nullable();
             $table->foreign('responsible')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
 

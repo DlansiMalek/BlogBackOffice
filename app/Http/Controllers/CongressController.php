@@ -7,6 +7,7 @@ use App\Services\AccessServices;
 use App\Services\AddInfoServices;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
+use App\Services\PrivilegeServices;
 use Illuminate\Http\Request;
 
 
@@ -17,16 +18,18 @@ class CongressController extends Controller
     protected $adminServices;
     protected $addInfoServices;
     protected $accessServices;
-
+    protected $privilegeServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AddInfoServices $addInfoServices,
-                         AccessServices $accessServices)
+                         AccessServices $accessServices,
+                         PrivilegeServices $privilegeServices)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
         $this->addInfoServices = $addInfoServices;
         $this->accessServices = $accessServices;
+        $this->privilegeServices = $privilegeServices;
     }
 
 
@@ -73,6 +76,37 @@ class CongressController extends Controller
         $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
         return $congress;
+    }
+
+
+    /**
+     * @SWG\Get(
+     *   path="/mobile/congress",
+     *   tags={"Mobile"},
+     *   summary="getCongressByAdmin",
+     *   operationId="getCongressByAdmin",
+     *   security={
+     *     {"Bearer": {}}
+     *   },
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function getCongressByAdmin()
+    {
+        $admin = $this->adminServices->retrieveAdminFromToken();
+        if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(1, $admin->admin_id)) {
+            return response()->json($this->congressServices->getCongressAllAccess($admin->admin_id));
+        }
+
+        if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(2, $admin->admin_id)) {
+            return response()->json($this->congressServices->getCongressAllowedAccess($admin->admin_id));
+        }
+
+        return response()->json(["message" => "bizzare"]);
+
     }
 
 }

@@ -19,10 +19,6 @@ class Congress extends Model
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
 
-    public function admin()
-    {
-        return $this->belongsToMany('App\Models\Admin', 'Congress_Admin', 'id_Congress', 'id_Admin');
-    }
 
     public function responsibles()
     {
@@ -37,5 +33,10 @@ class Congress extends Model
     public function add_infos()
     {
         return $this->hasMany('App\Models\Add_Info', "congress_id", "congress_id");
+    }
+
+    public function badge()
+    {
+        return $this->belongsTo('App\Models\Badge', 'congress_id', 'congress_id');
     }
 }

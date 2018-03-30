@@ -5,18 +5,20 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 
 use App\Services\AdminServices;
+use App\Services\PrivilegeServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 
 class LoginController extends Controller
 {
 
     protected $adminServices;
+    protected $privilegeServices;
 
-    public function __construct(AdminServices $adminServices)
+    public function __construct(AdminServices $adminServices, PrivilegeServices $privilegeServices)
     {
         $this->adminServices = $adminServices;
+        $this->privilegeServices = $privilegeServices;
     }
 
     /**
@@ -51,6 +53,42 @@ class LoginController extends Controller
 
 
         // verify the credentials and create a token for the user
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
+        }
+
+        return response()->json(['admin' => $admin, 'token' => $token], 200);
+    }
+
+
+
+    /**
+     * @SWG\POST(
+     *   path="/mobile/login",
+     *   summary="Login",
+     *   tags={"Mobile"},
+     *   operationId="loginAdminMobile",
+     *   @SWG\Parameter(
+     *     name="QrCode",
+     *     in="query",
+     *     description="QR code",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function loginAdminMobile(Request $request)
+    {
+        $admin = $this->adminServices->getAdminByQrCode($request->input("QrCode"));
+        $credentials = array(
+            "email" => $admin->email,
+            "password" => $admin->passwordDecrypt
+        );
+
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }

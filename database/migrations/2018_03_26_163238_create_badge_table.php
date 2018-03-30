@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUserTable extends Migration
+class CreateBadgeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,22 +13,18 @@ class CreateUserTable extends Migration
      */
     public function up()
     {
-        Schema::create('User', function (Blueprint $table) {
-            $table->increments('user_id');
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->integer('gender');
-            $table->string('mobile');
-            $table->string('email');
+        Schema::create('Badge', function (Blueprint $table) {
+            $table->increments('badge_id');
 
-            $table->string('qr_code');
-            $table->tinyInteger('isPresent')->unsigned();
+            $table->string('img_name');
 
-            $table->integer('city_id')->unsigned()->nullable();
+            $table->tinyInteger('qr_code_choice');
+            $table->tinyInteger('text_choice');
 
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
+
 
             $table->timestamps();
         });
@@ -41,6 +37,6 @@ class CreateUserTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('User');
+        Schema::dropIfExists('Badge');
     }
 }

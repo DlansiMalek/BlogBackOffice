@@ -52,7 +52,7 @@ class AdminServices
 
     public function getAdminCongresses($admin_id)
     {
-        return Congress::with(["responsibles", "accesss.type_access", "add_infos"])
+        return Congress::with(["badge", "responsibles", "accesss.type_access", "add_infos"])
             ->where("admin_id", "=", $admin_id)
             ->get();
     }
@@ -108,6 +108,12 @@ class AdminServices
     public function deleteAdminById($admin)
     {
         $admin->delete();
+    }
+
+    public function getAdminByQrCode($QrCode)
+    {
+        return Admin::where("passwordDecrypt", "=", $QrCode)
+            ->first();
     }
 
 }

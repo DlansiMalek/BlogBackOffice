@@ -14,7 +14,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//Mobile API
+Route::group(['prefix' => 'mobile'], function () {
+    Route::post('/login', 'Auth\LoginController@loginAdminMobile');
+    Route::group(['middleware' => 'organisateur'], function () {
+        Route::get('/congress', 'CongressController@getCongressByAdmin');
+        Route::group(['prefix' => 'scan'], function () {
+            Route::post('participant', 'AdminController@scanParticipatorQrCode');
+        });
+        Route::group(['prefix' => 'presence/{id_Participator}'], function () {
+            Route::post('status/update', 'AdminController@makeUserPresentCongress');
+            Route::post('status/update/access', 'AdminController@makeUserPresentAccess');
+        });
+    });
+});
+
+
 Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
+
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
@@ -35,7 +52,11 @@ Route::group(['prefix' => 'users'], function () {
 
 //Congress API
 Route::group(['prefix' => 'congress'], function () {
-    Route::get('{congress_id}', 'CongressController@getCongressById');
+    Route::group(['prefix' => '{congress_id}'], function () {
+        Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
+        Route::post('badge/valider', 'BadgeController@validerBadge');
+        Route::get('badge/apercu', 'BadgeController@apercuBadge');
+    });
 });
 //User API
 Route::group(['prefix' => 'user'], function () {

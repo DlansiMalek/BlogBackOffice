@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Metiers\Utils;
-use App\Models\Congress_User;
 use App\Models\User;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
@@ -144,7 +142,8 @@ class UserServices
 
     public function getParticipatorByQrCode($qr_code)
     {
-        return User::where('qr_code', 'like', $qr_code)->first();
+        return User::where('qr_code', '=', $qr_code)
+            ->first();
     }
 
     public function makePresentToCongress($user, $isPresent)
