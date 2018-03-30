@@ -8,6 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 /**
  * @SWG\Swagger(
+ *   schemes={"http","https"},
  *   basePath="/congress-backend-modules/public/api",
  *   @SWG\Info(
  *     title="API VayeCongress",
