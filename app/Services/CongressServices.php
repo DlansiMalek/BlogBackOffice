@@ -43,14 +43,14 @@ class CongressServices
 
     public function getCongressAllAccess($adminId)
     {
-        return Congress::with(["accesss.responsibles"])
+        return Congress::with(["accesss.responsibles", "accesss.type_access"])
             ->where("admin_id", "=", $adminId)
             ->get();
     }
 
     public function getCongressAllowedAccess($adminId)
     {
-        return Congress::with(["accesss.responsibles"])->where(function ($q) use ($adminId) {
+        return Congress::with(["accesss.responsibles", "accesss.type_access"])->where(function ($q) use ($adminId) {
             $q->whereHas("accesss.responsibles", function ($query) use ($adminId) {
                 $query->where("admin_id", "=", $adminId);
             });
