@@ -53,6 +53,7 @@ Route::group(['prefix' => 'users'], function () {
 //Congress API
 Route::group(['prefix' => 'congress'], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
+        Route::get('', 'CongressController@getCongressById');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
         Route::post('badge/valider', 'BadgeController@validerBadge');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
@@ -60,6 +61,10 @@ Route::group(['prefix' => 'congress'], function () {
 });
 //User API
 Route::group(['prefix' => 'user'], function () {
+
+    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
+
+
     Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::get('list', 'UserController@getUsersByCongress');
@@ -79,7 +84,7 @@ Route::group(['prefix' => 'user'], function () {
     });
 });
 //Admin API
-Route::group(['prefix' => 'admin'], function () {
+Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhentificatedAdmin');
@@ -88,6 +93,7 @@ Route::group(['prefix' => 'admin'], function () {
             Route::get('list', 'AdminController@getListPersonels');
             Route::post('add', 'AdminController@addPersonnel');
             Route::delete('{admin_id}/delete', 'AdminController@deletePersonnel');
+            Route::get('{admin_id}/qr-code', 'AdminController@downloadQrCode');
         });
         Route::group(['prefix' => 'congress'], function () {
             Route::post('add', 'CongressController@addCongress');

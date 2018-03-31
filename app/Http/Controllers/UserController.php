@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 
+use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\UserServices;
+use App\Services\Utils;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -12,11 +15,14 @@ class UserController extends Controller
 
     protected $userServices;
     protected $congressServices;
+    protected $adminServices;
 
-    function __construct(UserServices $userServices, CongressServices $congressServices)
+    function __construct(UserServices $userServices, CongressServices $congressServices,
+                         AdminServices $adminServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
+        $this->adminServices = $adminServices;
     }
 
     public function index()
@@ -116,7 +122,6 @@ class UserController extends Controller
 
         $this->userServices->sendMail($user);
 
-
         return response()->json(["message" => "email sending success"], 200);
     }
 
@@ -139,7 +144,18 @@ class UserController extends Controller
 
         $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
 
-        return response()->json(['message' => "add success", 'data' => $this->userServices->getUserById($user->user_id)]);
+
+        $file = new Filesystem();
+
+        Utils::generateQRcode($user->qr_code, "qrcode.png");
+
+
+        if ($file->exists(public_path() . "/qrcode.png")) {
+            return response()->download(public_path() . "/qrcode.png")
+                ->deleteFileAfterSend(true);
+        } else {
+            return response()->json(["error" => "dossier vide"]);
+        }
     }
 
     public function getUsersByAccess($accessId)
@@ -161,6 +177,23 @@ class UserController extends Controller
         $users = $this->userServices->getAllPresencesByCongress($congressId);
 
         return response()->json($users);
+    }
+
+    public function getQrCodeUser($userId)
+    {
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(["error" => "user not found"], 404);
+        }
+        $file = new Filesystem();
+
+        Utils::generateQRcode($user->qr_code, "qrcode.png");
+
+        if ($file->exists(public_path() . "/qrcode.png")) {
+            return response()->download(public_path() . "/qrcode.png")
+                ->deleteFileAfterSend(true);
+        } else {
+            return response()->json(["error" => "dossier vide"]);
+        }
     }
 
 }

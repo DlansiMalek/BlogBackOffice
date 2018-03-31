@@ -8,10 +8,13 @@ use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
 use App\Services\UserServices;
+use App\Services\Utils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Zipper;
+use Illuminate\Filesystem\Filesystem;
 
 class AdminController extends Controller
 {
@@ -415,5 +418,25 @@ class AdminController extends Controller
         $this->adminServices->deleteAdminById($admin);
         return response()->json(["message" => "deleted success"]);
 
+    }
+
+    public function downloadQrCode($adminId)
+    {
+        if (!$admin = $this->adminServices->getAdminById($adminId)) {
+            return response()->json(["error" => "admin not found"]);
+        }
+
+
+        $file = new Filesystem();
+
+        Utils::generateQRcode($admin->passwordDecrypt, "qrcode.png");
+
+
+        if ($file->exists(public_path() . "/qrcode.png")) {
+            return response()->download(public_path() . "/qrcode.png")
+                ->deleteFileAfterSend(true);
+        } else {
+            return response()->json(["error" => "dossier vide"]);
+        }
     }
 }

@@ -226,6 +226,10 @@ class UserServices
             ->get();
     }
 
+    public function generateQrCode($qr_code)
+    {
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
