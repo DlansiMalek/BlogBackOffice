@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTypeAccessTable extends Migration
+class CreateNiveauTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,12 @@ class CreateTypeAccessTable extends Migration
      */
     public function up()
     {
-        Schema::create('Type_Access', function (Blueprint $table) {
-            $table->increments('type_access_id');
-            $table->string('name');
-
+        Schema::create('Niveau', function (Blueprint $table) {
+            $table->increments('niveau_id');
+            $table->string('label', 100);
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 
@@ -28,6 +29,6 @@ class CreateTypeAccessTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Type_Access');
+        Schema::dropIfExists('Niveau');
     }
 }
