@@ -33,7 +33,7 @@ class SessionStageController extends Controller
             $periodes, $request->input('capacity') / sizeof($request->input('groupes')));
 
 
-        return response()->json(['message' => 'adding session stage success', 'data' => $groupes]);
+        return response()->json(['message' => 'adding session stage success', 'data' => $this->sessionStageRepository->getById($session_stage->session_stage_id)]);
 
     }
 
@@ -49,4 +49,32 @@ class SessionStageController extends Controller
         return response()->json($this->sessionStageRepository->getById($sessionStageId));
     }
 
+    public function delete($sessionStageId)
+    {
+        if (!$sessionStage = $this->sessionStageRepository->getById($sessionStageId)) {
+            return response()->json(['error' => 'session de stage not found'], 404);
+        }
+
+        $this->sessionStageRepository->delete($sessionStage);
+
+        return response()->json(['message' => 'delete success']);
+    }
+
+    public function edit($sessionStageId, Request $request)
+    {
+        if (!$sessionStage = $this->sessionStageRepository->getById($sessionStageId)) {
+            return response()->json(['error' => 'session de stage not found'], 404);
+        }
+
+        if (!$sessionStage = $this->sessionStageRepository->edit($sessionStage, $request)) {
+            return response()->json(["can't edit"], 400);
+        }
+
+        $periodes = $this->sessionStageRepository->addingPeriodesToSession($request, $sessionStage->session_stage_id);
+        $groupes = $this->sessionStageRepository->addingGroupeToSession($request, $sessionStage->session_stage_id,
+            $periodes, $request->input('capacity') / sizeof($request->input('groupes')));
+
+        return response()->json($this->sessionStageRepository->getById($sessionStage->session_stage_id));
+
+    }
 }

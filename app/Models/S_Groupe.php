@@ -17,7 +17,7 @@ class S_Groupe extends Model
     protected $primaryKey = 's_groupe_id';
     protected $table = 'S_Groupe';
     public $timestamps = true;
-    protected $fillable = ['label'];
+    protected $fillable = ['label', 'capacity', 'groupe_id'];
     protected $dates = ['deleted_at', 'created_at', 'updated_at'];
 
     public function services()

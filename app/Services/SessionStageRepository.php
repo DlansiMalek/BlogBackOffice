@@ -29,18 +29,8 @@ class SessionStageRepository
     public function addSessionStage(Request $request)
     {
         $session_stage = new Session_Stage();
-        $session_stage->name = $request->input('name');
-        $session_stage->date_choice_open = Utils::convertDate($request->input('date_choice_open'), '/');
-        $session_stage->date_choice_close = Utils::convertDate($request->input('date_choice_close'), '/');
-        $session_stage->niveau_id = $request->input('niveau_id');
-        $session_stage->capacity = $request->input('capacity');
 
-        if ($request->has('date_service_open')) {
-            $session_stage->date_service_open = Utils::convertDate($request->input('date_service_open'), '/');
-        }
-        if ($request->has('date_service_close')) {
-            $session_stage->date_service_close = Utils::convertDate($request->input('date_service_close'), '/');
-        }
+        $session_stage = $this->fillSessionStage($session_stage, $request);
 
         $session_stage->save();
         return $session_stage;
@@ -150,8 +140,66 @@ class SessionStageRepository
 
     public function getById($sessionStageId)
     {
-        return Session_Stage::with(['groupes.sgroupes.services', 'niveau'])
+        return Session_Stage::with(['groupes.sgroupes.services', 'niveau', 'periodes.speriodes'])
             ->where("session_stage_id", "=", $sessionStageId)
             ->first();
+    }
+
+    public function delete($sessionStage)
+    {
+
+        $this->deleteGroupes($sessionStage->groupes);
+        $this->deletePeriodes($sessionStage->periodes);
+
+        $sessionStage->delete();
+    }
+
+    public function deleteGroupes($groupes)
+    {
+        foreach ($groupes as $groupe) {
+            foreach ($groupe->sgroupes as $sgroupe) {
+                $sgroupe->delete();
+            }
+            $groupe->delete();
+        }
+    }
+
+    public function deletePeriodes($periodes)
+    {
+        foreach ($periodes as $periode) {
+            foreach ($periode->speriodes as $speriode) {
+                $speriode->delete();
+            }
+            $periode->delete();
+        }
+    }
+
+    public function edit($sessionStage, Request $request)
+    {
+
+        $this->deleteGroupes($sessionStage->groupes);
+        $this->deletePeriodes($sessionStage->periodes);
+        $sessionStage = $this->fillSessionStage($sessionStage, $request);
+
+        $sessionStage->update();
+
+        return $sessionStage;
+    }
+
+    private function fillSessionStage($session_stage, Request $request)
+    {
+        $session_stage->name = $request->input('name');
+        $session_stage->date_choice_open = Utils::convertDate($request->input('date_choice_open'), '/');
+        $session_stage->date_choice_close = Utils::convertDate($request->input('date_choice_close'), '/');
+        $session_stage->niveau_id = $request->input('niveau_id');
+        $session_stage->capacity = $request->input('capacity');
+
+        if ($request->has('date_service_open')) {
+            $session_stage->date_service_open = Utils::convertDate($request->input('date_service_open'), '/');
+        }
+        if ($request->has('date_service_close')) {
+            $session_stage->date_service_close = Utils::convertDate($request->input('date_service_close'), '/');
+        }
+        return $session_stage;
     }
 }

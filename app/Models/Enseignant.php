@@ -11,17 +11,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Groupe extends Model
+class Enseignant extends Model
 {
     use SoftDeletes;
-    protected $primaryKey = 'groupe_id';
-    protected $table = 'Groupe';
+    protected $primaryKey = 'enseignant_id';
+    protected $table = 'Enseignant';
     public $timestamps = true;
-    protected $fillable = ['label', 'capacity', 'session_stage_id'];
+    protected $fillable = ['CIN', 'nom', 'prenom', 'email', 'qr_code', 'service_id'];
     protected $dates = ['deleted_at', 'created_at', 'updated_at'];
 
-    public function sgroupes()
-    {
-        return $this->hasMany('App\Models\S_Groupe', 'groupe_id', 'groupe_id');
-    }
 }
