@@ -72,13 +72,18 @@ class CongressServices
         if (!$file->exists($path)) {
             $file->makeDirectory($path);
         }
+        $qrCodePath = "/QrCode";
+        if (!$file->exists(public_path() . $qrCodePath)) {
+            $file->makeDirectory(public_path() . $qrCodePath);
+        }
+
         File::cleanDirectory($path);
         for ($i = 0; $i < sizeof($users) / 4; $i++) {
             $tempUsers = array_slice($users, $i * 4, 4);
             $j = 1;
             $pdfFileName = '';
             foreach ($tempUsers as $tempUser) {
-                Utils::generateQRcode($tempUser['qr_code'], 'qr_code_' . $j . '.png');
+                Utils::generateQRcode($tempUser['qr_code'], $qrCodePath . '/qr_code_' . $j . '.png');
                 $pdfFileName .= '_' . $tempUser['user_id'];
                 $j++;
             }
@@ -88,6 +93,7 @@ class CongressServices
             $pdf->save($path . '/badges' . $pdfFileName . '.pdf');
         }
         $files = glob($path . '/*');
+        $file->deleteDirectory(public_path() . $qrCodePath);
         Zipper::make($path . '/badges.zip')->add($files)->close();
         return response()->download($path . '/badges.zip')->deleteFileAfterSend(true);
 

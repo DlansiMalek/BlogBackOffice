@@ -89,7 +89,7 @@
                 <h1 class="badge-label-1">{{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
                 .' '.strtoupper($users[0]->last_name)}}</h1>
                 <div class="badge-qrCode-1 img-qr_code">
-                    <img src="{{public_path().'/qr_code_1.png'}}">
+                    <img src="{{public_path().'/QrCode/qr_code_1.png'}}">
                 </div>
             </div>
         </td>
@@ -102,7 +102,7 @@
                 <h1 class="badge-label-2">{{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
                 .' '.strtoupper($users[1]->last_name)}}</h1>
                 <div class="badge-qrCode-2 img-qr_code">
-                    <img src="{{public_path().'/qr_code_2.png'}}">
+                    <img src="{{public_path().'/QrCode/qr_code_2.png'}}">
                 </div>
             </div>
         </td>
@@ -117,7 +117,7 @@
                 <h1 class="badge-label-3">{{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
                 .' '.strtoupper($users[2]->last_name)}}</h1>
                 <div class="badge-qrCode-3 img-qr_code">
-                    <img src="{{public_path().'/qr_code_3.png'}}">
+                    <img src="{{public_path().'/QrCode/qr_code_3.png'}}">
                 </div>
             </div>
         </td>
@@ -130,7 +130,7 @@
                 <h1 class="badge-label-4">{{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)
                 .' '.strtoupper($users[3]->last_name)}}</h1>
                 <div class="badge-qrCode-4 img-qr_code">
-                    <img src="{{public_path().'/qr_code_4.png'}}">
+                    <img src="{{public_path().'/QrCode/qr_code_4.png'}}">
                 </div>
             </div>
         </td>
