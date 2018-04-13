@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateServiceTable extends Migration
+class CreateTypeInfoTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,10 @@ class CreateServiceTable extends Migration
      */
     public function up()
     {
-        Schema::create('Service', function (Blueprint $table) {
-            $table->increments('service_id');
-            $table->string('label', 100);
-
+        Schema::create('Type_Info', function (Blueprint $table) {
+            $table->increments('type_info_id');
+            $table->string('name');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -29,6 +27,6 @@ class CreateServiceTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Service');
+        Schema::dropIfExists('Type_Info');
     }
 }
