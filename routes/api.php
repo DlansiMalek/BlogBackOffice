@@ -54,6 +54,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress'], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
         Route::post('badge/valider', 'BadgeController@validerBadge');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
@@ -154,4 +155,7 @@ Route::get('generateUserQrCode', 'AdminController@generateUserQrCode');
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
+});
+Route::group(['prefix' => 'payement'], function () {
+    Route::get('/types', 'UserController@getAllPayementTypes');
 });

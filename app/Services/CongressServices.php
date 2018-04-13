@@ -3,8 +3,13 @@
 namespace App\Services;
 
 use App\Models\Congress;
+use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Support\Facades\Config;
 use JWTAuth;
+use Illuminate\Filesystem\Filesystem;
+use PDF;
+use Swagger\Util;
+use Illuminate\Support\Facades\File;
 
 class CongressServices
 {
@@ -55,6 +60,42 @@ class CongressServices
                 $query->where("admin_id", "=", $adminId);
             });
         })->get();
+
+    }
+
+    public function getBadgesByUsers($badgeName, $users)
+    {
+        $users = $users->toArray();
+        $file = new Filesystem();
+        $path = public_path() . "/" . $badgeName;
+
+        if (!$file->exists($path)) {
+            $file->makeDirectory($path);
+        }
+        $qrCodePath = "/QrCode";
+        if (!$file->exists(public_path() . $qrCodePath)) {
+            $file->makeDirectory(public_path() . $qrCodePath);
+        }
+
+        File::cleanDirectory($path);
+        for ($i = 0; $i < sizeof($users) / 4; $i++) {
+            $tempUsers = array_slice($users, $i * 4, 4);
+            $j = 1;
+            $pdfFileName = '';
+            foreach ($tempUsers as $tempUser) {
+                Utils::generateQRcode($tempUser['qr_code'], $qrCodePath . '/qr_code_' . $j . '.png');
+                $pdfFileName .= '_' . $tempUser['user_id'];
+                $j++;
+            }
+            $data = [
+                'users' => json_decode(json_encode($tempUsers), false)];
+            $pdf = PDF::loadView('pdf.' . $badgeName, $data);
+            $pdf->save($path . '/badges' . $pdfFileName . '.pdf');
+        }
+        $files = glob($path . '/*');
+        $file->deleteDirectory(public_path() . $qrCodePath);
+        Zipper::make($path . '/badges.zip')->add($files)->close();
+        return response()->download($path . '/badges.zip')->deleteFileAfterSend(true);
 
     }
 

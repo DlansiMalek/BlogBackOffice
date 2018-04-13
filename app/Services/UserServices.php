@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Payement_Type;
 use App\Models\User;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
@@ -185,6 +186,7 @@ class UserServices
 
         $user->qr_code = str_random(7);
         $user->congress_id = $congress_id;
+        $user->payement_type_id = $request->input('payement_type_id');
 
         $user->save();
 
@@ -228,6 +230,18 @@ class UserServices
 
     public function generateQrCode($qr_code)
     {
+    }
+
+    public function getAllPayementTypes()
+    {
+        return Payement_Type::all();
+    }
+
+    public function getAllowedBadgeUsersByCongress($congressId)
+    {
+        return User::where('congress_id', '=', $congressId)
+            ->where('isBadgeGeted', '=', 0)
+            ->get();
     }
 
     private function isExistCongress($user, $congressId)
