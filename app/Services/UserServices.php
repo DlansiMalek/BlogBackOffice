@@ -184,6 +184,9 @@ class UserServices
         if ($request->has('mobile'))
             $user->mobile = $request->input('mobile');
 
+        if ($request->has('price'))
+            $user->price = $request->input('price');
+
         $user->qr_code = str_random(7);
         $user->congress_id = $congress_id;
         $user->payement_type_id = $request->input('payement_type_id');

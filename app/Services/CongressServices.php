@@ -100,4 +100,17 @@ class CongressServices
 
     }
 
+    public function editCongress($congress,$adminId, $request)
+    {
+
+        $congress->name = $request->input("name");
+        $congress->date = $request->input("date");
+        $congress->admin_id = $adminId;
+
+        $congress->update();
+
+        return $congress;
+
+    }
+
 }

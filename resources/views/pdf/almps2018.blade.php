@@ -4,8 +4,13 @@
     <meta charset="utf-8">
 
     <style>
+        .small-text {
+            font-size: 17px;
+            margin-left: 10px;
+        }
+
         h1 {
-            font-size: 20px;
+            font-size: 19px;
             color: #182650;
         }
 
@@ -86,11 +91,22 @@
                 {{--
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
-                <h1 class="badge-label-1">@if(isset($users[0])){{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
-                .' '.strtoupper($users[0]->last_name)}}@endif</h1>
-                <div class="badge-qrCode-1 img-qr_code">
-                    <img src="{{public_path().'/QrCode/qr_code_1.png'}}">
-                </div>
+                @if(isset($users[0]))
+                    @if(strlen($users[0]->first_name)<8 && strlen($users[0]->last_name)<8)
+                        <h1 class="badge-label-1">Dr {{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
+                .' '.strtoupper($users[0]->last_name)}}</h1>
+                    @else
+                        <div class="badge-label-1">
+                            <h1 style="margin-left: 5px">
+                                Dr {{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)}}</h1>
+                            <h1 class="small-text">{{strtoupper($users[0]->last_name)}}</h1>
+                        </div>
+                    @endif
+
+                    <div class="badge-qrCode-1 img-qr_code">
+                        <img src="{{public_path().'/QrCode/qr_code_1.png'}}">
+                    </div>
+                @endif
             </div>
         </td>
         <td>
@@ -99,11 +115,22 @@
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
 
-                <h1 class="badge-label-2">@if(isset($users[1])){{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
-                .' '.strtoupper($users[1]->last_name)}}@endif</h1>
-                <div class="badge-qrCode-2 img-qr_code">
-                    <img src="{{public_path().'/QrCode/qr_code_2.png'}}">
-                </div>
+                @if(isset($users[1]))
+                    @if(strlen($users[1]->first_name)<8 && strlen($users[1]->last_name)<8)
+                        <h1 class="badge-label-2">Dr {{strtoupper(substr($users[1]->first_name,0,1)).substr($users[1]->first_name,1)
+                .' '.strtoupper($users[1]->last_name)}}</h1>
+                    @else
+                        <div class="badge-label-2">
+                            <h1 style="margin-left: 5px">
+                                Dr {{strtoupper(substr($users[1]->first_name,0,1)).substr($users[1]->first_name,1)}}</h1>
+                            <h1 class="small-text">{{strtoupper($users[1]->last_name)}}</h1>
+                        </div>
+                    @endif
+
+                    <div class="badge-qrCode-2 img-qr_code">
+                        <img src="{{public_path().'/QrCode/qr_code_2.png'}}">
+                    </div>
+                @endif
             </div>
         </td>
     </tr>
@@ -114,11 +141,22 @@
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
 
-                <h1 class="badge-label-3">@if(isset($users[2])){{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
-                .' '.strtoupper($users[2]->last_name)}}@endif</h1>
-                <div class="badge-qrCode-3 img-qr_code">
-                    <img src="{{public_path().'/QrCode/qr_code_3.png'}}">
-                </div>
+                @if(isset($users[2]))
+                    @if(strlen($users[2]->first_name)<8 && strlen($users[2]->last_name)<8)
+                        <h1 class="badge-label-3">Dr {{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
+                .' '.strtoupper($users[2]->last_name)}}</h1>
+                    @else
+                        <div class="badge-label-3">
+                            <h1 style="margin-left: 5px">
+                                Dr {{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)}}</h1>
+                            <h1 class="small-text">{{strtoupper($users[2]->last_name)}}</h1>
+                        </div>
+                    @endif
+
+                    <div class="badge-qrCode-3 img-qr_code">
+                        <img src="{{public_path().'/QrCode/qr_code_3.png'}}">
+                    </div>
+                @endif
             </div>
         </td>
         <td>
@@ -127,11 +165,22 @@
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
 
-                <h1 class="badge-label-4">@if(isset($users[3])){{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)
-                .' '.strtoupper($users[3]->last_name)}}@endif</h1>
-                <div class="badge-qrCode-4 img-qr_code">
-                    <img src="{{public_path().'/QrCode/qr_code_4.png'}}">
-                </div>
+                @if(isset($users[3]))
+                    @if(strlen($users[3]->first_name)<8 && strlen($users[3]->last_name)<8)
+                        <h1 class="badge-label-4">Dr {{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)
+                .' '.strtoupper($users[3]->last_name)}}</h1>
+                    @else
+                        <div class="badge-label-4">
+                            <h1 style="margin-left: 5px">
+                                Dr {{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)}}</h1>
+                            <h1 class="small-text">{{strtoupper($users[3]->last_name)}}</h1>
+                        </div>
+                    @endif
+
+                    <div class="badge-qrCode-4 img-qr_code">
+                        <img src="{{public_path().'/QrCode/qr_code_4.png'}}">
+                    </div>
+                @endif
             </div>
         </td>
     </tr>

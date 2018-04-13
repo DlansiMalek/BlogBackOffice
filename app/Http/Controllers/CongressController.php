@@ -52,11 +52,16 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
-        try {
-            $congress->delete();
-        } catch (\Exception $e) {
-        }
-        $this->addFullCongress($request);
+
+        $admin = $this->adminServices->retrieveAdminFromToken();
+
+        $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
+
+        $this->adminServices->addResponsibleCongress($request->input("responsibleIds"), $congress->congress_id);
+        $this->addInfoServices->addInfoToCongress($congress->congress_id, $request->input("addInfoIds"));
+        $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+
+        //$this->addFullCongress($request);
 
         return response()->json(["message" => "edit congress success"]);
     }
