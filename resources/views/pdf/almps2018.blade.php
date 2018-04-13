@@ -86,8 +86,8 @@
                 {{--
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
-                <h1 class="badge-label-1">{{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
-                .' '.strtoupper($users[0]->last_name)}}</h1>
+                <h1 class="badge-label-1">@if(isset($users[0])){{strtoupper(substr($users[0]->first_name,0,1)).substr($users[0]->first_name,1)
+                .' '.strtoupper($users[0]->last_name)}}@endif</h1>
                 <div class="badge-qrCode-1 img-qr_code">
                     <img src="{{public_path().'/QrCode/qr_code_1.png'}}">
                 </div>
@@ -99,8 +99,8 @@
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
 
-                <h1 class="badge-label-2">{{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
-                .' '.strtoupper($users[1]->last_name)}}</h1>
+                <h1 class="badge-label-2">@if(isset($users[1])){{strtoupper(substr($users[1]->first_name,0,1)).strtolower(substr($users[1]->first_name,1))
+                .' '.strtoupper($users[1]->last_name)}}@endif</h1>
                 <div class="badge-qrCode-2 img-qr_code">
                     <img src="{{public_path().'/QrCode/qr_code_2.png'}}">
                 </div>
@@ -114,8 +114,8 @@
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
 
-                <h1 class="badge-label-3">{{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
-                .' '.strtoupper($users[2]->last_name)}}</h1>
+                <h1 class="badge-label-3">@if(isset($users[2])){{strtoupper(substr($users[2]->first_name,0,1)).substr($users[2]->first_name,1)
+                .' '.strtoupper($users[2]->last_name)}}@endif</h1>
                 <div class="badge-qrCode-3 img-qr_code">
                     <img src="{{public_path().'/QrCode/qr_code_3.png'}}">
                 </div>
@@ -127,8 +127,8 @@
                                 <img class="badge-img" src="{{public_path().'/badge/JPPS3-01.png'}}"/>
                 --}}
 
-                <h1 class="badge-label-4">{{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)
-                .' '.strtoupper($users[3]->last_name)}}</h1>
+                <h1 class="badge-label-4">@if(isset($users[3])){{strtoupper(substr($users[3]->first_name,0,1)).substr($users[3]->first_name,1)
+                .' '.strtoupper($users[3]->last_name)}}@endif</h1>
                 <div class="badge-qrCode-4 img-qr_code">
                     <img src="{{public_path().'/QrCode/qr_code_4.png'}}">
                 </div>

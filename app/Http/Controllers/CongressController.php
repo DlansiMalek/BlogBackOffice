@@ -121,10 +121,15 @@ class CongressController extends Controller
 
         $badgeName = $congress->badge_name;
         $users = $this->userServices->getAllowedBadgeUsersByCongress($congressId);
-        // $users->update(['isBadgeGeted' => 1]);
+        $users->each(function ($user) {
+            $user->update(['isBadgeGeted' => 1]);
+        });
+
+        if (sizeof($users) == 0) {
+            return response(['message' => 'not even user'], 404);
+        }
 
         return $this->congressServices->getBadgesByUsers($badgeName, $users);
-
     }
 
 }

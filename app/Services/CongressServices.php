@@ -65,6 +65,7 @@ class CongressServices
 
     public function getBadgesByUsers($badgeName, $users)
     {
+
         $users = $users->toArray();
         $file = new Filesystem();
         $path = public_path() . "/" . $badgeName;
