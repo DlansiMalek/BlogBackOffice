@@ -26,11 +26,7 @@ Route::group(['prefix' => 'shared'], function () {
 Route::group(['prefix' => 'session-stage'], function () {
     Route::post('add', 'SessionStageController@addSessionStage');
     Route::get('', 'SessionStageController@getAllSessionStage');
-    Route::group(['prefix' => '{session_stage_id}'], function () {
-        Route::get('/', 'SessionStageController@getSessionStageById');
-        Route::put('edit', 'SessionStageController@edit');
-        Route::delete('delete', 'SessionStageController@delete');
-    });
+    Route::get('{session_stage_id}', 'SessionStageController@getSessionStageById');
 });
 
 

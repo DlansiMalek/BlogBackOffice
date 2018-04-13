@@ -31,9 +31,4 @@ class Session_Stage extends Model
     {
         return $this->hasMany('App\Models\Groupe', 'session_stage_id', 'session_stage_id');
     }
-
-    public function periodes()
-    {
-        return $this->hasMany('App\Models\Periode', 'session_stage_id', 'session_stage_id');
-    }
 }

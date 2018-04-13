@@ -19,9 +19,4 @@ class Periode extends Model
     public $timestamps = true;
     protected $fillable = ['session_stage_id', 'start_date', 'end_date', 'end_middle_date', 'start_middle_date'];
     protected $dates = ['deleted_at', 'created_at', 'updated_at'];
-
-    public function speriodes()
-    {
-        return $this->hasMany('App\Models\S_Periode', 'periode_id', 'periode_id');
-    }
 }

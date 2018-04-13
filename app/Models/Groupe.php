@@ -17,7 +17,7 @@ class Groupe extends Model
     protected $primaryKey = 'groupe_id';
     protected $table = 'Groupe';
     public $timestamps = true;
-    protected $fillable = ['label', 'capacity', 'session_stage_id'];
+    protected $fillable = ['label'];
     protected $dates = ['deleted_at', 'created_at', 'updated_at'];
 
     public function sgroupes()
