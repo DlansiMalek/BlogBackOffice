@@ -8,6 +8,7 @@ use App\Services\AddInfoServices;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
+use App\Services\UserServices;
 use Illuminate\Http\Request;
 
 
@@ -19,17 +20,20 @@ class CongressController extends Controller
     protected $addInfoServices;
     protected $accessServices;
     protected $privilegeServices;
+    protected $userServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AddInfoServices $addInfoServices,
                          AccessServices $accessServices,
-                         PrivilegeServices $privilegeServices)
+                         PrivilegeServices $privilegeServices,
+                         UserServices $userServices)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
         $this->addInfoServices = $addInfoServices;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
+        $this->userServices = $userServices;
     }
 
 
@@ -106,6 +110,20 @@ class CongressController extends Controller
         }
 
         return response()->json(["message" => "bizzare"]);
+
+    }
+
+    public function getBadgesByCongress($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+
+        $badgeName = $congress->badge_name;
+        $users = $this->userServices->getAllowedBadgeUsersByCongress($congressId);
+        // $users->update(['isBadgeGeted' => 1]);
+
+        return $this->congressServices->getBadgesByUsers($badgeName, $users);
 
     }
 

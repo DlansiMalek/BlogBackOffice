@@ -145,7 +145,8 @@ class UserController extends Controller
         $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
 
 
-        $file = new Filesystem();
+        return response()->json(['add success'], 200);
+        /*$file = new Filesystem();
 
         Utils::generateQRcode($user->qr_code, "qrcode.png");
 
@@ -155,7 +156,7 @@ class UserController extends Controller
                 ->deleteFileAfterSend(true);
         } else {
             return response()->json(["error" => "dossier vide"]);
-        }
+        }*/
     }
 
     public function getUsersByAccess($accessId)
@@ -196,4 +197,8 @@ class UserController extends Controller
         }
     }
 
+    public function getAllPayementTypes()
+    {
+        return response()->json($this->userServices->getAllPayementTypes());
+    }
 }

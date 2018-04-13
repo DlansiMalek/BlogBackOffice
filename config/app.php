@@ -236,7 +236,7 @@ return [
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
-        //'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
+        'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
         'Zipper' => 'Chumper\Zipper\Zipper',
         'Converter' => 'Anam\PhantomMagick\Facades\Converter'
 
