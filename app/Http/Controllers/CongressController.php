@@ -120,6 +120,8 @@ class CongressController extends Controller
 
     public function getBadgesByCongress($congressId)
     {
+        ini_set('max_execution_time', 300); //300 seconds = 5 minutes
+
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
