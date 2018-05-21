@@ -13,14 +13,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class City extends Model
 {
-    protected $table = 'City';
-    protected $primaryKey = 'id_City';
-    protected $fillable = ['Name', 'CountryCode'];
-
     public $timestamps = false;
+    protected $table = 'City';
+    protected $primaryKey = 'city_id';
+    protected $fillable = ['name', 'country_id'];
 
     public function country()
     {
-        return $this->belongsTo('App\Models\Country', 'CountryCode', 'Code');
+        return $this->belongsTo('App\Models\Country', 'country_id', 'country_id');
     }
 }
