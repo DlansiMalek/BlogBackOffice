@@ -11,7 +11,7 @@ class CountriesSeedTable extends Seeder
      */
     public function run()
     {
-        DB::table('countries')->delete();
+        DB::table('Country')->delete();
         $countries = array(
             array('code' => 'US', 'name' => 'United States'),
             array('code' => 'CA', 'name' => 'Canada'),
@@ -256,6 +256,6 @@ class CountriesSeedTable extends Seeder
             array('code' => 'ZM', 'name' => 'Zambia'),
             array('code' => 'ZW', 'name' => 'Zimbabwe'),
         );
-        DB::table('countries')->insert($countries);
+        DB::table('Country')->insert($countries);
     }
 }

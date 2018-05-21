@@ -15,6 +15,11 @@ use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Zipper;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AdminController extends Controller
 {
@@ -264,6 +269,7 @@ class AdminController extends Controller
         }
         return response()->json(['response' => 'all user congresses updated'], 200);
     }
+
 
     public function updateUsers()
     {

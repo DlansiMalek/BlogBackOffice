@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-class CitiesSeedTable extends Seeder
+class CitySeedTable extends Seeder
 {
     /**
      * Run the database seeds.
@@ -11,59 +11,59 @@ class CitiesSeedTable extends Seeder
      */
     public function run()
     {
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Sfax',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Tunis',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Mednine',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Bizert',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Sousse',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Mestir',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Mahdia',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Nabeul',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Gabes',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Tataouin',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Ben Arous',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Gafsa',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Kef',
             'country_id' => 218
         ]);
-        DB::table('cities')->insert([
+        DB::table('City')->insert([
             'name' => 'Jandouba',
             'country_id' => 218
         ]);

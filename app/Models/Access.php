@@ -12,23 +12,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Access extends Model
 {
+    public $timestamps = true;
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
-    protected $fillable = ['price', 'type_access_id', 'congress_id'];
-
-
-    public $timestamps = true;
+    protected $fillable = ['price', 'name', 'congress_id'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function responsibles()
     {
         return $this->hasMany('App\Models\Admin_Access', 'access_id', 'access_id');
     }
-
-    public function type_access()
-    {
-        return $this->hasOne('App\Models\Type_Access', 'type_access_id', 'type_access_id');
-    }
-
 
 }

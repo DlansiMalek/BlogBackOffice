@@ -16,11 +16,8 @@ class CreateAccessTable extends Migration
         Schema::create('Access', function (Blueprint $table) {
             $table->increments('access_id');
             $table->double('price');
-
-            $table->integer('type_access_id')->unsigned();
-            $table->foreign('type_access_id')->references('type_access_id')->on('Type_Access')
-                ->onDelete('cascade');
-
+            $table->string('name');
+            
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
