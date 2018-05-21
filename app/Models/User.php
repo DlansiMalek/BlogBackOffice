@@ -8,9 +8,9 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use Notifiable;
+    public $timestamps = true;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-
     /**
      * The attributes that are mass assignable.
      *
@@ -20,7 +20,6 @@ class User extends Authenticatable
         'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id', 'isBadgeGeted'
         , 'price'
     ];
-
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -29,10 +28,12 @@ class User extends Authenticatable
     protected $hidden = [
         'password'
     ];
-
     protected $dates = ['created_at', 'updated_at'];
-    public $timestamps = true;
 
+    function city()
+    {
+        return $this->hasOne('App\Models\City', 'city_id', 'city_id');
+    }
 
     function accesss()
     {
