@@ -11,22 +11,16 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Admin_Access;
-use App\Models\Type_Access;
 
 class AccessServices
 {
 
 
-    public function getAllTypesAccess()
-    {
-        return Type_Access::all();
-    }
-
     public function addAccessToCongress($congress_id, $accesss)
     {
         foreach ($accesss as $access) {
             $accessData = new Access();
-            $accessData->type_access_id = $access["type_access_id"];
+            $accessData->name = $access["name"];
             $accessData->price = $access["price"];
             $accessData->congress_id = $congress_id;
             $accessData->save();
@@ -48,8 +42,7 @@ class AccessServices
 
     public function getAllAccessByCongress($congressId)
     {
-        return Access::with(["type_access"])
-            ->where("congress_id", "=", $congressId)
+        return Access::where("congress_id", "=", $congressId)
             ->get();
     }
 }

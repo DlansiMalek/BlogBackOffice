@@ -128,9 +128,6 @@ Route::group(['prefix' => 'add-info'], function () {
 });
 //Access API
 Route::group(['prefix' => 'access'], function () {
-    Route::group(['prefix' => 'type'], function () {
-        Route::get('list', 'AccessController@getAllTypesAccess');
-    });
     Route::group(['prefix' => 'congress'], function () {
         Route::get('{congress_id}/list', 'AccessController@getAllAccessByCongress');
     });
