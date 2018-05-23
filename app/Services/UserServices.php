@@ -24,7 +24,7 @@ class UserServices
         $email = $request->input('email');
 
         //$user = User::where('email', 'like', $email)->first();
-        $congress = Congress::where('congress_id', $request->input("congressId"));
+        $congress = Congress::where('congress_id', $request->input("congressId"))->first();
 
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
