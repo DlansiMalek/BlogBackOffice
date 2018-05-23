@@ -51,7 +51,7 @@ class UserServices
         $newUser->save();
 
         $this->sendConfirmationMail($newUser, $congress->name);
-        
+
         return $newUser;
     }
 
@@ -59,7 +59,7 @@ class UserServices
     {
         $link = "https://congress-api.vayetek.com/api/user/" . $user->user_id . "/validate/" . $user->validation_code;
         $email = $user->email;
-        Mail::send('verifiactionMail', ['congress_name' => $congress_name, 'last_name' => $user->last_name,
+        Mail::send('verificationMail', ['congress_name' => $congress_name, 'last_name' => $user->last_name,
             'first_name' => $user->first_name, 'link' => $link], function ($message) use ($email) {
             $message->to($email)->subject('Validation du compte');
         });
