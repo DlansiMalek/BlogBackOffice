@@ -45,6 +45,9 @@ class UserServices
         /* Generation QRcode */
         $qrcode = Utils::generateCode($newUser->id_User);
         $newUser->qr_code = $qrcode;
+
+        $newUser->id_Congress = $request->input("congressId");
+
         $user = $newUser->save();
 
         $this->sendConfirmationMail($user, $congress->name);
