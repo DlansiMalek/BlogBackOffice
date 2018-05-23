@@ -48,13 +48,13 @@ class UserServices
 
         $newUser->congress_id = $request->input("congressId");
 
-        $user = $newUser->save();
+        $newUser->save();
 
-        // $this->sendConfirmationMail($user, $congress->name);
+        $this->sendConfirmationMail($newUser, $congress->name);
 
-        // $this->settingInCongress($newUser, $request->input("congressId"));
+        $this->settingInCongress($newUser, $request->input("congressId"));
 
-        return $user;
+        return $newUser;
     }
 
     public function sendConfirmationMail($user, $congress_name)
