@@ -32,7 +32,7 @@ class UserServices
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
         if ($request->has('mobile'))
-            $newUser->establishment = $request->input('mobile');
+            $newUser->mobile = $request->input('mobile');
         if ($request->has('city_id'))
             $newUser->city_id = $request->input('city_id');
         if ($request->has('country_id'))
@@ -87,15 +87,9 @@ class UserServices
         $updateUser->first_name = $request->input('first_name');
         $updateUser->last_name = $request->input('last_name');
         $updateUser->gender = $request->input('gender');
-        $updateUser->establishment = $request->input('establishment');
-        $updateUser->profession = $request->input('profession');
-        $updateUser->tel = $request->input('tel');
         $updateUser->mobile = $request->input('mobile');
-        $updateUser->fax = $request->input('fax');
-        $updateUser->address = $request->input('address');
-        $updateUser->postal = $request->input('postal');
-        $updateUser->domain = $request->input('domain');
         $updateUser->city_id = $request->input('city_id');
+        $updateUser->country_id = $request->input('country_id');
         $updateUser->update();
         return $updateUser;
     }
