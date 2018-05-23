@@ -46,7 +46,7 @@ class UserServices
         $qrcode = Utils::generateCode($newUser->id_User);
         $newUser->qr_code = $qrcode;
 
-        $newUser->id_Congress = $request->input("congressId");
+        $newUser->congressId = $request->input("congressId");
 
         $user = $newUser->save();
 
