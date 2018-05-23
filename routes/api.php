@@ -70,9 +70,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::get('list', 'UserController@getUsersByCongress');
             Route::post('add', 'UserController@addUserToCongress');
+            Route::post('register', 'UserController@registerUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
         });
-
 
     });
     Route::group(['prefix' => 'access'], function () {

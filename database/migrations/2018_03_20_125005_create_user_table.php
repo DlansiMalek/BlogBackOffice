@@ -20,6 +20,8 @@ class CreateUserTable extends Migration
             $table->integer('gender')->nullable();
             $table->string('mobile');
             $table->string('email');
+            $table->tinyInteger('email_verified')->default(1);
+            $table->string('verification_code');
 
             $table->string('qr_code');
             $table->tinyInteger('isPresent')->unsigned()->default(0);

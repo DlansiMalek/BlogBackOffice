@@ -91,12 +91,12 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($validation_code === $user->validation_code) {
-            $user->valide = true;
+        if ($validation_code === $user->verification_code) {
+            $user->email_verified = 1;
             $user->update();
-            return response()->json(['response' => 'user validated'], 202);
+            return response()->json(['response' => 'user verified'], 202);
         }
-        return response()->json(['response' => 'invalid validation code'], 400);
+        return response()->json(['response' => 'invalid verifiaction code'], 400);
     }
 
     public function resendConfirmationMail($user_id)
@@ -141,6 +141,31 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
         $user = $this->userServices->addParticipant($request, $congressId);
+
+        $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
+
+
+        return response()->json(['add success'], 200);
+        /*$file = new Filesystem();
+
+        Utils::generateQRcode($user->qr_code, "qrcode.png");
+
+
+        if ($file->exists(public_path() . "/qrcode.png")) {
+            return response()->download(public_path() . "/qrcode.png")
+                ->deleteFileAfterSend(true);
+        } else {
+            return response()->json(["error" => "dossier vide"]);
+        }*/
+    }
+
+    public function registerUserToCongress(Request $request, $congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $request->merge(["congressId" => $congressId]);
+        $user = $this->userServices->registerUser($request);
 
         $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
 

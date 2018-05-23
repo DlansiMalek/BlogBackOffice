@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Payement_Type;
 use App\Models\User;
+use App\Models\Congress;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
 use PDF;
 use Illuminate\Support\Facades\Mail;
+use Ramsey\Uuid\Uuid;
 
 class UserServices
 {
@@ -22,57 +24,54 @@ class UserServices
         $email = $request->input('email');
 
         //$user = User::where('email', 'like', $email)->first();
-
+        $congress = Congress::where('congress_id', $request->input("congressId"));
 
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
-        if ($request->has('establishment'))
-            $newUser->establishment = $request->input('establishment');
-        if ($request->has('profession'))
-            $newUser->profession = $request->input('profession');
-        if ($request->has('tel'))
-            $newUser->tel = $request->input('tel');
-        $newUser->mobile = $request->input('mobile');
-        if ($request->has('fax'))
-            $newUser->fax = $request->input('fax');
-        if ($request->has('address'))
-            $newUser->address = $request->input('address');
-        if ($request->has('postal'))
-            $newUser->postal = $request->input('postal');
-        if ($request->has('domain'))
-            $newUser->domain = $request->input('domain');
+        if ($request->has('mobile'))
+            $newUser->establishment = $request->input('mobile');
         if ($request->has('city_id'))
             $newUser->city_id = $request->input('city_id');
+        if ($request->has('country_id'))
+            $newUser->city_id = $request->input('country_id');
         $newUser->email = $email;
-        if ($request->has('cin'))
-            $newUser->cin = $request->input('cin');
-        $newUser->valide = false;
-        $newUser->validation_code = str_random(40);
+
+        $newUser->email_verified = 0;
+        $newUser->verification_code = str_random(40);
         $newUser->save();
 
         /* Generation QRcode */
         $qrcode = Utils::generateCode($newUser->id_User);
         $newUser->qr_code = $qrcode;
-        $newUser->save();
+        $user = $newUser->save();
+
+        $this->sendConfirmationMail($user, $congress->name);
 
         $this->settingInCongress($newUser, $request->input("congressId"));
 
-        return $newUser;
+        return $user;
     }
 
-
-    public function sendConfirmationMail($user)
+    public function sendConfirmationMail($user, $congress_name)
     {
         $link = "https://congress-api.vayetek.com/api/users/" . $user->id_User . "/validate/" . $user->validation_code;
         $email = $user->email;
-        Mail::send('validationEmail', ['nom' => $user->last_name,
-            'prenom' => $user->first_name, 'CIN' => $user->cin,
-            'carte_Etudiant' => $user->carte_Etudiant, 'link' => $link], function ($message) use ($email) {
+        Mail::send('verifiactionMail', ['congress_name' => $congress_name, 'last_name' => $user->last_name,
+            'first_name' => $user->first_name, 'link' => $link], function ($message) use ($email) {
             $message->to($email)->subject('Validation du compte');
         });
+    }
+
+    private function settingInCongress($user, $congressId)
+    {
+        $user_congress = new Congress_User();
+        $user_congress->id_User = $user->id_User;
+        $user_congress->id_Congress = $congressId;
+        $user_congress->save();
+        return $user_congress;
     }
 
     public function getParticipatorById($user_id)
@@ -132,14 +131,12 @@ class UserServices
             ->get();
     }
 
-
     public function getAllParticipatorByCongress($congressId)
     {
         return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
             ->where("id_Congress", "=", $congressId)
             ->get();
     }
-
 
     public function getParticipatorByQrCode($qr_code)
     {
@@ -156,6 +153,21 @@ class UserServices
         $user->update();
 
         return $user;
+    }
+
+    public function sendingToOrganisateur($participator)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://137.74.165.25:3002/api/congress/users/send-present', [
+                'form_params' => [
+                    'user' => json_decode(json_encode($participator))
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
     }
 
     public function getParticipatorByIdByCongress($userId, $congressId)
@@ -247,21 +259,6 @@ class UserServices
             ->get();
     }
 
-    private function isExistCongress($user, $congressId)
-    {
-        return Congress_User::where("id_User", "=", $user->id_User)
-            ->where("id_Congress", "=", $congressId)->first();
-    }
-
-    private function settingInCongress($user, $congressId)
-    {
-        $user_congress = new Congress_User();
-        $user_congress->id_User = $user->id_User;
-        $user_congress->id_Congress = $congressId;
-        $user_congress->save();
-        return $user_congress;
-    }
-
     public function getUsersByCongress($congressId)
     {
         return User::where("congress_id", "=", $congressId)
@@ -302,6 +299,22 @@ class UserServices
             ->first();
     }
 
+    private function sendingRTAccess($user, $accessId)
+    {
+        $client = new \GuzzleHttp\Client();
+
+
+        $res = $client->request('POST',
+            'http://137.74.165.25:3002/api/congress/users/send-present-access', [
+                'form_params' => [
+                    'user' => json_decode(json_encode($user)),
+                    'accessId' => $accessId
+                ]
+            ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
     public function sendingToAdmin($allParticipants, $congressId)
     {
         $client = new \GuzzleHttp\Client();
@@ -318,34 +331,9 @@ class UserServices
         return json_decode($res->getBody(), true);
     }
 
-    public function sendingToOrganisateur($participator)
+    private function isExistCongress($user, $congressId)
     {
-        $client = new \GuzzleHttp\Client();
-
-
-        $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-present', [
-                'form_params' => [
-                    'user' => json_decode(json_encode($participator))
-                ]
-            ]);
-
-        return json_decode($res->getBody(), true);
-    }
-
-    private function sendingRTAccess($user, $accessId)
-    {
-        $client = new \GuzzleHttp\Client();
-
-
-        $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-present-access', [
-                'form_params' => [
-                    'user' => json_decode(json_encode($user)),
-                    'accessId' => $accessId
-                ]
-            ]);
-
-        return json_decode($res->getBody(), true);
+        return Congress_User::where("id_User", "=", $user->id_User)
+            ->where("id_Congress", "=", $congressId)->first();
     }
 }

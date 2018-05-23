@@ -20,6 +20,7 @@
     "laravel/tinker": "~1.0",
     "niklasravnsborg/laravel-pdf": "2.0.0",
     "phpoffice/phpspreadsheet": "^1.2",
+    "ramsey/uuid": "^3.7",
     "simplesoftwareio/simple-qrcode": "^1.5",
     "tymon/jwt-auth": "1.0.0-rc.2",
     "zircote/swagger-php": "2.0.9"
