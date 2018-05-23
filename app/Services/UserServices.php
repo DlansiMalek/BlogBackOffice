@@ -41,7 +41,6 @@ class UserServices
 
         $newUser->email_verified = 0;
         $newUser->verification_code = str_random(40);
-        $newUser->save();
 
         /* Generation QRcode */
         $qrcode = Utils::generateCode($newUser->id_User);
