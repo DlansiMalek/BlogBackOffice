@@ -50,16 +50,16 @@ class UserServices
 
         $user = $newUser->save();
 
-        $this->sendConfirmationMail($user, $congress->name);
+        // $this->sendConfirmationMail($user, $congress->name);
 
-        $this->settingInCongress($newUser, $request->input("congressId"));
+        // $this->settingInCongress($newUser, $request->input("congressId"));
 
         return $user;
     }
 
     public function sendConfirmationMail($user, $congress_name)
     {
-        $link = "https://congress-api.vayetek.com/api/users/" . $user->id_User . "/validate/" . $user->validation_code;
+        $link = "https://congress-api.vayetek.com/api/user/" . $user->id_User . "/validate/" . $user->validation_code;
         $email = $user->email;
         Mail::send('verifiactionMail', ['congress_name' => $congress_name, 'last_name' => $user->last_name,
             'first_name' => $user->first_name, 'link' => $link], function ($message) use ($email) {
