@@ -43,7 +43,7 @@ class UserServices
         $newUser->verification_code = str_random(40);
 
         /* Generation QRcode */
-        $qrcode = Utils::generateCode($newUser->id_User);
+        $qrcode = Utils::generateCode($newUser->user_id);
         $newUser->qr_code = $qrcode;
 
         $newUser->congress_id = $request->input("congressId");
@@ -51,29 +51,18 @@ class UserServices
         $newUser->save();
 
         $this->sendConfirmationMail($newUser, $congress->name);
-
-        $this->settingInCongress($newUser, $request->input("congressId"));
-
+        
         return $newUser;
     }
 
     public function sendConfirmationMail($user, $congress_name)
     {
-        $link = "https://congress-api.vayetek.com/api/user/" . $user->id_User . "/validate/" . $user->validation_code;
+        $link = "https://congress-api.vayetek.com/api/user/" . $user->user_id . "/validate/" . $user->validation_code;
         $email = $user->email;
         Mail::send('verifiactionMail', ['congress_name' => $congress_name, 'last_name' => $user->last_name,
             'first_name' => $user->first_name, 'link' => $link], function ($message) use ($email) {
             $message->to($email)->subject('Validation du compte');
         });
-    }
-
-    private function settingInCongress($user, $congressId)
-    {
-        $user_congress = new Congress_User();
-        $user_congress->id_User = $user->id_User;
-        $user_congress->id_Congress = $congressId;
-        $user_congress->save();
-        return $user_congress;
     }
 
     public function getParticipatorById($user_id)
