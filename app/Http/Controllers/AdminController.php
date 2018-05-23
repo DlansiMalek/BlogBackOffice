@@ -70,6 +70,8 @@ class AdminController extends Controller
         $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
+        } else if ($participator->email_verified == 0) {
+            return response()->json(['resposne' => 'user not verified'], 404);
         }
         return $participator;
     }
