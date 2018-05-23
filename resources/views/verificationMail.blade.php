@@ -8,8 +8,8 @@
 
 <p>Vous étes :</p>
 <ul>
-    <li><strong>Nom</strong> : {{ $nom }}</li>
-    <li><strong>Prenom</strong> : {{ $prenom }}</li>
+    <li><strong>Nom</strong> : {{ $first_name }}</li>
+    <li><strong>Prenom</strong> : {{ $last_name }}</li>
 </ul>
 <p>Pour confirmer veuillez activer votre compte avec ce lien : </p>
 
