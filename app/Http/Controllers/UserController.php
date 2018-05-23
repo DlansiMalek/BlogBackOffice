@@ -167,21 +167,14 @@ class UserController extends Controller
         $request->merge(["congressId" => $congressId]);
         $user = $this->userServices->registerUser($request);
 
-        $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
+        // $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
 
+        if (!$user) {
+            return response()->json(['response' => 'user exist'], 400);
+        }
 
-        return response()->json(['add success'], 200);
-        /*$file = new Filesystem();
+        return response()->json($user, 201);
 
-        Utils::generateQRcode($user->qr_code, "qrcode.png");
-
-
-        if ($file->exists(public_path() . "/qrcode.png")) {
-            return response()->download(public_path() . "/qrcode.png")
-                ->deleteFileAfterSend(true);
-        } else {
-            return response()->json(["error" => "dossier vide"]);
-        }*/
     }
 
     public function getUsersByAccess($accessId)
