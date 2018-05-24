@@ -167,7 +167,7 @@ class UserController extends Controller
         $request->merge(["congressId" => $congressId]);
         $user = $this->userServices->registerUser($request);
 
-        // $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
+        $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
 
         if (!$user) {
             return response()->json(['response' => 'user exist'], 400);
