@@ -17,6 +17,7 @@ class CreateUserTable extends Migration
             $table->increments('user_id');
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('type')->default('');
             $table->integer('gender')->nullable();
             $table->string('mobile');
             $table->string('email');

@@ -181,6 +181,9 @@ class UserServices
         if ($request->has('mobile'))
             $user->mobile = $request->input('mobile');
 
+        if ($request->has('type'))
+            $user->mobile = $request->input('type');
+
         if ($request->has('price'))
             $user->price = $request->input('price');
 
