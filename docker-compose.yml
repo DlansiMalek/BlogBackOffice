@@ -10,6 +10,10 @@ services:
             - "8083:80"
         links:
             - app
+        environment:
+            VIRTUAL_HOST: congress-api.vayetek.com
+            LETSENCRYPT_HOST: congress-api.vayetek.com
+            LETSENCRYPT_EMAIL: vayetek@gmail.com
     app:
         build:
             context: ./
@@ -19,3 +23,8 @@ services:
             - ../../data/congress_data:/var/www/storage/app
         env_file: .env
 
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
