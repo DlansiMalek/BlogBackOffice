@@ -52,7 +52,7 @@ class AdminServices
 
     public function getAdminCongresses($admin_id)
     {
-        return Congress::with(["badge", "responsibles", "add_infos"])
+        return Congress::with(["badge", "responsibles", "add_infos", "accesss"])
             ->where("admin_id", "=", $admin_id)
             ->get();
     }

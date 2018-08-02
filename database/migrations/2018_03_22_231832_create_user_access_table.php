@@ -17,7 +17,7 @@ class CreateUserAccessTable extends Migration
             $table->increments('user_access_id');
 
 
-            $table->tinyInteger('isPresent')->unsigned();
+            $table->tinyInteger('isPresent')->unsigned()->default(0);
 
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('user_id')->on('User')

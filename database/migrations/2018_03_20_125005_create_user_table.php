@@ -22,7 +22,8 @@ class CreateUserTable extends Migration
             $table->string('mobile');
             $table->string('email');
             $table->tinyInteger('email_verified')->default(1);
-            $table->string('verification_code');
+            $table->string('verification_code')
+                ->nullable();
 
             $table->string('qr_code');
             $table->tinyInteger('isPresent')->unsigned()->default(0);
@@ -31,6 +32,11 @@ class CreateUserTable extends Migration
 
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
+                ->onDelete('cascade');
+
+
+            $table->integer('payement_type_id')->unsigned();
+            $table->foreign('payement_type_id')->references('payement_type_id')->on('Payement_Type')
                 ->onDelete('cascade');
 
             $table->timestamps();
