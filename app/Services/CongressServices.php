@@ -55,7 +55,7 @@ class CongressServices
 
     public function getCongressAllowedAccess($adminId)
     {
-        return Congress::with(["accesss.responsibles", "accesss.type_access"])->where(function ($q) use ($adminId) {
+        return Congress::with(["accesss.responsibles", "accesss"])->where(function ($q) use ($adminId) {
             $q->whereHas("accesss.responsibles", function ($query) use ($adminId) {
                 $query->where("admin_id", "=", $adminId);
             });
@@ -100,7 +100,7 @@ class CongressServices
 
     }
 
-    public function editCongress($congress,$adminId, $request)
+    public function editCongress($congress, $adminId, $request)
     {
 
         $congress->name = $request->input("name");

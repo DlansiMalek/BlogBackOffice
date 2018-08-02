@@ -20,7 +20,7 @@ class AccessServices
     {
         foreach ($accesss as $access) {
             $accessData = new Access();
-            $accessData->name = $access["name"];
+            $accessData->name = $access["type"];
             $accessData->price = $access["price"];
             $accessData->congress_id = $congress_id;
             $accessData->save();
