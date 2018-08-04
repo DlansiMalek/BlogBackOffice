@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+//Shared API
+Route::get('/grade/all', 'SharedController@getAllGrades');
+Route::get('/lieu/all', 'SharedController@getAllLieux');
+
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
     Route::post('/login', 'Auth\LoginController@loginAdminMobile');

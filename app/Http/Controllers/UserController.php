@@ -164,6 +164,10 @@ class UserController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
+
+        if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
+            return response()->json(['error' => 'user exist'], 400);
+        }
         $request->merge(["congressId" => $congressId]);
         $user = $this->userServices->registerUser($request);
 

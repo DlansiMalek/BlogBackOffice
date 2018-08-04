@@ -19,24 +19,31 @@ class UserServices
         return User::with(['city', 'city.country'])->get();
     }
 
-    public function registerUser($request)
+    public function registerUser(Request $request)
     {
         $email = $request->input('email');
 
         //$user = User::where('email', 'like', $email)->first();
-        $congress = Congress::where('congress_id', $request->input("congressId"))->first();
+        // $congress = Congress::where('congress_id', $request->input("congressId"))->first();
 
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        if ($request->has('gender'))
-            $newUser->gender = $request->input('gender');
+        if ($request->has('sex'))
+            $newUser->gender = $request->input('sex');
         if ($request->has('mobile'))
             $newUser->mobile = $request->input('mobile');
         if ($request->has('city_id'))
             $newUser->city_id = $request->input('city_id');
         if ($request->has('country_id'))
             $newUser->city_id = $request->input('country_id');
+
+        if ($request->has('grade_id'))
+            $newUser->grade_id = $request->input('grade_id');
+
+        if ($request->has('lieu_ex_id'))
+            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
+
         $newUser->email = $email;
 
         $newUser->email_verified = 0;
@@ -50,7 +57,7 @@ class UserServices
 
         $newUser->save();
 
-        $this->sendConfirmationMail($newUser, $congress->name);
+        // $this->sendConfirmationMail($newUser, $congress->name);
 
         return $newUser;
     }
@@ -317,6 +324,13 @@ class UserServices
             ]);
 
         return json_decode($res->getBody(), true);
+    }
+
+    public function getUserByEmail($congressId, $email)
+    {
+        return User::where('email', '=', $email)
+            ->where('congress_id', '=', $congressId)
+            ->first();
     }
 
     private function isExistCongress($user, $congressId)

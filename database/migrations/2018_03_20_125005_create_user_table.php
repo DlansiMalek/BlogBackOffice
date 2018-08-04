@@ -28,16 +28,28 @@ class CreateUserTable extends Migration
             $table->string('qr_code');
             $table->tinyInteger('isPresent')->unsigned()->default(0);
 
-            $table->integer('city_id')->unsigned()->nullable();
 
+            #foreign congressId
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
 
-
-            $table->integer('payement_type_id')->unsigned();
+            #foreign payement
+            $table->integer('payement_type_id')->unsigned()->nullable();
             $table->foreign('payement_type_id')->references('payement_type_id')->on('Payement_Type')
                 ->onDelete('cascade');
+
+
+            #foreign payement
+            $table->integer('grade_id')->unsigned()->nullable();
+            $table->foreign('grade_id')->references('grade_id')->on('Grade')
+                ->onDelete('cascade');
+
+            #foreign payement
+            $table->integer('lieu_ex_id')->unsigned()->nullable();
+            $table->foreign('lieu_ex_id')->references('lieu_ex_id')->on('Lieu_Ex')
+                ->onDelete('cascade');
+
 
             $table->timestamps();
         });
