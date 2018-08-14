@@ -18,6 +18,7 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
+        $this->deleteAccessByCongress($congress_id);
         foreach ($accesss as $access) {
             $accessData = new Access();
             $accessData->name = $access["name"];
@@ -28,6 +29,12 @@ class AccessServices
             $this->addResponsibles($accessData->access_id, $access["responsibleIds"]);
         }
 
+    }
+
+    private function deleteAccessByCongress($congressId)
+    {
+        return Access::where('congress_id', '=', $congressId)
+            ->delete();
     }
 
     public function addResponsibles($access_id, $responsibleIds)
