@@ -256,7 +256,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::where("congress_id", "=", $congressId)->where("email_verified", 1)
+        return User::where("congress_id", "=", $congressId)
             ->get();
     }
 
