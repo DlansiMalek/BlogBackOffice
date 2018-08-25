@@ -168,7 +168,8 @@ class AdminController extends Controller
      */
     public function makeUserPresentAccess(Request $request, $userId)
     {
-        if (!$request->has(['isPresent', 'accessId'])) {
+        //type : 1 : Enter Or 0 : Leave
+        if (!$request->has(['isPresent', 'accessId', 'type'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
         }
         $participator = $this->userServices->getUserById($userId);
@@ -183,7 +184,7 @@ class AdminController extends Controller
             return response()->json(["message" => "user not allowed to this access"], 401);
         }
         $this->userServices->makePresentToAccess($participator,
-            $request->input('accessId'), $request->input('isPresent'));
+            $request->input('accessId'), $request->input('isPresent'), $request->input('type'));
 
         return response()->json(["message" => "success sending and scaning"], 200);
     }

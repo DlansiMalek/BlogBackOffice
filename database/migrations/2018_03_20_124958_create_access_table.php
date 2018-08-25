@@ -17,7 +17,10 @@ class CreateAccessTable extends Migration
             $table->increments('access_id');
             $table->double('price');
             $table->string('name');
-            
+
+            $table->integer('ponderation')->nullable()->default(null);
+            $table->integer('duration')->nullable()->default(null);
+
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');

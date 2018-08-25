@@ -276,7 +276,7 @@ class UserServices
             ->get();
     }
 
-    public function makePresentToAccess($user, $accessId, $isPresent)
+    public function makePresentToAccess($user, $accessId, $isPresent, $type)
     {
         $user_access = $this->getUserAccessByUser($user->user_id, $accessId);
 
@@ -284,6 +284,16 @@ class UserServices
             $this->sendingRTAccess($user, $accessId);
         }
         $user_access->isPresent = $isPresent;
+        if ($user_access->isPresent == 1) {
+            if ($type == 1) {
+                //Enter
+                $user_access->enter_time = date('Y-m-d H:i:s');
+            } else {
+                //Leave
+                $user_access->leave_time = date('Y-m-d H:i:s');
+            }
+        }
+
         $user_access->update();
     }
 

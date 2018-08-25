@@ -19,6 +19,9 @@ class CreateUserAccessTable extends Migration
 
             $table->tinyInteger('isPresent')->unsigned()->default(0);
 
+            $table->dateTime('enter_time')->nullable()->default(null);
+            $table->dateTime('leave_time')->nullable()->default(null);
+
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('user_id')->on('User')
                 ->onDelete('cascade');

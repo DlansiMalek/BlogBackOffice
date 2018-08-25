@@ -16,6 +16,6 @@ class User_Access extends Model
     public $timestamps = true;
     protected $table = 'User_Access';
     protected $primaryKey = 'user_access_id';
-    protected $fillable = ['user_id', 'access_id', 'isPresent'];
+    protected $fillable = ['user_id', 'access_id', 'enter_time', 'leave_time', 'isPresent'];
     protected $dates = ['created_at', 'updated_at'];
 }

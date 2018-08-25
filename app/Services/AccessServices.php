@@ -18,11 +18,16 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
-        $this->deleteAccessByCongress($congress_id);
+        // $this->deleteAccessByCongress($congress_id);
         foreach ($accesss as $access) {
             $accessData = new Access();
             $accessData->name = $access["name"];
             $accessData->price = $access["price"];
+            if (array_key_exists('ponderation', $access))
+                $accessData->ponderation = $access["ponderation"];
+            if (array_key_exists('duration', $access))
+                $accessData->duration = $access["duration"];
+
             $accessData->congress_id = $congress_id;
             $accessData->save();
 
