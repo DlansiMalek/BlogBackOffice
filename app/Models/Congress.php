@@ -39,4 +39,9 @@ class Congress extends Model
     {
         return $this->belongsTo('App\Models\Badge', 'congress_id', 'congress_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany('App\Models\User', 'congress_id', 'congress_id');
+    }
 }

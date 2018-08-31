@@ -23,4 +23,9 @@ class Access extends Model
         return $this->hasMany('App\Models\Admin_Access', 'access_id', 'access_id');
     }
 
+    public function participants()
+    {
+        return $this->belongsToMany('App\Models\User', 'User_Access', 'access_id', 'user_id');
+    }
+
 }

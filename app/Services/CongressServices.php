@@ -16,7 +16,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badge", "responsibles", "accesss.responsibles", "add_infos"])
+        return Congress::with(["users", "accesss.participants", "badge", "responsibles", "accesss.responsibles", "add_infos"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }

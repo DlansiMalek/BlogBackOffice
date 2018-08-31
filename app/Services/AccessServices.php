@@ -54,7 +54,8 @@ class AccessServices
 
     public function getAllAccessByCongress($congressId)
     {
-        return Access::where("congress_id", "=", $congressId)
+        return Access::with(['participants'])
+            ->where("congress_id", "=", $congressId)
             ->get();
     }
 }
