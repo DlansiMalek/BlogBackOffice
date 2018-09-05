@@ -15,12 +15,7 @@ class CreateBadgeTable extends Migration
     {
         Schema::create('Badge', function (Blueprint $table) {
             $table->increments('badge_id');
-
-            $table->string('img_name');
-
-            $table->tinyInteger('qr_code_choice');
-            $table->tinyInteger('text_choice');
-
+            $table->string("badge_id_generator");
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');

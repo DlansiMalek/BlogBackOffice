@@ -61,6 +61,8 @@ Route::group(['prefix' => 'congress'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
+
+        Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::post('badge/valider', 'BadgeController@validerBadge');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
     });

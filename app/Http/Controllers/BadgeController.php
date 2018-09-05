@@ -57,5 +57,18 @@ class BadgeController extends Controller
         return $this->badgeServices->impressionBadge();
     }
 
+    function affectBadgeToCongress($congressId, Request $request)
+    {
+        $badgeIdGenerator = $request->input('badgeIdGenerator');
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response(['error' => "congress not found"], 404);
+        }
+        if ($badge = $this->badgeServices->getBadgeByCongress($congressId)) {
+            $badge->delete();
+        }
+        $this->badgeServices->validerBadge($congressId, $badgeIdGenerator);
+        return response($this->badgeServices->getBadgeByCongress($congressId));
+    }
+
 
 }

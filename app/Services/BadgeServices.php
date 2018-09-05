@@ -31,17 +31,12 @@ class BadgeServices
             ->first();
     }
 
-    public function validerBadge(Request $request, $congressId)
+    public function validerBadge($congressId, $badgeIdGenerator)
     {
-        if (!$badge = $this->getBadgeByCongress($congressId)) {
-            $badge = new Badge();
-        }
-        $badge->img_name = $request->input("img_name");
-        $badge->qr_code_choice = $request->input("qr_code_choice");
-        $badge->text_choice = $request->input("text_choice");
+        $badge = new Badge();
         $badge->congress_id = $congressId;
+        $badge->badge_id_generator = $badgeIdGenerator;
         $badge->save();
-
         return $badge;
     }
 
