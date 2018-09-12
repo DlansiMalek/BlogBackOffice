@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
+use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Filesystem\Filesystem;
@@ -22,16 +23,19 @@ class AdminController extends Controller
     protected $adminServices;
     protected $congressService;
     protected $privilegeServices;
+    protected $sharedServices;
 
     public function __construct(UserServices $userServices,
                                 AdminServices $adminServices,
                                 CongressServices $congressService,
-                                PrivilegeServices $privilegeServices)
+                                PrivilegeServices $privilegeServices,
+                                SharedServices $sharedServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
         $this->congressService = $congressService;
         $this->privilegeServices = $privilegeServices;
+        $this->sharedServices = $sharedServices;
     }
 
 
@@ -472,5 +476,18 @@ class AdminController extends Controller
         }
         return response()->json(['message' => 'success']);
 
+    }
+
+    public function sendMailAllParticipants($congressId)
+    {
+        $users = $this->userServices->getUsersByCongress($congressId);
+        $congress = $this->congressService->getCongressById($congressId);
+        foreach ($users as $user) {
+            $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
+                $user->last_name . " " . $user->first_name,
+                $user->qr_code);
+            $this->userServices->sendMail($user, $congress);
+        }
+        return response()->json(['message' => 'send mail successs']);
     }
 }

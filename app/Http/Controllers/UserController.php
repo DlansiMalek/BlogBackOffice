@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 
 use App\Services\AdminServices;
 use App\Services\CongressServices;
+use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -16,13 +18,16 @@ class UserController extends Controller
     protected $userServices;
     protected $congressServices;
     protected $adminServices;
+    protected $sharedServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
-                         AdminServices $adminServices)
+                         AdminServices $adminServices,
+                         SharedServices $sharedServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
+        $this->sharedServices = $sharedServices;
     }
 
     public function index()
@@ -223,4 +228,6 @@ class UserController extends Controller
     {
         return response()->json($this->userServices->getAllPayementTypes());
     }
+
+
 }

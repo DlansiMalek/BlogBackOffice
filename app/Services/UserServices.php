@@ -107,9 +107,9 @@ class UserServices
     public function sendMail($user, $congress)
     {
         $email = $user->email;
-        $pathToFile = public_path() . "/badge/invitation.pdf";
+        $pathToFile = storage_path() . "/app/badge.png";
         Mail::send('emailInscription', ['nom' => $user->last_name,
-            'prenom' => $user->first_name, 'congressName' => $congress->name
+            'prenom' => $user->first_name, 'congressName' => $congress->name, 'accesss' => $user->accessss
         ], function ($message) use ($email, $congress, $pathToFile) {
             $message->attach($pathToFile);
             $message->to($email)->subject($congress->name);
@@ -273,7 +273,8 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::where("congress_id", "=", $congressId)
+        return User::with(['accessss'])
+            ->where("congress_id", "=", $congressId)
             ->get();
     }
 

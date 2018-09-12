@@ -5,13 +5,24 @@
 </head>
 <body>
 <p>
-    Bonjour Mr {{$nom}} {{$prenom}} , <br/>
-    Votre inscription à l’événement {{$congressName}} a été enregistrée avec succès. <br/>
-    Pour le jour de l’événement, nous vous prions d’imprimer votre invitation ci-joint pour accéder à l'événement, cela
-    <br/>
-    vous évitera toute attente lors de votre venue. <br/>
-    Dans l’attente de vous voir <br/>
-    Cordialement,
+    Cher collègue, <br/>
+    Le comité d'organisation des <span style="font-weight: bold"> {{$congressName}}</span>
+    , qui se tiendront les 21 et 22 septembre 2018 à l'espace Arena, a le plaisir de vous annoncer que votre inscription
+    aux: <br>
 </p>
+<ul>
+    @foreach($accesss as $access)
+    <li>
+        {{$access->name}}
+    </li>
+    @endforeach
+</ul>
+<br/>
+ont été retenue.<br/>
+Vous recevrez prochainement un mail explicatif concernant votre particpation.
+<br/>
+Cordialement<br/>
+Pour le comité d’organisation<br/>
+Dr Syrine Bellakhal
 </body>
 </html>

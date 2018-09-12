@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Attestation;
+use App\Models\Attestation_Access;
 use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
@@ -50,4 +52,39 @@ class BadgeServices
             ->toPng()
             ->save(public_path() . '/google.png');
     }
+
+    public function validerAttestation($congressId, $attesationIdGenerator, $blank)
+    {
+        $attestation = new Attestation();
+        $attestation->congress_id = $congressId;
+        if ($blank == 1) {
+            $attestation->attestation_generator_id_blank = $attesationIdGenerator;
+        } else {
+            $attestation->attestation_generator_id = $attesationIdGenerator;
+        }
+        $attestation->save();
+    }
+
+    public function getAttestationByCongress($congressId)
+    {
+        return Attestation::where('congress_id', '=', $congressId)
+            ->first();
+    }
+
+    public function getAttestationByCongressAndAccess($accessId)
+    {
+        return Attestation_Access::where('access_id', '=', $accessId)
+            ->first();
+    }
+
+    public function validerAttestationAccess($accessId, $attesationIdGenerator)
+    {
+        $attestationAccess = new Attestation_Access();
+        $attestationAccess->access_id = $accessId;
+        $attestationAccess->attestation_generator_id = $attesationIdGenerator;
+        $attestationAccess->save();
+        return $attestationAccess;
+    }
+
+
 }

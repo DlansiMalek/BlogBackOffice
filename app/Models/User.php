@@ -40,4 +40,9 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\User_Access', 'user_id', 'user_id');
     }
 
+    function accessss()
+    {
+        return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id');
+    }
+
 }

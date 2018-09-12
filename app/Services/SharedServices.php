@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Grade;
 use App\Models\Lieu_Ex;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 
 class SharedServices
@@ -17,5 +19,22 @@ class SharedServices
     public function getAllLieux()
     {
         return Lieu_Ex::all();
+    }
+
+    public function saveFileInPublic($badgeIdGenerator, $name, $qrCode)
+    {
+        $client = new \GuzzleHttp\Client();
+        $res = $client->request('POST',
+            'http://137.74.165.25:8090/badge/generateParticipant', [
+                'json' => [
+                    'badgeIdGenerator' => $badgeIdGenerator,
+                    'participant' => [
+                        'name' => $name,
+                        'qrCode' => $qrCode
+                    ]
+                ]
+            ]);
+        Storage::put('badge.png', $res->getBody(), 'public');
+        return 'badge.png';
     }
 }

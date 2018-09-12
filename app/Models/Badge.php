@@ -14,7 +14,7 @@ class Badge extends Model
 {
     protected $table = 'Badge';
     protected $primaryKey = 'badge_id';
-    protected $fillable = ['img_name', 'qr_code_choice', 'text_choice'];
+    protected $fillable = ['badge_id_generator', 'congress_id'];
 
 
     public $timestamps = true;
