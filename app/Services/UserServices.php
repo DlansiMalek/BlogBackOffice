@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Access;
+use App\Models\Access_Presence;
 use App\Models\Payement_Type;
 use App\Models\User;
 use App\Models\Congress;
@@ -206,9 +208,24 @@ class UserServices
 
     public function affectAccess($user_id, $accessIds)
     {
-        foreach ($accessIds as $accessId) {
+        $access1 = 0;
+        $access2 = 0;
+        for ($i = 0; $i < sizeof($accessIds); $i++) {
+            if ($accessIds[$i] == 2 || $accessIds[$i] == 3 || $accessIds[$i] == 4) {
+                if ($access1 != 0) {
+                    continue;
+                }
+                $access1 = 1;
+
+            }
+            if ($accessIds[$i] == 5 || $accessIds[$i] == 6 || $accessIds[$i] == 7) {
+                if ($access2 != 0) {
+                    continue;
+                }
+                $access2 = 1;
+            }
             $user_access = new User_Access();
-            $user_access->access_id = $accessId;
+            $user_access->access_id = $accessIds[$i];
             $user_access->user_id = $user_id;
             $user_access->save();
         }
@@ -276,24 +293,35 @@ class UserServices
             ->get();
     }
 
-    public function makePresentToAccess($user, $accessId, $isPresent, $type)
+    public function makePresentToAccess($user_access, $user, $accessId, $isPresent, $type)
     {
-        $user_access = $this->getUserAccessByUser($user->user_id, $accessId);
 
         if ($user_access->isPresent != 1 && $isPresent == 1) {
             $this->sendingRTAccess($user, $accessId);
         }
-        $user_access->isPresent = $isPresent;
-        if ($user_access->isPresent == 1) {
+
+        if ($user_access->isPresent == 0) {
             if ($type == 1) {
                 //Enter
-                $user_access->enter_time = date('Y-m-d H:i:s');
+                $this->removeAllPresencePerAccess($accessId, $user->user_id);
+                $this->addingNewEnter($user->user_id, $accessId);
+            }
+        } else {
+            if ($type == 1) {
+                //Enter
+                if (!$presence_access = $this->getLastEnterUser($user->user_id, $accessId)) {
+                    $this->addingNewEnter($user->user_id, $accessId);
+                }
             } else {
                 //Leave
-                $user_access->leave_time = date('Y-m-d H:i:s');
+                if ($presence_access = $this->getLastEnterUser($user->user_id, $accessId)) {
+                    $presence_access->leave_time = date('Y-m-d H:i:s');
+                    $presence_access->update();
+                }
             }
-        }
 
+        }
+        $user_access->isPresent = $isPresent;
         $user_access->update();
     }
 
@@ -343,9 +371,40 @@ class UserServices
             ->first();
     }
 
+    public function getUsersByCongressWithAccess($congressId)
+    {
+        return User::with(['accesss'])
+            ->where('congress_id', '=', $congressId)
+            ->get();
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
             ->where("id_Congress", "=", $congressId)->first();
+    }
+
+    private function removeAllPresencePerAccess($accessId, $user_id)
+    {
+        return Access_Presence::where('user_id', '=', $user_id)
+            ->where('access_id', '=', $accessId)
+            ->delete();
+    }
+
+    private function addingNewEnter($user_id, $accessId)
+    {
+        $access_presence = new Access_Presence();
+        $access_presence->user_id = $user_id;
+        $access_presence->access_id = $accessId;
+        $access_presence->enter_time = date('Y-m-d H:i:s');
+        $access_presence->save();
+    }
+
+    private function getLastEnterUser($user_id, $accessId)
+    {
+        return Access_Presence::whereNull('leave_time')
+            ->where('user_id', '=', $user_id)
+            ->where('access_id', '=', $accessId)
+            ->first();
     }
 }

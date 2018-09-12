@@ -59,6 +59,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress'], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
         Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
 
