@@ -73,15 +73,17 @@ class AdminController extends Controller
 
         $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
 
+        if (!$participator) {
+            return response()->json(['resposne' => 'participator not found'], 404);
+        }
+
         foreach ($participator->accesss as $accesss) {
             if ($accesss->pivot->isPresent == 1)
                 $accesss->attestation_status = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
             else
                 $accesss->attestation_status = 0;
         }
-        if (!$participator) {
-            return response()->json(['resposne' => 'participator not found'], 404);
-        }
+
         /*else if ($participator->email_verified == 0) {
             return response()->json(['resposne' => 'user not verified'], 404);
         }*/

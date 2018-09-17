@@ -21,7 +21,7 @@ services:
         volumes:
             - ./:/var/www
             - ../../data/congress_data:/var/www/storage/app
-        env_file: .env
+        env_file: .env.example
 
 
 networks:
