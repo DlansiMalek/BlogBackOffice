@@ -15,7 +15,7 @@ class Access extends Model
     public $timestamps = true;
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
-    protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id','block'];
+    protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block', 'seuil'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function responsibles()
@@ -27,5 +27,11 @@ class Access extends Model
     {
         return $this->belongsToMany('App\Models\User', 'User_Access', 'access_id', 'user_id');
     }
+
+    public function attestation()
+    {
+        return $this->hasOne('App\Models\Attestation_Access', 'access_id', 'access_id');
+    }
+
 
 }

@@ -24,6 +24,7 @@ Route::group(['prefix' => 'mobile'], function () {
     Route::post('/login', 'Auth\LoginController@loginAdminMobile');
     Route::group(['middleware' => 'organisateur'], function () {
         Route::get('/congress', 'CongressController@getCongressByAdmin');
+        Route::post('/start-access', 'AccessController@startAccessById');
         Route::group(['prefix' => 'scan'], function () {
             Route::post('participant', 'AdminController@scanParticipatorQrCode');
         });

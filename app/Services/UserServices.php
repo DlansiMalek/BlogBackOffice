@@ -2,16 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Access;
 use App\Models\Access_Presence;
 use App\Models\Payement_Type;
 use App\Models\User;
-use App\Models\Congress;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
-use PDF;
 use Illuminate\Support\Facades\Mail;
-use Ramsey\Uuid\Uuid;
+use PDF;
 
 class UserServices
 {
@@ -109,7 +106,7 @@ class UserServices
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
         Mail::send('emailInscription', ['nom' => $user->last_name,
-            'prenom' => $user->first_name, 'congressName' => $congress->name, 'accesss' => $user->accessss
+            'prenom' => $user->first_name, 'congressName' => $congress->name, 'accesss' => $user->accesss
         ], function ($message) use ($email, $congress, $pathToFile) {
             $message->attach($pathToFile);
             $message->to($email)->subject($congress->name);
@@ -134,7 +131,8 @@ class UserServices
 
     public function getParticipatorByQrCode($qr_code)
     {
-        return User::where('qr_code', '=', $qr_code)
+        return User::with(['accesss.attestation'])
+            ->where('qr_code', '=', $qr_code)
             ->first();
     }
 
@@ -155,7 +153,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-present', [
+            Utils::$baseUrlRT . "/congress/users/send-present", [
                 'form_params' => [
                     'user' => json_decode(json_encode($participator))
                 ]
@@ -168,12 +166,12 @@ class UserServices
     {
         return User::
         withCount(['congresses as isPresent' => function ($query) use ($congressId) {
-            $query->where("Congress_User.id_Congress", "=", $congressId)
-                ->where("Congress_User.isPresent", "=", 1);
+            $query->where("Congress_User . id_Congress", "=", $congressId)
+                ->where("Congress_User . isPresent", "=", 1);
         }])->
         withCount(['congresses as isPaid' => function ($query) use ($congressId) {
-            $query->where("Congress_User.id_Congress", "=", $congressId)
-                ->where("Congress_User.isPaid", "=", 1);;
+            $query->where("Congress_User . id_Congress", "=", $congressId)
+                ->where("Congress_User . isPaid", "=", 1);;
         }])->where("id_User", "=", $userId)
             ->first();
 
@@ -273,7 +271,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['accessss'])
+        return User::with(['accesss.attestation'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -290,7 +288,7 @@ class UserServices
     {
         return User::join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
             ->where("access_id", '=', $accessId)
-            ->where("User_Access.isPresent", "=", 1)
+            ->where("User_Access . isPresent", "=", 1)
             ->get();
     }
 
@@ -339,7 +337,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-present-access', [
+            Utils::$baseUrlRT . '/congress/users/send-present-access', [
                 'form_params' => [
                     'user' => json_decode(json_encode($user)),
                     'accessId' => $accessId
@@ -355,7 +353,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            'http://137.74.165.25:3002/api/congress/users/send-all', [
+            Utils::$baseUrlRT . '/congress/users/send-all', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allParticipants)),
                     'congressId' => $congressId

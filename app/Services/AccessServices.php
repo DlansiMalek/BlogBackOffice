@@ -36,6 +36,11 @@ class AccessServices
 
     }
 
+    public function getById($accessId)
+    {
+        return Access::find($accessId);
+    }
+
     private function deleteAccessByCongress($congressId)
     {
         return Access::where('congress_id', '=', $congressId)

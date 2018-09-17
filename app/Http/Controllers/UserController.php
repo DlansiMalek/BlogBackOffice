@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Services\AdminServices;
+use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
@@ -19,15 +20,18 @@ class UserController extends Controller
     protected $congressServices;
     protected $adminServices;
     protected $sharedServices;
+    protected $badgeServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
-                         SharedServices $sharedServices)
+                         SharedServices $sharedServices,
+                         BadgeServices $badgeServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
         $this->sharedServices = $sharedServices;
+        $this->badgeServices = $badgeServices;
     }
 
     public function index()
@@ -137,6 +141,14 @@ class UserController extends Controller
         }
         $users = $this->userServices->getUsersByCongress($congressId);
 
+        foreach ($users as $user) {
+            foreach ($user->accesss as $access) {
+                if ($access->pivot->isPresent == 1)
+                    $access->attestation_status = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
+                else
+                    $access->attestation_status = 0;
+            }
+        }
         return response()->json($users);
     }
 

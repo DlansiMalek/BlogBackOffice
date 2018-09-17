@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Services\AccessServices;
+use Illuminate\Http\Request;
 
 class AccessController extends Controller
 {
@@ -15,12 +16,27 @@ class AccessController extends Controller
     {
         $this->accessServices = $accessServices;
     }
-    
+
 
     function getAllAccessByCongress($congressId)
     {
 
         return response()->json($this->accessServices->getAllAccessByCongress($congressId));
+
+    }
+
+    function startAccessById(Request $request)
+    {
+        $accessId = $request->input('access_id');
+
+        if (!$access = $this->accessServices->getById($accessId)) {
+            return response()->json(['error' => 'access not found'], 404);
+        }
+
+        $access->start_date = date('Y-m-d H:i:s');
+        $access->update();
+
+        return response()->json($access);
 
     }
 

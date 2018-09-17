@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\AdminServices;
+use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
@@ -24,18 +25,21 @@ class AdminController extends Controller
     protected $congressService;
     protected $privilegeServices;
     protected $sharedServices;
+    protected $badgeServices;
 
     public function __construct(UserServices $userServices,
                                 AdminServices $adminServices,
                                 CongressServices $congressService,
                                 PrivilegeServices $privilegeServices,
-                                SharedServices $sharedServices)
+                                SharedServices $sharedServices,
+                                BadgeServices $badgeServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
         $this->congressService = $congressService;
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
+        $this->badgeServices = $badgeServices;
     }
 
 
@@ -68,13 +72,22 @@ class AdminController extends Controller
         }
 
         $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
+
+        foreach ($participator->accesss as $accesss) {
+            if ($accesss->pivot->isPresent == 1)
+                $accesss->attestation_status = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
+            else
+                $accesss->attestation_status = 0;
+        }
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
-        } else if ($participator->email_verified == 0) {
-            return response()->json(['resposne' => 'user not verified'], 404);
         }
-        return $participator;
+        /*else if ($participator->email_verified == 0) {
+            return response()->json(['resposne' => 'user not verified'], 404);
+        }*/
+        return response()->json($participator);
     }
+
 
     /**
      * @SWG\Post(
@@ -112,7 +125,8 @@ class AdminController extends Controller
      * )
      *
      */
-    public function makeUserPresentCongress(Request $request, $userId)
+    public
+    function makeUserPresentCongress(Request $request, $userId)
     {
         if (!$request->has(['isPresent', 'congressId'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'congressId']], 400);
@@ -166,7 +180,8 @@ class AdminController extends Controller
      * )
      *
      */
-    public function makeUserPresentAccess(Request $request, $userId)
+    public
+    function makeUserPresentAccess(Request $request, $userId)
     {
         //type : 1 : Enter Or 0 : Leave
         if (!$request->has(['isPresent', 'accessId', 'type'])) {
@@ -207,7 +222,8 @@ class AdminController extends Controller
      * )
      *
      */
-    public function getAuhentificatedAdmin()
+    public
+    function getAuhentificatedAdmin()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
@@ -233,7 +249,8 @@ class AdminController extends Controller
      * )
      *
      */
-    public function getAdminCongresses()
+    public
+    function getAdminCongresses()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
@@ -241,7 +258,8 @@ class AdminController extends Controller
         return $this->adminServices->getAdminCongresses($admin->admin_id);
     }
 
-    public function getAllParticipantsByCongress($congressId)
+    public
+    function getAllParticipantsByCongress($congressId)
     {
         $participants = $this->userServices->getAllParticipatorByCongress($congressId);
 
@@ -249,7 +267,8 @@ class AdminController extends Controller
 
     }
 
-    public function getAllPresenceByCongress($congressId)
+    public
+    function getAllPresenceByCongress($congressId)
     {
         $presences = $this->userServices->getAllPresentParticipatorByCongress($congressId);
 
@@ -257,7 +276,8 @@ class AdminController extends Controller
 
     }
 
-    public function updateUserWithCongress()
+    public
+    function updateUserWithCongress()
     {
         set_time_limit(3600);
 
@@ -276,7 +296,8 @@ class AdminController extends Controller
     }
 
 
-    public function updateUsers()
+    public
+    function updateUsers()
     {
         $users = Inscription_Neuro2018::where("id_inscription", ">", "129")->get();
         foreach ($users as $user) {
@@ -302,7 +323,8 @@ class AdminController extends Controller
         return response()->json(['response' => 'all users updated'], 200);
     }
 
-    public function generateUserQrCode()
+    public
+    function generateUserQrCode()
     {
         set_time_limit(3600);
         $users = User::all();
@@ -318,7 +340,8 @@ class AdminController extends Controller
         }
     }
 
-    public function generateBadges($userPos)
+    public
+    function generateBadges($userPos)
     {
         ini_set("memory_limit", "-1");
         set_time_limit(3600);
@@ -347,13 +370,15 @@ class AdminController extends Controller
         //return $pdf->stream('badges.pdf');
     }
 
-    public function cleanBadges()
+    public
+    function cleanBadges()
     {
         File::cleanDirectory(public_path() . '/badge/jnn');
         return response()->json(["message" => "Badges deleted"]);
     }
 
-    public function updatePaiedParticipator($userId, Request $request)
+    public
+    function updatePaiedParticipator($userId, Request $request)
     {
         if (!$request->has(['status', 'congressId'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['status', 'congressId']], 400);
@@ -366,7 +391,8 @@ class AdminController extends Controller
 
     }
 
-    public function generateTickets()
+    public
+    function generateTickets()
     {
         set_time_limit(3600);
         for ($i = 231; $i <= 400; $i++) {
@@ -398,7 +424,8 @@ class AdminController extends Controller
      * )
      *
      */
-    public function getListPersonels()
+    public
+    function getListPersonels()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
@@ -409,7 +436,8 @@ class AdminController extends Controller
 
     }
 
-    public function addPersonnel(Request $request)
+    public
+    function addPersonnel(Request $request)
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
@@ -421,7 +449,8 @@ class AdminController extends Controller
         return response()->json($personels);
     }
 
-    public function deletePersonnel($personnelId)
+    public
+    function deletePersonnel($personnelId)
     {
         if (!$admin = $this->adminServices->getAdminById($personnelId)) {
             return response()->json(["message" => "admin not found"], 404);
@@ -431,7 +460,8 @@ class AdminController extends Controller
 
     }
 
-    public function downloadQrCode($adminId)
+    public
+    function downloadQrCode($adminId)
     {
         if (!$admin = $this->adminServices->getAdminById($adminId)) {
             return response()->json(["error" => "admin not found"]);
@@ -451,7 +481,8 @@ class AdminController extends Controller
         }
     }
 
-    public function eliminateInscription($congressId)
+    public
+    function eliminateInscription($congressId)
     {
         $users = $this->userServices->getUsersByCongressWithAccess($congressId);
         Log::info($users);
@@ -478,7 +509,8 @@ class AdminController extends Controller
 
     }
 
-    public function sendMailAllParticipants($congressId)
+    public
+    function sendMailAllParticipants($congressId)
     {
         $users = $this->userServices->getUsersByCongress($congressId);
         $congress = $this->congressService->getCongressById($congressId);

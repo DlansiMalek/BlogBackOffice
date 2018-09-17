@@ -25,7 +25,7 @@ class SharedServices
     {
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
-            'http://137.74.165.25:8090/badge/generateParticipant', [
+            Utils::$baseUrlBadge .'/badge/generateParticipant', [
                 'json' => [
                     'badgeIdGenerator' => $badgeIdGenerator,
                     'participant' => [

@@ -15,8 +15,8 @@ class CreateTableAttestation extends Migration
     {
         Schema::create('Attestation', function (Blueprint $table) {
             $table->increments('attestation_id');
-            $table->string("attestation_generator_id_blank")->default(null);
-            $table->string("attestation_generator_id")->default(null);
+            $table->string("attestation_generator_id_blank");
+            $table->string("attestation_generator_id");
 
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableAttestation extends Migration
+class CreateTableAttestationAccess extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,12 @@ class CreateTableAttestation extends Migration
      */
     public function up()
     {
-        Schema::create('Attestation', function (Blueprint $table) {
-            $table->increments('attestation_id');
-            $table->string("attestation_generator_id_blank")->default(null);
-            $table->string("attestation_generator_id")->default(null);
+        Schema::create('Attestation_Accesss', function (Blueprint $table) {
+            $table->increments('attestation_access_id');
+            $table->string("attestation_generator_id");
 
-            $table->integer('congress_id')->unsigned();
-            $table->foreign('congress_id')->references('congress_id')->on('Congress')
+            $table->integer('access_id')->unsigned();
+            $table->foreign('access_id')->references('access_id')->on('Access')
                 ->onDelete('cascade');
 
             $table->timestamps();
