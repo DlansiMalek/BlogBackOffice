@@ -8,7 +8,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class Utils
 {
 
-     public static $baseUrlRT = 'http://apprtcongress-server/api';
+     public static $baseUrlRT = 'http://apprtcongress-server:3002/api';
     public static $baseUrlBadge = 'http://congress-file-generator_app_1';
 
     //public static $baseUrlBadge = 'http://137.74.165.25:8090';
