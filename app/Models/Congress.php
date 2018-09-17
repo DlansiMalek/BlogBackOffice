@@ -44,4 +44,9 @@ class Congress extends Model
     {
         return $this->hasMany('App\Models\User', 'congress_id', 'congress_id');
     }
+
+    public function attestation()
+    {
+        return $this->hasOne('App\Models\Attestation', 'congress_id', 'congress_id');
+    }
 }
