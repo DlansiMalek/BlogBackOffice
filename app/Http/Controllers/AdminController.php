@@ -78,10 +78,11 @@ class AdminController extends Controller
         }
 
         foreach ($participator->accesss as $accesss) {
-            if ($accesss->pivot->isPresent == 1)
+            if ($accesss->pivot->isPresent == 1) {
                 $accesss->attestation_status = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
-            else
+            } else {
                 $accesss->attestation_status = 0;
+            }
         }
 
         /*else if ($participator->email_verified == 0) {

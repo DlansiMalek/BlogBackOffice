@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
@@ -21,17 +22,20 @@ class UserController extends Controller
     protected $adminServices;
     protected $sharedServices;
     protected $badgeServices;
+    protected $accessServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
                          SharedServices $sharedServices,
-                         BadgeServices $badgeServices)
+                         BadgeServices $badgeServices,
+                         AccessServices $accessServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->accessServices = $accessServices;
     }
 
     public function index()
@@ -154,13 +158,13 @@ class UserController extends Controller
 
     public function addUserToCongress(Request $request, $congressId)
     {
+
+        $accessIds = $request->input("accessIds");
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $user = $this->userServices->addParticipant($request, $congressId);
-
-        $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
-
+        $this->userServices->affectAccess($user->user_id, $accessIds);
 
         return response()->json(['add success'], 200);
         /*$file = new Filesystem();
@@ -185,10 +189,16 @@ class UserController extends Controller
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
             return response()->json(['error' => 'user exist'], 400);
         }
+        $accessIds = $request->input("accessIds");
+
         $request->merge(["congressId" => $congressId]);
         $user = $this->userServices->registerUser($request);
 
-        $this->userServices->affectAccess($user->user_id, $request->input("accessIds"));
+        $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
+
+        $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
+
+        $this->userServices->affectAccess($user->user_id, $accessIds);
 
         if (!$user) {
             return response()->json(['response' => 'user exist'], 400);

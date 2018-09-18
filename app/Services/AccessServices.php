@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Admin_Access;
+use Illuminate\Support\Facades\Log;
 
 class AccessServices
 {
@@ -39,6 +40,25 @@ class AccessServices
     public function getById($accessId)
     {
         return Access::find($accessId);
+    }
+
+    public function getIntuitiveAccess($congressId)
+    {
+        return Access::where('congress_id', '=', $congressId)
+            ->where('intuitive', '=', 1)
+            ->get();
+    }
+
+    public function getIntuitiveAccessIds($congressId)
+    {
+        $accesss = $this->getIntuitiveAccess($congressId);
+        Log::info($accesss);
+        $res = array();
+        foreach ($accesss as $access) {
+            $accessId = $access->access_id;
+            array_push($res,$accessId );
+        }
+        return $res;
     }
 
     private function deleteAccessByCongress($congressId)
