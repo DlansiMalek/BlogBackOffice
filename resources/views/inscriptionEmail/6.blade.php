@@ -5,7 +5,8 @@
     <style>
         .important-word {
             font-weight: bold;
-            font-size: 15px;
+            color: red;
+            font-size: 20px;
         }
 
         .bold-style {
@@ -33,12 +34,12 @@ Pour faciliter l'accès rapide aux salles et pour un bon déroulement du program
 suivantes:
 <br/>
 <h2>
-    <mark>Préparez vous à l'avance!</mark>
+    Préparez vous à l'avance!
 </h2>
 <ol>
     <li>Venez au moins une demi-heure avant le début de l'atelier ou de la session.</li>
-    <li>Votre badge contenant votre QR code vous est envoyé en pièce jointe à ce mail,<span class="important-word"><mark> imprimez le à l'avance
-        , découpez le </mark></span>
+    <li>Votre badge contenant votre QR code vous est envoyé en pièce jointe à ce mail,<span class="important-word"> imprimez le à l'avance
+        ,découpez le </span>
         et ramenez le avec vous.
     </li>
     <li>
@@ -50,11 +51,11 @@ suivantes:
     <li>
         Une fois le paiement effectué, passez à la <span class="bold-style">borne n°4</span> pour avoir votre <span
                 class="bold-style">cartable</span>
-        et votre <span class="bold-style">porte badge</span>dans
+        et votre <span class="bold-style">porte badge </span>dans
         lequel vous mettrez le badge que vous avez déjà imprimé
     </li>
     <li>
-        Pour valider votre présence votre <span class="important-word"><mark>badge sera scanné</mark></span> au niveau
+        Pour valider votre présence votre <span class="important-word">badge sera scanné</span> au niveau
         du <span class="bold-style">hall des
             inscriptions</span> et <span class="bold-style">à l'entrée de
         chaque salle</span> (ateliers et sessions), ayez donc la courtoisie de le présenter à chaque fois aux membres de
@@ -67,7 +68,7 @@ suivantes:
         inscrit à l'atelier que vous choisissez par les membres de notre équipe selon la disponibilité des places
     </li>
     <li>
-        Enfin n'oubliez pas que tous nos <span class="bold-style">ateliers et sessions <mark>sont accréditées par l'INEAS</mark> (INASanté)</span>,
+        Enfin n'oubliez pas que tous nos <span class="bold-style">ateliers et sessions <span class="important-word">sont accréditées par l'INEAS </span>(INASanté)</span>,
         un <span class="important-word">minimum de
             présence</span> de 75 min pour les ateliers de 90 mn, de 100 min pour les sessions de 120 minutes et 50 min
         pour
