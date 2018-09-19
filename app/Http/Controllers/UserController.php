@@ -198,6 +198,12 @@ class UserController extends Controller
 
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
 
+
+        //DENTAIRE DE MERDE
+        if (in_array(8, $accessIds)) {
+            array_push($accessIds, 25);
+        }
+
         $this->userServices->affectAccess($user->user_id, $accessIds);
 
         if (!$user) {

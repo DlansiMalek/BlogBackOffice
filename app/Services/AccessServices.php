@@ -56,7 +56,7 @@ class AccessServices
         $res = array();
         foreach ($accesss as $access) {
             $accessId = $access->access_id;
-            array_push($res,$accessId );
+            array_push($res, $accessId);
         }
         return $res;
     }
@@ -81,6 +81,7 @@ class AccessServices
     {
         return Access::with(['participants'])
             ->where("congress_id", "=", $congressId)
+            ->where('access_parent', '=', null)
             ->get();
     }
 }

@@ -293,7 +293,7 @@ class UserServices
     {
         return User::join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
             ->where("access_id", '=', $accessId)
-            ->where("User_Access . isPresent", "=", 1)
+            ->where("User_Access.isPresent", "=", 1)
             ->get();
     }
 
