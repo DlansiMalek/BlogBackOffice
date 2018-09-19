@@ -107,6 +107,7 @@ class UserServices
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
 
+
         Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
         ], function ($message) use ($email, $congress, $pathToFile) {
             $message->attach($pathToFile);

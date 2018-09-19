@@ -11,6 +11,7 @@ use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 
 class CongressController extends Controller
@@ -151,6 +152,7 @@ class CongressController extends Controller
             return response()->json(['error' => 'congres not found'], 404);
         }
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
+
         foreach ($users as $user) {
             $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
