@@ -108,14 +108,22 @@ class UserServices
         $pathToFile = storage_path() . "/app/badge.png";
 
 
-        Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
-        ], function ($message) use ($email, $congress, $pathToFile) {
-            $message->attach($pathToFile);
-            $message->to($email)->subject($congress->object_mail_inscription);
-        });
+        try {
+            Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
+            ], function ($message) use ($email, $congress, $pathToFile) {
+                $message->attach($pathToFile);
+                $message->to($email)->subject($congress->object_mail_inscription);
+            });
+        } catch (\Exception $exception) {
+            Log::info($exception);
+            $user->email_sended = -1;
+            $user->update();
+            return 1;
+        }
 
         $user->email_sended = 1;
         $user->update();
+        return 1;
     }
 
     public function getAllPresentParticipatorByCongress($congressId)
