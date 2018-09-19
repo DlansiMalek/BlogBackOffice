@@ -7,6 +7,7 @@ use App\Models\Payement_Type;
 use App\Models\User;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use PDF;
 
@@ -105,12 +106,15 @@ class UserServices
     {
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
-        Mail::send('emailInscription', ['nom' => $user->last_name,
-            'prenom' => $user->first_name, 'congressName' => $congress->name, 'accesss' => $user->accesss
+
+        Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
         ], function ($message) use ($email, $congress, $pathToFile) {
             $message->attach($pathToFile);
             $message->to($email)->subject($congress->name);
         });
+
+        $user->email_sended = 1;
+        $user->update();
     }
 
     public function getAllPresentParticipatorByCongress($congressId)
@@ -374,6 +378,13 @@ class UserServices
     {
         return User::with(['accesss'])
             ->where('congress_id', '=', $congressId)
+            ->get();
+    }
+
+    public function getUsersEmailNotSendedByCongress($congressId)
+    {
+        return User::where('congress_id', '=', $congressId)
+            ->where('email_sended', '=', 0)
             ->get();
     }
 

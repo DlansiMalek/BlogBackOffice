@@ -8,6 +8,7 @@ use App\Services\AddInfoServices;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
+use App\Services\SharedServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
@@ -21,12 +22,14 @@ class CongressController extends Controller
     protected $accessServices;
     protected $privilegeServices;
     protected $userServices;
+    protected $sharedServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AddInfoServices $addInfoServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
-                         UserServices $userServices)
+                         UserServices $userServices,
+                         SharedServices $sharedServices)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -34,6 +37,7 @@ class CongressController extends Controller
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
+        $this->sharedServices = $sharedServices;
     }
 
 
@@ -137,6 +141,24 @@ class CongressController extends Controller
         }
 
         return $this->congressServices->getBadgesByUsers($badgeName, $users);
+    }
+
+    public function sendMailAllParticipants($congressId)
+    {
+
+
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congres not found'], 404);
+        }
+        $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
+        foreach ($users as $user) {
+            $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
+                ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                $user->qr_code);
+            $this->userServices->sendMail($user, $congress);
+        }
+
+        return response()->json(['message' => 'send mail successs']);
     }
 
 }

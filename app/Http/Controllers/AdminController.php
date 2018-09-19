@@ -512,17 +512,5 @@ class AdminController extends Controller
 
     }
 
-    public
-    function sendMailAllParticipants($congressId)
-    {
-        $users = $this->userServices->getUsersByCongress($congressId);
-        $congress = $this->congressService->getCongressById($congressId);
-        foreach ($users as $user) {
-            $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
-                $user->last_name . " " . $user->first_name,
-                $user->qr_code);
-            $this->userServices->sendMail($user, $congress);
-        }
-        return response()->json(['message' => 'send mail successs']);
-    }
+
 }

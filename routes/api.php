@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -111,8 +112,13 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
             Route::get('{admin_id}/qr-code', 'AdminController@downloadQrCode');
         });
         Route::group(['prefix' => 'congress'], function () {
+            Route::group(['prefix' => '{congressId}'], function () {
+                Route::group(['prefix' => 'email'], function () {
+                    Route::get('send-confirm-inscription', 'CongressController@sendMailAllParticipants');
+                });
+                Route::post('edit', 'CongressController@editCongress');
+            });
             Route::post('add', 'CongressController@addCongress');
-            Route::post('{congressId}/edit', 'CongressController@editCongress');
         });
     });
     Route::group(['prefix' => 'qrcode'], function () {
@@ -130,6 +136,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
             Route::post('paied-status', 'AdminController@updatePaiedParticipator');
         });
     });
+
 
 });
 //Additional Info API
