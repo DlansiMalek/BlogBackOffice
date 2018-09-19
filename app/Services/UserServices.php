@@ -110,7 +110,7 @@ class UserServices
         Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
         ], function ($message) use ($email, $congress, $pathToFile) {
             $message->attach($pathToFile);
-            $message->to($email)->subject($congress->name);
+            $message->to($email)->subject($congress->object_mail_inscription);
         });
 
         $user->email_sended = 1;
