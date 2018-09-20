@@ -135,9 +135,9 @@ class UserServices
 
 
         try {
-            Mail::send('emailCredentialsOrganizer', ['email' => $email,'password'=>$admin->passwordDecrypt
-            ], function ($message) use ($email,$pathToFile) {
-                $message->attach($pathToFile);
+            Mail::send('emailCredentialsOrganizer', ['email' => $email, 'password' => $admin->passwordDecrypt
+            ], function ($message) use ($email, $pathToFile) {
+                // $message->attach($pathToFile);
                 $message->to($email)->subject('Vos identifiants pour VayeCongress');
             });
         } catch (\Exception $exception) {
