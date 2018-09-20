@@ -316,7 +316,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['accesss.attestation'])
+        return User::with(['grade', 'accesss.attestation'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
