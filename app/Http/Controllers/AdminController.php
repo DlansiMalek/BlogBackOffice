@@ -522,5 +522,19 @@ class AdminController extends Controller
 
     }
 
+    public function sendCredentialsViaEmailToOrganizer($adminId)
+    {
+
+        if (!$admin = $this->adminServices->getAdminById($adminId)) {
+            return response()->json(["error" => "admin not found"]);
+        }
+
+        /*
+        $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
+            $admin->name,
+            $admin->passwordDecrypt);
+        */
+        $this->userServices->sendCredentialsOrganizerMail($admin);
+    }
 
 }

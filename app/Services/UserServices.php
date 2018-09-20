@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Access_Presence;
+use App\Models\Admin;
 use App\Models\Payement_Type;
 use App\Models\User;
 use App\Models\User_Access;
@@ -124,6 +125,25 @@ class UserServices
 
         $user->email_sended = 1;
         $user->update();
+        return 1;
+    }
+
+    public function sendCredentialsOrganizerMail(Admin $admin)
+    {
+        $email = $admin->email;
+        $pathToFile = storage_path() . "/app/badge.png";
+
+
+        try {
+            Mail::send('emailCredentialsOrganizer', ['email' => $email,'password'=>$admin->passwordDecrypt
+            ], function ($message) use ($email,$pathToFile) {
+                $message->attach($pathToFile);
+                $message->to($email)->subject('Vos identifiants pour VayeCongress');
+            });
+        } catch (\Exception $exception) {
+            Log::info($exception);
+            return 1;
+        }
         return 1;
     }
 

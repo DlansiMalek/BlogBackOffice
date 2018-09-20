@@ -17,6 +17,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property mixed email
  * @property mixed name
  * @property mixed mobile
+ * @property mixed passwordDecrypt
  */
 class Admin extends Authenticatable implements JWTSubject
 {
