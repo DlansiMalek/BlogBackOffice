@@ -155,6 +155,13 @@ class UserServices
         if ($user->isPresent != 1 && $isPresent == 1) {
             $this->sendingToOrganisateur($user);
         }
+        if ($user->isPresent == 1) {
+            $userAccesses = $user->accesss;
+            foreach ($userAccesses as $userAccess) {
+                $userAccess->present_in_congress++;
+                $userAccess->update();
+            }
+        }
         $user->isPresent = $isPresent;
         $user->update();
 
@@ -459,6 +466,7 @@ class UserServices
             $this->deleteAccessById($user_id, $item);
         }
     }
+
 
     private function isExistCongress($user, $congressId)
     {

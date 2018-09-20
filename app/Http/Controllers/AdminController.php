@@ -143,7 +143,6 @@ class AdminController extends Controller
             return response()->json(['response' => 'participator not participated in this congress'], 404);
         }
         $this->userServices->makePresentToCongress($participator, $request->input('isPresent'));
-
         return response()->json(["message" => "success sending and scaning"], 200);
     }
 

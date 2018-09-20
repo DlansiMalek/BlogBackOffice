@@ -15,7 +15,7 @@ class Access extends Model
     public $timestamps = true;
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
-    protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block', 'seuil'];
+    protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block', 'seuil', 'present_in_congress'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function responsibles()

@@ -116,7 +116,8 @@ class CongressController extends Controller
         }
 
         if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(2, $admin->admin_id)) {
-            return response()->json($this->congressServices->getCongressAllowedAccess($admin->admin_id));
+            //return response()->json($this->congressServices->getCongressAllowedAccess($admin->admin_id));
+            return response()->json($this->congressServices->getCongressAllAccess($admin->responsible));
         }
 
         return response()->json(["message" => "bizzare"]);
