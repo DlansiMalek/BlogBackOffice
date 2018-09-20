@@ -267,7 +267,7 @@ class AdminController extends Controller
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        return $this->adminServices->getAdminCongresses($admin->admin_id);
+        return $this->adminServices->getAdminCongresses($admin);
     }
 
     public
@@ -389,6 +389,7 @@ class AdminController extends Controller
         return response()->json(["message" => "Badges deleted"]);
     }
 
+    /*
     public
     function updatePaiedParticipator($userId, Request $request)
     {
@@ -402,6 +403,7 @@ class AdminController extends Controller
         return response()->json(["message" => "status update success"]);
 
     }
+    */
 
     public
     function generateTickets()

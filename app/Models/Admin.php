@@ -11,6 +11,13 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
+/**
+ * @property mixed responsable
+ * @property mixed admin_id
+ * @property mixed email
+ * @property mixed name
+ * @property mixed mobile
+ */
 class Admin extends Authenticatable implements JWTSubject
 {
     protected $table = 'Admin';

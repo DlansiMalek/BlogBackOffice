@@ -11,8 +11,8 @@ namespace App\Services;
 
 use App\Models\Admin;
 use App\Models\Admin_Congress;
+use App\Models\Admin_Privilege;
 use App\Models\Congress;
-use App\Models\Congress_User;
 use Illuminate\Http\Request;
 use JWTAuth;
 
@@ -50,13 +50,24 @@ class AdminServices
             ->first();
     }
 
-    public function getAdminCongresses($admin_id)
+    public function getAdminCongresses(Admin $admin)
     {
-        return Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
-            ->where("admin_id", "=", $admin_id)
-            ->get();
+        if (count(Admin_Privilege::where(function ($query) use ($admin) {
+                $query->where('admin_id', '=', $admin->admin_id)->where('privilege_id', '=', '2');
+            })->get()) > 0
+        ) {
+            $congresses = Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
+                ->where("admin_id", "=", $admin->responsable)
+                ->get();
+        } else {
+            $congresses = Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
+                ->where("admin_id", "=", $admin->admin_id)
+                ->get();
+        }
+        return $congresses;
     }
 
+    /*
     public function updateStatusPaied($userId, $status, $congressId)
     {
 
@@ -70,6 +81,7 @@ class AdminServices
         }
         return $userCongress;
     }
+    */
 
     public function getListPersonelsByAdmin($admin_id)
     {
