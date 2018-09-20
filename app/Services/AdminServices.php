@@ -86,7 +86,7 @@ class AdminServices
     public function getListPersonelsByAdmin($admin_id)
     {
         return Admin::where("responsible", "=", $admin_id)
-            ->with(['congress_responsible'])
+            ->with(['congress_responsible.badge'])
             ->get();
     }
 
