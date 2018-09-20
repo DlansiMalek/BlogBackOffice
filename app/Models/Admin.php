@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
- * @property mixed responsable
+ * @property mixed responsible
  * @property mixed admin_id
  * @property mixed email
  * @property mixed name

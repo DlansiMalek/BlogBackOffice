@@ -57,7 +57,7 @@ class AdminServices
             })->get()) > 0
         ) {
             $congresses = Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
-                ->where("admin_id", "=", $admin->responsable)
+                ->where("admin_id", "=", $admin->responsible)
                 ->get();
         } else {
             $congresses = Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
