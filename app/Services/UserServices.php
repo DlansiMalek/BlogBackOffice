@@ -154,8 +154,7 @@ class UserServices
     {
         if ($user->isPresent != 1 && $isPresent == 1) {
             $this->sendingToOrganisateur($user);
-        }
-        if ($user->isPresent == 1) {
+            
             $userAccesses = $user->accesss;
             foreach ($userAccesses as $userAccess) {
                 $userAccess->total_present_in_congress++;
