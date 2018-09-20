@@ -158,7 +158,7 @@ class UserServices
         if ($user->isPresent == 1) {
             $userAccesses = $user->accesss;
             foreach ($userAccesses as $userAccess) {
-                $userAccess->present_in_congress++;
+                $userAccess->total_present_in_congress++;
                 $userAccess->update();
             }
         }
