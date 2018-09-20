@@ -74,7 +74,8 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::find($user_id);
+        return User::with(['accesss'])->where('user_id', '=', $user_id)
+            ->first();
     }
 
     public function updateUser($request, $updateUser)
@@ -217,6 +218,13 @@ class UserServices
 
     }
 
+    public function affectAccessIds($user_id, $accessIds)
+    {
+        foreach ($accessIds as $item) {
+            $this->affectAccessById($user_id, $item);
+        }
+    }
+
     public function affectAccess($user_id, $accessIds)
     {
         $access1 = 0;
@@ -235,10 +243,8 @@ class UserServices
                 }
                 $access2 = 1;
             }
-            $user_access = new User_Access();
-            $user_access->access_id = $accessIds[$i];
-            $user_access->user_id = $user_id;
-            $user_access->save();
+            $this->affectAccessById($user_id, $accessIds[$i]);
+
         }
     }
 
@@ -397,6 +403,63 @@ class UserServices
             ->get();
     }
 
+    public function addFastUser(Request $request)
+    {
+        $newUser = new User();
+        $newUser->first_name = $request->input('first_name');
+        $newUser->last_name = $request->input('last_name');
+        $newUser->lieu_ex_id = $request->input('lieu_ex_id');
+        $newUser->grade_id = $request->input('grade_id');
+        $newUser->gender = $request->input("gender");
+
+        if ($request->has('email') && $request->input('email') != "")
+            $newUser->email = $request->input('email');
+        if ($request->has("mobile"))
+            $newUser->mobile = $request->input("mobile");
+        /* Generation QRcode */
+        $qrcode = Utils::generateCode($newUser->user_id);
+        $newUser->qr_code = $qrcode;
+        $newUser->congress_id = $request->input("congressId");
+        $newUser->save();
+        return $newUser;
+    }
+
+    public function editFastUser($newUser, Request $request)
+    {
+        $newUser->first_name = $request->input('first_name');
+        $newUser->last_name = $request->input('last_name');
+        $newUser->lieu_ex_id = $request->input('lieu_ex_id');
+        $newUser->grade_id = $request->input('grade_id');
+        $newUser->gender = $request->input("gender");
+
+        if ($request->has('email') && $request->input('email') != "")
+            $newUser->email = $request->input('email');
+        if ($request->has("mobile"))
+            $newUser->mobile = $request->input("mobile");
+
+        $newUser->update();
+        return $newUser;
+    }
+
+    public function updateAccess($user_id, array $accessDiff, array $userAccessIds)
+    {
+        foreach ($accessDiff as $item) {
+            if (in_array($item, $userAccessIds)) {
+                $this->deleteAccessById($user_id, $item);
+            } else {
+                $this->affectAccessById($user_id, $item);
+            }
+        }
+
+    }
+
+    public function deleteAccess($user_id, array $accessDiffDeleted)
+    {
+        foreach ($accessDiffDeleted as $item) {
+            $this->deleteAccessById($user_id, $item);
+        }
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
@@ -425,5 +488,20 @@ class UserServices
             ->where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
             ->first();
+    }
+
+    private function affectAccessById($user_id, $accessId)
+    {
+        $user_access = new User_Access();
+        $user_access->access_id = $accessId;
+        $user_access->user_id = $user_id;
+        $user_access->save();
+    }
+
+    private function deleteAccessById($user_id, $accessId)
+    {
+        return User_Access::where('user_id', '=', $user_id)
+            ->where('access_id', '=', $accessId)
+            ->delete();
     }
 }

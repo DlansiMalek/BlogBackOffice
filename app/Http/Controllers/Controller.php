@@ -6,6 +6,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 /**
  * @SWG\Swagger(
  *   schemes={"http","https"},
@@ -15,15 +16,13 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
  *     version="1.0.0"
  *   )
  * )
- *@SWG\SecurityScheme(
+ * @SWG\SecurityScheme(
  *         securityDefinition="Bearer",
  *         type="apiKey",
  *         name="Authorization",
  *         in="header"
  *     ),
  */
-
-
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
@@ -40,4 +39,9 @@ SELECT 0 , U.user_id , 14 FROM User as U
          WHERE UA.access_id = 14)
  *
  *
+ */
+
+/*
+ *
+ UPDATE User SET last_name = REPLACE(last_name,'è','e') //remove accent
  */

@@ -11,6 +11,8 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Admin_Access;
+use App\Models\User;
+use App\Models\User_Access;
 use Illuminate\Support\Facades\Log;
 
 class AccessServices
@@ -61,13 +63,33 @@ class AccessServices
         return $res;
     }
 
-    private function deleteAccessByCongress($congressId)
+    public function getAccessIdsByAccess($accesss)
+    {
+        $res = array();
+        foreach ($accesss as $access) {
+            array_push($res, $access->access_id);
+        }
+        return $res;
+    }
+
+    public function getUserAccessByAccessId($accessId)
+    {
+        return User::whereHas('accesss', function ($query) use ($accessId) {
+            $query->where('Access.access_id', '=', $accessId);
+        })
+            ->get();
+    }
+
+
+    private
+    function deleteAccessByCongress($congressId)
     {
         return Access::where('congress_id', '=', $congressId)
             ->delete();
     }
 
-    public function addResponsibles($access_id, $responsibleIds)
+    public
+    function addResponsibles($access_id, $responsibleIds)
     {
         foreach ($responsibleIds as $responsibleId) {
             $admin_access = new Admin_Access();
@@ -77,7 +99,8 @@ class AccessServices
         }
     }
 
-    public function getAllAccessByCongress($congressId)
+    public
+    function getAllAccessByCongress($congressId)
     {
         return Access::with(['participants'])
             ->where("congress_id", "=", $congressId)

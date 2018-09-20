@@ -15,7 +15,7 @@ class Grade extends Model
     public $timestamps = true;
     protected $table = 'Grade';
     protected $primaryKey = 'grade_id';
-    protected $fillable = ['label'];
+    protected $fillable = ['label', 'naming'];
     protected $dates = ['created_at', 'updated_at'];
 
 

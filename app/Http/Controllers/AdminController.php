@@ -204,8 +204,17 @@ class AdminController extends Controller
         if ($user_access->isPresent == 0 && $request->input('type') == 0) {
             return response()->json(['message' => 'cannot leave , enter first'], 401);
         }
+
         $this->userServices->makePresentToAccess($user_access, $participator,
             $request->input('accessId'), $request->input('isPresent'), $request->input('type'));
+
+
+        //DENTAIRE SHIT
+        if ($request->input('accessId') == 8) {
+            $user_shit = $this->userServices->getUserAccessByUser($participator->user_id, 25);
+            $this->userServices->makePresentToAccess($user_shit, $participator,
+                25, $request->input('isPresent'), $request->input('type'));
+        }
 
         return response()->json(["message" => "success sending and scaning"], 200);
     }

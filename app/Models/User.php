@@ -18,7 +18,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id', 'isBadgeGeted'
-        , 'price', 'email_sended', 'email_verified', 'verification_code', 'type', 'congress_id'
+        , 'price', 'email_sended', 'email_verified', 'verification_code', 'type', 'congress_id', 'lieu_ex_id', 'grade_id'
     ];
     /**
      * The attributes that should be hidden for arrays.
@@ -39,6 +39,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
+    }
+
+    function grade()
+    {
+        return $this->belongsTo('App\Models\Grade', 'grade_id', 'grade_id');
     }
 
 }

@@ -18,4 +18,9 @@ class User_Access extends Model
     protected $primaryKey = 'user_access_id';
     protected $fillable = ['user_id', 'access_id', 'isPresent'];
     protected $dates = ['created_at', 'updated_at'];
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'user_id', 'user_id');
+    }
 }

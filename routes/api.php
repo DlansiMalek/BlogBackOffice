@@ -67,7 +67,6 @@ Route::group(['prefix' => 'congress'], function () {
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
 
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
-        Route::post('badge/valider', 'BadgeController@validerBadge');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
 
         Route::group(['prefix' => 'attestation'], function () {
@@ -86,7 +85,10 @@ Route::group(['prefix' => 'user'], function () {
             Route::get('list', 'UserController@getUsersByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@registerUserToCongress');
+            Route::post('add-fast-user', 'UserController@addingFastUserToCongress');
+            Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
+            Route::post('status-presence', 'UserController@getUserStatusPresences');
         });
 
     });

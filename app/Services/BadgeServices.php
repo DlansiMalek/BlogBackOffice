@@ -35,12 +35,17 @@ class BadgeServices
             ->first();
     }
 
-    public function validerBadge($congressId, $badgeIdGenerator)
+    public function validerBadge($congressId, $badgeIdGenerator, $organiser)
     {
         $badge = new Badge();
         $badge->congress_id = $congressId;
-        $badge->badge_id_generator = $badgeIdGenerator;
+        if ($organiser == 1) {
+            $badge->badge_org_id_generator = $badgeIdGenerator;
+        } else {
+            $badge->badge_id_generator = $badgeIdGenerator;
+        }
         $badge->save();
+        
         return $badge;
     }
 

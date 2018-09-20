@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Congress;
+use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Support\Facades\Config;
 use JWTAuth;
@@ -16,7 +17,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["users", "attestation", "accesss.participants", "badge", "responsibles", "accesss.responsibles", "add_infos"])
+        return Congress::with(["users", "attestation", "accesss.participants", "accesss.attestation", "badge", "responsibles", "accesss.responsibles", "add_infos"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -111,6 +112,14 @@ class CongressServices
 
         return $congress;
 
+    }
+
+    public function getUsersByStatus($congressId, int $status)
+    {
+        return User::with(['grade'])
+            ->where('isPresent', '=', $status)
+            ->where('congress_id', '=', $congressId)
+            ->get();
     }
 
 }
