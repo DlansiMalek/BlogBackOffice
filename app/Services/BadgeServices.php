@@ -45,7 +45,7 @@ class BadgeServices
             $badge->badge_id_generator = $badgeIdGenerator;
         }
         $badge->save();
-        
+
         return $badge;
     }
 
@@ -115,10 +115,10 @@ class BadgeServices
             }
             $calculatedTime += $diff;
         }
-        if ($diff >= $access->seuil) {
-            return 1;
+        if ($calculatedTime >= $access->seuil) {
+            return array('enabled' => 1, 'time' => $calculatedTime);
         } else {
-            return 2;
+            return array('enabled' => 2, 'time' => $calculatedTime);
         }
     }
 

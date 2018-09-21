@@ -147,9 +147,11 @@ class UserController extends Controller
 
         foreach ($users as $user) {
             foreach ($user->accesss as $access) {
-                if ($access->pivot->isPresent == 1)
-                    $access->attestation_status = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                else
+                if ($access->pivot->isPresent == 1) {
+                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
+                    $access->attestation_status = $infoPresence['enabled'];
+                    $access->time_in_access = $infoPresence['time'];
+                } else
                     $access->attestation_status = 0;
             }
         }
