@@ -138,7 +138,7 @@ class UserServices
             Mail::send('emailCredentialsOrganizer', ['email' => $email, 'password' => $admin->passwordDecrypt
             ], function ($message) use ($email, $pathToFile) {
                 $message->attach($pathToFile);
-                $message->to($email)->subject('Vos identifiants pour VayeCongress');
+                $message->to($email)->subject('Accès à la plateforme VayeCongress');
             });
         } catch (\Exception $exception) {
             Log::info($exception);
