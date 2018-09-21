@@ -5,10 +5,11 @@
 </head>
 <body>
 <p>
-    Cher collègue, <br/>
+    Cher organisateur, <br/>
 </p>
 
-<p>Vous trouviez ci-dessous vos identifiants pour acceder à la plateforme <a href="https://congress.vayetek.com">VayeCongress</a>:
+<p>Vous trouverez ci-dessous vos codes d'accés à la plateforme <a href="https://congress.vayetek.com">VayeCongress</a>:
+    ainsi que votre badge contenant le QrCode unique pour utiliser l'application android de scannage.
 </p>
 <ul>
     <li><strong>Email</strong> : {{ $email }}</li>
