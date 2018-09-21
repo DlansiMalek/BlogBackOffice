@@ -537,7 +537,7 @@ class AdminController extends Controller
         }
 
 
-        $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
+        $this->sharedServices->saveFileInPublic($congress->badge->badge_org_id_generator,
             $admin->name,
             $admin->passwordDecrypt);
 
