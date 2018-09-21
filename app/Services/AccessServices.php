@@ -74,7 +74,7 @@ class AccessServices
 
     public function getUserAccessByAccessId($accessId)
     {
-        return User::whereHas('accesss', function ($query) use ($accessId) {
+        return User::with(['grade'])->whereHas('accesss', function ($query) use ($accessId) {
             $query->where('Access.access_id', '=', $accessId);
         })
             ->get();
