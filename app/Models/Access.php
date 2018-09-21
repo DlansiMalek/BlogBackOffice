@@ -25,7 +25,8 @@ class Access extends Model
 
     public function participants()
     {
-        return $this->belongsToMany('App\Models\User', 'User_Access', 'access_id', 'user_id');
+        return $this->belongsToMany('App\Models\User', 'User_Access', 'access_id', 'user_id')
+            ->withPivot('isPresent');
     }
 
     public function attestation()

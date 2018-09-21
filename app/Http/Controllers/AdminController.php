@@ -522,18 +522,25 @@ class AdminController extends Controller
 
     }
 
-    public function sendCredentialsViaEmailToOrganizer($adminId)
+    public function sendCredentialsViaEmailToOrganizer($adminId, Request $request)
     {
+
+        $congressId = $request->input('congressId');
+
+        if (!$congress = $this->congressService->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+
 
         if (!$admin = $this->adminServices->getAdminById($adminId)) {
             return response()->json(["error" => "admin not found"]);
         }
 
-        /*
+
         $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
             $admin->name,
             $admin->passwordDecrypt);
-        */
+
         $this->userServices->sendCredentialsOrganizerMail($admin);
     }
 
