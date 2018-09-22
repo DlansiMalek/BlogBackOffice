@@ -79,7 +79,9 @@ class AdminController extends Controller
 
         foreach ($participator->accesss as $accesss) {
             if ($accesss->pivot->isPresent == 1) {
-                $accesss->attestation_status = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
+                $infoPresence = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
+                $accesss->attestation_status = $infoPresence['enabled'];
+                $accesss->time_in_access = $infoPresence['time'];
             } else {
                 $accesss->attestation_status = 0;
             }

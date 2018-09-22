@@ -344,7 +344,7 @@ class UserController extends Controller
             $usersAccess = $this->accessServices->getUserAccessByAccessId($accessId);
             $result = array();
             foreach ($usersAccess as $user) {
-                if ($this->badgeServices->getAttestationEnabled($user->user_id, $access) == $autorisation) {
+                if ($this->badgeServices->getAttestationEnabled($user->user_id, $access)['enabled'] == $autorisation) {
                     array_push($result, $user);
                 }
             }
