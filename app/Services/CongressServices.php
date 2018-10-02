@@ -5,19 +5,18 @@ namespace App\Services;
 use App\Models\Congress;
 use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
-use Illuminate\Support\Facades\Config;
-use JWTAuth;
 use Illuminate\Filesystem\Filesystem;
-use PDF;
-use Swagger\Util;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
+use JWTAuth;
+use PDF;
 
 class CongressServices
 {
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["users", "attestation", "accesss.participants", "accesss.attestation", "badge", "responsibles", "accesss.responsibles", "add_infos"])
+        return Congress::with(["users", "attestation", "accesss.participants", "accesss.attestation", "badge", "accesss"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -49,19 +48,9 @@ class CongressServices
 
     public function getCongressAllAccess($adminId)
     {
-        return Congress::with(["accesss.responsibles", "accesss"])
+        return Congress::with(["accesss"])
             ->where("admin_id", "=", $adminId)
             ->get();
-    }
-
-    public function getCongressAllowedAccess($adminId)
-    {
-        return Congress::with(["accesss.responsibles", "accesss"])->where(function ($q) use ($adminId) {
-            $q->whereHas("accesss.responsibles", function ($query) use ($adminId) {
-                $query->where("admin_id", "=", $adminId);
-            });
-        })->get();
-
     }
 
     public function getBadgesByUsers($badgeName, $users)

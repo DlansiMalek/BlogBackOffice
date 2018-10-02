@@ -17,17 +17,22 @@ class CreateUserTable extends Migration
             $table->increments('user_id');
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('type')->default('');
             $table->integer('gender')->nullable();
             $table->string('mobile');
             $table->string('email');
-            $table->tinyInteger('email_verified')->default(1);
+            $table->tinyInteger('email_verified')->default(0);
+
             $table->string('verification_code')
                 ->nullable();
 
             $table->string('qr_code');
             $table->tinyInteger('isPresent')->unsigned()->default(0);
 
+            $table->tinyInteger('isPaied')->unsigned()->default(0);
+
+            # champs calculé
+            $table->double('price')
+                ->nullable();
 
             #foreign congressId
             $table->integer('congress_id')->unsigned();
@@ -48,6 +53,11 @@ class CreateUserTable extends Migration
             #foreign payement
             $table->integer('lieu_ex_id')->unsigned()->nullable();
             $table->foreign('lieu_ex_id')->references('lieu_ex_id')->on('Lieu_Ex')
+                ->onDelete('cascade');
+
+            #labo prise en charge
+            $table->integer('labo_id')->unsigned()->nullable();
+            $table->foreign('labo_id')->references('labo_id')->on('Labo')
                 ->onDelete('cascade');
 
 

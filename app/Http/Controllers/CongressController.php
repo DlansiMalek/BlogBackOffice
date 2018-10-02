@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\User;
 use App\Services\AccessServices;
-use App\Services\AddInfoServices;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 
 class CongressController extends Controller
@@ -19,14 +18,12 @@ class CongressController extends Controller
 
     protected $congressServices;
     protected $adminServices;
-    protected $addInfoServices;
     protected $accessServices;
     protected $privilegeServices;
     protected $userServices;
     protected $sharedServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
-                         AddInfoServices $addInfoServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
                          UserServices $userServices,
@@ -34,7 +31,6 @@ class CongressController extends Controller
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
-        $this->addInfoServices = $addInfoServices;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
@@ -46,9 +42,8 @@ class CongressController extends Controller
     {
         $congress = $this->addFullCongress($request);
 
-
-        return response()->json(["message" => "add congress sucess", "data" => $this->congressServices->getCongressById($congress->congress_id)]);
-
+        return response()->json(["message" => "add congress sucess",
+            "data" => $this->congressServices->getCongressById($congress->congress_id)]);
 
     }
 
@@ -60,13 +55,13 @@ class CongressController extends Controller
 
         $admin = $this->adminServices->retrieveAdminFromToken();
 
+        if (!$this->isAllowedEdit($congress->congress_id)) {
+            return response()->json(['error' => 'edit not allowed'], 401);
+        }
+
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
-        $this->adminServices->addResponsibleCongress($request->input("responsibleIds"), $congress->congress_id);
-        $this->addInfoServices->addInfoToCongress($congress->congress_id, $request->input("addInfoIds"));
         $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-
-        //$this->addFullCongress($request);
 
         return response()->json(["message" => "edit congress success"]);
     }
@@ -76,17 +71,17 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["error" => "congress not found"], 404);
         }
-
         return response()->json($congress);
     }
 
-    private function addFullCongress($request)
+    private function addFullCongress(Request $request)
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
 
-        $congress = $this->congressServices->addCongress($request->input("name"), $request->input("date"), $admin->admin_id);
-        $this->adminServices->addResponsibleCongress($request->input("responsibleIds"), $congress->congress_id);
-        $this->addInfoServices->addInfoToCongress($congress->congress_id, $request->input("addInfoIds"));
+        $congress = $this->congressServices->addCongress(
+            $request->input("name"),
+            $request->input("date"),
+            $admin->admin_id);
         $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
         return $congress;
@@ -116,12 +111,10 @@ class CongressController extends Controller
         }
 
         if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(2, $admin->admin_id)) {
-            //return response()->json($this->congressServices->getCongressAllowedAccess($admin->admin_id));
             return response()->json($this->congressServices->getCongressAllAccess($admin->responsible));
         }
 
         return response()->json(["message" => "bizzare"]);
-
     }
 
     public function getBadgesByCongress($congressId)
@@ -160,6 +153,14 @@ class CongressController extends Controller
         }
 
         return response()->json(['message' => 'send mail successs']);
+    }
+
+    private function isAllowedEdit($congress_id)
+    {
+        $users = User::where('congress_id', '=', $congress_id)
+            ->get();
+
+        return sizeof($users) == 0;
     }
 
 }

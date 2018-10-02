@@ -17,8 +17,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id', 'isBadgeGeted'
-        , 'price', 'email_sended', 'email_verified', 'verification_code', 'type', 'congress_id', 'lieu_ex_id', 'grade_id'
+        'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
+        'price', 'email_sended', 'email_verified', 'verification_code', 'congress_id', 'lieu_ex_id', 'grade_id',
+        'labo_id', 'pack_id'
     ];
     /**
      * The attributes that should be hidden for arrays.
@@ -30,11 +31,6 @@ class User extends Authenticatable
     ];
     protected $dates = ['created_at', 'updated_at'];
 
-    function city()
-    {
-        return $this->hasOne('App\Models\City', 'city_id', 'city_id');
-    }
-
     function accesss()
     {
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
@@ -44,6 +40,11 @@ class User extends Authenticatable
     function grade()
     {
         return $this->belongsTo('App\Models\Grade', 'grade_id', 'grade_id');
+    }
+
+    function labo()
+    {
+        return $this->belongsTo('App\Models\Labo', 'labo_id', 'labo_id');
     }
 
 }

@@ -10,9 +10,7 @@ namespace App\Services;
 
 
 use App\Models\Access;
-use App\Models\Admin_Access;
 use App\Models\User;
-use App\Models\User_Access;
 use Illuminate\Support\Facades\Log;
 
 class AccessServices
@@ -21,20 +19,18 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
-        // $this->deleteAccessByCongress($congress_id);
         foreach ($accesss as $access) {
             $accessData = new Access();
             $accessData->name = $access["name"];
             $accessData->price = $access["price"];
-            if (array_key_exists('ponderation', $access))
+            /*if (array_key_exists('ponderation', $access))
                 $accessData->ponderation = $access["ponderation"];
+            */
             if (array_key_exists('duration', $access))
                 $accessData->duration = $access["duration"];
 
             $accessData->congress_id = $congress_id;
             $accessData->save();
-
-            $this->addResponsibles($accessData->access_id, $access["responsibleIds"]);
         }
 
     }
@@ -88,16 +84,6 @@ class AccessServices
             ->delete();
     }
 
-    public
-    function addResponsibles($access_id, $responsibleIds)
-    {
-        foreach ($responsibleIds as $responsibleId) {
-            $admin_access = new Admin_Access();
-            $admin_access->admin_id = $responsibleId;
-            $admin_access->access_id = $access_id;
-            $admin_access->save();
-        }
-    }
 
     public
     function getAllAccessByCongress($congressId)

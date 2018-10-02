@@ -52,6 +52,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('validate/{validation_code}', 'UserController@validateUser');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
+        Route::put('change-paiement', 'UserController@changePaiement');
     });
 
 
@@ -142,14 +143,6 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 
 
 });
-//Additional Info API
-Route::group(['prefix' => 'add-info'], function () {
-
-    Route::group(['prefix' => 'type'], function () {
-        Route::get('list', 'AddInfoController@getAllTypesInfo');
-    });
-
-});
 //Access API
 Route::group(['prefix' => 'access'], function () {
     Route::group(['prefix' => 'congress'], function () {
@@ -157,6 +150,19 @@ Route::group(['prefix' => 'access'], function () {
     });
 
 });
+
+//Pack API
+Route::group(['prefix' => 'pack'], function () {
+    Route::group(['prefix' => 'congress'], function () {
+        Route::get('{congress_id}/list', 'PackController@getAllPackByCongress');
+    });
+
+});
+//Labo API
+Route::group(['prefix' => 'labo'], function () {
+    Route::get('list', 'LaboController@getAll');
+});
+
 
 //Geo API
 Route::group(['prefix' => 'geo'], function () {

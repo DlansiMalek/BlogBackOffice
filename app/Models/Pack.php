@@ -10,14 +10,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Add_Info extends Model
+class Pack extends Model
 {
-    protected $table = 'Add_Info';
-    protected $primaryKey = 'add_info_id';
-    protected $fillable = ['type_info_id', 'congress_id'];
-
-
     public $timestamps = true;
+    protected $table = 'Pack';
+    protected $primaryKey = 'pack_id';
+    protected $fillable = ['label', 'description','price','congress_id'];
     protected $dates = ['created_at', 'updated_at'];
 
 

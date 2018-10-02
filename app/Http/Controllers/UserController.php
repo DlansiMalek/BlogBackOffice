@@ -355,5 +355,19 @@ class UserController extends Controller
         }
     }
 
+    public function changePaiement($userId, Request $request)
+    {
+        $isPaied = $request->input('status');
+
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+
+        $user->isPaied = $isPaied;
+        $user->update();
+
+        return response()->json(['message' => 'user updated success']);
+    }
+
 
 }

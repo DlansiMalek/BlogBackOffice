@@ -56,11 +56,11 @@ class AdminServices
                 $query->where('admin_id', '=', $admin->admin_id)->where('privilege_id', '=', '2');
             })->get()) > 0
         ) {
-            $congresses = Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
+            $congresses = Congress::with(["badge", "attestation", "accesss.attestation"])
                 ->where("admin_id", "=", $admin->responsible)
                 ->get();
         } else {
-            $congresses = Congress::with(["badge", "attestation", "responsibles", "add_infos", "accesss.attestation"])
+            $congresses = Congress::with(["badge", "attestation", "accesss.attestation"])
                 ->where("admin_id", "=", $admin->admin_id)
                 ->get();
         }

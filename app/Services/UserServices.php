@@ -316,7 +316,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['grade', 'accesss.attestation'])
+        return User::with(['grade', 'accesss.attestation','labo'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -438,6 +438,16 @@ class UserServices
         $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
 
+        if ($request->has('price'))
+            $newUser->price = $request->input('price');
+
+        if ($request->has('labo_id') && $request->input('labo_id') != 0) {
+            $newUser->labo_id = $request->input('labo_id');
+        }
+        if ($request->has('pack_id') && $request->input('pack_id') != 0) {
+            $newUser->pack_id = $request->input('pack_id');
+        }
+
         if ($request->has('email') && $request->input('email') != "")
             $newUser->email = $request->input('email');
         if ($request->has("mobile"))
@@ -457,6 +467,20 @@ class UserServices
         $newUser->lieu_ex_id = $request->input('lieu_ex_id');
         $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
+
+        if ($request->has('price'))
+            $newUser->price = $request->input('price');
+        else
+            $newUser->price = null;
+
+        if ($request->has('labo_id') && $request->input('labo_id') != 0) {
+            $newUser->labo_id = $request->input('labo_id');
+        } else
+            $newUser->labo_id = null;
+        if ($request->has('pack_id') && $request->input('pack_id') != 0) {
+            $newUser->pack_id = $request->input('pack_id');
+        } else
+            $newUser->pack_id = null;
 
         if ($request->has('email') && $request->input('email') != "")
             $newUser->email = $request->input('email');
