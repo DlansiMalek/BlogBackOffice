@@ -549,7 +549,7 @@ class AdminController extends Controller
     function updateUserRfid(request $request, $userId)
     {
         if (!$request->has(['rfid'])) {
-            return response()->json(['error' => 'bas request'], 400);
+            return response()->json(['error' => 'bad request'], 400);
         }
 
         if (!$user = $this->userServices->getUserById($userId)) {
@@ -558,10 +558,10 @@ class AdminController extends Controller
         $rfid = $request->input('rfid');
         if ($userExistsWithRfid = $this->userServices->getUserByRfid($rfid)) {
             $userExistsWithRfid->rfid = null;
-            $userExistsWithRfid->save();
+            $userExistsWithRfid->update();
         }
         $user->rfid = $rfid;
-        $user->save();
+        $user->update();
         return response()->json(['error' => 'user rfid updated'], 200);
     }
 
