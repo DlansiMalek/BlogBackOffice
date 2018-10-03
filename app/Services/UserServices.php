@@ -276,7 +276,7 @@ class UserServices
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss"])
+        return User::with(["accesss", 'privilege'])
             ->where("user_id", "=", $user_id)
             ->first();
     }
@@ -316,7 +316,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['grade', 'accesss.attestation', 'organization'])
+        return User::with(['grade', 'accesss.attestation', 'organization', 'privilege'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -514,7 +514,7 @@ class UserServices
     {
         return User::whereIn('privilege_id', $privileges)
             ->where("congress_id", "=", $congressId)
-            ->with(['grade', 'accesss.attestation', 'organization'])
+            ->with(['grade', 'accesss.attestation', 'organization', 'privilege'])
             ->get();
     }
 
