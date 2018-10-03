@@ -13,15 +13,15 @@ use JWTAuth;
 use PDF;
 
 /**
- * @property OrganizationServices laboServices
+ * @property OrganizationServices $organizationServices
  */
 class CongressServices
 {
 
 
-    public function __construct(OrganizationServices $laboServices)
+    public function __construct(OrganizationServices $organizationServices)
     {
-        $this->laboServices = $laboServices;
+        $this->organizationServices = $organizationServices;
     }
 
     public function getCongressById($id_Congress)
@@ -130,7 +130,7 @@ class CongressServices
 
     public function getOrganizationInvoiceByCongress($labId, $congressId)
     {
-        $lab = $this->laboServices->getOrganizationById($labId);
+        $lab = $this->organizationServices->getOrganizationById($labId);
         $participants = User::where('organization_id', $labId)->where('congress_id', '=', $congressId)->get();
         $totalPrice = 0;
         foreach ($participants as $participant) {

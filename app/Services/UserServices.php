@@ -441,8 +441,8 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-        if ($request->has('labo_id') && $request->input('labo_id') != 0) {
-            $newUser->labo_id = $request->input('labo_id');
+        if ($request->has('organization_id') && $request->input('organization_id') != 0) {
+            $newUser->organization_id = $request->input('organization_id');
         }
         if ($request->has('pack_id') && $request->input('pack_id') != 0) {
             $newUser->pack_id = $request->input('pack_id');
@@ -473,10 +473,10 @@ class UserServices
         else
             $newUser->price = null;
 
-        if ($request->has('labo_id') && $request->input('labo_id') != 0) {
-            $newUser->labo_id = $request->input('labo_id');
+        if ($request->has('organization_id') && $request->input('organization_id') != 0) {
+            $newUser->organization_id = $request->input('organization_id');
         } else
-            $newUser->labo_id = null;
+            $newUser->organization_id = null;
         if ($request->has('pack_id') && $request->input('pack_id') != 0) {
             $newUser->pack_id = $request->input('pack_id');
         } else

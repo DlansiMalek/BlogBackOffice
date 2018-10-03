@@ -21,7 +21,7 @@ class Organization extends Model
 
     function users()
     {
-        return $this->hasMany('App\Models\User', 'labo_id', 'labo_id');
+        return $this->hasMany('App\Models\User', 'organization_id', 'organization_id');
     }
 
 }

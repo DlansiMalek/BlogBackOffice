@@ -14,7 +14,7 @@ class CreateTableLabo extends Migration
     public function up()
     {
         Schema::create('Organization', function (Blueprint $table) {
-            $table->increments('labo_id');
+            $table->increments('organization_id');
             $table->string("name");
             $table->string("description");
 
