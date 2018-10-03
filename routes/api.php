@@ -78,7 +78,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
             Route::group(['prefix' => 'organization'], function () {
                 Route::get('', 'CongressController@getLabsByCongress');
                 Route::group(['prefix' => '{labId}'], function () {
-                    Route::get('', 'CongressController@getLabInvoice');
+                    Route::get('', 'CongressController@getOrganizationInvoice');
                 });
             });
         });

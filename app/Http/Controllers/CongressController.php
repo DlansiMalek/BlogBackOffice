@@ -169,7 +169,7 @@ class CongressController extends Controller
         return $labs;
     }
 
-    public function getLabInvoice($congressId, $labId)
+    public function getOrganizationInvoice($congressId, $labId)
     {
         return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congressId);
     }
