@@ -158,12 +158,12 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function getUsersByPrivilegeByCongress(Request $request,$congressId)
+    public function getUsersByPrivilegeByCongress(Request $request, $congressId)
     {
         if (!$request->has(['privileges'])) {
             return response()->json(["error" => "privileges is required"], 400);
         }
-        $privileges=$request->input('privileges');
+        $privileges = $request->input('privileges');
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(["error" => "congress not found"], 404);
         }
@@ -391,6 +391,16 @@ class UserController extends Controller
         $user->update();
 
         return response()->json(['message' => 'user updated success']);
+    }
+
+    public function saveUsersFromExcel($congressId, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $users = $request->all();
+        $this->userServices->saveUsersFromExcel($congress->congress_id, $users);
+        return response()->json(['message' => 'add congress success']);
     }
 
 

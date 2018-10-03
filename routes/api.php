@@ -102,6 +102,8 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');
+
+            Route::post('save-excel', 'UserController@saveUsersFromExcel');
         });
 
     });
