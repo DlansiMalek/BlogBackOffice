@@ -73,6 +73,14 @@ Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress');
         });
+        Route::group(['prefix' => 'invoices'], function () {
+            Route::group(['prefix' => 'lab'], function () {
+                Route::get('', 'CongressController@getLabsByCongress');
+                Route::group(['prefix' => '{labId}'], function () {
+                    Route::get('', 'CongressController@getLabInvoice');
+                });
+            });
+        });
     });
 });
 //User API
@@ -84,6 +92,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::get('list', 'UserController@getUsersByCongress');
+            Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@registerUserToCongress');
             Route::post('add-fast-user', 'UserController@addingFastUserToCongress');

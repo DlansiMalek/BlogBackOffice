@@ -316,7 +316,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['grade', 'accesss.attestation','labo'])
+        return User::with(['grade', 'accesss.attestation', 'labo'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -508,6 +508,14 @@ class UserServices
         foreach ($accessDiffDeleted as $item) {
             $this->deleteAccessById($user_id, $item);
         }
+    }
+
+    public function getUsersByCongressByPrivileges($congressId, $privileges)
+    {
+        return User::whereIn('privilege_id', $privileges)
+            ->where("congress_id", "=", $congressId)
+            ->with(['grade', 'accesss.attestation', 'labo'])
+            ->get();
     }
 
 

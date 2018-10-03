@@ -163,4 +163,15 @@ class CongressController extends Controller
         return sizeof($users) == 0;
     }
 
+    public function getLabsByCongress($congress_id)
+    {
+        $labs = $this->congressServices->getLabsByCongress($congress_id);
+        return $labs;
+    }
+
+    public function getLabInvoice($congressId, $labId)
+    {
+        return $this->congressServices->getLabInvoiceByCongress($labId, $congressId);
+    }
+
 }

@@ -19,4 +19,9 @@ class LaboServices
     {
         return Labo::all();
     }
+
+    public function getLabById($labId)
+    {
+        return Labo::find($labId);
+    }
 }

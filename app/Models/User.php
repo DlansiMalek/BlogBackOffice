@@ -19,7 +19,7 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
         'price', 'email_sended', 'email_verified', 'verification_code', 'congress_id', 'lieu_ex_id', 'grade_id',
-        'labo_id', 'pack_id'
+        'labo_id', 'pack_id', 'privilege_id'
     ];
     /**
      * The attributes that should be hidden for arrays.
@@ -45,6 +45,16 @@ class User extends Authenticatable
     function labo()
     {
         return $this->belongsTo('App\Models\Labo', 'labo_id', 'labo_id');
+    }
+
+    function congress()
+    {
+        return $this->hasOne('App\Models\Congress', 'congress_id', 'congress_id');
+    }
+
+    function privilege()
+    {
+        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'privilege_id');
     }
 
 }

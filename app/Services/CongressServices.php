@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Congress;
+use App\Models\Labo;
 use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
@@ -11,8 +12,17 @@ use Illuminate\Support\Facades\File;
 use JWTAuth;
 use PDF;
 
+/**
+ * @property LaboServices laboServices
+ */
 class CongressServices
 {
+
+
+    public function __construct(LaboServices $laboServices)
+    {
+        $this->laboServices = $laboServices;
+    }
 
     public function getCongressById($id_Congress)
     {
@@ -92,7 +102,6 @@ class CongressServices
 
     public function editCongress($congress, $adminId, $request)
     {
-
         $congress->name = $request->input("name");
         $congress->date = $request->input("date");
         $congress->admin_id = $adminId;
@@ -100,7 +109,6 @@ class CongressServices
         $congress->update();
 
         return $congress;
-
     }
 
     public function getUsersByStatus($congressId, int $status)
@@ -109,6 +117,36 @@ class CongressServices
             ->where('isPresent', '=', $status)
             ->where('congress_id', '=', $congressId)
             ->get();
+    }
+
+    public function getLabsByCongress($congressId)
+    {
+        return Labo::with(['users' => function ($q) use ($congressId) {
+            $q->where('User.congress_id', '=', $congressId);
+        }])->whereHas('users', function ($q) use ($congressId) {
+            $q->where('User.congress_id', '=', $congressId);
+        })->get();
+    }
+
+    public function getLabInvoiceByCongress($labId, $congressId)
+    {
+        $lab = $this->laboServices->getLabById($labId);
+        $participants = User::where('labo_id', $labId)->where('congress_id', '=', $congressId)->get();
+        $totalPrice = 0;
+        foreach ($participants as $participant) {
+            $totalPrice += $participant->price;
+        }
+
+        $data = [
+            'lab' => $lab,
+            'participants' => $participants,
+            'totalPrice' => $totalPrice,
+            'displayTaxes' => false
+        ];
+        $path = public_path() . "/facture";
+        $pdf = PDF::loadView('pdf.invoice.invoice', $data);
+        $pdf->save($path . '/facture.pdf');
+        return response()->download($path . '/facture.pdf')->deleteFileAfterSend(true);
     }
 
 }

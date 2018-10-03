@@ -19,4 +19,8 @@ class Labo extends Model
     protected $dates = ['created_at', 'updated_at'];
 
 
+    function users(){
+        return $this->hasMany('App\Models\User', 'labo_id', 'labo_id');
+    }
+
 }
