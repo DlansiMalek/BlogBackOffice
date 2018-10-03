@@ -601,7 +601,7 @@ class UserServices
         $userData->last_name = $user['last_name'];
         $userData->gender = 1; // TODO dynamic
         $userData->mobile = $user['mobile'];
-        if ($user['email'] != "") {
+        if (array_key_exists('email', $user) && $user['email'] != "") {
             $userData->email = $user['email'];
         }
         if ($user['organization_id'] != 0) {
