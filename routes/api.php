@@ -117,8 +117,8 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 //Admin API
 Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
     Route::group(['prefix' => 'rfid'], function () {
-        Route::get('user/{userId}/update', 'AdminController@updateUserRfid');
-        Route::get('user/attestations', 'AdminController@getAttestationByUser');
+        Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
+        Route::post('user/attestations', 'AdminController@getAttestationByUser');
 
     });
     Route::group(['prefix' => 'me'], function () {
