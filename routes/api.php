@@ -60,7 +60,7 @@ Route::group(['prefix' => 'users'], function () {
 });
 
 //Congress API
-Route::group(['prefix' => 'congress'], function () {
+Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
@@ -75,10 +75,10 @@ Route::group(['prefix' => 'congress'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress');
         });
         Route::group(['prefix' => 'invoices'], function () {
-            Route::group(['prefix' => 'lab'], function () {
+            Route::group(['prefix' => 'organization'], function () {
                 Route::get('', 'CongressController@getLabsByCongress');
                 Route::group(['prefix' => '{labId}'], function () {
-                    Route::get('', 'CongressController@getLabInvoice');
+                    Route::get('', 'CongressController@getOrganizationInvoice');
                 });
             });
         });
@@ -119,8 +119,8 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 //Admin API
 Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
     Route::group(['prefix' => 'rfid'], function () {
-        Route::get('user/{userId}/update', 'AdminController@updateUserRfid');
-        Route::get('user/attestations', 'AdminController@getAttestationByUser');
+        Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
+        Route::post('user/attestations', 'AdminController@getAttestationByUser');
 
     });
     Route::group(['prefix' => 'me'], function () {
