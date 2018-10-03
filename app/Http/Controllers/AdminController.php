@@ -546,4 +546,39 @@ class AdminController extends Controller
         $this->userServices->sendCredentialsOrganizerMail($admin);
     }
 
+    function updateUserRfid(request $request, $userId)
+    {
+        if (!$request->has(['rfid'])) {
+            return response()->json(['error' => 'bas request'], 400);
+        }
+
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+        $rfid = $request->input('rfid');
+        $userExistsWithRfid = $this->userServices->getUserByRfid($rfid);
+        if ($userExistsWithRfid) {
+            $userExistsWithRfid->rfid = null;
+            $userExistsWithRfid->update();
+        }
+        $user->rfid = $rfid;
+        $user->update();
+        return response()->json(['error' => 'user rfid updated'], 200);
+    }
+
+    function getAttestationByUser(request $request)
+    {
+        if (!$request->has(['rfid'])) {
+            return response()->json(['error' => 'bas request'], 400);
+        }
+
+        if (!$user = $this->userServices->getUserByRfid($request->input('rfid'))) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+
+        $user->rfid = $request->input('rfid');
+        $user->update();
+        return response()->json(['error' => 'user rfid updated'], 200);
+    }
+
 }

@@ -234,6 +234,12 @@ class UserServices
         if ($request->has('price'))
             $user->price = $request->input('price');
 
+        if ($request->has('privilege_id')) {
+            $user->privilege_id = $request->input('privilege_id');
+        } else {
+            $user->privilege_id = 3;
+        }
+
         $user->qr_code = str_random(7);
         $user->congress_id = $congress_id;
         $user->payement_type_id = $request->input('payement_type_id');
@@ -447,6 +453,11 @@ class UserServices
         if ($request->has('pack_id') && $request->input('pack_id') != 0) {
             $newUser->pack_id = $request->input('pack_id');
         }
+        if ($request->has('privilege_id')) {
+            $newUser->privilege_id = $request->input('privilege_id');
+        } else {
+            $newUser->privilege_id = 3;
+        }
 
         if ($request->has('email') && $request->input('email') != "")
             $newUser->email = $request->input('email');
@@ -486,6 +497,12 @@ class UserServices
             $newUser->email = $request->input('email');
         if ($request->has("mobile"))
             $newUser->mobile = $request->input("mobile");
+
+        if ($request->has('privilege_id')) {
+            $newUser->privilege_id = $request->input('privilege_id');
+        } else {
+            $newUser->privilege_id = 3;
+        }
 
         $newUser->update();
         return $newUser;
@@ -562,5 +579,10 @@ class UserServices
         return User_Access::where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
             ->delete();
+    }
+
+    public function getUserByRfid($rfid)
+    {
+        return User::whereRfid($rfid)->with(['accesss.attestation'])->first();
     }
 }
