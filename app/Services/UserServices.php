@@ -535,6 +535,13 @@ class UserServices
             ->get();
     }
 
+    public function saveUsersFromExcel($congress_id, $users)
+    {
+        foreach ($users as $user) {
+            $this->addUserExcel($congress_id, $user);
+        }
+    }
+
 
     private function isExistCongress($user, $congressId)
     {
@@ -584,5 +591,38 @@ class UserServices
     public function getUserByRfid($rfid)
     {
         return User::where('rfid', '=', $rfid)->with(['accesss.attestation'])->first();
+    }
+
+    private function addUserExcel($congress_id, $user)
+    {
+        $userData = new User();
+
+        $userData->first_name = $user['first_name'];
+        $userData->last_name = $user['last_name'];
+        $userData->gender = 1; // TODO dynamic
+        $userData->mobile = $user['mobile'];
+        if (array_key_exists('email', $user) && $user['email'] != "") {
+            $userData->email = $user['email'];
+        }
+        if ($user['organization_id'] != 0) {
+            $userData->organization_id = $user['organization_id'];
+        }
+        $userData->congress_id = $congress_id;
+        $userData->grade_id = $user['grade_id'];
+        $userData->pack_id = $user['pack_id'];
+        $userData->privilege_id = $user['privilege_id'];
+        $userData->price = $user['price'];
+
+        $qrcode = Utils::generateCode($userData->user_id);
+        $userData->qr_code = $qrcode;
+        $userData->save();
+        foreach ($user['accesss'] as $accessId) {
+            if ($accessId != 0) {
+                $accessUser = new User_Access();
+                $accessUser->access_id = $accessId;
+                $accessUser->user_id = $userData->user_id;
+                $accessUser->save();
+            }
+        }
     }
 }
