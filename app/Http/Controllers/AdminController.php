@@ -570,14 +570,10 @@ class AdminController extends Controller
         if (!$request->has(['rfid'])) {
             return response()->json(['error' => 'bas request'], 400);
         }
-
         if (!$user = $this->userServices->getUserByRfid($request->input('rfid'))) {
             return response()->json(['error' => 'user not found'], 404);
         }
-
-        $user->rfid = $request->input('rfid');
-        $user->update();
-        return response()->json(['error' => 'user rfid updated'], 200);
+        return $user;
     }
 
 }
