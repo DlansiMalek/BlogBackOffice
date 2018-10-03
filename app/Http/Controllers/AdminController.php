@@ -556,13 +556,12 @@ class AdminController extends Controller
             return response()->json(['error' => 'user not found'], 404);
         }
         $rfid = $request->input('rfid');
-        $userExistsWithRfid = $this->userServices->getUserByRfid($rfid);
-        if ($userExistsWithRfid) {
+        if ($userExistsWithRfid = $this->userServices->getUserByRfid($rfid)) {
             $userExistsWithRfid->rfid = null;
-            $userExistsWithRfid->update();
+            $userExistsWithRfid->save();
         }
         $user->rfid = $rfid;
-        $user->update();
+        $user->save();
         return response()->json(['error' => 'user rfid updated'], 200);
     }
 
