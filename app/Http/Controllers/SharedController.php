@@ -26,4 +26,7 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getAllLieux());
     }
 
+    public function getAllPrivileges(){
+        return response()->json($this->sharedServices->getAllPrivileges());
+    }
 }

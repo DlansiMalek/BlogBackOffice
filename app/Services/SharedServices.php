@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Grade;
 use App\Models\Lieu_Ex;
-use Illuminate\Support\Facades\Log;
+use App\Models\Privilege;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -21,11 +21,16 @@ class SharedServices
         return Lieu_Ex::all();
     }
 
+    public function getAllPrivileges()
+    {
+        return Privilege::where('privilege_id', '>=', 3)->get();
+    }
+
     public function saveFileInPublic($badgeIdGenerator, $name, $qrCode)
     {
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
-            Utils::$baseUrlBadge .'/badge/generateParticipant', [
+            Utils::$baseUrlBadge . '/badge/generateParticipant', [
                 'json' => [
                     'badgeIdGenerator' => $badgeIdGenerator,
                     'participant' => [

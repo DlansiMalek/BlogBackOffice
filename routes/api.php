@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 //Shared API
 Route::get('/grade/all', 'SharedController@getAllGrades');
 Route::get('/lieu/all', 'SharedController@getAllLieux');
+Route::get('/privileges', 'SharedController@getAllPrivileges');
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
@@ -84,7 +85,9 @@ Route::group(['prefix' => 'congress'], function () {
     });
 });
 //User API
-Route::group(['prefix' => 'user'], function () {
+Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
+
+    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
