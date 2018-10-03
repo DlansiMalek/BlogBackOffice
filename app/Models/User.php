@@ -42,9 +42,9 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\Grade', 'grade_id', 'grade_id');
     }
 
-    function labo()
+    function organization()
     {
-        return $this->belongsTo('App\Models\Labo', 'labo_id', 'labo_id');
+        return $this->belongsTo('App\Models\Organization', 'organization_id', 'organization_id');
     }
 
     function congress()

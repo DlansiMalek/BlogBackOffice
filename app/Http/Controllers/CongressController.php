@@ -171,7 +171,7 @@ class CongressController extends Controller
 
     public function getLabInvoice($congressId, $labId)
     {
-        return $this->congressServices->getLabInvoiceByCongress($labId, $congressId);
+        return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congressId);
     }
 
 }

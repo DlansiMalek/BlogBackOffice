@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Congress;
-use App\Models\Labo;
+use App\Models\Organization;
 use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
@@ -13,13 +13,13 @@ use JWTAuth;
 use PDF;
 
 /**
- * @property LaboServices laboServices
+ * @property OrganizationServices laboServices
  */
 class CongressServices
 {
 
 
-    public function __construct(LaboServices $laboServices)
+    public function __construct(OrganizationServices $laboServices)
     {
         $this->laboServices = $laboServices;
     }
@@ -121,17 +121,17 @@ class CongressServices
 
     public function getLabsByCongress($congressId)
     {
-        return Labo::with(['users' => function ($q) use ($congressId) {
+        return Organization::with(['users' => function ($q) use ($congressId) {
             $q->where('User.congress_id', '=', $congressId);
         }])->whereHas('users', function ($q) use ($congressId) {
             $q->where('User.congress_id', '=', $congressId);
         })->get();
     }
 
-    public function getLabInvoiceByCongress($labId, $congressId)
+    public function getOrganizationInvoiceByCongress($labId, $congressId)
     {
-        $lab = $this->laboServices->getLabById($labId);
-        $participants = User::where('labo_id', $labId)->where('congress_id', '=', $congressId)->get();
+        $lab = $this->laboServices->getOrganizationById($labId);
+        $participants = User::where('organization_id', $labId)->where('congress_id', '=', $congressId)->get();
         $totalPrice = 0;
         foreach ($participants as $participant) {
             $totalPrice += $participant->price;

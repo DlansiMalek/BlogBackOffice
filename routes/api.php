@@ -168,8 +168,8 @@ Route::group(['prefix' => 'pack'], function () {
 
 });
 //Labo API
-Route::group(['prefix' => 'labo'], function () {
-    Route::get('list', 'LaboController@getAll');
+Route::group(['prefix' => 'organization'], function () {
+    Route::get('list', 'OrganizationController@getAll');
 });
 
 

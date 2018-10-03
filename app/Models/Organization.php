@@ -10,16 +10,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Labo extends Model
+class Organization extends Model
 {
     public $timestamps = true;
-    protected $table = 'Labo';
-    protected $primaryKey = 'labo_id';
+    protected $table = 'Organization';
+    protected $primaryKey = 'organization_id';
     protected $fillable = ['name', 'description'];
     protected $dates = ['created_at', 'updated_at'];
 
 
-    function users(){
+    function users()
+    {
         return $this->hasMany('App\Models\User', 'labo_id', 'labo_id');
     }
 

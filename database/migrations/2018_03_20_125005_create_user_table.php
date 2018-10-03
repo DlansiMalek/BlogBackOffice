@@ -56,8 +56,8 @@ class CreateUserTable extends Migration
                 ->onDelete('cascade');
 
             #labo prise en charge
-            $table->integer('labo_id')->unsigned()->nullable();
-            $table->foreign('labo_id')->references('labo_id')->on('Labo')
+            $table->integer('organization_id')->unsigned()->nullable();
+            $table->foreign('organization_id')->references('organization_id')->on('Organization')
                 ->onDelete('cascade');
 
 
