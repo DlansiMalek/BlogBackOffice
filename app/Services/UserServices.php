@@ -598,7 +598,7 @@ class UserServices
 
     public function getUserByRfid($rfid)
     {
-        return User::whereRfid($rfid)->with(['accesss.attestation'])->first();
+        return User::where('rfid', '=', $rfid)->with(['accesss.attestation'])->first();
     }
 
     private function addUserExcel($congress_id, $user)
