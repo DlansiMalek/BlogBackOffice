@@ -146,10 +146,13 @@ class CongressController extends Controller
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
         foreach ($users as $user) {
-            $this->sharedServices->saveFileInPublic($congress->badge->badge_id_generator,
-                ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                $user->qr_code);
-            $this->userServices->sendMail($user, $congress);
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveFileInPublic($badgeIdGenerator,
+                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                    $user->qr_code);
+                $this->userServices->sendMail($user, $congress);
+            }
         }
 
         return response()->json(['message' => 'send mail successs']);

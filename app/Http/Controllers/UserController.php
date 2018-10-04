@@ -225,11 +225,6 @@ class UserController extends Controller
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
 
 
-        //DENTAIRE DE MERDE
-        if (in_array(8, $accessIds)) {
-            array_push($accessIds, 25);
-        }
-
         $this->userServices->affectAccess($user->user_id, $accessIds);
 
         if (!$user) {
@@ -237,7 +232,13 @@ class UserController extends Controller
         }
         $user = $this->userServices->getUserById($user->user_id);
 
-        $this->userServices->sendMail($user, $congress);
+        $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        if ($badgeIdGenerator != null) {
+            $this->sharedServices->saveFileInPublic($badgeIdGenerator,
+                ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                $user->qr_code);
+            $this->userServices->sendMail($user, $congress);
+        }
 
         return response()->json($user, 201);
 
@@ -349,7 +350,13 @@ class UserController extends Controller
         $this->userServices->affectAccess($user->user_id, $accessIds);
         $user = $this->userServices->getUserById($user->user_id);
         if ($request->has('email') && $request->input('email') != "") {
-            $this->userServices->sendMail($user, $congress);
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveFileInPublic($badgeIdGenerator,
+                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                    $user->qr_code);
+                $this->userServices->sendMail($user, $congress);
+            }
         }
         return response()->json($user, 201);
     }

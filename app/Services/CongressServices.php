@@ -149,4 +149,14 @@ class CongressServices
         return response()->download($path . '/facture.pdf')->deleteFileAfterSend(true);
     }
 
+    public function getBadgeByPrivilegeId($congress, $privilege_id)
+    {
+        for ($i = 0; $i < sizeof($congress->badges); $i++) {
+            if ($congress->badges[$i]->privilege_id == $privilege_id) {
+                return $congress->badges[$i]->badge_id_generator;
+            }
+        }
+        return null;
+    }
+
 }
