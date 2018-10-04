@@ -20,4 +20,9 @@ class Privilege extends Model
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
 
+    public function badges()
+    {
+        return $this->hasMany('App\Models\Badge', 'privilege_id', 'privilege_id');
+    }
+
 }

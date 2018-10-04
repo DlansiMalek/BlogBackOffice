@@ -56,11 +56,11 @@ class AdminServices
                 $query->where('admin_id', '=', $admin->admin_id)->where('privilege_id', '=', '2');
             })->get()) > 0
         ) {
-            $congresses = Congress::with(["badge", "attestation", "accesss.attestation"])
+            $congresses = Congress::with(["badges", "attestation", "accesss.attestation"])
                 ->where("admin_id", "=", $admin->responsible)
                 ->get();
         } else {
-            $congresses = Congress::with(["badge", "attestation", "accesss.attestation"])
+            $congresses = Congress::with(["badges", "attestation", "accesss.attestation"])
                 ->where("admin_id", "=", $admin->admin_id)
                 ->get();
         }
@@ -86,7 +86,7 @@ class AdminServices
     public function getListPersonelsByAdmin($admin_id)
     {
         return Admin::where("responsible", "=", $admin_id)
-            ->with(['congress_responsible.badge'])
+            ->with(['congress_responsible.badges'])
             ->get();
     }
 

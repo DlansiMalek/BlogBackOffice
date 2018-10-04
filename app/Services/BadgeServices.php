@@ -35,15 +35,12 @@ class BadgeServices
             ->first();
     }
 
-    public function validerBadge($congressId, $badgeIdGenerator, $organiser)
+    public function validerBadge($congressId, $badgeIdGenerator, $privilegeId)
     {
         $badge = new Badge();
         $badge->congress_id = $congressId;
-        if ($organiser == 1) {
-            $badge->badge_org_id_generator = $badgeIdGenerator;
-        } else {
-            $badge->badge_id_generator = $badgeIdGenerator;
-        }
+        $badge->badge_id_generator = $badgeIdGenerator;
+        $badge->privilege_id = $privilegeId;
         $badge->save();
 
         return $badge;
@@ -120,6 +117,13 @@ class BadgeServices
         } else {
             return array('enabled' => 2, 'time' => $calculatedTime);
         }
+    }
+
+    public function getBadgeByCongressAndPrivilege($congressId, $privilegeId)
+    {
+        return Badge::where('congress_id', '=', $congressId)
+            ->where('privilege_id', '=', $privilegeId)
+            ->first();
     }
 
 

@@ -542,6 +542,14 @@ class UserServices
         }
     }
 
+    public function getFastUsersByCongressId($congressId)
+    {
+        return User::with(['grade'])
+            ->where('congress_id', '=', $congressId)
+            ->where('privilege_id', '=', 3)
+            ->get();
+    }
+
 
     private function isExistCongress($user, $congressId)
     {

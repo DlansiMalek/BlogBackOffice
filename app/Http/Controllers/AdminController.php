@@ -576,4 +576,9 @@ class AdminController extends Controller
         return $user;
     }
 
+    function getFastUsersByCongress($congressId)
+    {
+        return response()->json($this->userServices->getFastUsersByCongressId($congressId));
+    }
+
 }
