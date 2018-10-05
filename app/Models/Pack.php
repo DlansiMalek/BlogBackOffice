@@ -15,8 +15,12 @@ class Pack extends Model
     public $timestamps = true;
     protected $table = 'Pack';
     protected $primaryKey = 'pack_id';
-    protected $fillable = ['label', 'description','price','congress_id'];
+    protected $fillable = ['label', 'description', 'price', 'congress_id'];
     protected $dates = ['created_at', 'updated_at'];
 
+    function participants()
+    {
+        return $this->hasMany('App\Models\User', 'pack_id', 'pack_id');
+    }
 
 }

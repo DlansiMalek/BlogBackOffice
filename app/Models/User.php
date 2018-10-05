@@ -56,5 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasOne('App\Models\Privilege', 'privilege_id', 'privilege_id');
     }
+    function pack()
+    {
+        return $this->hasOne('App\Models\Pack', 'pack_id', 'pack_id');
+    }
 
 }

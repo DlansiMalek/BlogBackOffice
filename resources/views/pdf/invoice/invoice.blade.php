@@ -1,61 +1,38 @@
 @extends('pdf/invoice/invoice-template')
 @section('header')
-    Date:
-    <br>
-    Labo: {{$lab->name}}
+    Fait le  {{$today}}
     <br>
 @endsection
 
 @section('number')
     <h3>Facture N°....</h3>
+    <h3>Client/Organization: {{$lab->name}}</h3>
 @endsection
 
 @section('content')
     <table class="table table-striped table-bordered" style="width:100%">
         <tr>
-            <th>Prénom</th>
-            <th>Nom</th>
-            <th>Mobile</th>
+            <th>Libellé</th>
+            <th>Description</th>
             <th>Prix</th>
         </tr>
-        @foreach($participants as $l)
+        @foreach($packs as $pack)
             <tr>
-                <td>{{$l->first_name}} </td>
-                <td>{{$l->last_name}}</td>
-                <td>{{$l->mobile}}</td>
-                <td>{{$l->price}}TND</td>
+                <td>{{$congress->name}} {{$pack->label}}</td>
+                <td>{{$pack->label}}</td>
+                <td>{{$pack->price}}TND</td>
             </tr>
         @endforeach
-        @if ($displayTaxes)
-            <tr>
-                <td></td>
-                <td></td>
-                <td colspan="2" style="text-align: center; font-weight: bold;">Total HT:</td>
-                <td colspan="2" style="text-align: center; font-weight: bold;">{{$totalPrice}} DT</td>
-            </tr>
-            @foreach($taxes as $key=>$t)
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td colspan="2" style="text-align: center; font-weight: bold;">{{$key}} {{$percentages[$key]}}%</td>
-                    <td style="text-align: center; font-weight: bold;" colspan="2">{{$t}}DT</td>
-                </tr>
-            @endforeach
-        @endif
         <tr>
-            <td></td>
-            <td></td>
-            <td colspan="2" style="text-align: center; font-weight: bold;">Timbre Fiscal:</td>
-            <td colspan="2" style="text-align: center; font-weight: bold;">0.600 DT</td>
+            <td colspan="2">Timbre Fiscal:</td>
+            <td colspan="1">0.600 TND</td>
         </tr>
         <tr>
-            <td></td>
-            <td></td>
-            <td colspan="2" style="text-align: center; font-weight: bold;">Total TTC:</td>
+            <td colspan="2">Total TTC:</td>
             @if($displayTaxes)
-                <td colspan="2" style="text-align: center; font-weight: bold;">{{$totalPrice+0.6}} DT</td>
+                <td colspan="1">{{$totalPrice+0.6}} TND</td>
             @else
-                <td colspan="2" style="text-align: center; font-weight: bold;">{{$totalPrice+0.6}} DT</td>
+                <td colspan="1">{{$totalPrice+0.6}} TND</td>
             @endif
         </tr>
     </table>

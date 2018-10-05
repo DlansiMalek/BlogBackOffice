@@ -171,7 +171,11 @@ class CongressController extends Controller
 
     public function getOrganizationInvoice($congressId, $labId)
     {
-        return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congressId);
+
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congres not found'], 404);
+        }
+        return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congress);
     }
 
 }

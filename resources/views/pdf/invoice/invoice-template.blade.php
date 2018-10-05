@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Facture</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
@@ -29,6 +30,7 @@
 
         table, td, tr, th {
             border: 1px solid black;
+            text-align: center;
         }
 
 
@@ -38,12 +40,11 @@
 <div class="row">
     <div class="col-xs-5" style="padding-top: -3%">
         <h2 style="padding-left: 30%;">VayeCongress</h2>
-        <h6 style="padding-left: 50%; color: green; margin-top: -1.6%">Laboratoires</h6>
+        <h6 style="padding-left: 50%; color: green; margin-top: -1.6%">Vayetek SARL</h6>
         <center>
-            <p>Route de Bizerte KM 8 El Mnihla Ariana</p>
-            <p>Tel: 24031946</p>
-            <p>M.F: 1519489A/A/M/000</p>
-            <p>R.C: B0317772017</p>
+            <p>Immeuble Espace Tunis Bloc F, 3 éme étage</p>
+            <p>Montplaisir, Tunis 1073</p>
+            <p> (+216) 53 780 474</p>
         </center>
     </div>
     <div class="col-xs-5" style="padding-top: 2%">

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Congress;
 use App\Models\Organization;
+use App\Models\Pack;
 use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
@@ -128,25 +129,32 @@ class CongressServices
         })->get();
     }
 
-    public function getOrganizationInvoiceByCongress($labId, $congressId)
+    public function getOrganizationInvoiceByCongress($labId, $congress)
     {
         $lab = $this->organizationServices->getOrganizationById($labId);
-        $participants = User::where('organization_id', $labId)->where('congress_id', '=', $congressId)->get();
         $totalPrice = 0;
-        foreach ($participants as $participant) {
-            $totalPrice += $participant->price;
+        $packs = Pack::whereCongressId($congress->congress_id)->with(['participants' => function ($q) use ($labId) {
+            $q->where('User.organization_id', '=', $labId);
+        }])->get();
+        foreach ($packs as $pack) {
+            $packPrice=$pack->price;
+            $pack->price = 0;
+            foreach ($pack->participants as $participant) {
+                $pack->price += $packPrice;
+            }
+            $totalPrice += $pack->price;
         }
-
+        $today = date('d-m-Y');
         $data = [
+            'packs' => $packs,
+            'congress' => $congress,
+            'today' => $today,
             'lab' => $lab,
-            'participants' => $participants,
             'totalPrice' => $totalPrice,
             'displayTaxes' => false
         ];
-        $path = public_path() . "/facture";
         $pdf = PDF::loadView('pdf.invoice.invoice', $data);
-        $pdf->save($path . '/facture.pdf');
-        return response()->download($path . '/facture.pdf')->deleteFileAfterSend(true);
+        return $pdf->download($lab->name . '_facture_' . $today . '.pdf');
     }
 
 }
