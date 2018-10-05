@@ -120,7 +120,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
     Route::group(['prefix' => 'rfid'], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
-        Route::post('user/attestations', 'AdminController@getAttestationByUser');
+        Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
 
     });
     Route::group(['prefix' => 'me'], function () {

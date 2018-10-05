@@ -565,7 +565,7 @@ class AdminController extends Controller
         return response()->json(['error' => 'user rfid updated'], 200);
     }
 
-    function getAttestationByUser(request $request)
+    function getAttestationByUserRfid(request $request)
     {
         if (!$request->has(['rfid'])) {
             return response()->json(['error' => 'bas request'], 400);
