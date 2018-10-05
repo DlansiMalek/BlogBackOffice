@@ -26,6 +26,12 @@ class SharedServices
         return Privilege::where('privilege_id', '>=', 3)->get();
     }
 
+    public function getPrivilegesWithBadges()
+    {
+        return Privilege::with(['badges'])
+            ->get();
+    }
+
     public function saveFileInPublic($badgeIdGenerator, $name, $qrCode)
     {
         $client = new \GuzzleHttp\Client();

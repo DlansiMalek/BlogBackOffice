@@ -27,7 +27,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["users", "attestation", "accesss.participants", "accesss.attestation", "badge", "accesss"])
+        return Congress::with(["badges", "users", "attestation", "accesss.participants", "accesss.attestation", "accesss"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -155,6 +155,16 @@ class CongressServices
         ];
         $pdf = PDF::loadView('pdf.invoice.invoice', $data);
         return $pdf->download($lab->name . '_facture_' . $today . '.pdf');
+    }
+
+    public function getBadgeByPrivilegeId($congress, $privilege_id)
+    {
+        for ($i = 0; $i < sizeof($congress->badges); $i++) {
+            if ($congress->badges[$i]->privilege_id == $privilege_id) {
+                return $congress->badges[$i]->badge_id_generator;
+            }
+        }
+        return null;
     }
 
 }

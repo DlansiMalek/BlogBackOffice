@@ -150,6 +150,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 
         Route::group(['prefix' => '{congressId}'], function () {
             Route::get('all', 'AdminController@getAllParticipantsByCongress');
+            Route::get('fast-users', 'AdminController@getFastUsersByCongress');
             Route::get('presence', 'AdminController@getAllPresenceByCongress');
         });
         Route::group(['prefix' => '{id_Participator}'], function () {
@@ -176,9 +177,14 @@ Route::group(['prefix' => 'pack'], function () {
     });
 
 });
-//Labo API
+//Organisation API
 Route::group(['prefix' => 'organization'], function () {
     Route::get('list', 'OrganizationController@getAll');
+});
+
+//Privilege API
+Route::group(['prefix' => 'privilege'], function () {
+    Route::get('list', 'SharedController@getPrivilegesWithBadges');
 });
 
 

@@ -52,18 +52,14 @@ class BadgeController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
-        // Affectation Attestation to Congress
-        if ($badge = $this->badgeServices->getBadgeByCongress($congressId)) {
-            if ($request->input('organiser') == 1) {
-                $badge->badge_org_id_generator = $badgeIdGenerator;
-            } else {
-                $badge->badge_id_generator = $badgeIdGenerator;
-            }
+        // Affectation Badge to Congress
+        if ($badge = $this->badgeServices->getBadgeByCongressAndPrivilege($congressId, $request->input('privilegeId'))) {
+            $badge->badge_id_generator = $badgeIdGenerator;
             $badge->update();
         } else {
-            $this->badgeServices->validerBadge($congressId, $badgeIdGenerator, $request->input('organiser'));
+            $this->badgeServices->validerBadge($congressId, $badgeIdGenerator, $request->input('privilegeId'));
         }
-        return response($this->badgeServices->getBadgeByCongress($congressId));
+        return response($this->badgeServices->getBadgeByCongressAndPrivilege($congressId, $request->input('privilegeId')));
     }
 
     function affectAttestationToCongress($congressId, $accessId, Request $request)
