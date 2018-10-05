@@ -424,10 +424,11 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-        $newUser->grade_id = $request->input('grade_id');
+        if ($request->has('lieu_ex_id') && $request->input('lieu_ex_id') != 0)
+            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
+        if ($request->has('grade_id') && $request->input('grade_id') != 0)
+            $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
-
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
