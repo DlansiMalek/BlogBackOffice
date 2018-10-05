@@ -259,24 +259,8 @@ class UserServices
 
     public function affectAccess($user_id, $accessIds)
     {
-        $access1 = 0;
-        $access2 = 0;
         for ($i = 0; $i < sizeof($accessIds); $i++) {
-            if ($accessIds[$i] == 2 || $accessIds[$i] == 3 || $accessIds[$i] == 4) {
-                if ($access1 != 0) {
-                    continue;
-                }
-                $access1 = 1;
-
-            }
-            if ($accessIds[$i] == 5 || $accessIds[$i] == 6 || $accessIds[$i] == 7) {
-                if ($access2 != 0) {
-                    continue;
-                }
-                $access2 = 1;
-            }
             $this->affectAccessById($user_id, $accessIds[$i]);
-
         }
     }
 
