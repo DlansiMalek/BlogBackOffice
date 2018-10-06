@@ -137,8 +137,8 @@ class BadgeServices
                     'data' => $request
                 ]
             ]);
-        Storage::put('attesations.zip', $res->getBody(), 'public');
-        return 'attesations.zip';
+        Storage::put('attestations.zip', $res->getBody(), 'public');
+        return 'attestations.zip';
     }
 
 

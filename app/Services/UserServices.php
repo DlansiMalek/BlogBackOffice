@@ -540,6 +540,7 @@ class UserServices
     public function sendMailAttesationToUser($user, $congress)
     {
         $email = $user->email;
+
         $pathToFile = storage_path() . "/app/attestations.zip";
 
 
