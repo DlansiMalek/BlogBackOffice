@@ -6,10 +6,12 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
+use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
+use App\Services\Utils;
 use Illuminate\Http\Request;
 
 
@@ -22,12 +24,14 @@ class CongressController extends Controller
     protected $privilegeServices;
     protected $userServices;
     protected $sharedServices;
+    protected $badgeServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
                          UserServices $userServices,
-                         SharedServices $sharedServices)
+                         SharedServices $sharedServices,
+                         BadgeServices $badgeServices)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -35,6 +39,7 @@ class CongressController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
+        $this->badgeServices = $badgeServices;
     }
 
 
@@ -148,7 +153,7 @@ class CongressController extends Controller
         foreach ($users as $user) {
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveFileInPublic($badgeIdGenerator,
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
                 $this->userServices->sendMail($user, $congress);
@@ -179,6 +184,42 @@ class CongressController extends Controller
             return response()->json(['error' => 'congres not found'], 404);
         }
         return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congress);
+    }
+
+    public function sendMailAllParticipantsAttestation($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+
+        $users = $this->userServices->getUsersEmailAttestationNotSendedByCongress($congressId);
+        foreach ($users as $user) {
+            $request = array();
+            if ($user->email != null && $user->email != "-" && $user->email != "" && $user->isPresent == 1) {
+                array_push($request,
+                    array(
+                        'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
+                        'name' => Utils::getFullName($user->first_name, $user->last_name),
+                        'qrCode' => false
+                    ));
+                foreach ($user->accesss as $access) {
+                    if ($access->pivot->isPresent == 1) {
+                        $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
+                        if ($infoPresence['enabled'] == 1) {
+                            array_push($request,
+                                array(
+                                    'badgeIdGenerator' => $access->attestation->attestation_generator_id,
+                                    'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                    'qrCode' => false
+                                ));
+                        }
+                    }
+                }
+                $this->badgeServices->saveAttestationsInPublic($request);
+                $this->userServices->sendMailAttesationToUser($user, $congress);
+            }
+        }
+        return response()->json(['message' => 'send mail successs']);
     }
 
 }

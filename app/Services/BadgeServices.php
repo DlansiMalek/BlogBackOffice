@@ -8,6 +8,7 @@ use App\Models\Attestation_Access;
 use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 
 class BadgeServices
@@ -124,6 +125,20 @@ class BadgeServices
         return Badge::where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', $privilegeId)
             ->first();
+    }
+
+
+    public function saveAttestationsInPublic(array $request)
+    {
+        $client = new \GuzzleHttp\Client();
+        $res = $client->request('POST',
+            Utils::$baseUrlBadge . '/badge/generateParticipantsAll', [
+                'json' => [
+                    'data' => $request
+                ]
+            ]);
+        Storage::put('attesations.zip', $res->getBody(), 'public');
+        return 'attesations.zip';
     }
 
 

@@ -539,11 +539,17 @@ class AdminController extends Controller
         }
 
 
-        $this->sharedServices->saveFileInPublic($congress->badge->badge_org_id_generator,
-            $admin->name,
-            $admin->passwordDecrypt);
+        $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, 2);
+        if ($badgeIdGenerator != null) {
 
-        $this->userServices->sendCredentialsOrganizerMail($admin);
+            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                $admin->name,
+                $admin->passwordDecrypt);
+
+            $this->userServices->sendCredentialsOrganizerMail($admin);
+        } else {
+            return response()->json(['error' => 'badge not affected'], 404);
+        }
     }
 
     function updateUserRfid(request $request, $userId)

@@ -234,7 +234,7 @@ class UserController extends Controller
 
         $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
         if ($badgeIdGenerator != null) {
-            $this->sharedServices->saveFileInPublic($badgeIdGenerator,
+            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
             $this->userServices->sendMail($user, $congress);
@@ -352,7 +352,7 @@ class UserController extends Controller
         if ($request->has('email') && $request->input('email') != "") {
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveFileInPublic($badgeIdGenerator,
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
                 $this->userServices->sendMail($user, $congress);
@@ -408,6 +408,47 @@ class UserController extends Controller
         $users = $request->all();
         $this->userServices->saveUsersFromExcel($congress->congress_id, $users);
         return response()->json(['message' => 'add congress success']);
+    }
+
+    public function sendMailAttesation($userId)
+    {
+
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+
+        $congress = $this->congressServices->getCongressById($user->congress_id);
+        $request = array();
+        if ($user->email != null && $user->email != "-" && $user->email != "" && $user->isPresent == 1) {
+            array_push($request,
+                array(
+                    'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
+                    'name' => Utils::getFullName($user->first_name, $user->last_name),
+                    'qrCode' => false
+                ));
+            foreach ($user->accesss as $access) {
+                if ($access->pivot->isPresent == 1) {
+                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
+                    if ($infoPresence['enabled'] == 1) {
+                        array_push($request,
+                            array(
+                                'badgeIdGenerator' => $access->attestation->attestation_generator_id,
+                                'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                'qrCode' => false
+                            ));
+                    }
+                }
+            }
+            $this->badgeServices->saveAttestationsInPublic($request);
+            $this->userServices->sendMailAttesationToUser($user, $congress);
+        } else {
+            return response()->json(['error' => 'user not present or empty email'], 501);
+        }
+        if ($user->email_attestation_sended == 1) {
+            return response()->json(['message' => 'email sended success']);
+        } else {
+            return response()->json(['error' => 'cannot send mail', 'email' => $user->emaill], 501);
+        }
     }
 
 

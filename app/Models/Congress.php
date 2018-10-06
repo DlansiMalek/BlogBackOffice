@@ -14,7 +14,7 @@ class Congress extends Model
 {
     protected $table = 'Congress';
     protected $primaryKey = 'congress_id';
-    protected $fillable = ['name', 'date', 'object_mail_inscription', 'admin_id'];
+    protected $fillable = ['name', 'date', 'object_mail_inscription', 'admin_id', 'object_mail_attestation'];
 
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
@@ -24,7 +24,7 @@ class Congress extends Model
     {
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
     }
-    
+
 
     public function users()
     {

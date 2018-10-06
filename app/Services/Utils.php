@@ -9,15 +9,20 @@ class Utils
 {
 
     public static $baseUrlRT = 'http://apprtcongress-server:3000/api';
-    public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
+    // public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
 
-    //public static $baseUrlBadge = 'http://137.74.165.25:8090';
+    public static $baseUrlBadge = 'http://137.74.165.25:8090';
 
     //public static $baseUrlRT = 'http://137.74.165.25:3002/api';
 
     public static function diffMinutes($enter_time, $endCongress)
     {
         return round(abs(strtotime($enter_time) - strtotime($endCongress)) / 60, 2);
+    }
+
+    public static function getFullName($first_name, $last_name)
+    {
+        return ucfirst($first_name) . " " . strtoupper($last_name);
     }
 
     function base64_to_jpeg($base64_string, $output_file)

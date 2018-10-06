@@ -54,6 +54,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');
+        Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
     });
 
 
@@ -137,6 +138,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
             Route::group(['prefix' => '{congressId}'], function () {
                 Route::group(['prefix' => 'email'], function () {
                     Route::get('send-confirm-inscription', 'CongressController@sendMailAllParticipants');
+                    Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
                 });
                 Route::post('edit', 'CongressController@editCongress');
             });

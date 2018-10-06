@@ -104,29 +104,6 @@ class UserServices
         return $pdf->save(public_path() . "/badge/invitation.pdf");
     }
 
-    public function sendMail($user, $congress)
-    {
-        $email = $user->email;
-        $pathToFile = storage_path() . "/app/badge.png";
-
-
-        try {
-            Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
-            ], function ($message) use ($email, $congress, $pathToFile) {
-                $message->attach($pathToFile);
-                $message->to($email)->subject($congress->object_mail_inscription);
-            });
-        } catch (\Exception $exception) {
-            Log::info($exception);
-            $user->email_sended = -1;
-            $user->update();
-            return 1;
-        }
-
-        $user->email_sended = 1;
-        $user->update();
-        return 1;
-    }
 
     public function sendCredentialsOrganizerMail(Admin $admin)
     {
@@ -532,6 +509,62 @@ class UserServices
         return User::with(['grade'])
             ->where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', 3)
+            ->get();
+    }
+
+    public function sendMail($user, $congress)
+    {
+        $email = $user->email;
+        $pathToFile = storage_path() . "/app/badge.png";
+
+
+        try {
+            Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
+            ], function ($message) use ($email, $congress, $pathToFile) {
+                $message->attach($pathToFile);
+                $message->to($email)->subject($congress->object_mail_inscription);
+            });
+        } catch (\Exception $exception) {
+            Log::info($exception);
+            $user->email_sended = -1;
+            $user->update();
+            return 1;
+        }
+
+        $user->email_sended = 1;
+        $user->update();
+        return 1;
+    }
+
+
+    public function sendMailAttesationToUser($user, $congress)
+    {
+        $email = $user->email;
+        $pathToFile = storage_path() . "/app/attestations.zip";
+
+
+        try {
+            Mail::send('attestationEmail.' . $congress->congress_id, ['accesss' => $user->accesss
+            ], function ($message) use ($email, $congress, $pathToFile) {
+                $message->attach($pathToFile);
+                $message->to($email)->subject($congress->object_mail_attestation);
+            });
+        } catch (\Exception $exception) {
+            Log::info($exception);
+            $user->email_attestation_sended = -1;
+            $user->update();
+            return 1;
+        }
+
+        $user->email_attestation_sended = 1;
+        $user->update();
+        return $user;
+    }
+
+    public function getUsersEmailAttestationNotSendedByCongress($congressId)
+    {
+        return User::where('congress_id', '=', $congressId)
+            ->where('email_attestation_sended', '=', 0)
             ->get();
     }
 
