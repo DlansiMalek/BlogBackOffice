@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/grade/all', 'SharedController@getAllGrades');
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
+Route::get('/congress-logo/{path}', 'SharedController@getPhoto');
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
@@ -69,6 +70,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
 
+        Route::post('/upload-logo', 'CongressController@uploadLogo');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
 

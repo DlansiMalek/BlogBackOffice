@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Services\SharedServices;
+use Illuminate\Support\Facades\Log;
 
 class SharedController extends Controller
 {
@@ -34,5 +35,13 @@ class SharedController extends Controller
     public function getPrivilegesWithBadges()
     {
         return response()->json($this->sharedServices->getPrivilegesWithBadges());
+    }
+
+    public function getPhoto($path)
+    {
+        Log::info($path);
+
+        $chemin = config('media.congress-logo');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 }

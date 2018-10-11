@@ -16,7 +16,7 @@ class Access extends Model
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
     protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block',
-        'seuil', 'total_present_in_congress'];
+        'seuil', 'total_present_in_congress', 'intuitive'];
     protected $dates = ['created_at', 'updated_at'];
 
 

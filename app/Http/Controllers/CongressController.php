@@ -222,4 +222,14 @@ class CongressController extends Controller
         return response()->json(['message' => 'send mail successs']);
     }
 
+    public function uploadLogo($congressId, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $congress = $this->congressServices->uploadLogo($congress, $request);
+
+        return response()->json($congress);
+    }
+
 }

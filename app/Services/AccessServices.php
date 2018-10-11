@@ -91,6 +91,7 @@ class AccessServices
         return Access::with(['participants'])
             ->where("congress_id", "=", $congressId)
             ->where('access_parent', '=', null)
+            ->where('intuitive', '=', null)
             ->get();
     }
 }

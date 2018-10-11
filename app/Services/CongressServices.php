@@ -8,6 +8,7 @@ use App\Models\Pack;
 use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use JWTAuth;
@@ -137,7 +138,7 @@ class CongressServices
             $q->where('User.organization_id', '=', $labId);
         }])->get();
         foreach ($packs as $pack) {
-            $packPrice=$pack->price;
+            $packPrice = $pack->price;
             $pack->price = 0;
             foreach ($pack->participants as $participant) {
                 $pack->price += $packPrice;
@@ -165,6 +166,18 @@ class CongressServices
             }
         }
         return null;
+    }
+
+    public function uploadLogo($congress, Request $request)
+    {
+        $file = $request->file('file_data');
+        $chemin = config('media.congress-logo');
+        $path = $file->store($chemin);
+
+        $congress->logo = $path;
+        $congress->update();
+
+        return $congress;
     }
 
 }

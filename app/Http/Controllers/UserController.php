@@ -224,7 +224,6 @@ class UserController extends Controller
 
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
 
-
         $this->userServices->affectAccess($user->user_id, $accessIds);
 
         if (!$user) {
@@ -237,8 +236,9 @@ class UserController extends Controller
             $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
-            $this->userServices->sendMail($user, $congress);
         }
+        $this->userServices->sendMail($user, $congress);
+
 
         return response()->json($user, 201);
 

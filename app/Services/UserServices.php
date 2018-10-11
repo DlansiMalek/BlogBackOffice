@@ -517,6 +517,8 @@ class UserServices
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
 
+        if ($congress->username_mail)
+            config(['mail.from.name', $congress->username_mail]);
 
         try {
             Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
