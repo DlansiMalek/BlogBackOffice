@@ -62,6 +62,28 @@ class BadgeController extends Controller
         return response($this->badgeServices->getBadgeByCongressAndPrivilege($congressId, $request->input('privilegeId')));
     }
 
+
+    function affectAttestationDivers($congressId, Request $request)
+    {
+        $attestationGenerator = $request->input('badgeIdGenerator');
+        $attestationTypeId = $request->input('attestationTypeId');
+
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+
+        // Affectation Badge to Congress
+        if ($attestation = $this->badgeServices->getAttestationByCongressAndType($congressId, $attestationTypeId)) {
+            $attestation->attestation_generator_id = $attestationGenerator;
+            $attestation->update();
+        } else {
+            $this->badgeServices->validerAttestationType($congressId, $attestationGenerator, $attestationTypeId);
+        }
+
+        return response()->json($this->badgeServices->getAttestationByCongressAndType($congressId, $attestationTypeId));
+
+    }
+
     function affectAttestationToCongress($congressId, $accessId, Request $request)
     {
         $attesationIdGenerator = $request->input('badgeIdGenerator');

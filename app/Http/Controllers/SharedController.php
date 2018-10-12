@@ -44,4 +44,9 @@ class SharedController extends Controller
         $chemin = config('media.congress-logo');
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
+
+    public function getAllTypesAttestation()
+    {
+        return response($this->sharedServices->getAllTypesAttestation());
+    }
 }

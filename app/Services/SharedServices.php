@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Attestation_Type;
 use App\Models\Grade;
 use App\Models\Lieu_Ex;
 use App\Models\Privilege;
@@ -47,5 +48,11 @@ class SharedServices
             ]);
         Storage::put('badge.png', $res->getBody(), 'public');
         return 'badge.png';
+    }
+
+    public function getAllTypesAttestation()
+    {
+        return Attestation_Type::with(['attestations'])
+            ->get();
     }
 }

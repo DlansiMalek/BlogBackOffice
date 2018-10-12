@@ -30,8 +30,8 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        if ($request->has('sex'))
-            $newUser->gender = $request->input('sex');
+        if ($request->has('gender'))
+            $newUser->gender = $request->input('gender');
         if ($request->has('mobile'))
             $newUser->mobile = $request->input('mobile');
         if ($request->has('city_id'))

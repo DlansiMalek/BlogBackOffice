@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Access_Presence;
 use App\Models\Attestation;
 use App\Models\Attestation_Access;
+use App\Models\Attestation_Divers;
 use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -34,6 +35,15 @@ class BadgeServices
     {
         return Badge::where("congress_id", "=", $congressId)
             ->first();
+    }
+
+    public function validerAttestationType($congressId, $attestationIdGenerator, $type)
+    {
+        $attestation = new Attestation_Divers();
+        $attestation->attestation_generator_id = $attestationIdGenerator;
+        $attestation->attestation_type_id = $type;
+        $attestation->congress_id = $congressId;
+        $attestation->save();
     }
 
     public function validerBadge($congressId, $badgeIdGenerator, $privilegeId)
@@ -139,6 +149,13 @@ class BadgeServices
             ]);
         Storage::put('attestations.zip', $res->getBody(), 'public');
         return 'attestations.zip';
+    }
+
+    public function getAttestationByCongressAndType($congressId, $attestationTypeId)
+    {
+        return Attestation_Divers::where('congress_id', '=', $congressId)
+            ->where('attestation_type_id', '=', $attestationTypeId)
+            ->first();
     }
 
 
