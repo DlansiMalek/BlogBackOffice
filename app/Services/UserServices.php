@@ -10,6 +10,7 @@ use App\Models\User_Access;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use PDF;
 
 class UserServices
@@ -533,11 +534,13 @@ class UserServices
             Log::info($exception);
             $user->email_sended = -1;
             $user->update();
+            Storage::delete('app/badge.png');
             return 1;
         }
 
         $user->email_sended = 1;
         $user->update();
+        Storage::delete('app/badge.png');
         return 1;
     }
 
