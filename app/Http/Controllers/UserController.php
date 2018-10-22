@@ -231,18 +231,11 @@ class UserController extends Controller
         }
         $user = $this->userServices->getUserById($user->user_id);
 
-        $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-        if ($badgeIdGenerator != null) {
-            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                $user->qr_code);
-        }
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
-        $this->userServices->sendMail($user, $congress, $link);
-
+        $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription,
+            $link);
 
         return response()->json($user, 201);
-
     }
 
     function validateUserAccount($student_id = null, $token = null)
@@ -255,7 +248,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(Utils::baseUrlWEB . "/#/user/" . $user->user_id . "?token=" . $token);
+            return response()->redirectTo(Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/upload-payement?token=" . $token);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -372,7 +365,7 @@ class UserController extends Controller
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
-                $this->userServices->sendMail($user, $congress);
+                $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription);
             }
         }
         return response()->json($user, 201);
@@ -410,7 +403,23 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserById($userId)) {
             return response()->json(['error' => 'user not found'], 404);
         }
+        $congress = $this->congressServices->getCongressById($user->congress_id);
 
+        if ($user->isPaied == 2 && $isPaied == 1) {
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                    $user->qr_code);
+            }
+
+            $link = Utils::baseUrlWEB . "/user/" . $user->user_id . "/change-access?token=" . $user->verification_code;
+            $this->userServices->sendMail("confirmPayement",
+                $user,
+                $congress,
+                $congress->object_mail_payement,
+                $link);
+        }
         $user->isPaied = $isPaied;
         $user->update();
 
@@ -466,6 +475,17 @@ class UserController extends Controller
         } else {
             return response()->json(['error' => 'cannot send mail', 'email' => $user->emaill], 501);
         }
+    }
+
+    public function uploadPayement($userId, Request $request)
+    {
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+
+        $user = $this->userServices->uploadPayement($user, $request);
+
+        return response()->json($user);
     }
 
 

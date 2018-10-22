@@ -513,7 +513,7 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($user, $congress, $link = null)
+    public function sendMail($view, $user, $congress, $objectMail, $link = null)
     {
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
@@ -523,11 +523,11 @@ class UserServices
 
 
         try {
-            Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss,
+            Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
                 'link' => $link, 'user' => $user
-            ], function ($message) use ($email, $congress, $pathToFile) {
+            ], function ($message) use ($email, $congress, $pathToFile, $objectMail) {
                 $message->attach($pathToFile);
-                $message->to($email)->subject($congress->object_mail_inscription);
+                $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
             Log::info($exception);
@@ -572,6 +572,20 @@ class UserServices
         return User::where('congress_id', '=', $congressId)
             ->where('email_attestation_sended', '=', 0)
             ->get();
+    }
+
+    public function uploadPayement($user, Request $request)
+    {
+        $file = $request->file('file_data');
+        $chemin = config('media.payement-user-recu');
+        $path = $file->store($chemin);
+
+        $user->path_payement = $path;
+        $user->isPaied = 2;
+
+        $user->update();
+
+        return $user;
     }
 
 
