@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Attestation_Type;
+use App\Models\Country;
 use App\Models\Grade;
 use App\Models\Lieu_Ex;
 use App\Models\Privilege;
@@ -54,5 +55,10 @@ class SharedServices
     {
         return Attestation_Type::with(['attestations'])
             ->get();
+    }
+
+    public function getAllCountries()
+    {
+        return Country::all();
     }
 }

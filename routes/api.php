@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/grade/all', 'SharedController@getAllGrades');
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
+Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/congress-logo/{path}', 'SharedController@getPhoto');
 
@@ -52,7 +53,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');
         Route::delete('', 'UserController@delete');
-        Route::get('validate/{validation_code}', 'UserController@validateUser');
+        Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');

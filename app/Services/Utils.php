@@ -8,6 +8,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class Utils
 {
 
+    const baseUrlWEB = "https://congress.vayetek.com";
     public static $baseUrlRT = 'http://apprtcongress-server:3000/api';
     public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
 

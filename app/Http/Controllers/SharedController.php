@@ -49,4 +49,9 @@ class SharedController extends Controller
     {
         return response($this->sharedServices->getAllTypesAttestation());
     }
+
+    public function getAllCountries()
+    {
+        return response()->json($this->sharedServices->getAllCountries());
+    }
 }

@@ -237,11 +237,28 @@ class UserController extends Controller
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
         }
-        $this->userServices->sendMail($user, $congress);
+        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->confirmation_code;
+        $this->userServices->sendMail($user, $congress, $link);
 
 
         return response()->json($user, 201);
 
+    }
+
+    function validateUserAccount($student_id = null, $token = null)
+    {
+        $user = $this->userServices->getUserById($student_id);
+        if (!$user) {
+            return response()->json(['response' => 'student not found'], 404);
+        }
+        if ($token == $user->verification_code) {
+            $user->email_confirmed = 1;
+            $user->update();
+
+            return response()->redirectTo(Utils::baseUrlWEB . "/#/user/" . $user->user_id . "?token=" . $token);
+        } else {
+            return response()->json(['response' => 'Token not match'], 400);
+        }
     }
 
     public function getUsersByAccess($accessId)

@@ -26,7 +26,6 @@ class UserServices
 
         //$user = User::where('email', 'like', $email)->first();
         // $congress = Congress::where('congress_id', $request->input("congressId"))->first();
-
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
@@ -34,16 +33,20 @@ class UserServices
             $newUser->gender = $request->input('gender');
         if ($request->has('mobile'))
             $newUser->mobile = $request->input('mobile');
-        if ($request->has('city_id'))
-            $newUser->city_id = $request->input('city_id');
         if ($request->has('country_id'))
-            $newUser->city_id = $request->input('country_id');
+            $newUser->country_id = $request->input('country_id');
 
         if ($request->has('grade_id'))
             $newUser->grade_id = $request->input('grade_id');
 
         if ($request->has('lieu_ex_id'))
             $newUser->lieu_ex_id = $request->input('lieu_ex_id');
+
+        if ($request->has('country_id'))
+            $newUser->country_id = $request->input('country_id');
+
+        if ($request->has('price'))
+            $newUser->price = $request->input('price');
 
         $newUser->email = $email;
 
@@ -57,9 +60,7 @@ class UserServices
         $newUser->congress_id = $request->input("congressId");
 
         $newUser->save();
-
         // $this->sendConfirmationMail($newUser, $congress->name);
-
         return $newUser;
     }
 
@@ -512,7 +513,7 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($user, $congress)
+    public function sendMail($user, $congress, $link = null)
     {
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
@@ -520,8 +521,10 @@ class UserServices
         if ($congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
+
         try {
-            Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss
+            Mail::send('inscriptionEmail.' . $congress->congress_id, ['accesss' => $user->accesss,
+                'link' => $link, 'user' => $user
             ], function ($message) use ($email, $congress, $pathToFile) {
                 $message->attach($pathToFile);
                 $message->to($email)->subject($congress->object_mail_inscription);
