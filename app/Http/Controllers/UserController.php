@@ -237,7 +237,7 @@ class UserController extends Controller
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
         }
-        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->confirmation_code;
+        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
         $this->userServices->sendMail($user, $congress, $link);
 
 
@@ -252,7 +252,7 @@ class UserController extends Controller
             return response()->json(['response' => 'student not found'], 404);
         }
         if ($token == $user->verification_code) {
-            $user->email_confirmed = 1;
+            $user->email_verified = 1;
             $user->update();
 
             return response()->redirectTo(Utils::baseUrlWEB . "/#/user/" . $user->user_id . "?token=" . $token);
