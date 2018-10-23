@@ -22,7 +22,8 @@ Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
-Route::get('/congress-logo/{path}', 'SharedController@getPhoto');
+Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
+Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {

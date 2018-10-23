@@ -33,9 +33,11 @@ Veuillez procéder au paiement des frais d’inscription à l’atelier par un v
         class="bold-style">{{$user->price}}
     dt</span>
 au nom de la Société Tunisienne des Sciences Médicales au RIB suivant: <span class="bold-style">12206000540500036081, Agence UIB El Menzah 6,</span>
-puis téléchargez votre reçu sur ce lien : <a href="{{$link}}">Lien</a>
+puis importez votre reçu de paiement via ce lien: <a href="{{$link}}">Lien</a>
 <br/>
 Vous aurez 72 heures pour procéder au paiement, dépassé ce délai, nous sommes au regret d’annuler votre pré-inscription.
+<br/>
+En cas de problème technique, veuillez contacter le numéro suivant : +216 53 780 474
 <br/>
 Au plaisir de vous voir parmi nous.<br/>
 Bureau de la STSM.<br/>

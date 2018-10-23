@@ -37,11 +37,15 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getPrivilegesWithBadges());
     }
 
-    public function getPhoto($path)
+    public function getLogoCongress($path)
     {
-        Log::info($path);
-
         $chemin = config('media.congress-logo');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
+    }
+
+    public function getRecuPaiement($path)
+    {
+        $chemin = config('media.payement-user-recu');
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 

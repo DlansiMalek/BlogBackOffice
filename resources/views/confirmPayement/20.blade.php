@@ -33,6 +33,8 @@ Vous trouverez ci-joint votre badge à imprimer avant la date du congrés.
 <br/>
 Si vous voulez changer vos ateliers à travers ce lien: <a href="{{$link}}">Lien</a>
 <br/>
+En cas de problème technique, veuillez contacter le numéro suivant : +216 53 780 474
+<br/>
 Au plaisir de vous voir parmi nous.<br/>
 Bureau de la STSM.<br/>
 </body>
