@@ -514,7 +514,7 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $link = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $link = null)
     {
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
@@ -526,8 +526,9 @@ class UserServices
         try {
             Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
                 'link' => $link, 'user' => $user
-            ], function ($message) use ($email, $congress, $pathToFile, $objectMail) {
-                $message->attach($pathToFile);
+            ], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail) {
+                if ($fileAttached)
+                    $message->attach($pathToFile);
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {

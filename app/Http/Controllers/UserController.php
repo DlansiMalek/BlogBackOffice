@@ -232,7 +232,7 @@ class UserController extends Controller
         $user = $this->userServices->getUserById($user->user_id);
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
-        $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription,
+        $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription, false,
             $link);
 
         return response()->json($user, 201);
@@ -407,10 +407,12 @@ class UserController extends Controller
 
         if ($user->isPaied == 2 && $isPaied == 1) {
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+            $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
+                $fileAttached = true;
             }
 
             $link = Utils::baseUrlWEB . "/user/" . $user->user_id . "/change-access?token=" . $user->verification_code;
@@ -418,6 +420,7 @@ class UserController extends Controller
                 $user,
                 $congress,
                 $congress->object_mail_payement,
+                $fileAttached,
                 $link);
         }
         $user->isPaied = $isPaied;
