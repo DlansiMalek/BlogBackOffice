@@ -237,7 +237,7 @@ class UserController extends Controller
                 $link);
         } else {
             $user->isPaied = 1;
-            $user->upadate();
+            $user->update();
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
