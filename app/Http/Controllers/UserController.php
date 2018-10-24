@@ -247,7 +247,7 @@ class UserController extends Controller
                 $fileAttached = true;
             }
 
-            $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/change-access?token=" . $user->verification_code;
+            $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
             $this->userServices->sendMail("confirmPayement",
                 $user,
                 $congress,
@@ -257,6 +257,35 @@ class UserController extends Controller
         }
 
         return response()->json($user, 201);
+    }
+
+    public function editerUserToCongress(Request $request, $congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+
+        if (!$user = $this->userServices->getUserById($request->input('user_id'))) {
+            return response()->json(['error' => 'user not found'], 400);
+        }
+
+        $accessIds = $request->input("accessIds");
+        $request->merge(["congressId" => $congressId]);
+        $user = $this->userServices->editerUser($request, $user);
+
+        $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
+        $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
+
+        $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesss);
+        $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
+        $accessDiffAdded = array_diff($accessIds, $userAccessIds);
+
+        $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
+        $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
+
+        $user = $this->userServices->getUserById($user->user_id);
+
+        return response()->json($user, 200);
     }
 
     function validateUserAccount($student_id = null, $token = null)
@@ -436,7 +465,7 @@ class UserController extends Controller
                 $fileAttached = true;
             }
 
-            $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/change-access?token=" . $user->verification_code;
+            $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
             $this->userServices->sendMail("confirmPayement",
                 $user,
                 $congress,

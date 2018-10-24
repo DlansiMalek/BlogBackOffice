@@ -3,6 +3,7 @@
 namespace App\Services;
 
 
+use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class Utils
@@ -24,6 +25,16 @@ class Utils
     public static function getFullName($first_name, $last_name)
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
+    }
+
+    public static function convertDateFrench($date)
+    {
+        return (new Carbon($date))->formatLocalized('%d %B %Y');
+    }
+
+    public static function getTimeFromDateTime($date)
+    {
+        return date('H:i', strtotime($date));
     }
 
     function base64_to_jpeg($base64_string, $output_file)

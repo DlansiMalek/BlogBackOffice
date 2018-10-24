@@ -17,21 +17,25 @@
 <body>
 <p>
     Cher collègue, <br/>
-    Votre pré-inscription aux ateliers à l’espace Arena, Lac 1 dans le cadre du 46ème Congrès Médical Maghrébin <span
-            class="bold-style">est confirmée: </span>
+    Votre pré-inscription à (aux) atelier(s) :
 </p>
 <ul>
     @foreach($accesss as $access)
         <li>
-            {{$access->name}} du <span class="bold-style">{{$access->theoric_start_data}}</span>
-            au <span class="bold-style">{{$access->theoric_end_data}}</span>
+            {{$access->name}} <span class="bold-style">qui se déroulera
+            le {{\App\Services\Utils::convertDateFrench($access->theoric_start_data)}}
+                de {{\App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)}}
+                à {{\App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)}}
+            </span>
         </li>
     @endforeach
 </ul>
 <br/>
-Vous trouverez ci-joint votre badge à imprimer avant la date du congrés.
+à l’espace Arena, Lac 1 dans le cadre du 46ème Congrès Médical Maghrébin <span class="bold-style">est confirmée.</span>
 <br/>
-Si vous voulez changer vos ateliers à travers ce lien: <a href="{{$link}}">Lien</a>
+Vous trouverez ci-joint votre badge à imprimer avant la date du congrès.
+<br/>
+Pour changer le choix des ateliers, veuillez cliquer ICI: <a href="{{$link}}">Lien</a>
 <br/>
 En cas de problème technique, veuillez contacter le numéro suivant : +216 53 780 474
 <br/>

@@ -21,6 +21,38 @@ class UserServices
         return User::with(['city', 'city.country'])->get();
     }
 
+    public function editerUser(Request $request, $newUser)
+    {
+        $newUser->first_name = $request->input('first_name');
+        $newUser->last_name = $request->input('last_name');
+        if ($request->has('gender'))
+            $newUser->gender = $request->input('gender');
+        if ($request->has('mobile'))
+            $newUser->mobile = $request->input('mobile');
+        if ($request->has('country_id'))
+            $newUser->country_id = $request->input('country_id');
+
+        if ($request->has('grade_id'))
+            $newUser->grade_id = $request->input('grade_id');
+
+        if ($request->has('lieu_ex_id'))
+            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
+
+        if ($request->has('country_id'))
+            $newUser->country_id = $request->input('country_id');
+
+        if ($request->has('price'))
+            $newUser->price = $request->input('price');
+
+        if ($request->has('isPoster'))
+            $newUser->isPoster = $request->input('isPoster');
+
+
+        $newUser->update();
+        // $this->sendConfirmationMail($newUser, $congress->name);
+        return $newUser;
+    }
+
     public function registerUser(Request $request)
     {
         $email = $request->input('email');
@@ -48,6 +80,9 @@ class UserServices
 
         if ($request->has('price'))
             $newUser->price = $request->input('price');
+
+        if ($request->has('isPoster'))
+            $newUser->isPoster = $request->input('isPoster');
 
         $newUser->email = $email;
 
