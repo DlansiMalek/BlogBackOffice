@@ -17,19 +17,30 @@
 <body>
 <p>
     Cher collègue, <br/>
-    Votre pré-inscription à (aux) l'atelier(s) :
+    Votre pré-inscription
+    @if($user->isPoster ==1)
+        au congrès
+        @if(sizeof($accesss)>0)
+            et
+        @endif
+    @endif
 </p>
-<ul>
-    @foreach($accesss as $access)
-        <li>
-            {{$access->name}} <span class="bold-style">qui se déroulera
+@if(sizeof($accesss)>0)
+    <p>
+        à (aux) l'atelier(s) :
+    </p>
+    <ul>
+        @foreach($accesss as $access)
+            <li>
+                {{$access->name}} <span class="bold-style">qui se déroulera
             le {{\App\Services\Utils::convertDateFrench($access->theoric_start_data)}}
-                de {{\App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)}}
-                à {{\App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)}}
+                    de {{\App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)}}
+                    à {{\App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)}}
             </span>
-        </li>
-    @endforeach
-</ul>
+            </li>
+        @endforeach
+    </ul>
+@endif
 <br/>
 à l’espace Arena, Lac 1 dans le cadre du 46ème Congrès Médical Maghrébin <span
         class="bold-style">a été enregistrée.</span>
