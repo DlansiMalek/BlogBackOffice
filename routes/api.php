@@ -53,7 +53,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');
-        Route::delete('', 'UserController@delete');
+        Route::delete('delete', 'UserController@delete');
         Route::post('upload-payement', 'UserController@uploadPayement');
         Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
