@@ -615,6 +615,9 @@ class UserServices
 
     public function uploadPayement($user, Request $request)
     {
+        ini_set('post_max_size', '15M');
+        ini_set('upload_max_filesize', '15M');
+
         $file = $request->file('file_data');
         $chemin = config('media.payement-user-recu');
         $path = $file->store($chemin);
