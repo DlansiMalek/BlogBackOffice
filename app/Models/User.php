@@ -63,4 +63,9 @@ class User extends Authenticatable
         return $this->hasOne('App\Models\Pack', 'pack_id', 'pack_id');
     }
 
+    function country()
+    {
+        return $this->hasOne('App\Models\Country', 'country_id', 'country_id');
+    }
+
 }

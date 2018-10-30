@@ -208,6 +208,14 @@ class UserController extends Controller
 
     public function registerUserToCongress(Request $request, $congressId)
     {
+        if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
+            'price', 'gender', 'grade_id', 'country_id'])
+        ) {
+            return response()->json(['response' => 'invalid request',
+                'content' => ['first_name', 'last_name', 'mobile', 'email',
+                    'price', 'gender', 'grade_id', 'country_id']], 400);
+        }
+
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
@@ -231,30 +239,9 @@ class UserController extends Controller
         }
         $user = $this->userServices->getUserById($user->user_id);
 
-        if ($user->price != null) {
-            $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
-            $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription, false,
-                $link);
-        } else {
-            $user->isPaied = 1;
-            $user->update();
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-            $fileAttached = false;
-            if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code);
-                $fileAttached = true;
-            }
-
-            $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-            $this->userServices->sendMail("confirmPayement",
-                $user,
-                $congress,
-                $congress->object_mail_payement,
-                $fileAttached,
-                $link);
-        }
+        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
+        $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription, false,
+            $link);
 
         return response()->json($user, 201);
     }
