@@ -209,6 +209,13 @@ Route::group(['prefix' => 'geo'], function () {
         Route::get('', 'GeoController@getAllCities');
     });
 });
+
+Route::group(['prefix' => 'payment'], function () {
+    Route::get('notification', 'PaymentController@notification');
+    Route::get('success', 'PaymentController@successPayment');
+    Route::get('echec', 'PaymentController@echecPayment');
+});
+
 Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');
 Route::get('generateBadges/{userPos}', 'AdminController@generateBadges');
 Route::get('generateTickets', 'AdminController@generateTickets');

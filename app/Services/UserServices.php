@@ -630,6 +630,12 @@ class UserServices
         return $user;
     }
 
+    public function getUserByRef($ref)
+    {
+        return User::where('ref_payment', '=', $ref)
+            ->first();
+    }
+
 
     private function isExistCongress($user, $congressId)
     {
