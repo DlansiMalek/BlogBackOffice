@@ -587,4 +587,18 @@ class AdminController extends Controller
         return response()->json($this->userServices->getFastUsersByCongressId($congressId));
     }
 
+    function setRefPayment($userId, Request $request)
+    {
+        $reference = $request->input('reference');
+
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['error' => 'user not found']);
+        }
+
+        $user->ref_payment = $reference;
+        $user->update();
+
+        return response()->json(["reference" => $user->ref_payment]);
+    }
+
 }

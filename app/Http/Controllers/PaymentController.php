@@ -34,15 +34,10 @@ class PaymentController extends Controller
     function notification(Request $request)
     {
 
-        Log::info($request);
-
         $action = $request->input("Action");
         $ref = $request->input("Reference");
         $param = $request->input("Param");
 
-        Log::info($action);
-        Log::info($ref);
-        Log::info($param);
 
         switch ($action) {
             case "DETAIL" :
@@ -52,7 +47,6 @@ class PaymentController extends Controller
                 } else {
                     $price = $user->price;
                 }
-                Log::info("reference=" . $ref . "&action=" . $action . "&reponse=" . $price);
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=" . $price;
             case "ACCORD" :
                 $user = $this->userServices->getUserByRef($ref);
@@ -60,7 +54,7 @@ class PaymentController extends Controller
                 $user->autorisation_num = $param;
                 $user->update();
 
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
+                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=NO";
 
             case "REFUS":
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";

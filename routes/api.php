@@ -167,6 +167,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
         Route::group(['prefix' => '{id_Participator}'], function () {
             Route::post('status/update', 'AdminController@makeUserPresentCongress');
             Route::post('status/update/access', 'AdminController@makeUserPresentAccess');
+            Route::post('set-refpayement', 'AdminController@setRefPayment');
             //Route::post('paied-status', 'AdminController@updatePaiedParticipator');
         });
     });
