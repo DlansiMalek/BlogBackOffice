@@ -21,6 +21,16 @@ class PaymentController extends Controller
         $this->userServices = $userServices;
     }
 
+    function echecPayment()
+    {
+        return response()->json(['error' => 'echec payment']);
+    }
+
+    function successPayment()
+    {
+        return response()->json(['message' => 'success payment']);
+    }
+
     function notification(Request $request)
     {
 
