@@ -37,6 +37,11 @@ class PaymentController extends Controller
         $action = $request->input("action");
         $ref = $request->input("reference");
         $param = $request->input("param");
+
+        Log::info($action);
+        Log::info($ref);
+        Log::info($param);
+
         switch ($action) {
             case "DETAIL" :
                 $user = $this->userServices->getUserByRef($ref);
@@ -45,6 +50,7 @@ class PaymentController extends Controller
                 } else {
                     $price = $user->price;
                 }
+                Log::info("reference=" . $ref . "&action=" . $action . "&reponse=" . $price);
                 return "reference=" . $ref . "&action=" . $action . "&reponse=" . $price;
             case "ACCORD" :
                 $user = $this->userServices->getUserByRef($ref);
