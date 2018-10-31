@@ -54,7 +54,7 @@ class PaymentController extends Controller
                 $user->autorisation_num = $param;
                 $user->update();
 
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=NO";
+                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "REFUS":
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
