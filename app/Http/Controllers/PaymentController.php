@@ -34,9 +34,9 @@ class PaymentController extends Controller
     function notification(Request $request)
     {
 
-        $action = $request->input("Action");
-        $ref = $request->input("Reference");
-        $param = $request->input("Param");
+        $action = $request->input("action");
+        $ref = $request->input("reference");
+        $param = $request->input("param");
         switch ($action) {
             case "DETAIL" :
                 $user = $this->userServices->getUserByRef($ref);
@@ -45,23 +45,23 @@ class PaymentController extends Controller
                 } else {
                     $price = $user->price;
                 }
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=" . $price;
+                return "reference=" . $ref . "&action=" . $action . "&reponse=" . $price;
             case "ACCORD" :
                 $user = $this->userServices->getUserByRef($ref);
                 $user->isPaied = 1;
                 $user->autorisation_num = $param;
                 $user->update();
 
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
+                return "reference=" . $ref . "&action=" . $action . "&reponse=OK";
 
             case "REFUS":
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
+                return "reference=" . $ref . "&action=" . $action . "&reponse=OK";
 
             case "ERREUR":
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
+                return "reference=" . $ref . "&action=" . $action . "&reponse=OK";
 
             case "ANNULATION":
-                return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
+                return "reference=" . $ref . "&action=" . $action . "&reponse=OK";
         }
 
         return "";
