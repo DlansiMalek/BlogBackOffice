@@ -3,22 +3,30 @@
 namespace App\Http\Controllers;
 
 
+use App\Services\CongressServices;
 use App\Services\PaymentServices;
+use App\Services\SharedServices;
 use App\Services\UserServices;
+use App\Services\Utils;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
 
     protected $paymentServices;
     protected $userServices;
+    protected $congressServices;
+    protected $sharedServices;
 
     function __construct(PaymentServices $paymentServices,
-                         UserServices $userServices)
+                         UserServices $userServices,
+                         CongressServices $congressServices,
+                         SharedServices $sharedServices)
     {
         $this->paymentServices = $paymentServices;
         $this->userServices = $userServices;
+        $this->congressServices = $congressServices;
+        $this->sharedServices = $sharedServices;
     }
 
     function echecPayment()
@@ -38,10 +46,10 @@ class PaymentController extends Controller
         $ref = $request->input("Reference");
         $param = $request->input("Param");
 
+        $user = $this->userServices->getUserByRef($ref);
 
         switch ($action) {
             case "DETAIL" :
-                $user = $this->userServices->getUserByRef($ref);
                 if (!$user) {
                     $price = -1;
                 } else {
@@ -49,20 +57,49 @@ class PaymentController extends Controller
                 }
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=" . $price;
             case "ACCORD" :
-                $user = $this->userServices->getUserByRef($ref);
                 $user->isPaied = 1;
                 $user->autorisation_num = $param;
                 $user->update();
 
+                $congress = $this->congressServices->getCongressById($user->congress_id);
+
+                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                    $user->privilege_id);
+                $fileAttached = false;
+                if ($badgeIdGenerator != null) {
+                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                        $user->qr_code);
+                    $fileAttached = true;
+                }
+
+                $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+                $this->userServices->sendMail("confirmPayement",
+                    $user,
+                    $congress,
+                    $congress->object_mail_payement,
+                    $fileAttached,
+                    $link);
+
+
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "REFUS":
+                $user->isPaied = 0;
+                $user->upadte();
+
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ERREUR":
+                $user->isPaied = 0;
+                $user->upadte();
+
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ANNULATION":
+                $user->isPaied = 0;
+                $user->upadte();
+
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
         }
 

@@ -213,7 +213,7 @@ Route::group(['prefix' => 'geo'], function () {
 
 Route::group(['prefix' => 'payment'], function () {
     Route::get('notification', 'PaymentController@notification');
-    Route::get('success', 'PaymentController@successPayment');
+    Route::post('success', 'PaymentController@successPayment');
     Route::get('echec', 'PaymentController@echecPayment');
 });
 
