@@ -51,7 +51,8 @@ Veuillez procéder au paiement des frais d’inscription à (aux) l’atelier(s)
 au nom de la Société Tunisienne des Sciences Médicales au RIB suivant: <span class="bold-style">12206000540500036081, Agence UIB El Menzah 6,</span>
 puis téléchargez votre reçu sur le lien ci-dessous.
 <br/>
-Ou bien, vous pouvez effectuer un paiement en ligne en utilisant votre carte bancaire.
+Ou bien, Vous pouvez effectuer un <span class="bold-style">paiement en ligne garanti et extrêmement sécurisé</span> en
+utilisant votre carte bancaire.
 <br/>
 Pour payer en ligne, veuillez cliquer sur le bouton "Paiement en ligne" sur le même lien ci-dessous.
 <br/>
