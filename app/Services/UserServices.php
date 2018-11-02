@@ -62,8 +62,8 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
+        
 
-        $newUser->ref_payment = strtotime(date("Y-m-d H:i:s"));
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
         if ($request->has('mobile'))
