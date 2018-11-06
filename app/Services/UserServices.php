@@ -62,7 +62,7 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        
+
 
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
@@ -445,8 +445,15 @@ class UserServices
         if ($request->has('grade_id') && $request->input('grade_id') != 0)
             $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
+
+        if ($request->has('country_id'))
+            $newUser->country_id = $request->input('country_id');
+
         if ($request->has('price'))
             $newUser->price = $request->input('price');
+
+        if ($request->has('isPoster'))
+            $newUser->isPoster = $request->input('isPoster');
 
         if ($request->has('organization_id') && $request->input('organization_id') != 0) {
             $newUser->organization_id = $request->input('organization_id');

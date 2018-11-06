@@ -24,5 +24,10 @@ class Attestation_Divers extends Model
         return $this->hasMany('App\Models\Attestation_Divers', 'attestation_type_id', 'attestation_type_id');
     }
 
+    public function type()
+    {
+        return $this->belongsTo('App\Models\Attestation_Type', 'attestation_type_id', 'attestation_type_id');
+    }
+
 
 }

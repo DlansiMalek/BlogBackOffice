@@ -402,7 +402,12 @@ class UserController extends Controller
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
-                $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription);
+                $this->userServices->sendMail("confirmPayement",
+                    $user,
+                    $congress,
+                    $congress->object_mail_payement,
+                    true,
+                    null);
             }
         }
         return response()->json($user, 201);

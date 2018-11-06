@@ -13,7 +13,7 @@ class Utils
     public static $baseUrlRT = 'http://apprtcongress-server:3000/api';
     public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
 
-    //public static $baseUrlBadge = 'http://137.74.165.25:8090';
+    // public static $baseUrlBadge = 'http://137.74.165.25:8090';
 
     //public static $baseUrlRT = 'http://137.74.165.25:3002/api';
 

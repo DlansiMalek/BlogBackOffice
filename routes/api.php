@@ -150,6 +150,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
                 });
                 Route::post('edit', 'CongressController@editCongress');
+                Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
             });
             Route::post('add', 'CongressController@addCongress');
         });

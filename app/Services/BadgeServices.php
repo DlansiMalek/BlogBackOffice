@@ -158,5 +158,12 @@ class BadgeServices
             ->first();
     }
 
+    public function getAttestationDiversByCongress($congressId)
+    {
+        return Attestation_Divers::with(['type'])
+            ->where('congress_id', '=', $congressId)
+            ->get();
+    }
+
 
 }

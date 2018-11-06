@@ -165,6 +165,15 @@ class CongressController extends Controller
         return response()->json(['message' => 'send mail successs']);
     }
 
+    public function getAttestationDiversByCongress($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+
+        return response()->json($this->badgeServices->getAttestationDiversByCongress($congressId));
+    }
+
     private function isAllowedEdit($congress_id)
     {
         $users = User::where('congress_id', '=', $congress_id)
