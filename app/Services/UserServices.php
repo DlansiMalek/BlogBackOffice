@@ -703,28 +703,38 @@ class UserServices
         $userData->first_name = $user['first_name'];
         $userData->last_name = $user['last_name'];
         $userData->gender = 1; // TODO dynamic
-        $userData->mobile = $user['mobile'];
+        if (array_key_exists('mobile', $user))
+            $userData->mobile = $user['mobile'];
         if (array_key_exists('email', $user) && $user['email'] != "") {
             $userData->email = $user['email'];
         }
-        if ($user['organization_id'] != 0) {
+        if (array_key_exists('organization_id', $user) && $user['organization_id'] != 0) {
             $userData->organization_id = $user['organization_id'];
         }
         $userData->congress_id = $congress_id;
-        $userData->grade_id = $user['grade_id'];
-        $userData->pack_id = $user['pack_id'];
-        $userData->privilege_id = $user['privilege_id'];
-        $userData->price = $user['price'];
+        if (array_key_exists('grade_id', $user))
+            $userData->grade_id = $user['grade_id'];
+
+        if (array_key_exists('pack_id', $user))
+            $userData->pack_id = $user['pack_id'];
+
+        if (array_key_exists('privilege_id', $user))
+            $userData->privilege_id = $user['privilege_id'];
+
+        if (array_key_exists('price', $user))
+            $userData->price = $user['price'];
 
         $qrcode = Utils::generateCode($userData->user_id);
         $userData->qr_code = $qrcode;
         $userData->save();
-        foreach ($user['accesss'] as $accessId) {
-            if ($accessId != 0) {
-                $accessUser = new User_Access();
-                $accessUser->access_id = $accessId;
-                $accessUser->user_id = $userData->user_id;
-                $accessUser->save();
+        if (array_key_exists('accesss', $user)) {
+            foreach ($user['accesss'] as $accessId) {
+                if ($accessId != 0) {
+                    $accessUser = new User_Access();
+                    $accessUser->access_id = $accessId;
+                    $accessUser->user_id = $userData->user_id;
+                    $accessUser->save();
+                }
             }
         }
     }

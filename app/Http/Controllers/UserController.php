@@ -279,7 +279,7 @@ class UserController extends Controller
     {
         $user = $this->userServices->getUserById($student_id);
         if (!$user) {
-            return response()->json(['response' => 'student not found'], 404);
+            return response()->json(['response' => 'Votre compte à été supprimé'], 404);
         }
         if ($token == $user->verification_code) {
             $user->email_verified = 1;
