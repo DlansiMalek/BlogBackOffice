@@ -329,7 +329,8 @@ class UserServices
 
     public function getUsersByAccess($accessId)
     {
-        return User::join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
+        return User::with(['privilege', 'country'])
+            ->join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
             ->where("access_id", '=', $accessId)
             ->get();
 
@@ -486,6 +487,13 @@ class UserServices
         $newUser->lieu_ex_id = $request->input('lieu_ex_id');
         $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
+
+
+        if ($request->has('isPoster'))
+            $newUser->isPoster = $request->input('isPoster');
+
+        if ($request->has('country_id'))
+            $newUser->country_id = $request->input('country_id');
 
         if ($request->has('price'))
             $newUser->price = $request->input('price');
@@ -707,6 +715,10 @@ class UserServices
             $userData->mobile = $user['mobile'];
         if (array_key_exists('email', $user) && $user['email'] != "") {
             $userData->email = $user['email'];
+        }
+
+        if (array_key_exists('country_id', $user)) {
+            $userData->country_id = $user['country_id'];
         }
         if (array_key_exists('organization_id', $user) && $user['organization_id'] != 0) {
             $userData->organization_id = $user['organization_id'];
