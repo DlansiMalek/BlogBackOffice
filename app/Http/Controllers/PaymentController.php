@@ -86,19 +86,19 @@ class PaymentController extends Controller
 
             case "REFUS":
                 $user->isPaied = 0;
-                $user->upadte();
+                $user->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ERREUR":
                 $user->isPaied = 0;
-                $user->upadte();
+                $user->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ANNULATION":
                 $user->isPaied = 0;
-                $user->upadte();
+                $user->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
         }
