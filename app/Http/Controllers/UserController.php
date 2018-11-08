@@ -420,7 +420,7 @@ class UserController extends Controller
         }
         $autorisation = $request->input('autorisation');
         $accessId = $request->input("accessId");
-        if ($accessId) {
+        /*if ($accessId) {
             if (!$access = $this->accessServices->getById($accessId)) {
                 return response()->json(['error' => 'access not found'], 404);
             }
@@ -432,10 +432,11 @@ class UserController extends Controller
                 }
             }
             return response()->json($result);
-        } else {
-            $userCongress = $this->congressServices->getUsersByStatus($congressId, $autorisation);
-            return response()->json($userCongress);
-        }
+        } else {*/
+        // TODO return after congress 20
+        $userCongress = $this->congressServices->getUsersByStatus($congressId, $autorisation);
+        return response()->json($userCongress);
+        //}
     }
 
     public function changePaiement($userId, Request $request)
