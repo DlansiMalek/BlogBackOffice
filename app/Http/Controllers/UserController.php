@@ -420,26 +420,31 @@ class UserController extends Controller
         }
         $autorisation = $request->input('autorisation');
         $accessId = $request->input("accessId");
-        /*if ($accessId) {
+        if ($accessId) {
             if (!$access = $this->accessServices->getById($accessId)) {
                 return response()->json(['error' => 'access not found'], 404);
             }
             $usersAccess = $this->accessServices->getUserAccessByAccessId($accessId);
             $result = array();
             foreach ($usersAccess as $user) {
-                if ($this->badgeServices->getAttestationEnabled($user->user_id, $access)['enabled'] == $autorisation) {
+                if ($user->isPresent == $autorisation)
                     array_push($result, $user);
+
+                //TODO return after congress
+                /* if ($this->badgeServices->getAttestationEnabled($user->user_id, $access)['enabled'] == $autorisation) {
+                array_push($result, $user);
                 }
+                */
             }
             return response()->json($result);
-        } else {*/
-        // TODO return after congress 20
-        $userCongress = $this->congressServices->getUsersByStatus($congressId, $autorisation);
-        return response()->json($userCongress);
-        //}
+        } else {
+            $userCongress = $this->congressServices->getUsersByStatus($congressId, $autorisation);
+            return response()->json($userCongress);
+        }
     }
 
-    public function changePaiement($userId, Request $request)
+    public
+    function changePaiement($userId, Request $request)
     {
         $isPaied = $request->input('status');
 
@@ -472,7 +477,8 @@ class UserController extends Controller
         return response()->json(['message' => 'user updated success']);
     }
 
-    public function saveUsersFromExcel($congressId, Request $request)
+    public
+    function saveUsersFromExcel($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
@@ -482,7 +488,8 @@ class UserController extends Controller
         return response()->json(['message' => 'add congress success']);
     }
 
-    public function sendMailAttesation($userId)
+    public
+    function sendMailAttesation($userId)
     {
 
         if (!$user = $this->userServices->getUserById($userId)) {
@@ -523,7 +530,8 @@ class UserController extends Controller
         }
     }
 
-    public function uploadPayement($userId, Request $request)
+    public
+    function uploadPayement($userId, Request $request)
     {
         if (!$user = $this->userServices->getUserById($userId)) {
             return response()->json(['error' => 'user not found'], 404);
