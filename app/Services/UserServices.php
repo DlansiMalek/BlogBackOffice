@@ -736,8 +736,13 @@ class UserServices
         if (array_key_exists('price', $user))
             $userData->price = $user['price'];
 
-        $qrcode = Utils::generateCode($userData->user_id);
-        $userData->qr_code = $qrcode;
+        if (array_key_exists('qr_code', $user))
+            $userData->qr_code = $user['qr_code'];
+        else {
+            $qrcode = Utils::generateCode($userData->user_id);
+            $userData->qr_code = $qrcode;
+        }
+
         $userData->save();
         if (array_key_exists('accesss', $user)) {
             foreach ($user['accesss'] as $accessId) {
