@@ -243,4 +243,5 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+
 }

@@ -177,6 +177,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 });
 //Access API
 Route::group(['prefix' => 'access'], function () {
+    Route::post('/grant-access-country/{countryId}', 'AccessController@grantAccessByCountry');
     Route::group(['prefix' => 'congress'], function () {
         Route::get('{congress_id}/list', 'AccessController@getAllAccessByCongress');
     });

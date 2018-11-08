@@ -653,6 +653,13 @@ class UserServices
             ->first();
     }
 
+    public function getUsersByContry($congressId, $countryId)
+    {
+        return User::where('congress_id', '=', $congressId)
+            ->where('country_id', '=', $countryId)
+            ->get();
+    }
+
 
     private function isExistCongress($user, $congressId)
     {

@@ -3,18 +3,22 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\User_Access;
 use App\Services\AccessServices;
+use App\Services\UserServices;
 use Illuminate\Http\Request;
 
 class AccessController extends Controller
 {
 
     protected $accessServices;
+    protected $userServices;
 
 
-    function __construct(AccessServices $accessServices)
+    function __construct(AccessServices $accessServices, UserServices $userServices)
     {
         $this->accessServices = $accessServices;
+        $this->userServices = $userServices;
     }
 
 
@@ -51,5 +55,24 @@ class AccessController extends Controller
 
     }
 
+    public function grantAccessByCountry($countryId, Request $request)
+    {
+        $congressId = $request->input('congressId');
+
+        $users = $this->userServices->getUsersByContry($congressId, $countryId);
+
+        $accesss = $this->accessServices->getAllAccessByCongress($congressId);
+        foreach ($users as $user) {
+            User_Access::where('user_id', '=', $user->user_id)
+                ->delete();
+            foreach ($accesss as $access) {
+                $userAccess = new User_Access();
+                $userAccess->user_id = $user->user_id;
+                $userAccess->access_id = $access->access_id;
+                $userAccess->save();
+            }
+        }
+        return response()->json(['message' => 'success', 'user_number' => sizeof($users)]);
+    }
 
 }
