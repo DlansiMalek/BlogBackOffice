@@ -427,14 +427,14 @@ class UserController extends Controller
             $usersAccess = $this->accessServices->getUserAccessByAccessId($accessId);
             $result = array();
             foreach ($usersAccess as $user) {
-                if ($user->isPresent == $autorisation)
-                    array_push($result, $user);
+                /*if ($user->isPresent == $autorisation)
+                    array_push($result, $user);*/
 
                 //TODO return after congress
-                /* if ($this->badgeServices->getAttestationEnabled($user->user_id, $access)['enabled'] == $autorisation) {
-                array_push($result, $user);
+                if ($this->badgeServices->getAttestationEnabled($user->user_id, $access)['enabled'] == $autorisation) {
+                    array_push($result, $user);
                 }
-                */
+
             }
             return response()->json($result);
         } else {
