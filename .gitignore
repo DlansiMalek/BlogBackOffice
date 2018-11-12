@@ -13,3 +13,4 @@ composer.lock
 ./public/vendor/l5-swagger
 ./resources/views/vendor/l5-swagger
 ./storage/api-docs
+.env
