@@ -48,12 +48,16 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $date, $admin_id)
+    public function addCongress($name, $date,$email,$object_mail_inscription, $object_mail_payement,$object_mail_attestation, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
         $congress->date = $date;
         $congress->admin_id = $admin_id;
+        $congress->username_mail = $email;
+        $congress->object_mail_inscription = $object_mail_inscription;
+        $congress->object_mail_payement = $object_mail_payement;
+        $congress->object_mail_attestation = $object_mail_attestation;
         $congress->save();
         return $congress;
     }
@@ -107,6 +111,10 @@ class CongressServices
         $congress->name = $request->input("name");
         $congress->date = $request->input("date");
         $congress->admin_id = $adminId;
+        $congress->username_mail = $request->input("username_mail");
+        $congress->object_mail_inscription = $request->input('object_mail_inscription');
+        $congress->object_mail_payement = $request->input('object_mail_payement');
+        $congress->object_mail_attestation = $request->input('object_mail_attestation');
 
         $congress->update();
 

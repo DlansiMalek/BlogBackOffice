@@ -88,6 +88,10 @@ class CongressController extends Controller
         $congress = $this->congressServices->addCongress(
             $request->input("name"),
             $request->input("date"),
+            $request->input("username_mail"),
+            $request->input("object_mail_inscription"),
+            $request->input("object_mail_payement"),
+            $request->input("object_mail_attestation"),
             $admin->admin_id);
         $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
