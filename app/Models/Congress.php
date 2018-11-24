@@ -26,6 +26,11 @@ class Congress extends Model
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
     }
 
+    public function packs()
+    {
+        return $this->hasMany('App\Models\Pack', "congress_id", "congress_id");
+    }
+
 
     public function users()
     {

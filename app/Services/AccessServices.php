@@ -33,7 +33,7 @@ class AccessServices
 
             $accessData->congress_id = $congress_id;
             $accessData->save();
-            array_push($resAccesses, $accessData);
+            $resAccesses[$access['front_id']] = $accessData;
         }
         return $resAccesses;
 

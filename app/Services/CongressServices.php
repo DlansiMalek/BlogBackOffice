@@ -28,7 +28,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users", "attestation", "accesss.participants", "accesss.attestation", "accesss"])
+        return Congress::with(["badges", "users", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -64,7 +64,7 @@ class CongressServices
 
     public function getCongressAllAccess($adminId)
     {
-        return Congress::with(["accesss"])
+        return Congress::with(["accesss","packs.accesses"])
             ->where("admin_id", "=", $adminId)
             ->get();
     }

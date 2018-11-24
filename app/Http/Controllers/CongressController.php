@@ -97,7 +97,7 @@ class CongressController extends Controller
             $request->input("object_mail_attestation"),
             $admin->admin_id);
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-//        $this->packService->addPacks($accesses,$request->input('packs'),$congress);
+        $this->packService->addPacks($accesses,$request->input("packs"),$congress);
 
         return $congress;
     }

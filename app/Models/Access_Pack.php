@@ -17,7 +17,7 @@ class Access_Pack extends Model
     protected $primaryKey = 'access_pack_id';
     protected $fillable = ['access_pack_id', 'access_id', 'pack_id'];
 
-    protected $timestamps = true;
+    public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 
 }
