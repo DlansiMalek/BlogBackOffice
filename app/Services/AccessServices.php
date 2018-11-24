@@ -19,10 +19,12 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
+        $resAccesses = [];
         foreach ($accesss as $access) {
             $accessData = new Access();
             $accessData->name = $access["name"];
             $accessData->price = $access["price"];
+            $accessData->packless = $access["packless"];
             /*if (array_key_exists('ponderation', $access))
                 $accessData->ponderation = $access["ponderation"];
             */
@@ -31,7 +33,9 @@ class AccessServices
 
             $accessData->congress_id = $congress_id;
             $accessData->save();
+            array_push($resAccesses, $accessData);
         }
+        return $resAccesses;
 
     }
 

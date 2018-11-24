@@ -8,13 +8,12 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\PackServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 
 class CongressController extends Controller
@@ -27,13 +26,15 @@ class CongressController extends Controller
     protected $userServices;
     protected $sharedServices;
     protected $badgeServices;
+    protected $packService;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
                          UserServices $userServices,
                          SharedServices $sharedServices,
-                         BadgeServices $badgeServices)
+                         BadgeServices $badgeServices,
+                         PackServices $packService)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -42,6 +43,7 @@ class CongressController extends Controller
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->packService = $packService;
     }
 
 
@@ -68,7 +70,8 @@ class CongressController extends Controller
 
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
-        $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+
 
         return response()->json(["message" => "edit congress success"]);
     }
@@ -93,7 +96,8 @@ class CongressController extends Controller
             $request->input("object_mail_payement"),
             $request->input("object_mail_attestation"),
             $admin->admin_id);
-        $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+//        $this->packService->addPacks($accesses,$request->input('packs'),$congress);
 
         return $congress;
     }
