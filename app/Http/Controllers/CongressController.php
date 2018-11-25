@@ -72,6 +72,7 @@ class CongressController extends Controller
 
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
+        $this->packService->addPacks($accesses,$request->input("packs"),$congress);
 
         return response()->json(["message" => "edit congress success"]);
     }
