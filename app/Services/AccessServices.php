@@ -25,6 +25,10 @@ class AccessServices
             $accessData->name = $access["name"];
             $accessData->price = $access["price"];
             $accessData->packless = $access["packless"];
+            $accessData->seuil = array_key_exists("seuil", $access) ? $access["seuil"] : null;
+            $accessData->max_places = array_key_exists("max_places", $access) ? $access["max_places"] : null;
+            $accessData->theoric_start_data = array_key_exists("theoric_start_data", $access) ? $access["theoric_start_data"] : null;
+            $accessData->theoric_end_data = array_key_exists("theoric_end_data", $access) ? $access["theoric_end_data"] : null;
             /*if (array_key_exists('ponderation', $access))
                 $accessData->ponderation = $access["ponderation"];
             */
