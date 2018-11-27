@@ -46,4 +46,8 @@ class Congress extends Model
     {
         return $this->hasMany('App\Models\Badge', 'congress_id', 'congress_id');
     }
+
+    public function form_inputs(){
+        return $this->hasMany("App\Models\Form_Input", "congress_id","congress_id");
+    }
 }
