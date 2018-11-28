@@ -114,7 +114,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::with(['accesss'])->where('user_id', '=', $user_id)
+        return User::with(['accesss','responses.values','responses.form_input'])->where('user_id', '=', $user_id)
             ->first();
     }
 

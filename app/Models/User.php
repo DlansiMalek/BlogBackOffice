@@ -68,4 +68,8 @@ class User extends Authenticatable
         return $this->hasOne('App\Models\Country', 'country_id', 'country_id');
     }
 
+    function responses(){
+        return $this->hasMany("App\Models\Form_Input_Reponse",'user_id','user_id');
+    }
+
 }
