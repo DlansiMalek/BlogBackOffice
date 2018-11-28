@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Congress;
+use App\Models\Form_Input;
+use App\Models\Form_Input_Value;
 use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\User;
@@ -28,7 +30,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses"])
+        return Congress::with(["badges", "users", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -186,6 +188,29 @@ class CongressServices
         $congress->update();
 
         return $congress;
+    }
+
+    public function addFormInputs($inputs, $congress_id){
+        $old = Form_Input::where("congress_id" ,'=',$congress_id );
+        foreach($old as $input){
+            Form_Input_Value::where('form_input_id','=',$input->form_input_id)->delete();
+        }
+        $old->delete();
+        foreach ($inputs as $inputRequest){
+            $input = new Form_Input();
+            $input->form_input_type_id = $inputRequest["type"]["form_input_type_id"];
+            $input->congress_id = $congress_id;
+            $input->label = $inputRequest["label"];
+            $input->save();
+            if($inputRequest["type"]["name"] == "checklist"||$inputRequest["type"]["name"] == "multiselect"||$inputRequest["type"]["name"] == "select"||$inputRequest["type"]["name"] == "radio"){
+                foreach ($inputRequest["values"] as $valueRequest){
+                    $value = new Form_Input_Value();
+                    $value->value = $valueRequest['value'];
+                    $value->form_input_id= $input->form_input_id;
+                    $value->save();
+                }
+            }
+        }
     }
 
 }

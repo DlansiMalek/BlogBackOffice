@@ -19,6 +19,7 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
+        Access::where("congress_id",'=',$congress_id)->delete();
         $resAccesses = [];
         foreach ($accesss as $access) {
             $accessData = new Access();

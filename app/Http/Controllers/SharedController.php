@@ -58,4 +58,8 @@ class SharedController extends Controller
     {
         return response()->json($this->sharedServices->getAllCountries());
     }
+
+    public function getFormInputTypes(){
+        return $this->sharedServices->getFormInputTypes();
+    }
 }

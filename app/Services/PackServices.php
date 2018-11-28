@@ -26,7 +26,7 @@ class PackServices
     }
 
     public function addPacks($accesses,$packs, $congress){
-//        var_dump($accesses);
+        Pack::where('congress_id',"=",$congress->congress_id)->delete();
         foreach ($packs as $p){
             $pack = new Pack();
             $pack->label = $p["label"];
