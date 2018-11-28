@@ -228,6 +228,8 @@ class UserController extends Controller
         $request->merge(["congressId" => $congressId]);
         $user = $this->userServices->registerUser($request);
 
+        $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
+
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
 
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
