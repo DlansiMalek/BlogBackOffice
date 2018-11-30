@@ -670,7 +670,7 @@ class UserServices
             $reponse->user_id = $userId;
             $reponse->form_input_id = $req['form_input']['form_input_id'];
             $reponse->save();
-            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))g
+            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
                 foreach ($reponse['values'] as $val) {
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
