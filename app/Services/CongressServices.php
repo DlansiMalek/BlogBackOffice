@@ -30,7 +30,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values"])
+        return Congress::with(["badges", "users.grade", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
