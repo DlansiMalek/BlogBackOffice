@@ -14,7 +14,7 @@ class Congress extends Model
 {
     protected $table = 'Congress';
     protected $primaryKey = 'congress_id';
-    protected $fillable = ['name', 'date', 'object_mail_inscription', 'admin_id', 'object_mail_attestation','object_mail_payement',
+    protected $fillable = ['name', 'date', 'object_mail_inscription', 'admin_id', 'object_mail_attestation','object_mail_payement','mail_inscription','mail_payement',
         'logo', 'username_mail'];
 
     protected $dates = ['created_at', 'updated_at'];
@@ -49,5 +49,9 @@ class Congress extends Model
 
     public function form_inputs(){
         return $this->hasMany("App\Models\Form_Input", "congress_id","congress_id");
+    }
+
+    public function custom_mails(){
+        return $this->hasMany('App\Models\Custom_Mail','congress_id','congress_id');
     }
 }

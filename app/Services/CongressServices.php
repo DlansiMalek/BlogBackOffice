@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Congress;
+use App\Models\Custom_Mail;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
 use App\Models\Organization;
@@ -30,7 +31,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users.grade", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values"])
+        return Congress::with(["badges", "users.grade", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "custom_mails"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -211,6 +212,16 @@ class CongressServices
                 }
             }
         }
+    }
+
+    public function saveCustomMail(\App\Models\Custom_Mail $mail)
+    {
+        $mail->save();
+    }
+
+    public function getEmailById($id)
+    {
+        return Custom_Mail::find($id);
     }
 
 }

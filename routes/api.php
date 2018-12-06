@@ -92,6 +92,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 });
             });
         });
+        Route::post('mail/{mode}','CongressController@saveMail');
     });
 });
 //User API

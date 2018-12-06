@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Custom_Mail;
 use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -72,7 +73,7 @@ class CongressController extends Controller
 
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
-        $this->packService->addPacks($accesses,$request->input("packs"),$congress);
+        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
 
         $this->congressServices->addFormInputs($request->input("form_inputs"), $congress->congress_id);
 
@@ -100,7 +101,7 @@ class CongressController extends Controller
             $request->input("object_mail_attestation"),
             $admin->admin_id);
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-        $this->packService->addPacks($accesses,$request->input("packs"),$congress);
+        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
         $this->congressServices->addFormInputs($request->input('form_inputs'), $congress->congress_id);
         return $congress;
     }
@@ -252,6 +253,40 @@ class CongressController extends Controller
         $congress = $this->congressServices->uploadLogo($congress, $request);
 
         return response()->json($congress);
+    }
+
+    public function saveMail(Request $request, $congress_id, $mode)
+    {
+        if (!$request->has(['object', 'template'])) {
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
+        } else if ($mode == 'inscription' || $mode == 'paiement') {
+            $congress = $this->congressServices->getCongressById($congress_id);
+            if ($mode == 'inscription') {
+                $congress->object_mail_inscription = $request->input('object');
+                $congress->mail_inscription = $request->input('template');
+            } else {
+                $congress->object_mail_payement = $request->input('object');
+                $congress->mail_payement = $request->input('template');
+            }
+            $congress->save();
+            return $congress;
+        } else if ($mode == "new"){
+            $mail = new Custom_Mail();
+            $mail->object = $request->input('object');
+            $mail->template =  $request->input('template');
+            $mail->congress_id = $congress_id;
+            $this->congressServices->saveCustomMail($mail);
+            return $mail;
+        }else {
+            if (!is_numeric($mode))
+                return response()->json(['resposne' => 'bad request', 'error' => 'wrong id'], 400);
+            $email = $this->congressServices->getEmailById($mode);
+            $email->object = $request->input("object");
+            $email->template = $request->input("template");
+            $this->congressServices->saveCustomMail($email);
+            return $email;
+
+        }
     }
 
 
