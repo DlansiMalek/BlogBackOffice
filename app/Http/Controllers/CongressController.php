@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Congress;
 use App\Models\Custom_Mail;
 use App\Models\User;
 use App\Services\AccessServices;
@@ -15,6 +16,7 @@ use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 
 class CongressController extends Controller
@@ -170,7 +172,7 @@ class CongressController extends Controller
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
-                $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription);
+                $this->userServices->sendMail($congress->mail_inscription, $user, $congress, $congress->object_mail_inscription);
             }
         }
 
@@ -270,14 +272,14 @@ class CongressController extends Controller
             }
             $congress->save();
             return $congress;
-        } else if ($mode == "new"){
+        } else if ($mode == "new") {
             $mail = new Custom_Mail();
             $mail->object = $request->input('object');
-            $mail->template =  $request->input('template');
+            $mail->template = $request->input('template');
             $mail->congress_id = $congress_id;
             $this->congressServices->saveCustomMail($mail);
             return $mail;
-        }else {
+        } else {
             if (!is_numeric($mode))
                 return response()->json(['resposne' => 'bad request', 'error' => 'wrong id'], 400);
             $email = $this->congressServices->getEmailById($mode);
@@ -287,6 +289,20 @@ class CongressController extends Controller
             return $email;
 
         }
+    }
+
+    public function sendMailTest($congress_id)
+    {
+        $congress = Congress::find($congress_id);
+            Mail::send([],[], function ($message) use ($congress) {
+                $message->from("borchaniz96@gmail.com");
+                $message->to('borchani_yessine@ieee.org');
+                $message->subject($congress->object_mail_inscription);
+                $message->setBody(view(['template'=>'<html>'.$congress->mail_inscription.'{{ $aa }}</html>'],['aa'=>'works'] ),'text/html');
+
+            });
+
+
     }
 
 

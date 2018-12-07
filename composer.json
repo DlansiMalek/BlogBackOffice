@@ -24,7 +24,8 @@
     "simplesoftwareio/simple-qrcode": "^1.5",
     "tymon/jwt-auth": "1.0.0-rc.2",
     "zircote/swagger-php": "2.0.9",
-    "nesbot/carbon": "^1.31"
+    "nesbot/carbon": "^1.31",
+    "wpb/string-blade-compiler": "3.6"
   },
   "require-dev": {
     "filp/whoops": "~2.0",
