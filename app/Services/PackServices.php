@@ -9,11 +9,8 @@
 namespace App\Services;
 
 
-use App\Models\Access;
 use App\Models\Access_Pack;
 use App\Models\Pack;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class PackServices
 {
@@ -24,7 +21,6 @@ class PackServices
         return Pack::where('congress_id', '=', $congressId)
             ->get();
     }
-
     public function addPacks($accesses,$packs, $congress){
         Pack::where('congress_id',"=",$congress->congress_id)->delete();
         foreach ($packs as $p){
@@ -43,4 +39,5 @@ class PackServices
         }
 
     }
+
 }
