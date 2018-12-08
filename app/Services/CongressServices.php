@@ -224,4 +224,10 @@ class CongressServices
         return Custom_Mail::find($id);
     }
 
+    function renderMail($template,$congress, $participant){
+        if ($participant!=null)
+            $participant->gender = $participant->gender==1?'Mr.':'Mme';
+        return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant]);
+    }
+
 }

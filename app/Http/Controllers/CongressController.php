@@ -291,19 +291,4 @@ class CongressController extends Controller
         }
     }
 
-    public function sendMailTest($congress_id)
-    {
-        $congress = Congress::find($congress_id);
-            Mail::send([],[], function ($message) use ($congress) {
-                $message->from("borchaniz96@gmail.com");
-                $message->to('borchani_yessine@ieee.org');
-                $message->subject($congress->object_mail_inscription);
-                $message->setBody(view(['template'=>'<html>'.$congress->mail_inscription.'{{ $aa }}</html>'],['aa'=>'works'] ),'text/html');
-
-            });
-
-
-    }
-
-
 }
