@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Attestation_Type;
 use App\Models\Country;
+use App\Models\Form_Input_Type;
 use App\Models\Grade;
 use App\Models\Lieu_Ex;
 use App\Models\Privilege;
@@ -60,5 +61,10 @@ class SharedServices
     public function getAllCountries()
     {
         return Country::all();
+    }
+
+    public function getFormInputTypes()
+    {
+        return Form_Input_Type::get();
     }
 }

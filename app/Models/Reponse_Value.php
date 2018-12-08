@@ -3,21 +3,19 @@
  * Created by PhpStorm.
  * User: Abbes
  * Date: 25/08/2016
- * Time: 23:16
+ * Time: 23:15
  */
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Model;
 
-class Access_Pack extends Model
+class Reponse_Value extends Model
 {
-    protected $table = 'Access_Pack';
-    protected $primaryKey = 'access_pack_id';
-    protected $fillable = ['access_pack_id', 'access_id', 'pack_id'];
-
     public $timestamps = true;
+    protected $table = 'Reponse_Value';
+    protected $primaryKey = 'reponse_value_id';
+    protected $fillable = ['form_input_value_id','form_input_reponse_id'];
     protected $dates = ['created_at', 'updated_at'];
 
 }

@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Access_Presence;
 use App\Models\Admin;
+use App\Models\Form_Input_Reponse;
 use App\Models\Payement_Type;
+use App\Models\Reponse_Value;
 use App\Models\User;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
@@ -114,7 +116,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::with(['accesss'])->where('user_id', '=', $user_id)
+        return User::with(['accesss', 'responses.values', 'responses.form_input'])->where('user_id', '=', $user_id)
             ->first();
     }
 
@@ -658,6 +660,24 @@ class UserServices
         return User::where('congress_id', '=', $congressId)
             ->where('country_id', '=', $countryId)
             ->get();
+    }
+
+    public function saveUserResponses($responses, $userId)
+    {
+        foreach ($responses as $req) {
+            $reponse = new Form_Input_Reponse();
+            $reponse->reponse = $req['reponse'];
+            $reponse->user_id = $userId;
+            $reponse->form_input_id = $req['form_input']['form_input_id'];
+            $reponse->save();
+            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
+                foreach ($reponse['values'] as $val) {
+                    $repVal = new Reponse_Value();
+                    $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                    $repVal->form_input_value_id = $val['form_input_value_id'];
+                    $repVal->save();
+                }
+        }
     }
 
 

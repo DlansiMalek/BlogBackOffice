@@ -72,6 +72,9 @@ class CongressController extends Controller
 
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
+        $this->packService->addPacks($accesses,$request->input("packs"),$congress);
+
+        $this->congressServices->addFormInputs($request->input("form_inputs"), $congress->congress_id);
 
         return response()->json(["message" => "edit congress success"]);
     }
@@ -97,8 +100,8 @@ class CongressController extends Controller
             $request->input("object_mail_attestation"),
             $admin->admin_id);
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-//        $this->packService->addPacks($accesses,$request->input('packs'),$congress);
-
+        $this->packService->addPacks($accesses,$request->input("packs"),$congress);
+        $this->congressServices->addFormInputs($request->input('form_inputs'), $congress->congress_id);
         return $congress;
     }
 
