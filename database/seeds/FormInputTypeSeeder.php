@@ -17,6 +17,10 @@ class FormInputTypeSeeder extends Seeder
         ]);
 
         DB::table('Form_Input_Type')->insert([
+            'name' => 'number',
+        ]);
+
+        DB::table('Form_Input_Type')->insert([
             'name' => 'textarea',
         ]);
 
