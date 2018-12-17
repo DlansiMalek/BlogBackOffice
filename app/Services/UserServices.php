@@ -256,6 +256,8 @@ class UserServices
             $user->privilege_id = 3;
         }
 
+
+
         $user->qr_code = str_random(7);
         $user->congress_id = $congress_id;
         $user->payement_type_id = $request->input('payement_type_id');
@@ -748,6 +750,10 @@ class UserServices
         else {
             $qrcode = Utils::generateCode($userData->user_id);
             $userData->qr_code = $qrcode;
+        }
+
+        if (array_key_exists('paid', $user)){
+            $userData->isPaied = $user['paid'];
         }
 
         $userData->save();
