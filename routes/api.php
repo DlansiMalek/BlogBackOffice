@@ -92,6 +92,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 });
             });
         });
+        Route::post('mail/{mode}','CongressController@saveMail');
     });
 });
 //User API
@@ -113,7 +114,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');
-
+            Route::get('mailTest','CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
         });
 

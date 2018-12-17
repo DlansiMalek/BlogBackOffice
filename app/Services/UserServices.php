@@ -576,16 +576,27 @@ class UserServices
         if ($congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
-
+//          Old send mail
+//        try {
+//            Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
+//                'link' => $link, 'user' => $user
+//            ], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail) {
+//                if ($fileAttached)
+//                    $message->attach($pathToFile);
+//                $message->to($email)->subject($objectMail);
+//            });
+//        }
         try {
-            Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
-                'link' => $link, 'user' => $user
-            ], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail) {
+            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $message->subject($objectMail);
+                $message->setBody($view);
                 if ($fileAttached)
                     $message->attach($pathToFile);
                 $message->to($email)->subject($objectMail);
             });
-        } catch (\Exception $exception) {
+        }
+
+        catch (\Exception $exception) {
             Log::info($exception);
             $user->email_sended = -1;
             $user->update();
