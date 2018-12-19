@@ -243,7 +243,6 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-
         $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_inscription,$congress,$user), $user, $congress, $congress->object_mail_inscription, false,
             $link);
 

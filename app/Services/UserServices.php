@@ -599,12 +599,14 @@ class UserServices
         catch (\Exception $exception) {
             Log::info($exception);
             $user->email_sended = -1;
+            $user->gender = $user->gender=='Mr.'?1:2;
             $user->update();
             Storage::delete('app/badge.png');
             return 1;
         }
 
         $user->email_sended = 1;
+        $user->gender = $user->gender=='Mr.'?1:2;
         $user->update();
         Storage::delete('app/badge.png');
         return 1;
@@ -682,7 +684,7 @@ class UserServices
             $reponse->form_input_id = $req['form_input']['form_input_id'];
             $reponse->save();
             if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
-                foreach ($reponse['values'] as $val) {
+                foreach ($req['values'] as $val) {
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val['form_input_value_id'];
