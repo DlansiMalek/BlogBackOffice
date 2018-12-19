@@ -54,8 +54,7 @@ class CongressController extends Controller
     {
         $congress = $this->addFullCongress($request);
 
-        return response()->json(["message" => "add congress sucess",
-            "data" => $this->congressServices->getCongressById($congress->congress_id)]);
+        return response()->json($this->congressServices->getCongressById($congress->congress_id));
 
     }
 
