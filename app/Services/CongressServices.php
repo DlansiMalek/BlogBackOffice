@@ -32,7 +32,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users.grade", "users.privilege", "users.responses.values", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "custom_mails"])
+        return Congress::with(["badges", "users.privilege", "users.responses.values", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "custom_mails"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -127,8 +127,7 @@ class CongressServices
 
     public function getUsersByStatus($congressId, int $status)
     {
-        return User::with(['grade'])
-            ->where('isPresent', '=', $status)
+        return User::where('isPresent', '=', $status)
             ->where('congress_id', '=', $congressId)
             ->get();
     }

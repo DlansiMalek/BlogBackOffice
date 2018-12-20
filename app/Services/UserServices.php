@@ -34,20 +34,15 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('grade_id'))
-            $newUser->grade_id = $request->input('grade_id');
-
-        if ($request->has('lieu_ex_id'))
-            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
+
+        if ($request->has('pack')&&$request->input('pack')!=null)
+            $newUser->gender = $request->input('pack')['pack_id'];
 
 
         $newUser->update();
@@ -65,6 +60,8 @@ class UserServices
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
 
+        if ($request->has('pack')&&$request->input('pack')!=null)
+            $newUser->gender = $request->input('pack')['pack_id'];
 
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
@@ -73,20 +70,12 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('grade_id'))
-            $newUser->grade_id = $request->input('grade_id');
-
-        if ($request->has('lieu_ex_id'))
-            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
 
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
         if ($request->has('price'))
             $newUser->price = $request->input('price');
-
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
 
         $newUser->email = $email;
 
@@ -116,7 +105,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::with(['accesss', 'responses.values', 'responses.form_input'])->where('user_id', '=', $user_id)
+        return User::with(['accesss', 'responses.values', 'responses.form_input.values', 'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
     }
 
@@ -324,7 +313,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['grade', 'accesss.attestation', 'organization', 'privilege', 'country'])
+        return User::with(['accesss.attestation', 'organization', 'privilege', 'country'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -443,10 +432,6 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        if ($request->has('lieu_ex_id') && $request->input('lieu_ex_id') != 0)
-            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-        if ($request->has('grade_id') && $request->input('grade_id') != 0)
-            $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
 
         if ($request->has('country_id'))
@@ -455,8 +440,6 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
 
         if ($request->has('organization_id') && $request->input('organization_id') != 0) {
             $newUser->organization_id = $request->input('organization_id');
@@ -486,13 +469,7 @@ class UserServices
     {
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-        $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
-
-
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
 
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
@@ -549,7 +526,7 @@ class UserServices
     {
         return User::whereIn('privilege_id', $privileges)
             ->where("congress_id", "=", $congressId)
-            ->with(['grade', 'accesss.attestation', 'organization', 'privilege'])
+            ->with([ 'accesss.attestation', 'organization', 'privilege'])
             ->get();
     }
 
@@ -562,8 +539,7 @@ class UserServices
 
     public function getFastUsersByCongressId($congressId)
     {
-        return User::with(['grade'])
-            ->where('congress_id', '=', $congressId)
+        return User::where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', 3)
             ->get();
     }
@@ -693,6 +669,15 @@ class UserServices
         }
     }
 
+    public function deleteUserResponses($user_id)
+    {
+        $responses = Form_Input_Reponse::with('values')->where('user_id','=',$user_id)->get();
+        foreach ($responses as $resp){
+            Reponse_Value::where('form_input_reponse_id','=',$resp->form_input_reponse_id)->delete();
+            $resp->delete();
+        }
+    }
+
 
     private function isExistCongress($user, $congressId)
     {
@@ -764,9 +749,6 @@ class UserServices
             $userData->organization_id = $user['organization_id'];
         }
         $userData->congress_id = $congress_id;
-        if (array_key_exists('grade_id', $user))
-            $userData->grade_id = $user['grade_id'];
-
         if (array_key_exists('pack_id', $user))
             $userData->pack_id = $user['pack_id'];
 
