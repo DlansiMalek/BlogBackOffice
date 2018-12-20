@@ -24,6 +24,7 @@ class CongressServices
 {
 
 
+
     public function __construct(OrganizationServices $organizationServices)
     {
         $this->organizationServices = $organizationServices;
