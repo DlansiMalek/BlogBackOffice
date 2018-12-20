@@ -565,7 +565,7 @@ class UserServices
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
                 $message->subject($objectMail);
-                $message->setBody($view);
+                $message->setBody($view, 'text/html');
                 if ($fileAttached)
                     $message->attach($pathToFile);
                 $message->to($email)->subject($objectMail);

@@ -225,6 +225,12 @@ class CongressServices
     }
 
     function renderMail($template,$congress, $participant){
+        $template = str_replace('{{$congress-&gt;name}}','{{$congress->name}}',$template);
+        $template = str_replace('{{$congress-&gt;date}}','{{$congress->date}}',$template);
+        $template = str_replace('{{$congress-&gt;price}}','{{$congress->price}}',$template);
+        $template = str_replace('{{$participant-&gt;first_name}}','{{$participant->first_name}}',$template);
+        $template = str_replace('{{$participant-&gt;last_name}}','{{$participant->last_name}}',$template);
+        $template = str_replace('{{$participant-&gt;gender}}','{{$participant->gender}}',$template);
         if ($participant!=null)
             $participant->gender = $participant->gender==1?'Mr.':'Mme';
         return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant]);

@@ -225,6 +225,7 @@ class UserController extends Controller
         $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_inscription,$congress,$user), $user, $congress, $congress->object_mail_inscription, false,
             $link);
 
+
         return response()->json($user, 201);
     }
 
