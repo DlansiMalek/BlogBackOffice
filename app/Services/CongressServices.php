@@ -225,12 +225,29 @@ class CongressServices
     }
 
     function renderMail($template,$congress, $participant){
+        $accesses = "";
+        if (sizeof($participant->accesss)>0){
+            $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
+            foreach ($participant->accesss as $access){
+                $accesses = $accesses
+                    ."<li>".$access->name
+                    ."<span class=\"bold\"> qui se déroulera le "
+                    .\App\Services\Utils::convertDateFrench($access->theoric_start_data)
+                    ." de "
+                    .\App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)
+                    ." à "
+                    .\App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)
+                    ." </span></li>";
+            }
+            $accesses = $accesses."</ul>";
+        }
         $template = str_replace('{{$congress-&gt;name}}','{{$congress->name}}',$template);
         $template = str_replace('{{$congress-&gt;date}}','{{$congress->date}}',$template);
         $template = str_replace('{{$congress-&gt;price}}','{{$congress->price}}',$template);
         $template = str_replace('{{$participant-&gt;first_name}}','{{$participant->first_name}}',$template);
         $template = str_replace('{{$participant-&gt;last_name}}','{{$participant->last_name}}',$template);
         $template = str_replace('{{$participant-&gt;gender}}','{{$participant->gender}}',$template);
+        $template = str_replace('{{$participant-&gt;accesses}}',$accesses,$template);
         if ($participant!=null)
             $participant->gender = $participant->gender==1?'Mr.':'Mme';
         return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant]);
