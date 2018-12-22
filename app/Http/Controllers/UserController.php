@@ -43,27 +43,6 @@ class UserController extends Controller
         return $this->userServices->getAllUsers();
     }
 
-    public function register(Request $request)
-    {
-        if (!$request->has(['first_name', 'last_name', 'mobile', 'email', 'congressId'])
-        ) {
-            return response()->json(['response' => 'invalid request',
-                'content' => ['first_name', 'last_name', 'mobile', 'email', 'congressId']], 400);
-        }
-        $createdUser = $this->userServices->registerUser($request);
-        if (!$createdUser) {
-            return response()->json(['response' => 'user exist'], 400);
-        }
-
-        //Utils::generateQRcode($createdUser->qr_code);
-        //$this->userServices->impressionBadge($createdUser);
-        //$congress = $this->congressServices->getCongressById($request->input("congressId"));
-        //$this->userServices->sendMail($createdUser, $congress);
-
-
-        return response()->json($createdUser, 201);
-    }
-
     public function getUserById($user_id)
     {
         $user = $this->userServices->getParticipatorById($user_id);
@@ -209,11 +188,11 @@ class UserController extends Controller
     public function registerUserToCongress(Request $request, $congressId)
     {
         if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
-            'price', 'gender', 'grade_id', 'country_id'])
+            'price', 'gender', 'country_id'])
         ) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['first_name', 'last_name', 'mobile', 'email',
-                    'price', 'gender', 'grade_id', 'country_id']], 400);
+                    'price', 'gender', 'country_id']], 400);
         }
 
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
@@ -243,9 +222,9 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-
         $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_inscription,$congress,$user), $user, $congress, $congress->object_mail_inscription, false,
             $link);
+$user->delete();
 
         return response()->json($user, 201);
     }
@@ -263,6 +242,9 @@ class UserController extends Controller
         $accessIds = $request->input("accessIds");
         $request->merge(["congressId" => $congressId]);
         $user = $this->userServices->editerUser($request, $user);
+
+        $this->userServices->deleteUserResponses($user->user_id);
+        $this->userServices->saveUserResponses($request->input('responses'),$user->user_id);
 
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
@@ -406,11 +388,8 @@ class UserController extends Controller
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
-                $this->userServices->sendMail("confirmPayement",
-                    $user,
-                    $congress,
-                    $congress->object_mail_payement,
-                    true,
+
+                $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_payement,$congress,$user), $user, $congress, $congress->object_mail_payement, false,
                     null);
             }
         }

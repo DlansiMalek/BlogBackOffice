@@ -5,24 +5,12 @@ namespace App\Services;
 use App\Models\Attestation_Type;
 use App\Models\Country;
 use App\Models\Form_Input_Type;
-use App\Models\Grade;
-use App\Models\Lieu_Ex;
 use App\Models\Privilege;
 use Illuminate\Support\Facades\Storage;
 
 
 class SharedServices
 {
-
-    public function getAllGrades()
-    {
-        return Grade::all();
-    }
-
-    public function getAllLieux()
-    {
-        return Lieu_Ex::all();
-    }
 
     public function getAllPrivileges()
     {

@@ -54,8 +54,7 @@ class CongressController extends Controller
     {
         $congress = $this->addFullCongress($request);
 
-        return response()->json(["message" => "add congress sucess",
-            "data" => $this->congressServices->getCongressById($congress->congress_id)]);
+        return response()->json($this->congressServices->getCongressById($congress->congress_id));
 
     }
 
@@ -67,9 +66,9 @@ class CongressController extends Controller
 
         $admin = $this->adminServices->retrieveAdminFromToken();
 
-        if (!$this->isAllowedEdit($congress->congress_id)) {
-            return response()->json(['error' => 'edit not allowed'], 401);
-        }
+//        if (!$this->isAllowedEdit($congress->congress_id)) {
+//            return response()->json(['error' => 'edit not allowed'], 401);
+//        }
 
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 

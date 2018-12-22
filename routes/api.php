@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Route;
 
 
 //Shared API
-Route::get('/grade/all', 'SharedController@getAllGrades');
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/countries', 'SharedController@getAllCountries');
@@ -50,7 +49,6 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-    Route::post('register', 'UserController@register');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');

@@ -16,9 +16,4 @@ class OrganizationController extends Controller
         $this->organizationServices = $organizationServices;
     }
 
-
-    public function getAll()
-    {
-        return response()->json($this->organizationServices->getAll());
-    }
 }
