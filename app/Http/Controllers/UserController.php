@@ -222,9 +222,14 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-        $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_inscription, $congress, $user), $user, $congress, $congress->object_mail_inscription, false,
-            $link);
-        $user->delete();
+        if ($mailtype = $this->congressServices->getMailType('inscription')){
+            if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)){
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, false,
+                    $link);
+            }
+
+        }
+
 
         return response()->json($user, 201);
     }
@@ -389,8 +394,13 @@ class UserController extends Controller
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
 
-                $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_payement, $congress, $user), $user, $congress, $congress->object_mail_payement, false,
-                    null);
+                if ($mailtype = $this->congressServices->getMailType('paiement')){
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)){
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, false,
+                            null);
+                    }
+
+                }
             }
         }
         return response()->json($user, 201);

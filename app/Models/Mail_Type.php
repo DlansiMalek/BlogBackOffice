@@ -10,12 +10,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Custom_Mail extends Model
+class Mail_Type extends Model
 {
     public $timestamps = true;
-    protected $table = 'Custom_Mail';
-    protected $primaryKey = 'custom_mail_id';
-    protected $fillable = ['congress_id','object','template'];
+    protected $table = 'Mail_Type';
+    protected $primaryKey = 'mail_type_id';
+    protected $fillable = ['name'];
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTableCustomMail extends Migration
+class CreateTableMail extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,14 @@ class CreateTableCustomMail extends Migration
      */
     public function up()
     {
-        Schema::create('Custom_Mail', function (Blueprint $table) {
-            $table->increments("custom_mail_id");
+        Schema::create('Mail', function (Blueprint $table) {
+            $table->increments("mail_id");
             $table->unsignedInteger("congress_id");
             $table->string('object');
             $table->text("template");
+            $table->unsignedInteger("mail_type_id");
             $table->foreign("congress_id")->references("congress_id")->on('congress');
+            $table->foreign("mail_type_id")->references('mail_type_id')->on('Mail_Type.php');
             $table->timestamps();
             $table->softDeletes();
         });
