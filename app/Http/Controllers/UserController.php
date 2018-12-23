@@ -399,7 +399,6 @@ class UserController extends Controller
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, false,
                             null);
                     }
-
                 }
             }
         }
@@ -436,8 +435,7 @@ class UserController extends Controller
         }
     }
 
-    public
-    function changePaiement($userId, Request $request)
+    public function changePaiement($userId, Request $request)
     {
         $isPaied = $request->input('status');
 
@@ -457,12 +455,13 @@ class UserController extends Controller
             }
 
             $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-            $this->userServices->sendMail("confirmPayement",
-                $user,
-                $congress,
-                $congress->object_mail_payement,
-                $fileAttached,
-                $link);
+            if ($mailtype = $this->congressServices->getMailType('paiement')){
+                if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)){
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, $fileAttached,
+                        $link);
+                }
+            }
+
         }
         $user->isPaied = $isPaied;
         $user->update();

@@ -74,12 +74,13 @@ class PaymentController extends Controller
                 }
 
                 $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-                $this->userServices->sendMail("confirmPayement",
-                    $user,
-                    $congress,
-                    $congress->object_mail_payement,
-                    $fileAttached,
-                    $link);
+                if ($mailtype = $this->congressServices->getMailType('paiement')){
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)){
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, $fileAttached,
+                            $link);
+                    }
+                }
+
 
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";

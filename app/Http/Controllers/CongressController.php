@@ -160,15 +160,21 @@ class CongressController extends Controller
         }
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        foreach ($users as $user) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-            if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code);
-                $this->userServices->sendMail($congress->mail_inscription, $user, $congress, $congress->object_mail_inscription);
+        if ($mailtype = $this->congressServices->getMailType('inscription')) {
+            if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                foreach ($users as $user) {
+                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+                    if ($badgeIdGenerator != null) {
+                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                            $user->qr_code);
+                        $this->userServices->sendMail($mail->template, $user, $congress, $mail->object);
+                    }
+                }
             }
+
         }
+
 
         return response()->json(['message' => 'send mail successs']);
     }
@@ -278,7 +284,7 @@ class CongressController extends Controller
         if (!$request->has(['object', 'template']))
             return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
 
-        if (!$mail = $this->congressServices->getMailById($id)){
+        if (!$mail = $this->congressServices->getMailById($id)) {
             return response()->json(['resposne' => 'bad request', 'error' => ['email not found']], 400);
         }
 
