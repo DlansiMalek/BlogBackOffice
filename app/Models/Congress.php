@@ -14,7 +14,7 @@ class Congress extends Model
 {
     protected $table = 'Congress';
     protected $primaryKey = 'congress_id';
-    protected $fillable = ['name', 'date', 'admin_id', 'logo', 'username_mail'];
+    protected $fillable = ['name', 'date', 'admin_id', 'logo', 'username_mail','has_paiement'];
 
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
