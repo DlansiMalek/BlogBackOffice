@@ -238,6 +238,8 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;first_name}}','{{$participant->first_name}}',$template);
         $template = str_replace('{{$participant-&gt;last_name}}','{{$participant->last_name}}',$template);
         $template = str_replace('{{$participant-&gt;gender}}','{{$participant->gender}}',$template);
+        $template = str_replace('{{$participant-&gt;price}}','{{$participant->price}}',$template);
+        $template = str_replace('{{$participant-&gt;pack-&gt;label}}','{{$participant->pack->label}}',$template);
         $template = str_replace('{{$participant-&gt;accesses}}',$accesses,$template);
         $template = str_replace('{{%24link}}',"{{$link}}",$template);
         if ($participant!=null)
