@@ -216,6 +216,7 @@ class CongressServices
     }
 
     function renderMail($template,$congress, $participant,$link){
+        $accesses = "";
         if (sizeof($participant->accesss)>0){
             $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
             foreach ($participant->accesss as $access){
@@ -240,7 +241,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;price}}','{{$participant->price}}',$template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}','{{$participant->pack->label}}',$template);
         $template = str_replace('{{$participant-&gt;accesses}}',$accesses,$template);
-        $template = str_replace('{{%24link}}',"{{$link}}",$template);
+        $template = str_replace('{{%24link}}','{{$link}}',$template);
         if ($participant!=null)
             $participant->gender = $participant->gender==1?'Mr.':'Mme';
         return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant,'link'=>$link]);
