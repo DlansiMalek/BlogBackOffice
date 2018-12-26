@@ -225,7 +225,7 @@ class UserController extends Controller
         if ($congress->has_paiement) {
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, false,
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,$link), $user, $congress, $mail->object, false,
                         $link);
                 }
             }
@@ -240,7 +240,7 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, $fileAttached,
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,null), $user, $congress, $mail->object, $fileAttached,
                         null);
                 }
             }
@@ -412,7 +412,7 @@ class UserController extends Controller
                 if ($congress->has_paiement) {
                     if ($mailtype = $this->congressServices->getMailType('paiement')) {
                         if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, false,
+                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,null), $user, $congress, $mail->object, false,
                                 null);
                         }
                     }
@@ -427,7 +427,7 @@ class UserController extends Controller
                     }
                     if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                         if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, $fileAttached,
+                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,null), $user, $congress, $mail->object, $fileAttached,
                                 null);
                         }
                     }
@@ -490,14 +490,14 @@ class UserController extends Controller
             $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
             if ($mailtype = $this->congressServices->getMailType('paiement')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, null,
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,null), $user, $congress, $mail->object, null,
                         $link);
                 }
             }
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user), $user, $congress, $mail->object, $fileAttached,
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,null), $user, $congress, $mail->object, $fileAttached,
                         $link);
                 }
             }

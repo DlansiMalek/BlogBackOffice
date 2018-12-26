@@ -60,8 +60,8 @@ class UserServices
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
 
-        if ($request->has('pack') && $request->input('pack') != null)
-            $newUser->gender = $request->input('pack')['pack_id'];
+        if ($request->has('pack_id'))
+            $newUser->pack_id = $request->input('pack_id');
 
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
@@ -292,7 +292,7 @@ class UserServices
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss", 'privilege'])
+        return User::with(["accesss", 'privilege','pack'])
             ->where("user_id", "=", $user_id)
             ->first();
     }
