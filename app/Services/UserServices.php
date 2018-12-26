@@ -41,7 +41,7 @@ class UserServices
             $newUser->price = $request->input('price');
 
 
-        if ($request->has('pack')&&$request->input('pack')!=null)
+        if ($request->has('pack') && $request->input('pack') != null)
             $newUser->gender = $request->input('pack')['pack_id'];
 
 
@@ -60,7 +60,7 @@ class UserServices
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
 
-        if ($request->has('pack')&&$request->input('pack')!=null)
+        if ($request->has('pack') && $request->input('pack') != null)
             $newUser->gender = $request->input('pack')['pack_id'];
 
         if ($request->has('gender'))
@@ -105,8 +105,27 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::with(['accesss', 'responses.values', 'responses.form_input.values', 'responses.form_input.type'])->where('user_id', '=', $user_id)
+        $user = User::with(['accesss', 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
+//        $response = array_map(function ($response) {
+//            $temp = $response->form_input;
+//            if (in_array($response->form_input->type->name, ['checklist', 'multiselect'])){
+//                $temp->response=array_map(function($value){return $value->form_input_value_id;},$response->values);
+//            }
+//            else if (in_array($response->form_input->type->name, ['radio', 'select'])){
+//                $temp->response=$response->values[0]->form_input_value_id;
+//            }
+//            else
+//            {
+//                $temp->response=$response->reponse;
+//            }
+//            $response->form_input->response=$temp;
+//            return $response->form_input;
+//
+//        }, $user->responses);
+//        $user->responses = $response;
+        return $user;
     }
 
     public function updateUser($request, $updateUser)
@@ -526,7 +545,7 @@ class UserServices
     {
         return User::whereIn('privilege_id', $privileges)
             ->where("congress_id", "=", $congressId)
-            ->with([ 'accesss.attestation', 'organization', 'privilege'])
+            ->with(['accesss.attestation', 'organization', 'privilege'])
             ->get();
     }
 
@@ -570,19 +589,17 @@ class UserServices
                     $message->attach($pathToFile);
                 $message->to($email)->subject($objectMail);
             });
-        }
-
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             Log::info($exception);
             $user->email_sended = -1;
-            $user->gender = $user->gender=='Mr.'?1:2;
+            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
             Storage::delete('app/badge.png');
             return 1;
         }
 
         $user->email_sended = 1;
-        $user->gender = $user->gender=='Mr.'?1:2;
+        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->update();
         Storage::delete('app/badge.png');
         return 1;
@@ -656,27 +673,53 @@ class UserServices
         foreach ($responses as $req) {
 
             $reponse = new Form_Input_Reponse();
-            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
-                $reponse->reponse = "";
-            else $reponse->reponse = $req['reponse'];
+            if (!array_key_exists("response", $req)) {
+
+                $reponse->user_id = $userId;
+                $reponse->form_input_id = $req['form_input_id'];
+                $reponse->reponse = null;
+                $reponse->save();
+
+//                if (in_array($req['type']['name'], ['checklist', 'multiselect']))
+//                    $reponse->reponse=[];
+//
+//                else if (in_array($req['type']['name'], ['select', 'radio']))
+//                    $reponse->reponse="";
+//                else
+//                    $reponse->reponse="";
+
+                continue;
+            } else {
+                if (in_array($req['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
+                    $reponse->reponse = "";
+                else $reponse->reponse = $req['response'];
+            }
+
             $reponse->user_id = $userId;
-            $reponse->form_input_id = $req['form_input']['form_input_id'];
+            $reponse->form_input_id = $req['form_input_id'];
             $reponse->save();
-            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
-                foreach ($req['reponse'] as $val) {
+            if (in_array($req['type']['name'], ['checklist', 'multiselect']))
+                foreach ($reponse as $val) {
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val;
                     $repVal->save();
                 }
+            else if (in_array($req['type']['name'], ['radio', 'select'])) {
+                $repVal = new Reponse_Value();
+                $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                $repVal->form_input_value_id = $req['response'];
+                $repVal->save();
+            }
+
         }
     }
 
     public function deleteUserResponses($user_id)
     {
-        $responses = Form_Input_Reponse::with('values')->where('user_id','=',$user_id)->get();
-        foreach ($responses as $resp){
-            Reponse_Value::where('form_input_reponse_id','=',$resp->form_input_reponse_id)->delete();
+        $responses = Form_Input_Reponse::with('values')->where('user_id', '=', $user_id)->get();
+        foreach ($responses as $resp) {
+            Reponse_Value::where('form_input_reponse_id', '=', $resp->form_input_reponse_id)->delete();
             $resp->delete();
         }
     }
