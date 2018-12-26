@@ -222,9 +222,9 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-        $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_inscription,$congress,$user), $user, $congress, $congress->object_mail_inscription, false,
+        $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_inscription, $congress, $user), $user, $congress, $congress->object_mail_inscription, false,
             $link);
-$user->delete();
+        $user->delete();
 
         return response()->json($user, 201);
     }
@@ -244,7 +244,7 @@ $user->delete();
         $user = $this->userServices->editerUser($request, $user);
 
         $this->userServices->deleteUserResponses($user->user_id);
-        $this->userServices->saveUserResponses($request->input('responses'),$user->user_id);
+        $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
 
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
@@ -389,7 +389,7 @@ $user->delete();
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
 
-                $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_payement,$congress,$user), $user, $congress, $congress->object_mail_payement, false,
+                $this->userServices->sendMail($this->congressServices->renderMail($congress->mail_payement, $congress, $user), $user, $congress, $congress->object_mail_payement, false,
                     null);
             }
         }
