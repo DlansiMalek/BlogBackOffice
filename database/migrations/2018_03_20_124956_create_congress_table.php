@@ -21,9 +21,8 @@ class CreateCongressTable extends Migration
             $table->integer('admin_id')->unsigned();
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
-            $table->text("mail_inscription")->nullable()->default(null);
-            $table->text("mail_payement")->nullable()->default(null);
 
+            $table->boolean("has_paiement")->default(false);
 
             $table->timestamps();
         });

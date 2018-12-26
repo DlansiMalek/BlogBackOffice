@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Congress;
-use App\Models\Custom_Mail;
+use App\Models\Mail;
 use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -16,7 +15,6 @@ use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 
 class CongressController extends Controller
@@ -97,9 +95,7 @@ class CongressController extends Controller
             $request->input("name"),
             $request->input("date"),
             $request->input("username_mail"),
-            $request->input("object_mail_inscription"),
-            $request->input("object_mail_payement"),
-            $request->input("object_mail_attestation"),
+            $request->input('has_paiement'),
             $admin->admin_id);
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
         $this->packService->addPacks($accesses, $request->input("packs"), $congress);
@@ -165,15 +161,21 @@ class CongressController extends Controller
         }
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        foreach ($users as $user) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-            if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code);
-                $this->userServices->sendMail($congress->mail_inscription, $user, $congress, $congress->object_mail_inscription);
+        if ($mailtype = $this->congressServices->getMailType('inscription')) {
+            if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                foreach ($users as $user) {
+                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+                    if ($badgeIdGenerator != null) {
+                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                            $user->qr_code);
+                        $this->userServices->sendMail($mail->template, $user, $congress, $mail->object);
+                    }
+                }
             }
+
         }
+
 
         return response()->json(['message' => 'send mail successs']);
     }
@@ -258,36 +260,39 @@ class CongressController extends Controller
 
     public function saveMail(Request $request, $congress_id, $mode)
     {
-        if (!$request->has(['object', 'template'])) {
+        if (!$request->has(['object', 'template']))
             return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-        } else if ($mode == 'inscription' || $mode == 'paiement') {
-            $congress = $this->congressServices->getCongressById($congress_id);
-            if ($mode == 'inscription') {
-                $congress->object_mail_inscription = $request->input('object');
-                $congress->mail_inscription = $request->input('template');
-            } else {
-                $congress->object_mail_payement = $request->input('object');
-                $congress->mail_payement = $request->input('template');
-            }
-            $congress->save();
-            return $congress;
-        } else if ($mode == "new") {
-            $mail = new Custom_Mail();
-            $mail->object = $request->input('object');
-            $mail->template = $request->input('template');
-            $mail->congress_id = $congress_id;
-            $this->congressServices->saveCustomMail($mail);
-            return $mail;
-        } else {
-            if (!is_numeric($mode))
-                return response()->json(['resposne' => 'bad request', 'error' => 'wrong id'], 400);
-            $email = $this->congressServices->getEmailById($mode);
-            $email->object = $request->input("object");
-            $email->template = $request->input("template");
-            $this->congressServices->saveCustomMail($email);
-            return $email;
 
+        if (!$type = $this->congressServices->getMailType($mode))
+            return response()->json(['resposne' => 'bad url', 'error' => 'mail type not found'], 400);
+
+        if ($type->name != 'custom') {
+            $mail = $this->congressServices->getMail($congress_id, $type->mail_type_id);
+            if (!$mail) $mail = new Mail();
+        } else {
+            $mail = new Mail();
         }
+        $mail->congress_id = $congress_id;
+        $mail->object = $request->input('object');
+        $mail->template = $request->input('template');
+        $mail->mail_type_id = $type->mail_type_id;
+        $mail->save();
+        return $mail;
+    }
+
+    public function editCustomMail(Request $request, $congress_id, $id)
+    {
+        if (!$request->has(['object', 'template']))
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
+
+        if (!$mail = $this->congressServices->getMailById($id)) {
+            return response()->json(['resposne' => 'bad request', 'error' => ['email not found']], 400);
+        }
+
+        $mail->object = $request->input('object');
+        $mail->template = $request->input('template');
+        $mail->save();
+        return $mail;
     }
 
 }

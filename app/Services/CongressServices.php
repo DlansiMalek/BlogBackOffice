@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use App\Models\Congress;
-use App\Models\Custom_Mail;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
+use App\Models\Mail;
+use App\Models\Mail_Type;
 use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\User;
@@ -32,7 +33,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users.privilege", "users.responses.values", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "custom_mails"])
+        return Congress::with(["badges", "users.privilege", "users.responses.values", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "mails.type"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -52,16 +53,14 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $date,$email,$object_mail_inscription, $object_mail_payement,$object_mail_attestation, $admin_id)
+    public function addCongress($name, $date,$email,$has_paiement, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
         $congress->date = $date;
         $congress->admin_id = $admin_id;
         $congress->username_mail = $email;
-        $congress->object_mail_inscription = $object_mail_inscription;
-        $congress->object_mail_payement = $object_mail_payement;
-        $congress->object_mail_attestation = $object_mail_attestation;
+        $congress->has_paiement = $has_paiement;
         $congress->save();
         return $congress;
     }
@@ -116,10 +115,7 @@ class CongressServices
         $congress->date = $request->input("date");
         $congress->admin_id = $adminId;
         $congress->username_mail = $request->input("username_mail");
-        $congress->object_mail_inscription = $request->input('object_mail_inscription');
-        $congress->object_mail_payement = $request->input('object_mail_payement');
-        $congress->object_mail_attestation = $request->input('object_mail_attestation');
-
+        $congress->has_paiement = $request->input('has_paiement');
         $congress->update();
 
         return $congress;
@@ -214,14 +210,9 @@ class CongressServices
         }
     }
 
-    public function saveCustomMail(\App\Models\Custom_Mail $mail)
-    {
-        $mail->save();
-    }
-
     public function getEmailById($id)
     {
-        return Custom_Mail::find($id);
+        return Mail::find($id);
     }
 
     function renderMail($template,$congress, $participant){
@@ -251,6 +242,20 @@ class CongressServices
         if ($participant!=null)
             $participant->gender = $participant->gender==1?'Mr.':'Mme';
         return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant]);
+    }
+
+    public function getMailType($name){
+        return Mail_Type::where("name","=",$name)->first();
+    }
+
+    public function getMail($congressId, $mail_type_id)
+    {
+        return Mail::where("congress_id",'=',$congressId)->where('mail_type_id','=',$mail_type_id)->first();
+    }
+
+    public function getMailById($id)
+    {
+        return Mail::find($id);
     }
 
 }
