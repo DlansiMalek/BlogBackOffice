@@ -215,7 +215,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template,$congress, $participant){
+    function renderMail($template,$congress, $participant,$link){
         $accesses = "";
         if (sizeof($participant->accesss)>0){
             $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
@@ -239,9 +239,10 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;last_name}}','{{$participant->last_name}}',$template);
         $template = str_replace('{{$participant-&gt;gender}}','{{$participant->gender}}',$template);
         $template = str_replace('{{$participant-&gt;accesses}}',$accesses,$template);
+        $template = str_replace('{{%24link}}',"{{$link}}",$template);
         if ($participant!=null)
             $participant->gender = $participant->gender==1?'Mr.':'Mme';
-        return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant]);
+        return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant,'link'=>$link]);
     }
 
     public function getMailType($name){
