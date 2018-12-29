@@ -288,8 +288,8 @@ class UserServices
             $this->affectAccessById($user_id, $accessIds[$i]);
         }
 
-        foreach ($packAccesses as $access){
-            if (!in_array($access->access_id,$accessIds)){
+        foreach ($packAccesses as $access) {
+            if (!in_array($access->access_id, $accessIds)) {
                 $this->affectAccessById($user_id, $access->access_id);
             }
         }
@@ -297,7 +297,7 @@ class UserServices
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss", 'privilege','pack.accesses'])
+        return User::with(["accesss", 'privilege', 'pack.accesses'])
             ->where("user_id", "=", $user_id)
             ->first();
     }
@@ -576,16 +576,6 @@ class UserServices
         if ($congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
-//          Old send mail
-//        try {
-//            Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
-//                'link' => $link, 'user' => $user
-//            ], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail) {
-//                if ($fileAttached)
-//                    $message->attach($pathToFile);
-//                $message->to($email)->subject($objectMail);
-//            });
-//        }
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
                 $message->subject($objectMail);
@@ -611,7 +601,7 @@ class UserServices
     }
 
 
-    public function sendMailAttesationToUser($user, $congress)
+    public function sendMailAttesationToUser($user, $congress, $object, $view)
     {
         $email = $user->email;
 
@@ -619,18 +609,21 @@ class UserServices
 
 
         try {
-            Mail::send('attestationEmail.' . $congress->congress_id, ['accesss' => $user->accesss
-            ], function ($message) use ($email, $congress, $pathToFile) {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
                 $message->attach($pathToFile);
-                $message->to($email)->subject($congress->object_mail_attestation);
+                $message->to($email)->subject($object);
             });
         } catch (\Exception $exception) {
             Log::info($exception);
-            $user->email_attestation_sended = -1;
+            $user->email_sended = -1;
+            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
+            Storage::delete('app/badge.png');
             return 1;
         }
-
+        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->email_attestation_sended = 1;
         $user->update();
         return $user;

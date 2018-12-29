@@ -509,8 +509,7 @@ class UserController extends Controller
         return response()->json(['message' => 'user updated success']);
     }
 
-    public
-    function saveUsersFromExcel($congressId, Request $request)
+    public function saveUsersFromExcel($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
@@ -520,8 +519,7 @@ class UserController extends Controller
         return response()->json(['message' => 'add congress success']);
     }
 
-    public
-    function sendMailAttesation($userId)
+    public function sendMailAttesation($userId)
     {
 
         if (!$user = $this->userServices->getUserById($userId)) {
@@ -551,7 +549,11 @@ class UserController extends Controller
                 }
             }
             $this->badgeServices->saveAttestationsInPublic($request);
-            $this->userServices->sendMailAttesationToUser($user, $congress);
+
+            $mailtype = $this->congressServices->getMailType('attestation');
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
+            $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template,$congress,$user,null));
         } else {
             return response()->json(['error' => 'user not present or empty email'], 501);
         }
