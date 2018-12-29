@@ -169,7 +169,7 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
         $user = $this->userServices->addParticipant($request, $congressId);
-        $this->userServices->affectAccess($user->user_id, $accessIds);
+        $this->userServices->affectAccess($user->user_id, $accessIds,$user->pack->accesses);
 
         return response()->json(['add success'], 200);
         /*$file = new Filesystem();
@@ -213,7 +213,7 @@ class UserController extends Controller
 
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
 
-        $this->userServices->affectAccess($user->user_id, $accessIds);
+        $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
         if (!$user) {
             return response()->json(['response' => 'user exist'], 400);
@@ -401,7 +401,7 @@ class UserController extends Controller
         if (in_array(8, $accessIds)) {
             array_push($accessIds, 25);
         }
-        $this->userServices->affectAccess($user->user_id, $accessIds);
+        $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
         $user = $this->userServices->getUserById($user->user_id);
         if ($request->has('email') && $request->input('email') != "") {
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);

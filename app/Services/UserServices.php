@@ -89,8 +89,7 @@ class UserServices
         $newUser->congress_id = $request->input("congressId");
 
         $newUser->save();
-        // $this->sendConfirmationMail($newUser, $congress->name);
-        return $newUser;
+        return $this->getUserById($newUser->user_id);
     }
 
     public function sendConfirmationMail($user, $congress_name)
@@ -272,7 +271,7 @@ class UserServices
 
         $user->save();
 
-        return $user;
+        return $this->getUserById($congress_id);
 
     }
 
@@ -283,16 +282,22 @@ class UserServices
         }
     }
 
-    public function affectAccess($user_id, $accessIds)
+    public function affectAccess($user_id, $accessIds, $packAccesses)
     {
         for ($i = 0; $i < sizeof($accessIds); $i++) {
             $this->affectAccessById($user_id, $accessIds[$i]);
+        }
+
+        foreach ($packAccesses as $access){
+            if (!in_array($access->access_id,$accessIds)){
+                $this->affectAccessById($user_id, $access->access_id);
+            }
         }
     }
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss", 'privilege','pack'])
+        return User::with(["accesss", 'privilege','pack.accesses'])
             ->where("user_id", "=", $user_id)
             ->first();
     }
@@ -481,7 +486,7 @@ class UserServices
         $newUser->qr_code = $qrcode;
         $newUser->congress_id = $request->input("congressId");
         $newUser->save();
-        return $newUser;
+        return $this->getUserById($newUser->user_id);
     }
 
     public function editFastUser($newUser, Request $request)
