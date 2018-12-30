@@ -37,13 +37,8 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('price'))
-            $newUser->price = $request->input('price');
-
-
-        if ($request->has('pack') && $request->input('pack') != null)
-            $newUser->gender = $request->input('pack')['pack_id'];
-
+        if ($request->has('pack_id'))
+            $newUser->pack_id = $request->input('pack_id');
 
         $newUser->update();
         // $this->sendConfirmationMail($newUser, $congress->name);
@@ -105,7 +100,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        $user = User::with(['accesss', 'responses.values', 'responses.form_input.values',
+        $user = User::with(['accesss','pack', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
 //        $response = array_map(function ($response) {
@@ -680,14 +675,6 @@ class UserServices
                 $reponse->reponse = null;
                 $reponse->save();
 
-//                if (in_array($req['type']['name'], ['checklist', 'multiselect']))
-//                    $reponse->reponse=[];
-//
-//                else if (in_array($req['type']['name'], ['select', 'radio']))
-//                    $reponse->reponse="";
-//                else
-//                    $reponse->reponse="";
-
                 continue;
             } else {
                 if (in_array($req['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
@@ -703,12 +690,17 @@ class UserServices
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val;
+                    if(!$val)
+                        continue;
+
                     $repVal->save();
                 }
             else if (in_array($req['type']['name'], ['radio', 'select'])) {
                 $repVal = new Reponse_Value();
                 $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                 $repVal->form_input_value_id = $req['response'];
+                if(!$req['response'])
+                    continue;
                 $repVal->save();
             }
 

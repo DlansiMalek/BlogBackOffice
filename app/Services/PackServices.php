@@ -21,6 +21,11 @@ class PackServices
         return Pack::where('congress_id', '=', $congressId)
             ->get();
     }
+    public function getPackById($packId)
+    {
+        return Pack::where('pack_id', '=', $packId)
+            ->first();
+    }
     public function addPacks($accesses,$packs, $congress){
         Pack::where('congress_id',"=",$congress->congress_id)->delete();
         foreach ($packs as $p){
