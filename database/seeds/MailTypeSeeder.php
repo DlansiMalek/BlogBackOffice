@@ -27,6 +27,9 @@ class MailTypeSeeder extends Seeder
         DB::table('Mail_Type.php')->insert([
             'name' => 'confirmation',
         ]);
+        DB::table('Mail_Type.php')->insert([
+            'name' => 'attestation',
+        ]);
 
         DB::table('Mail_Type.php')->insert([
             'name' => 'attestation',
