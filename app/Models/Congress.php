@@ -53,4 +53,5 @@ class Congress extends Model
     public function mails(){
         return $this->hasMany('App\Models\Mail','congress_id','congress_id');
     }
+
 }

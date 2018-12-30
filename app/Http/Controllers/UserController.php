@@ -7,6 +7,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\PackServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -23,12 +24,14 @@ class UserController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $accessServices;
+    protected $packServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
-                         AccessServices $accessServices)
+                         AccessServices $accessServices,
+                        PackServices $packServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -36,6 +39,7 @@ class UserController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->accessServices = $accessServices;
+        $this->packServices = $packServices;
     }
 
     public function index()
@@ -247,7 +251,7 @@ class UserController extends Controller
         }
 
 
-        return response()->json($user, 201);
+        return response()->json($this->userServices->getParticipatorById($user->user_id), 201);
     }
 
     public function editerUserToCongress(Request $request, $congressId)
@@ -262,6 +266,10 @@ class UserController extends Controller
 
         $accessIds = $request->input("accessIds");
         $request->merge(["congressId" => $congressId]);
+
+        $user->price=$this->calculPrice($request->input('pack_id'),$accessIds);
+
+
         $user = $this->userServices->editerUser($request, $user);
 
         $this->userServices->deleteUserResponses($user->user_id);
@@ -277,7 +285,7 @@ class UserController extends Controller
         $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
         $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
 
-        $user = $this->userServices->getUserById($user->user_id);
+        $user = $this->userServices->getParticipatorById($user->user_id);
 
         return response()->json($user, 200);
     }
@@ -576,5 +584,15 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    public function calculPrice($packId,$accessIds){
+        $price=0;
+        if($packId){
+            $pack=$this->packServices->getPackById($packId);
+            $price+=$pack->price;
+        }
+        $accesss=$this->accessServices->getAllAccessByAccessIds($accessIds);
+        $price+=array_sum(array_map(function($access){return $access["price"];},$accesss->toArray()));
+        return $price;
+    }
 
 }

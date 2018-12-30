@@ -85,6 +85,11 @@ class AccessServices
             ->get();
     }
 
+    public function getAllAccessByAccessIds($accessIds)
+    {
+        return Access::whereIn('access_id',$accessIds)->get();
+    }
+
 
     private
     function deleteAccessByCongress($congressId)
