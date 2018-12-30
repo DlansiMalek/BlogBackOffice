@@ -241,8 +241,12 @@ class CongressController extends Controller
                         }
                     }
                 }
+
+                $mailtype = $this->congressServices->getMailType('attestation');
+                $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser($user, $congress);
+                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template,$congress,$user,null));
             }
         }
         return response()->json(['message' => 'send mail successs']);

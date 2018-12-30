@@ -41,7 +41,7 @@ class UserServices
             $newUser->price = $request->input('price');
 
 
-        if ($request->has('pack')&&$request->input('pack')!=null)
+        if ($request->has('pack') && $request->input('pack') != null)
             $newUser->gender = $request->input('pack')['pack_id'];
 
 
@@ -60,8 +60,8 @@ class UserServices
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
 
-        if ($request->has('pack')&&$request->input('pack')!=null)
-            $newUser->gender = $request->input('pack')['pack_id'];
+        if ($request->has('pack_id'))
+            $newUser->pack_id = $request->input('pack_id');
 
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
@@ -89,8 +89,7 @@ class UserServices
         $newUser->congress_id = $request->input("congressId");
 
         $newUser->save();
-        // $this->sendConfirmationMail($newUser, $congress->name);
-        return $newUser;
+        return $this->getUserById($newUser->user_id);
     }
 
     public function sendConfirmationMail($user, $congress_name)
@@ -105,8 +104,27 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::with(['accesss', 'responses.values', 'responses.form_input.values', 'responses.form_input.type'])->where('user_id', '=', $user_id)
+        $user = User::with(['accesss', 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
+//        $response = array_map(function ($response) {
+//            $temp = $response->form_input;
+//            if (in_array($response->form_input->type->name, ['checklist', 'multiselect'])){
+//                $temp->response=array_map(function($value){return $value->form_input_value_id;},$response->values);
+//            }
+//            else if (in_array($response->form_input->type->name, ['radio', 'select'])){
+//                $temp->response=$response->values[0]->form_input_value_id;
+//            }
+//            else
+//            {
+//                $temp->response=$response->reponse;
+//            }
+//            $response->form_input->response=$temp;
+//            return $response->form_input;
+//
+//        }, $user->responses);
+//        $user->responses = $response;
+        return $user;
     }
 
     public function updateUser($request, $updateUser)
@@ -253,7 +271,7 @@ class UserServices
 
         $user->save();
 
-        return $user;
+        return $this->getUserById($congress_id);
 
     }
 
@@ -264,16 +282,22 @@ class UserServices
         }
     }
 
-    public function affectAccess($user_id, $accessIds)
+    public function affectAccess($user_id, $accessIds, $packAccesses)
     {
         for ($i = 0; $i < sizeof($accessIds); $i++) {
             $this->affectAccessById($user_id, $accessIds[$i]);
+        }
+
+        foreach ($packAccesses as $access) {
+            if (!in_array($access->access_id, $accessIds)) {
+                $this->affectAccessById($user_id, $access->access_id);
+            }
         }
     }
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss", 'privilege'])
+        return User::with(["accesss", 'privilege', 'pack.accesses'])
             ->where("user_id", "=", $user_id)
             ->first();
     }
@@ -462,7 +486,7 @@ class UserServices
         $newUser->qr_code = $qrcode;
         $newUser->congress_id = $request->input("congressId");
         $newUser->save();
-        return $newUser;
+        return $this->getUserById($newUser->user_id);
     }
 
     public function editFastUser($newUser, Request $request)
@@ -526,7 +550,7 @@ class UserServices
     {
         return User::whereIn('privilege_id', $privileges)
             ->where("congress_id", "=", $congressId)
-            ->with([ 'accesss.attestation', 'organization', 'privilege'])
+            ->with(['accesss.attestation', 'organization', 'privilege'])
             ->get();
     }
 
@@ -552,16 +576,6 @@ class UserServices
         if ($congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
-//          Old send mail
-//        try {
-//            Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
-//                'link' => $link, 'user' => $user
-//            ], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail) {
-//                if ($fileAttached)
-//                    $message->attach($pathToFile);
-//                $message->to($email)->subject($objectMail);
-//            });
-//        }
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
                 $message->subject($objectMail);
@@ -570,26 +584,24 @@ class UserServices
                     $message->attach($pathToFile);
                 $message->to($email)->subject($objectMail);
             });
-        }
-
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             Log::info($exception);
             $user->email_sended = -1;
-            $user->gender = $user->gender=='Mr.'?1:2;
+            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
             Storage::delete('app/badge.png');
             return 1;
         }
 
         $user->email_sended = 1;
-        $user->gender = $user->gender=='Mr.'?1:2;
+        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->update();
         Storage::delete('app/badge.png');
         return 1;
     }
 
 
-    public function sendMailAttesationToUser($user, $congress)
+    public function sendMailAttesationToUser($user, $congress, $object, $view)
     {
         $email = $user->email;
 
@@ -597,18 +609,21 @@ class UserServices
 
 
         try {
-            Mail::send('attestationEmail.' . $congress->congress_id, ['accesss' => $user->accesss
-            ], function ($message) use ($email, $congress, $pathToFile) {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
                 $message->attach($pathToFile);
-                $message->to($email)->subject($congress->object_mail_attestation);
+                $message->to($email)->subject($object);
             });
         } catch (\Exception $exception) {
             Log::info($exception);
-            $user->email_attestation_sended = -1;
+            $user->email_sended = -1;
+            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
+            Storage::delete('app/badge.png');
             return 1;
         }
-
+        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->email_attestation_sended = 1;
         $user->update();
         return $user;
@@ -656,27 +671,53 @@ class UserServices
         foreach ($responses as $req) {
 
             $reponse = new Form_Input_Reponse();
-            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
-                $reponse->reponse = "";
-            else $reponse->reponse = $req['reponse'];
+            if (!array_key_exists("response", $req)) {
+
+                $reponse->user_id = $userId;
+                $reponse->form_input_id = $req['form_input_id'];
+                $reponse->reponse = null;
+                $reponse->save();
+
+//                if (in_array($req['type']['name'], ['checklist', 'multiselect']))
+//                    $reponse->reponse=[];
+//
+//                else if (in_array($req['type']['name'], ['select', 'radio']))
+//                    $reponse->reponse="";
+//                else
+//                    $reponse->reponse="";
+
+                continue;
+            } else {
+                if (in_array($req['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
+                    $reponse->reponse = "";
+                else $reponse->reponse = $req['response'];
+            }
+
             $reponse->user_id = $userId;
-            $reponse->form_input_id = $req['form_input']['form_input_id'];
+            $reponse->form_input_id = $req['form_input_id'];
             $reponse->save();
-            if (in_array($req['form_input']['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
-                foreach ($req['reponse'] as $val) {
+            if (in_array($req['type']['name'], ['checklist', 'multiselect']))
+                foreach ($reponse as $val) {
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val;
                     $repVal->save();
                 }
+            else if (in_array($req['type']['name'], ['radio', 'select'])) {
+                $repVal = new Reponse_Value();
+                $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                $repVal->form_input_value_id = $req['response'];
+                $repVal->save();
+            }
+
         }
     }
 
     public function deleteUserResponses($user_id)
     {
-        $responses = Form_Input_Reponse::with('values')->where('user_id','=',$user_id)->get();
-        foreach ($responses as $resp){
-            Reponse_Value::where('form_input_reponse_id','=',$resp->form_input_reponse_id)->delete();
+        $responses = Form_Input_Reponse::with('values')->where('user_id', '=', $user_id)->get();
+        foreach ($responses as $resp) {
+            Reponse_Value::where('form_input_reponse_id', '=', $resp->form_input_reponse_id)->delete();
             $resp->delete();
         }
     }
