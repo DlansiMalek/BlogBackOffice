@@ -45,16 +45,6 @@ class CreateUserTable extends Migration
                 ->onDelete('cascade');
 
 
-            #foreign payement
-            $table->integer('grade_id')->unsigned()->nullable();
-            $table->foreign('grade_id')->references('grade_id')->on('Grade')
-                ->onDelete('cascade');
-
-            #foreign payement
-            $table->integer('lieu_ex_id')->unsigned()->nullable();
-            $table->foreign('lieu_ex_id')->references('lieu_ex_id')->on('Lieu_Ex')
-                ->onDelete('cascade');
-
             #labo prise en charge
             $table->integer('organization_id')->unsigned()->nullable();
             $table->foreign('organization_id')->references('organization_id')->on('Organization')

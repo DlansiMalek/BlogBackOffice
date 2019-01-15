@@ -22,6 +22,7 @@ class CreateCongressTable extends Migration
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
 
+            $table->boolean("has_paiement")->default(false);
 
             $table->timestamps();
         });

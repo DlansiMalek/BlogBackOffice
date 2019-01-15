@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateTableGrade extends Migration
+class CreateTableFormInputType extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CreateTableGrade extends Migration
      */
     public function up()
     {
-        Schema::create('Grade', function (Blueprint $table) {
-            $table->increments('grade_id');
-            $table->string('label');
+        Schema::create('Form_Input_Type', function (Blueprint $table) {
+            $table->increments("form_input_type_id");
+            $table->string("name");
             $table->timestamps();
         });
     }

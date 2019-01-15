@@ -17,13 +17,13 @@ use Illuminate\Support\Facades\Route;
 
 
 //Shared API
-Route::get('/grade/all', 'SharedController@getAllGrades');
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
+Route::get('/form-input-types', 'SharedController@getFormInputTypes');
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
@@ -49,7 +49,6 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-    Route::post('register', 'UserController@register');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');
@@ -91,6 +90,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 });
             });
         });
+        Route::post('mail/{mode}','CongressController@saveMail');
+        Route::post('editmail/{id}','CongressController@editCustomMail');
     });
 });
 //User API
@@ -112,7 +113,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');
-
+            Route::get('mailTest','CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
         });
 

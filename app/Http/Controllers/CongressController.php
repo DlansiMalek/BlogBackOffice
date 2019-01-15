@@ -3,18 +3,18 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Mail;
 use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\PackServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 
 class CongressController extends Controller
@@ -27,13 +27,15 @@ class CongressController extends Controller
     protected $userServices;
     protected $sharedServices;
     protected $badgeServices;
+    protected $packService;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
                          UserServices $userServices,
                          SharedServices $sharedServices,
-                         BadgeServices $badgeServices)
+                         BadgeServices $badgeServices,
+                         PackServices $packService)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -42,6 +44,7 @@ class CongressController extends Controller
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->packService = $packService;
     }
 
 
@@ -49,8 +52,7 @@ class CongressController extends Controller
     {
         $congress = $this->addFullCongress($request);
 
-        return response()->json(["message" => "add congress sucess",
-            "data" => $this->congressServices->getCongressById($congress->congress_id)]);
+        return response()->json($this->congressServices->getCongressById($congress->congress_id));
 
     }
 
@@ -62,13 +64,17 @@ class CongressController extends Controller
 
         $admin = $this->adminServices->retrieveAdminFromToken();
 
-        if (!$this->isAllowedEdit($congress->congress_id)) {
-            return response()->json(['error' => 'edit not allowed'], 401);
-        }
+//        if (!$this->isAllowedEdit($congress->congress_id)) {
+//            return response()->json(['error' => 'edit not allowed'], 401);
+//        }
 
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
-        $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+
+        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
+
+        $this->congressServices->addFormInputs($request->input("form_inputs"), $congress->congress_id);
 
         return response()->json(["message" => "edit congress success"]);
     }
@@ -88,9 +94,12 @@ class CongressController extends Controller
         $congress = $this->congressServices->addCongress(
             $request->input("name"),
             $request->input("date"),
+            $request->input("username_mail"),
+            $request->input('has_paiement'),
             $admin->admin_id);
-        $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-
+        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
+        $this->congressServices->addFormInputs($request->input('form_inputs'), $congress->congress_id);
         return $congress;
     }
 
@@ -152,15 +161,21 @@ class CongressController extends Controller
         }
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        foreach ($users as $user) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-            if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code);
-                $this->userServices->sendMail("inscriptionEmail", $user, $congress, $congress->object_mail_inscription);
+        if ($mailtype = $this->congressServices->getMailType('inscription')) {
+            if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                foreach ($users as $user) {
+                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+                    if ($badgeIdGenerator != null) {
+                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                            $user->qr_code);
+                        $this->userServices->sendMail($mail->template, $user, $congress, $mail->object);
+                    }
+                }
             }
+
         }
+
 
         return response()->json(['message' => 'send mail successs']);
     }
@@ -226,8 +241,12 @@ class CongressController extends Controller
                         }
                     }
                 }
+
+                $mailtype = $this->congressServices->getMailType('attestation');
+                $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser($user, $congress);
+                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template,$congress,$user,null));
             }
         }
         return response()->json(['message' => 'send mail successs']);
@@ -243,5 +262,41 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function saveMail(Request $request, $congress_id, $mode)
+    {
+        if (!$request->has(['object', 'template']))
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
+
+        if (!$type = $this->congressServices->getMailType($mode))
+            return response()->json(['resposne' => 'bad url', 'error' => 'mail type not found'], 400);
+
+        if ($type->name != 'custom') {
+            $mail = $this->congressServices->getMail($congress_id, $type->mail_type_id);
+            if (!$mail) $mail = new Mail();
+        } else {
+            $mail = new Mail();
+        }
+        $mail->congress_id = $congress_id;
+        $mail->object = $request->input('object');
+        $mail->template = $request->input('template');
+        $mail->mail_type_id = $type->mail_type_id;
+        $mail->save();
+        return $mail;
+    }
+
+    public function editCustomMail(Request $request, $congress_id, $id)
+    {
+        if (!$request->has(['object', 'template']))
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
+
+        if (!$mail = $this->congressServices->getMailById($id)) {
+            return response()->json(['resposne' => 'bad request', 'error' => ['email not found']], 400);
+        }
+
+        $mail->object = $request->input('object');
+        $mail->template = $request->input('template');
+        $mail->save();
+        return $mail;
+    }
 
 }

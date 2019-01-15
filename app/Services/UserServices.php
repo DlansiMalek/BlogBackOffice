@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Access_Presence;
 use App\Models\Admin;
+use App\Models\Form_Input_Reponse;
 use App\Models\Payement_Type;
+use App\Models\Reponse_Value;
 use App\Models\User;
 use App\Models\User_Access;
 use Illuminate\Http\Request;
@@ -32,21 +34,11 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('grade_id'))
-            $newUser->grade_id = $request->input('grade_id');
-
-        if ($request->has('lieu_ex_id'))
-            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('price'))
-            $newUser->price = $request->input('price');
-
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
-
+        if ($request->has('pack_id'))
+            $newUser->pack_id = $request->input('pack_id');
 
         $newUser->update();
         // $this->sendConfirmationMail($newUser, $congress->name);
@@ -63,6 +55,8 @@ class UserServices
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
 
+        if ($request->has('pack_id'))
+            $newUser->pack_id = $request->input('pack_id');
 
         if ($request->has('gender'))
             $newUser->gender = $request->input('gender');
@@ -71,20 +65,12 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('grade_id'))
-            $newUser->grade_id = $request->input('grade_id');
-
-        if ($request->has('lieu_ex_id'))
-            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
 
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
         if ($request->has('price'))
             $newUser->price = $request->input('price');
-
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
 
         $newUser->email = $email;
 
@@ -98,8 +84,7 @@ class UserServices
         $newUser->congress_id = $request->input("congressId");
 
         $newUser->save();
-        // $this->sendConfirmationMail($newUser, $congress->name);
-        return $newUser;
+        return $this->getUserById($newUser->user_id);
     }
 
     public function sendConfirmationMail($user, $congress_name)
@@ -114,8 +99,27 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        return User::with(['accesss'])->where('user_id', '=', $user_id)
+        $user = User::with(['accesss','pack', 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
+//        $response = array_map(function ($response) {
+//            $temp = $response->form_input;
+//            if (in_array($response->form_input->type->name, ['checklist', 'multiselect'])){
+//                $temp->response=array_map(function($value){return $value->form_input_value_id;},$response->values);
+//            }
+//            else if (in_array($response->form_input->type->name, ['radio', 'select'])){
+//                $temp->response=$response->values[0]->form_input_value_id;
+//            }
+//            else
+//            {
+//                $temp->response=$response->reponse;
+//            }
+//            $response->form_input->response=$temp;
+//            return $response->form_input;
+//
+//        }, $user->responses);
+//        $user->responses = $response;
+        return $user;
     }
 
     public function updateUser($request, $updateUser)
@@ -264,7 +268,7 @@ class UserServices
 
         $user->save();
 
-        return $user;
+        return $this->getUserById($congress_id);
 
     }
 
@@ -275,16 +279,22 @@ class UserServices
         }
     }
 
-    public function affectAccess($user_id, $accessIds)
+    public function affectAccess($user_id, $accessIds, $packAccesses)
     {
         for ($i = 0; $i < sizeof($accessIds); $i++) {
             $this->affectAccessById($user_id, $accessIds[$i]);
+        }
+
+        foreach ($packAccesses as $access) {
+            if (!in_array($access->access_id, $accessIds)) {
+                $this->affectAccessById($user_id, $access->access_id);
+            }
         }
     }
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss", 'privilege'])
+        return User::with(["accesss", 'privilege', 'pack.accesses'])
             ->where("user_id", "=", $user_id)
             ->first();
     }
@@ -324,7 +334,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['grade', 'accesss.attestation', 'organization', 'privilege', 'country'])
+        return User::with(['accesss.attestation', 'organization', 'privilege', 'country'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -443,10 +453,6 @@ class UserServices
         $newUser = new User();
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        if ($request->has('lieu_ex_id') && $request->input('lieu_ex_id') != 0)
-            $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-        if ($request->has('grade_id') && $request->input('grade_id') != 0)
-            $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
 
         if ($request->has('country_id'))
@@ -455,8 +461,6 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
 
         if ($request->has('organization_id') && $request->input('organization_id') != 0) {
             $newUser->organization_id = $request->input('organization_id');
@@ -479,20 +483,14 @@ class UserServices
         $newUser->qr_code = $qrcode;
         $newUser->congress_id = $request->input("congressId");
         $newUser->save();
-        return $newUser;
+        return $this->getUserById($newUser->user_id);
     }
 
     public function editFastUser($newUser, Request $request)
     {
         $newUser->first_name = $request->input('first_name');
         $newUser->last_name = $request->input('last_name');
-        $newUser->lieu_ex_id = $request->input('lieu_ex_id');
-        $newUser->grade_id = $request->input('grade_id');
         $newUser->gender = $request->input("gender");
-
-
-        if ($request->has('isPoster'))
-            $newUser->isPoster = $request->input('isPoster');
 
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
@@ -549,7 +547,7 @@ class UserServices
     {
         return User::whereIn('privilege_id', $privileges)
             ->where("congress_id", "=", $congressId)
-            ->with(['grade', 'accesss.attestation', 'organization', 'privilege'])
+            ->with(['accesss.attestation', 'organization', 'privilege'])
             ->get();
     }
 
@@ -562,8 +560,7 @@ class UserServices
 
     public function getFastUsersByCongressId($congressId)
     {
-        return User::with(['grade'])
-            ->where('congress_id', '=', $congressId)
+        return User::where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', 3)
             ->get();
     }
@@ -576,11 +573,10 @@ class UserServices
         if ($congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
-
         try {
-            Mail::send($view . '.' . $congress->congress_id, ['accesss' => $user->accesss,
-                'link' => $link, 'user' => $user
-            ], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail) {
+            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $message->subject($objectMail);
+                $message->setBody($view, 'text/html');
                 if ($fileAttached)
                     $message->attach($pathToFile);
                 $message->to($email)->subject($objectMail);
@@ -588,19 +584,21 @@ class UserServices
         } catch (\Exception $exception) {
             Log::info($exception);
             $user->email_sended = -1;
+            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
             Storage::delete('app/badge.png');
             return 1;
         }
 
         $user->email_sended = 1;
+        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->update();
         Storage::delete('app/badge.png');
         return 1;
     }
 
 
-    public function sendMailAttesationToUser($user, $congress)
+    public function sendMailAttesationToUser($user, $congress, $object, $view)
     {
         $email = $user->email;
 
@@ -608,18 +606,21 @@ class UserServices
 
 
         try {
-            Mail::send('attestationEmail.' . $congress->congress_id, ['accesss' => $user->accesss
-            ], function ($message) use ($email, $congress, $pathToFile) {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
                 $message->attach($pathToFile);
-                $message->to($email)->subject($congress->object_mail_attestation);
+                $message->to($email)->subject($object);
             });
         } catch (\Exception $exception) {
             Log::info($exception);
-            $user->email_attestation_sended = -1;
+            $user->email_sended = -1;
+            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
+            Storage::delete('app/badge.png');
             return 1;
         }
-
+        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->email_attestation_sended = 1;
         $user->update();
         return $user;
@@ -660,6 +661,59 @@ class UserServices
         return User::where('congress_id', '=', $congressId)
             ->where('country_id', '=', $countryId)
             ->get();
+    }
+
+    public function saveUserResponses($responses, $userId)
+    {
+        foreach ($responses as $req) {
+
+            $reponse = new Form_Input_Reponse();
+            if (!array_key_exists("response", $req)) {
+
+                $reponse->user_id = $userId;
+                $reponse->form_input_id = $req['form_input_id'];
+                $reponse->reponse = null;
+                $reponse->save();
+
+                continue;
+            } else {
+                if (in_array($req['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
+                    $reponse->reponse = "";
+                else $reponse->reponse = $req['response'];
+            }
+
+            $reponse->user_id = $userId;
+            $reponse->form_input_id = $req['form_input_id'];
+            $reponse->save();
+            if (in_array($req['type']['name'], ['checklist', 'multiselect']))
+                foreach ($req['response'] as $val) {
+                    $repVal = new Reponse_Value();
+                    $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                    $repVal->form_input_value_id = $val;
+                    if(!$val)
+                        continue;
+
+                    $repVal->save();
+                }
+            else if (in_array($req['type']['name'], ['radio', 'select'])) {
+                $repVal = new Reponse_Value();
+                $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                $repVal->form_input_value_id = $req['response'];
+                if(!$req['response'])
+                    continue;
+                $repVal->save();
+            }
+
+        }
+    }
+
+    public function deleteUserResponses($user_id)
+    {
+        $responses = Form_Input_Reponse::with('values')->where('user_id', '=', $user_id)->get();
+        foreach ($responses as $resp) {
+            Reponse_Value::where('form_input_reponse_id', '=', $resp->form_input_reponse_id)->delete();
+            $resp->delete();
+        }
     }
 
 
@@ -733,9 +787,6 @@ class UserServices
             $userData->organization_id = $user['organization_id'];
         }
         $userData->congress_id = $congress_id;
-        if (array_key_exists('grade_id', $user))
-            $userData->grade_id = $user['grade_id'];
-
         if (array_key_exists('pack_id', $user))
             $userData->pack_id = $user['pack_id'];
 

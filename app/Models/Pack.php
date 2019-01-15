@@ -23,4 +23,9 @@ class Pack extends Model
         return $this->hasMany('App\Models\User', 'pack_id', 'pack_id');
     }
 
+    function accesses()
+    {
+        return $this->belongsToMany('App\Models\Access', 'access_pack', 'pack_id', 'access_id');
+    }
+
 }

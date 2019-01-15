@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-class CreateTableLieuEx extends Migration
+class CreateTableMailType extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CreateTableLieuEx extends Migration
      */
     public function up()
     {
-        Schema::create('Lieu_Ex', function (Blueprint $table) {
-            $table->increments('lieu_ex_id');
-            $table->string('label');
+        Schema::create('Mail_Type.php', function (Blueprint $table) {
+            $table->increments("mail_type_id");
+            $table->string("name");
             $table->timestamps();
         });
     }

@@ -17,16 +17,6 @@ class SharedController extends Controller
         $this->sharedServices = $sharedServices;
     }
 
-    public function getAllGrades()
-    {
-        return response()->json($this->sharedServices->getAllGrades());
-    }
-
-    public function getAllLieux()
-    {
-        return response()->json($this->sharedServices->getAllLieux());
-    }
-
     public function getAllPrivileges()
     {
         return response()->json($this->sharedServices->getAllPrivileges());
@@ -57,5 +47,9 @@ class SharedController extends Controller
     public function getAllCountries()
     {
         return response()->json($this->sharedServices->getAllCountries());
+    }
+
+    public function getFormInputTypes(){
+        return $this->sharedServices->getFormInputTypes();
     }
 }
