@@ -217,7 +217,7 @@ class UserController extends Controller
 
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
 
-        $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
+        if ($user->pack) $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
         if (!$user) {
             return response()->json(['response' => 'user exist'], 400);
