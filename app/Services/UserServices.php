@@ -102,20 +102,6 @@ class UserServices
         $user = User::with(['accesss','pack.accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
-        if ($user->pack){
-            $accesses = [];
-            foreach ($user->accesss as $access){
-                $inPack = false;
-                foreach ($user->pack->accesses as $packAccess){
-                    if ($packAccess->access_id == $access->access_id) {
-                        $inPack = true;
-                        break;
-                    }
-                }
-                if (!$inPack) array_push($accesses, $access);
-            }
-            $user->packlessAccesses = $accesses;
-        }
 //        $response = array_map(function ($response) {
 //            $temp = $response->form_input;
 //            if (in_array($response->form_input->type->name, ['checklist', 'multiselect'])){

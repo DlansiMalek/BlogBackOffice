@@ -59,6 +59,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
+        Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
     });
 
 
