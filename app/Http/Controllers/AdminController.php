@@ -603,7 +603,7 @@ class AdminController extends Controller
 
 
 
-        $res = $this->client->request('POST', 'payment-api.vayetek.com/api/payment/user/set-refpayement', [
+        $this->client->request('POST', 'payment-api.vayetek.com/api/payment/user/set-refpayement', [
             'json' => [
                 'user' => [
                     "name" => $user->first_name,
@@ -613,7 +613,7 @@ class AdminController extends Controller
                 'price' => $user->price,
                 'reference' => $user->ref_payment,
                 // 'url' => 'www.congress.vayetek.com'
-                //  'url' => 'http://localhost/congress-backend-modules/public'
+//                  'url' => 'http://localhost/congress-backend-modules/public'
                 'url' => 'http://www.congress.vayetek.com'
             ]
         ]);
