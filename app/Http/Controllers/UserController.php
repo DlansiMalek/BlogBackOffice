@@ -7,6 +7,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
@@ -25,13 +26,15 @@ class UserController extends Controller
     protected $badgeServices;
     protected $accessServices;
     protected $packServices;
+    protected $organizationServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
                          AccessServices $accessServices,
-                         PackServices $packServices)
+                         PackServices $packServices,
+                         OrganizationServices $organizationServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -40,6 +43,7 @@ class UserController extends Controller
         $this->badgeServices = $badgeServices;
         $this->accessServices = $accessServices;
         $this->packServices = $packServices;
+        $this->organizationServices = $organizationServices;
     }
 
     public function index()
@@ -53,11 +57,11 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($user->pack){
+        if ($user->pack) {
             $accesses = [];
-            foreach ($user->accesss as $access){
+            foreach ($user->accesss as $access) {
                 $inPack = false;
-                foreach ($user->pack->accesses as $packAccess){
+                foreach ($user->pack->accesses as $packAccess) {
                     if ($packAccess->access_id == $access->access_id) {
                         $inPack = true;
                         break;
@@ -210,11 +214,16 @@ class UserController extends Controller
         ) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['first_name', 'last_name', 'mobile', 'email',
-                    'price', 'gender', 'country_id']], 400);
+                    'price', 'gender', 'country_id', 'organization_id']], 400);
         }
 
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
+        }
+
+        if ($request->has("organization_id") && $request->input("organization_id") &&
+            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
+            return response()->json(['error' => 'organization not found'], 404);
         }
 
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
@@ -276,6 +285,11 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
 
+        if ($request->has("organization_id") && $request->input("organization_id") &&
+            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
+            return response()->json(['error' => 'organization not found'], 404);
+        }
+
         if (!$user = $this->userServices->getUserById($request->input('user_id'))) {
             return response()->json(['error' => 'user not found'], 400);
         }
@@ -289,6 +303,7 @@ class UserController extends Controller
         $user = $this->userServices->editerUser($request, $user);
 
         $this->userServices->deleteUserResponses($user->user_id);
+
         $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
 
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);

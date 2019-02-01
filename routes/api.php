@@ -94,6 +94,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('mail/{mode}','CongressController@saveMail');
         Route::post('editmail/{id}','CongressController@editCustomMail');
         Route::post('organization','OrganizationController@addOrganization');
+        Route::get('organization','OrganizationController@getCongressOrganizations');
+
     });
 });
 //User API

@@ -48,7 +48,7 @@ class OrganizationServices
         $admin = new Admin();
         $admin->name = $request->input("name");
         $admin->email = $request->input("email");
-        $admin->mobile = $request->input("mobile");;
+        $admin->mobile = $request->input("mobile");
 
         $admin->responsible = $admin_id;
 

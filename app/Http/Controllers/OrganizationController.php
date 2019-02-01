@@ -48,4 +48,10 @@ class OrganizationController extends Controller
 
     }
 
+    public function getCongressOrganizations($congress_id){
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(["message" => "congress not found"], 404);
+        return $congress->organizations? $congress->organizations:[];
+    }
+
 }

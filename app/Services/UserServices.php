@@ -40,8 +40,11 @@ class UserServices
         if ($request->has('pack_id'))
             $newUser->pack_id = $request->input('pack_id');
 
+        if ($request->has('organization_id'))
+            $newUser->pack_id = $request->input('organization_id');
+        else $newUser->organization_id = null;
+
         $newUser->update();
-        // $this->sendConfirmationMail($newUser, $congress->name);
         return $newUser;
     }
 
@@ -65,12 +68,11 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-
-        if ($request->has('country_id'))
-            $newUser->country_id = $request->input('country_id');
-
         if ($request->has('price'))
             $newUser->price = $request->input('price');
+
+        if ($request->has('organization_id'))
+            $newUser->organization_id = $request->input('organization_id');
 
         $newUser->email = $email;
 
