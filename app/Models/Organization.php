@@ -24,4 +24,8 @@ class Organization extends Model
         return $this->hasMany('App\Models\User', 'organization_id', 'organization_id');
     }
 
+    function congress_organization(){
+        $this->hasOne('App\Models\Congress_Organization','organization_id','organization_id');
+    }
+
 }

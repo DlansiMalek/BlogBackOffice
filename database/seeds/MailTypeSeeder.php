@@ -38,5 +38,9 @@ class MailTypeSeeder extends Seeder
         DB::table('Mail_Type.php')->insert([
             'name' => 'custom',
         ]);
+
+        DB::table('Mail_Type.php')->insert([
+            'name' => 'organization',
+        ]);
     }
 }

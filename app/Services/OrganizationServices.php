@@ -14,6 +14,7 @@ use App\Models\Admin_Privilege;
 use App\Models\Congress_Organization;
 use App\Models\Organization;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class OrganizationServices
 {
@@ -29,7 +30,7 @@ class OrganizationServices
         return Organization::find($labId);
     }
 
-    public function addOrganization(Request $request,$congress_id, $admin_id)
+    public function addOrganization(Request $request, $congress_id, $admin_id)
     {
         $organization = new Organization();
         $organization->email = $request->input("email");
@@ -65,6 +66,22 @@ class OrganizationServices
 
         $admin_priv->save();
 
-        return $organization;
+        return ["organization" => $organization, "admin" => $admin];
     }
+
+    public function sendMail($view, $congress, $objectMail, $email)
+    {
+
+
+        if ($congress->username_mail)
+            config(['mail.from.name', $congress->username_mail]);
+
+        Mail::send([], [], function ($message) use ($email, $congress, $objectMail, $view) {
+            $message->subject($objectMail);
+            $message->setBody($view, 'text/html');
+            $message->to($email)->subject($objectMail);
+        });
+        return 1;
+    }
+
 }

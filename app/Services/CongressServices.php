@@ -217,7 +217,7 @@ class CongressServices
 
     function renderMail($template,$congress, $participant,$link){
         $accesses = "";
-        if (sizeof($participant->accesss)>0){
+        if ($participant && sizeof($participant->accesss)>0){
             $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
             foreach ($participant->accesss as $access){
                 $accesses = $accesses
