@@ -236,3 +236,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'payement'], function () {
     Route::get('/types', 'UserController@getAllPayementTypes');
 });
+
+Route::group(["prefix"=>"organization",'middleware' => 'organization'],function (){
+    Route::get('/congress/{admin_id}',"OrganizationController@getCongress");
+});

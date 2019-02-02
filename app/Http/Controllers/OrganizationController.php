@@ -53,7 +53,7 @@ class OrganizationController extends Controller
             if (!$mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                 $mail = new Mail();
                 $mail->template = "";
-                $mail->object="Coordonnées pour l'accès à la plateforme VayeCongress";
+                $mail->object = "Coordonnées pour l'accès à la plateforme VayeCongress";
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://congress.vayetek.com'>VayeCongress</a>: " . $organization["admin"]->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://congress.vayetek.com'>VayeCongress</a>: " . $organization["admin"]->passwordDecrypt;
@@ -72,6 +72,14 @@ class OrganizationController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id))
             return response()->json(["message" => "congress not found"], 404);
         return $congress->organizations ? $congress->organizations : [];
+    }
+
+    public function getCongress($admin_id)
+    {
+        $organization = $this->organizationServices->getOrganizationByAdminId($admin_id);
+        return $this->congressServices->getCongressById($organization->congress_organization->congress_id);
+
+
     }
 
 }

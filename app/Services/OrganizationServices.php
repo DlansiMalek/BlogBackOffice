@@ -48,7 +48,7 @@ class OrganizationServices
 
         $admin = new Admin();
         $admin->name = $request->input("name");
-        $admin->email = $request->input("email");
+        $admin->email = $congress_id."-".$request->input("email");
         $admin->mobile = $request->input("mobile");
 
         $admin->responsible = $admin_id;
@@ -66,6 +66,7 @@ class OrganizationServices
 
         $admin_priv->save();
 
+        $organization->admin_id = $admin->admin_id;
         return ["organization" => $organization, "admin" => $admin];
     }
 
@@ -82,6 +83,11 @@ class OrganizationServices
             $message->to($email)->subject($objectMail);
         });
         return 1;
+    }
+
+    public function getOrganizationByAdminId($admin_id)
+    {
+        return Organization::with(['congress_organization'])->where('admin_id',"=",$admin_id)->first();
     }
 
 }
