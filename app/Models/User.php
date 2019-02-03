@@ -20,7 +20,7 @@ class User extends Authenticatable
         'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
         'price', 'email_sended', 'email_verified', 'verification_code', 'congress_id',
         'organization_id', 'pack_id', 'privilege_id', 'rfid', 'email_attestation_sended', 'path_payement',
-        'ref_payment', 'autorisation_num'
+        'ref_payment', 'autorisation_num','organization_accepted'
     ];
     /**
      * The attributes that should be hidden for arrays.

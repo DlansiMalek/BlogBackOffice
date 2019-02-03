@@ -14,7 +14,7 @@ class CreateCongressOrganizationTable extends Migration
     public function up()
     {
         Schema::create('Congress_Organization', function (Blueprint $table) {
-            $table->increments("congress_orgranization_id");
+            $table->increments("congress_organization_id");
             $table->integer("organization_id")->unsigned();
             $table->integer("congress_id")->unsigned();
             $table->float("montant")->default(0);

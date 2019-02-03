@@ -66,8 +66,7 @@ class OrganizationController extends Controller
 
     }
 
-    public
-    function getCongressOrganizations($congress_id)
+    public function getCongressOrganizations($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id))
             return response()->json(["message" => "congress not found"], 404);
@@ -80,12 +79,44 @@ class OrganizationController extends Controller
         return $this->congressServices->getCongressById($organization->congress_organization->congress_id);
     }
 
-    public function getOrganizationByAdminId($admin_id){
+    public function getOrganizationByAdminId($admin_id)
+    {
         return $this->organizationServices->getOrganizationByAdminId($admin_id);
     }
 
-    public function getOrganizationById($admin_id){
+    public function getOrganizationById($admin_id)
+    {
         return $this->organizationServices->getOrganizationById($admin_id);
+    }
+
+    public function acceptAllParticipants($organization_id)
+    {
+        $organization = $this->organizationServices->getOrganizationById($organization_id);
+        $organization->congress_organization->montant = 0;
+        foreach ($organization->users as $user) {
+            $organization->congress_organization->montant += $user->price;
+            $user->organization_accepted = true;
+            $user->update();
+        }
+        $organization->congress_organization->update();
+        return $organization;
+    }
+
+    public function acceptParticipant($organization_id, $user_id)
+    {
+        $organization = $this->organizationServices->getOrganizationById($organization_id);
+        $user = $this->userServices->getUserById($user_id);
+
+        if ($user->organization_id != $organization->organization_id)
+            return response()->json(["message" => "user does not belong to organization"], 401);
+
+        if ($user->organization_accepted) return $organization;
+
+        $organization->congress_organization->montant += $user->price;
+        $user->organization_accepted = true;
+        $user->update();
+        $organization->congress_organization->update();
+        return $this->organizationServices->getOrganizationById($organization->organization_id);
     }
 
 }
