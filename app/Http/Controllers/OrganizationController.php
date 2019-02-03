@@ -78,8 +78,14 @@ class OrganizationController extends Controller
     {
         $organization = $this->organizationServices->getOrganizationByAdminId($admin_id);
         return $this->congressServices->getCongressById($organization->congress_organization->congress_id);
+    }
 
+    public function getOrganizationByAdminId($admin_id){
+        return $this->organizationServices->getOrganizationByAdminId($admin_id);
+    }
 
+    public function getOrganizationById($admin_id){
+        return $this->organizationServices->getOrganizationById($admin_id);
     }
 
 }

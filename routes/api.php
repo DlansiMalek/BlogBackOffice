@@ -238,5 +238,6 @@ Route::group(['prefix' => 'payement'], function () {
 });
 
 Route::group(["prefix"=>"organization",'middleware' => 'organization'],function (){
-    Route::get('/congress/{admin_id}',"OrganizationController@getCongress");
+    Route::get('/admin/{admin_id}',"OrganizationController@getOrganizationByAdminId");
+    Route::get('/{organization_id}',"OrganizationController@getOrganizationById");
 });

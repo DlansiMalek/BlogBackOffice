@@ -25,9 +25,9 @@ class OrganizationServices
         return Organization::all();
     }
 
-    public function getOrganizationById($labId)
+    public function getOrganizationById($organization_id)
     {
-        return Organization::find($labId);
+        return Organization::with(['congress_organization','users'])->find($organization_id);
     }
 
     public function addOrganization(Request $request, $congress_id, $admin_id)
