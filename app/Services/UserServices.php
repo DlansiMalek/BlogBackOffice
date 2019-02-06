@@ -74,6 +74,11 @@ class UserServices
         if ($request->has('organization_id'))
             $newUser->organization_id = $request->input('organization_id');
 
+        if ($request->has('organization_accepted') && $request->get('organization_accepted')==true){
+            $newUser->organization_accepted = $request->input('organization_accepted');
+            $newUser->isPaied = true;
+        }
+
         $newUser->email = $email;
 
         $newUser->email_verified = 0;
