@@ -67,6 +67,7 @@ class OrganizationServices
         $admin_priv->save();
 
         $organization->admin_id = $admin->admin_id;
+        $organization->update();
         return ["organization" => $organization, "admin" => $admin];
     }
 

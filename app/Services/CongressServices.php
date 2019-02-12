@@ -217,7 +217,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link)
+    function renderMail($template, $congress, $participant, $link,$organization)
     {
         $accesses = "";
         if ($participant && sizeof($participant->accesss) > 0) {
@@ -245,9 +245,14 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
+        $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
+        $template = str_replace('{{$organization-&gt;description}}', '{{$organization->description}}', $template);
+        $template = str_replace('{{$organization-&gt;email}}', '{{$organization->email}}', $template);
+        $template = str_replace('{{$organization-&gt;mobile}}', '{{$organization->mobile}}', $template);
+
         if ($participant != null)
             $participant->gender = $participant->gender == 1 ? 'Mr.' : 'Mme';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization'=>$organization]);
     }
 
     public function getMailType($name)

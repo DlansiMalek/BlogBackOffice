@@ -247,7 +247,7 @@ class CongressController extends Controller
                 $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template,$congress,$user,null));
+                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template,$congress,$user,null,null));
             }
         }
         return response()->json(['message' => 'send mail successs']);
