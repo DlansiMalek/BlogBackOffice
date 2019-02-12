@@ -28,6 +28,7 @@ class CongressController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packService;
+    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -247,7 +248,7 @@ class CongressController extends Controller
                 $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template,$congress,$user,null,null));
+                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
             }
         }
         return response()->json(['message' => 'send mail successs']);
@@ -299,5 +300,15 @@ class CongressController extends Controller
         $mail->save();
         return $mail;
     }
+
+    public function uploadMailImage(Request $request)
+    {
+        $file = $request->file('image');
+        $chemin = config('media.mail-images');
+        $path = $file->store('mail-images'.$chemin);
+//        return $path."+++".substr($path,12);
+        return response()->json(['link'=>$this->baseUrl."congress/file/".substr($path,12)]);
+    }
+
 
 }
