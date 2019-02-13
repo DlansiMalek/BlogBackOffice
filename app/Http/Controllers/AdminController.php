@@ -451,8 +451,7 @@ class AdminController extends Controller
 
     }
 
-    public
-    function addPersonnel(Request $request)
+    public function addPersonnel(Request $request)
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);

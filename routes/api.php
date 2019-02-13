@@ -93,6 +93,9 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         });
         Route::post('mail/{mode}','CongressController@saveMail');
         Route::post('editmail/{id}','CongressController@editCustomMail');
+        Route::post('organization','OrganizationController@addOrganization');
+        Route::get('organization','OrganizationController@getCongressOrganizations');
+
     });
 });
 //User API
@@ -232,4 +235,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::group(['prefix' => 'payement'], function () {
     Route::get('/types', 'UserController@getAllPayementTypes');
+});
+
+Route::group(["prefix"=>"organization",'middleware' => 'organization'],function (){
+    Route::get('/admin/{admin_id}',"OrganizationController@getOrganizationByAdminId");
+    Route::get('/{organization_id}',"OrganizationController@getOrganizationById");
+    Route::get('/accept/{organization_id}/{user_id}',"OrganizationController@acceptParticipant");
+    Route::get('/acceptAll/{organization_id}',"OrganizationController@acceptAllParticipants");
 });

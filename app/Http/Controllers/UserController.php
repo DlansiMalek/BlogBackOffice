@@ -7,6 +7,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
@@ -25,13 +26,15 @@ class UserController extends Controller
     protected $badgeServices;
     protected $accessServices;
     protected $packServices;
+    protected $organizationServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
                          AccessServices $accessServices,
-                         PackServices $packServices)
+                         PackServices $packServices,
+                         OrganizationServices $organizationServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -40,6 +43,7 @@ class UserController extends Controller
         $this->badgeServices = $badgeServices;
         $this->accessServices = $accessServices;
         $this->packServices = $packServices;
+        $this->organizationServices = $organizationServices;
     }
 
     public function index()
@@ -53,11 +57,11 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($user->pack){
+        if ($user->pack) {
             $accesses = [];
-            foreach ($user->accesss as $access){
+            foreach ($user->accesss as $access) {
                 $inPack = false;
-                foreach ($user->pack->accesses as $packAccess){
+                foreach ($user->pack->accesses as $packAccess) {
                     if ($packAccess->access_id == $access->access_id) {
                         $inPack = true;
                         break;
@@ -205,19 +209,31 @@ class UserController extends Controller
 
     public function registerUserToCongress(Request $request, $congressId)
     {
-        if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
+        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
+            if (!$request->has(['first_name', 'last_name', 'gender'])
+            ) {
+                return response()->json(['response' => 'invalid request',
+                    'content' => ['first_name', 'last_name', 'mobile', 'email',
+                        'price', 'gender', 'country_id', 'organization_id']], 400);
+            }
+        } else if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
             'price', 'gender', 'country_id'])
         ) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['first_name', 'last_name', 'mobile', 'email',
-                    'price', 'gender', 'country_id']], 400);
+                    'price', 'gender', 'country_id', 'organization_id']], 400);
         }
 
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 
-        if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
+        if ($request->has("organization_id") && $request->input("organization_id") &&
+            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
+            return response()->json(['error' => 'organization not found'], 404);
+        }
+
+        if ((!$request->has('organization_accepted') || !$request->get('organization_accepted')) && $user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
             return response()->json(['error' => 'user exist'], 400);
         }
         $accessIds = $request->input("accessIds");
@@ -242,7 +258,37 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-        if ($congress->has_paiement) {
+        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
+            $organization = $this->organizationServices->getOrganizationById($user->organization_id);
+            $organization->congress_organization->montant += $user->price;
+            $organization->congress_organization->update();
+            if ($user->email) {
+                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+                $fileAttached = false;
+                if ($badgeIdGenerator != null) {
+                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                        $user->qr_code);
+                    $fileAttached = true;
+                }
+
+                $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+                if ($mailtype = $this->congressServices->getMailType('paiement')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null), $user, $congress, $mail->object, null,
+                            $link);
+                    }
+                }
+
+                if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null), $user, $congress, $mail->object, $fileAttached,
+                            $link);
+                    }
+                }
+
+            }
+        } else if ($congress->has_paiement) {
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link), $user, $congress, $mail->object, false,
@@ -276,6 +322,11 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
 
+        if ($request->has("organization_id") && $request->input("organization_id") &&
+            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
+            return response()->json(['error' => 'organization not found'], 404);
+        }
+
         if (!$user = $this->userServices->getUserById($request->input('user_id'))) {
             return response()->json(['error' => 'user not found'], 400);
         }
@@ -289,6 +340,7 @@ class UserController extends Controller
         $user = $this->userServices->editerUser($request, $user);
 
         $this->userServices->deleteUserResponses($user->user_id);
+
         $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
 
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);

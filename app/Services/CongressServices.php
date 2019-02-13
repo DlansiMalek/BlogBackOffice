@@ -33,7 +33,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "mails.type"])
+        return Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "mails.type","organizations"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -217,7 +217,7 @@ class CongressServices
 
     function renderMail($template,$congress, $participant,$link){
         $accesses = "";
-        if (sizeof($participant->accesss)>0){
+        if ($participant && sizeof($participant->accesss)>0){
             $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
             foreach ($participant->accesss as $access){
                 $accesses = $accesses

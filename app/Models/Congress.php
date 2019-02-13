@@ -54,4 +54,8 @@ class Congress extends Model
         return $this->hasMany('App\Models\Mail','congress_id','congress_id');
     }
 
+    public function organizations(){
+        return $this->belongsToMany("App\Models\Organization",'Congress_Organization',"congress_id","organization_id")->withPivot('montant');
+    }
+
 }
