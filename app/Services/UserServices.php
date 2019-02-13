@@ -41,7 +41,7 @@ class UserServices
             $newUser->pack_id = $request->input('pack_id');
 
         if ($request->has('organization_id'))
-            $newUser->pack_id = $request->input('organization_id');
+            $newUser->organization_id = $request->input('organization_id');
         else $newUser->organization_id = null;
 
         $newUser->update();

@@ -42,5 +42,9 @@ class MailTypeSeeder extends Seeder
         DB::table('Mail_Type.php')->insert([
             'name' => 'organization',
         ]);
+
+        DB::table('Mail_Type.php')->insert([
+            'name' => 'subvention',
+        ]);
     }
 }
