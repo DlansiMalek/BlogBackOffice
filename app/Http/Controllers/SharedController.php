@@ -52,4 +52,8 @@ class SharedController extends Controller
     public function getFormInputTypes(){
         return $this->sharedServices->getFormInputTypes();
     }
+
+    public function getFile($file_path){
+        return response()->file('../storage/app/mail-images/'.$file_path);
+    }
 }

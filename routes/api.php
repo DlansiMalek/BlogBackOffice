@@ -44,7 +44,6 @@ Route::group(['prefix' => 'mobile'], function () {
 
 Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
 
-
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
@@ -67,6 +66,8 @@ Route::group(['prefix' => 'users'], function () {
 
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
+    Route::post('upload-mail-image','CongressController@uploadMailImage');
+    Route::get('file/{file_path}','SharedController@getFile');
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
