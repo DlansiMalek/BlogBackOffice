@@ -40,8 +40,11 @@ class UserServices
         if ($request->has('pack_id'))
             $newUser->pack_id = $request->input('pack_id');
 
+        if ($request->has('organization_id'))
+            $newUser->organization_id = $request->input('organization_id');
+        else $newUser->organization_id = null;
+
         $newUser->update();
-        // $this->sendConfirmationMail($newUser, $congress->name);
         return $newUser;
     }
 
@@ -65,12 +68,16 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-
-        if ($request->has('country_id'))
-            $newUser->country_id = $request->input('country_id');
-
         if ($request->has('price'))
             $newUser->price = $request->input('price');
+
+        if ($request->has('organization_id'))
+            $newUser->organization_id = $request->input('organization_id');
+
+        if ($request->has('organization_accepted') && $request->get('organization_accepted')==true){
+            $newUser->organization_accepted = $request->input('organization_accepted');
+            $newUser->isPaied = true;
+        }
 
         $newUser->email = $email;
 
@@ -99,7 +106,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        $user = User::with(['accesss','pack', 'responses.values', 'responses.form_input.values',
+        $user = User::with(['accesss','pack.accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
 //        $response = array_map(function ($response) {
@@ -297,6 +304,7 @@ class UserServices
         return User::with(["accesss", 'privilege', 'pack.accesses'])
             ->where("user_id", "=", $user_id)
             ->first();
+
     }
 
     public function isAllowedAccess($participator, $accessId)

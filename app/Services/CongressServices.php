@@ -25,7 +25,6 @@ class CongressServices
 {
 
 
-
     public function __construct(OrganizationServices $organizationServices)
     {
         $this->organizationServices = $organizationServices;
@@ -33,7 +32,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users.privilege", "users.responses.values", "attestation", "accesss.participants", "accesss.attestation", "accesss","packs.accesses","form_inputs.type","form_inputs.values", "mails.type"])
+        return Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "accesss.participants", "accesss.attestation", "accesss", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations"])
             ->where("congress_id", "=", $id_Congress)
             ->first();
     }
@@ -53,7 +52,7 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $date,$email,$has_paiement, $admin_id)
+    public function addCongress($name, $date, $email, $has_paiement, $price, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
@@ -61,13 +60,14 @@ class CongressServices
         $congress->admin_id = $admin_id;
         $congress->username_mail = $email;
         $congress->has_paiement = $has_paiement;
+        $congress->price = $price ? $price : 0;
         $congress->save();
         return $congress;
     }
 
     public function getCongressAllAccess($adminId)
     {
-        return Congress::with(["accesss","packs.accesses"])
+        return Congress::with(["accesss.participants","packs.accesses","form_inputs.type", "users.responses.values", "users.responses.form_input"])
             ->where("admin_id", "=", $adminId)
             ->get();
     }
@@ -116,6 +116,7 @@ class CongressServices
         $congress->admin_id = $adminId;
         $congress->username_mail = $request->input("username_mail");
         $congress->has_paiement = $request->input('has_paiement');
+        $congress->price = $request->input('price')?$request->input('price'):0;
         $congress->update();
 
         return $congress;
@@ -187,23 +188,24 @@ class CongressServices
         return $congress;
     }
 
-    public function addFormInputs($inputs, $congress_id){
-        $old = Form_Input::where("congress_id" ,'=',$congress_id );
-        foreach($old as $input){
-            Form_Input_Value::where('form_input_id','=',$input->form_input_id)->delete();
+    public function addFormInputs($inputs, $congress_id)
+    {
+        $old = Form_Input::where("congress_id", '=', $congress_id);
+        foreach ($old as $input) {
+            Form_Input_Value::where('form_input_id', '=', $input->form_input_id)->delete();
         }
         $old->delete();
-        foreach ($inputs as $inputRequest){
+        foreach ($inputs as $inputRequest) {
             $input = new Form_Input();
             $input->form_input_type_id = $inputRequest["type"]["form_input_type_id"];
             $input->congress_id = $congress_id;
             $input->label = $inputRequest["label"];
             $input->save();
-            if($inputRequest["type"]["name"] == "checklist"||$inputRequest["type"]["name"] == "multiselect"||$inputRequest["type"]["name"] == "select"||$inputRequest["type"]["name"] == "radio"){
-                foreach ($inputRequest["values"] as $valueRequest){
+            if ($inputRequest["type"]["name"] == "checklist" || $inputRequest["type"]["name"] == "multiselect" || $inputRequest["type"]["name"] == "select" || $inputRequest["type"]["name"] == "radio") {
+                foreach ($inputRequest["values"] as $valueRequest) {
                     $value = new Form_Input_Value();
                     $value->value = $valueRequest['value'];
-                    $value->form_input_id= $input->form_input_id;
+                    $value->form_input_id = $input->form_input_id;
                     $value->save();
                 }
             }
@@ -215,45 +217,52 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template,$congress, $participant,$link){
+    function renderMail($template, $congress, $participant, $link,$organization)
+    {
         $accesses = "";
-        if (sizeof($participant->accesss)>0){
+        if ($participant && sizeof($participant->accesss) > 0) {
             $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
-            foreach ($participant->accesss as $access){
+            foreach ($participant->accesss as $access) {
                 $accesses = $accesses
-                    ."<li>".$access->name
-                    ."<span class=\"bold\"> qui se déroulera le "
-                    .\App\Services\Utils::convertDateFrench($access->theoric_start_data)
-                    ." de "
-                    .\App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)
-                    ." à "
-                    .\App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)
-                    ." </span></li>";
+                    . "<li>" . $access->name
+                    . "<span class=\"bold\"> qui se déroulera le "
+                    . \App\Services\Utils::convertDateFrench($access->theoric_start_data)
+                    . " de "
+                    . \App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)
+                    . " à "
+                    . \App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)
+                    . " </span></li>";
             }
-            $accesses = $accesses."</ul>";
+            $accesses = $accesses . "</ul>";
         }
-        $template = str_replace('{{$congress-&gt;name}}','{{$congress->name}}',$template);
-        $template = str_replace('{{$congress-&gt;date}}','{{$congress->date}}',$template);
-        $template = str_replace('{{$congress-&gt;price}}','{{$congress->price}}',$template);
-        $template = str_replace('{{$participant-&gt;first_name}}','{{$participant->first_name}}',$template);
-        $template = str_replace('{{$participant-&gt;last_name}}','{{$participant->last_name}}',$template);
-        $template = str_replace('{{$participant-&gt;gender}}','{{$participant->gender}}',$template);
-        $template = str_replace('{{$participant-&gt;price}}','{{$participant->price}}',$template);
-        $template = str_replace('{{$participant-&gt;pack-&gt;label}}','{{$participant->pack->label}}',$template);
-        $template = str_replace('{{$participant-&gt;accesses}}',$accesses,$template);
-        $template = str_replace('{{%24link}}','{{$link}}',$template);
-        if ($participant!=null)
-            $participant->gender = $participant->gender==1?'Mr.':'Mme';
-        return view(['template'=>'<html>'.$template.'</html>'],['congress'=>$congress, 'participant'=>$participant,'link'=>$link]);
+        $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
+        $template = str_replace('{{$congress-&gt;date}}', '{{$congress->date}}', $template);
+        $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
+        $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
+        $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
+        $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
+        $template = str_replace('{{$participant-&gt;price}}', '{{$participant->price}}', $template);
+        $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
+        $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
+        $template = str_replace('{{%24link}}', '{{$link}}', $template);
+        $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
+        $template = str_replace('{{$organization-&gt;description}}', '{{$organization->description}}', $template);
+        $template = str_replace('{{$organization-&gt;email}}', '{{$organization->email}}', $template);
+        $template = str_replace('{{$organization-&gt;mobile}}', '{{$organization->mobile}}', $template);
+
+        if ($participant != null)
+            $participant->gender = $participant->gender == 1 ? 'Mr.' : 'Mme';
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization'=>$organization]);
     }
 
-    public function getMailType($name){
-        return Mail_Type::where("name","=",$name)->first();
+    public function getMailType($name)
+    {
+        return Mail_Type::where("name", "=", $name)->first();
     }
 
     public function getMail($congressId, $mail_type_id)
     {
-        return Mail::where("congress_id",'=',$congressId)->where('mail_type_id','=',$mail_type_id)->first();
+        return Mail::where("congress_id", '=', $congressId)->where('mail_type_id', '=', $mail_type_id)->first();
     }
 
     public function getMailById($id)

@@ -21,6 +21,7 @@ class CreateUserTable extends Migration
             $table->integer('gender')->nullable();
             $table->string('mobile');
             $table->string('email');
+            $table->boolean('organization_accepted')->default(false);
             $table->tinyInteger('email_verified')->default(0);
 
             $table->string('verification_code')

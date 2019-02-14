@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\Organisateur;
+use App\Http\Middleware\Organization;
 use App\Http\Middleware\Super_Admin;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -62,6 +63,7 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'organisateur' => Organisateur::class,
-        'super-admin' => Super_Admin::class
+        'super-admin' => Super_Admin::class,
+        'organization' => Organization::class
     ];
 }

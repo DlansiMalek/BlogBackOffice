@@ -87,7 +87,7 @@ class AccessServices
 
     public function getAllAccessByAccessIds($accessIds)
     {
-        return Access::whereIn('access_id', $accessIds)->get();
+        return $accessIds ? Access::whereIn('access_id', $accessIds)->get() : [];
     }
 
 

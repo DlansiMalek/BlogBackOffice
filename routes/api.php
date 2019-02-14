@@ -44,7 +44,6 @@ Route::group(['prefix' => 'mobile'], function () {
 
 Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
 
-
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
@@ -59,6 +58,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
+        Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
     });
 
 
@@ -66,6 +66,8 @@ Route::group(['prefix' => 'users'], function () {
 
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
+    Route::post('upload-mail-image','CongressController@uploadMailImage');
+    Route::get('file/{file_path}','SharedController@getFile');
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
@@ -92,6 +94,9 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         });
         Route::post('mail/{mode}','CongressController@saveMail');
         Route::post('editmail/{id}','CongressController@editCustomMail');
+        Route::post('organization','OrganizationController@addOrganization');
+        Route::get('organization','OrganizationController@getCongressOrganizations');
+
     });
 });
 //User API
@@ -231,4 +236,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::group(['prefix' => 'payement'], function () {
     Route::get('/types', 'UserController@getAllPayementTypes');
+});
+
+Route::group(["prefix"=>"organization",'middleware' => 'organization'],function (){
+    Route::get('/admin/{admin_id}',"OrganizationController@getOrganizationByAdminId");
+    Route::get('/{organization_id}',"OrganizationController@getOrganizationById");
+    Route::get('/accept/{organization_id}/{user_id}',"OrganizationController@acceptParticipant");
+    Route::get('/acceptAll/{organization_id}',"OrganizationController@acceptAllParticipants");
 });
