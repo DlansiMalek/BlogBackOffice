@@ -17,6 +17,7 @@ class CreateAttestationType extends Migration
             $table->increments('attestation_type_id');
             $table->string("label");
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

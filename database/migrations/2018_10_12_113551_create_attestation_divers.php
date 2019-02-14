@@ -25,6 +25,7 @@ class CreateAttestationDivers extends Migration
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -13,7 +13,7 @@ class CreateTableAttestationAccess extends Migration
      */
     public function up()
     {
-        Schema::create('Attestation_Accesss', function (Blueprint $table) {
+        Schema::create('Attestation_Access', function (Blueprint $table) {
             $table->increments('attestation_access_id');
             $table->string("attestation_generator_id");
 
@@ -21,6 +21,7 @@ class CreateTableAttestationAccess extends Migration
             $table->foreign('access_id')->references('access_id')->on('Access')
                 ->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

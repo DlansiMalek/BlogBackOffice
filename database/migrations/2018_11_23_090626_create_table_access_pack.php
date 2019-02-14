@@ -13,12 +13,16 @@ class CreateTableAccessPack extends Migration
      */
     public function up()
     {
-        Schema::create('Access_Pack', function (Blueprint $table){
+        Schema::create('Access_Pack', function (Blueprint $table) {
             $table->increments('access_pack_id');
+
+
             $table->unsignedInteger('access_id');
             $table->unsignedInteger('pack_id');
             $table->foreign('pack_id')->references('pack_id')->on('Pack');
             $table->foreign('access_id')->references('access_id')->on('Access');
+
+
             $table->softDeletes();
             $table->timestamps();
         });

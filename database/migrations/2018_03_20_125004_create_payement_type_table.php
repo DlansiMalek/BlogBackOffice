@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-class CreateTableFormInputType extends Migration
+class CreatePayementTypeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CreateTableFormInputType extends Migration
      */
     public function up()
     {
-        Schema::create('Form_Input_Type', function (Blueprint $table) {
-            $table->increments("form_input_type_id");
-            $table->string("name");
+        Schema::create('Payement_Type', function (Blueprint $table) {
+            $table->increments('payement_type_id');
+            $table->string('label');
 
             $table->softDeletes();
             $table->timestamps();
@@ -29,6 +29,6 @@ class CreateTableFormInputType extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('Payement_Type');
     }
 }

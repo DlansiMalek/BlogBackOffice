@@ -17,6 +17,7 @@ class CreatePrivilegeTable extends Migration
             $table->increments('privilege_id');
             $table->string('name');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

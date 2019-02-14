@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePayementTypeTable extends Migration
+class CreateTableLabo extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,12 @@ class CreatePayementTypeTable extends Migration
      */
     public function up()
     {
-        Schema::create('Payement_Type', function (Blueprint $table) {
-            $table->increments('payement_type_id');
-            $table->string('label');
+        Schema::create('Organization', function (Blueprint $table) {
+            $table->increments('organization_id');
+            $table->string("name");
+            $table->string("description");
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -27,6 +30,6 @@ class CreatePayementTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Payement_Type');
+        //
     }
 }

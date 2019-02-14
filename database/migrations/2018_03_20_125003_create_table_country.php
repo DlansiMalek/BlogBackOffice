@@ -22,6 +22,7 @@ class CreateTableCountry extends Migration
             $table->string("nationality");
             $table->string("nationality_arabe");
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }
