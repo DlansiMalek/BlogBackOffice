@@ -130,7 +130,7 @@ class OrganizationController extends Controller
         $user->update();
         $organization->congress_organization->update();
         $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
-        return $this->sendMail($congress,$user);
+        $this->sendMail($congress,$user);
         return $this->organizationServices->getOrganizationById($organization->organization_id);
     }
 
