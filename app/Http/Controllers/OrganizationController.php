@@ -46,6 +46,10 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
+        if($this->organizationServices->exist($congress_id,$request->input('email'))){
+            return response()->json(["message" => "organization already exists"], 401);
+        }
+
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
