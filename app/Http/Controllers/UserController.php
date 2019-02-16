@@ -659,7 +659,7 @@ class UserController extends Controller
             $price += $pack->price;
         }
         $accesss = $this->accessServices->getAllAccessByAccessIds($accessIds);
-        if (array_count_values($accesss))
+        if (count($accesss))
             $price += array_sum(array_map(function ($access) {
                 return $access["price"];
             }, $accesss->toArray()));
