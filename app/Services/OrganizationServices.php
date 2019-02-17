@@ -91,4 +91,12 @@ class OrganizationServices
         return Organization::with(['congress_organization'])->where('admin_id',"=",$admin_id)->first();
     }
 
+    public function exist($congress_id, $email)
+    {
+        $organizations = Organization::with(['congress_organization'])->where('email',"=",$email)->get();
+        foreach ($organizations as $org)
+            if ($org->congress_organization->congress_id == $congress_id) return true;
+        return false;
+    }
+
 }
