@@ -77,7 +77,7 @@ class CongressController extends Controller
 
         $this->congressServices->addFormInputs($request->input("form_inputs"), $congress->congress_id);
 
-        return response()->json(["message" => "edit congress success"]);
+        return response()->json($this->congressServices->getCongressById($congress->congress_id));
     }
 
     public function getCongressById($congress_id)
