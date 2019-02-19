@@ -273,7 +273,7 @@ class UserController extends Controller
                 }
 
                 $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-                if ($mailtype = $this->congressServices->getMailType('paiement')) {
+                if ($mailtype = $this->congressServices->getMailType('subvention')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
                             $link);
@@ -659,7 +659,7 @@ class UserController extends Controller
             $price += $pack->price;
         }
         $accesss = $this->accessServices->getAllAccessByAccessIds($accessIds);
-        if (array_count_values($accesss))
+        if (count($accesss))
             $price += array_sum(array_map(function ($access) {
                 return $access["price"];
             }, $accesss->toArray()));
