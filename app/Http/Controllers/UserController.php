@@ -626,7 +626,8 @@ class UserController extends Controller
             $this->badgeServices->saveAttestationsInPublic($request);
 
             $mailtype = $this->congressServices->getMailType('attestation');
-            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+            if (!$mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id))
+                return response()->json(['error' => 'attestation mail not sent']);
 
             $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
         } else {
