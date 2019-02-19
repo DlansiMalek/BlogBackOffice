@@ -11,6 +11,7 @@ use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use GuzzleHttp\Client;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -594,6 +595,20 @@ class AdminController extends Controller
         $user->update();
 
         return response()->json(["reference" => $user->ref_payment]);
+        /*$client = new Client();
+        $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
+            'json' => [
+                'user' => [
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'name' => $user->first_name . " " . $user->last_name
+                ],
+                'price' => $user->price,
+                'reference' => $user->ref_payment,
+                // 'url' => 'www.congress.vayetek.com'
+                'url' => 'http://localhost/congress-backend-modules/public'
+            ]
+        ]);*/
     }
 
 }
