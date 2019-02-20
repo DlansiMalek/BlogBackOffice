@@ -19,7 +19,7 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
-        Access::where("congress_id",'=',$congress_id)->delete();
+        Access::where("congress_id", '=', $congress_id)->delete();
         $resAccesses = [];
         foreach ($accesss as $access) {
             $accessData = new Access();
@@ -87,7 +87,7 @@ class AccessServices
 
     public function getAllAccessByAccessIds($accessIds)
     {
-        return $accessIds? Access::whereIn('access_id',$accessIds)->get():[];
+        return $accessIds ? Access::whereIn('access_id', $accessIds)->get() : [];
     }
 
 
@@ -104,7 +104,6 @@ class AccessServices
     {
         return Access::with(['participants'])
             ->where("congress_id", "=", $congressId)
-            ->where('access_parent', '=', null)
             ->where('intuitive', '=', null)
             ->get();
     }

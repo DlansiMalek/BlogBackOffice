@@ -15,12 +15,18 @@ class CreateTableMail extends Migration
     {
         Schema::create('Mail', function (Blueprint $table) {
             $table->increments("mail_id");
-            $table->unsignedInteger("congress_id");
+
+
             $table->string('object');
             $table->text("template");
+
+
+            $table->unsignedInteger("congress_id");
+            $table->foreign("congress_id")->references("congress_id")->on('Congress');
+
             $table->unsignedInteger("mail_type_id");
-            $table->foreign("congress_id")->references("congress_id")->on('congress');
-            $table->foreign("mail_type_id")->references('mail_type_id')->on('Mail_Type.php');
+            $table->foreign("mail_type_id")->references('mail_type_id')->on('Mail_Type');
+
             $table->timestamps();
             $table->softDeletes();
         });

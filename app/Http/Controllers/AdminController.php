@@ -11,6 +11,7 @@ use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use GuzzleHttp\Client;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -195,9 +196,13 @@ class AdminController extends Controller
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
-        if ($participator->isPresent == 0) {
+
+        /* Make it present in congress */
+        $participator->isPresent = 1;
+        $participator->update();
+        /*if ($participator->isPresent == 0) {
             return response()->json(['response' => 'participator not present in congress'], 404);
-        }
+        }*/
 
         if (!$user_access = $this->userServices->getUserAccessByUser($participator->user_id, $request->input("accessId"))) {
             return response()->json(["message" => "user not allowed to this access"], 401);
@@ -208,14 +213,6 @@ class AdminController extends Controller
 
         $this->userServices->makePresentToAccess($user_access, $participator,
             $request->input('accessId'), $request->input('isPresent'), $request->input('type'));
-
-
-        //DENTAIRE SHIT
-        if ($request->input('accessId') == 8) {
-            $user_shit = $this->userServices->getUserAccessByUser($participator->user_id, 25);
-            $this->userServices->makePresentToAccess($user_shit, $participator,
-                25, $request->input('isPresent'), $request->input('type'));
-        }
 
         return response()->json(["message" => "success sending and scaning"], 200);
     }
@@ -598,6 +595,20 @@ class AdminController extends Controller
         $user->update();
 
         return response()->json(["reference" => $user->ref_payment]);
+        /*$client = new Client();
+        $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
+            'json' => [
+                'user' => [
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'name' => $user->first_name . " " . $user->last_name
+                ],
+                'price' => $user->price,
+                'reference' => $user->ref_payment,
+                // 'url' => 'www.congress.vayetek.com'
+                'url' => 'http://localhost/congress-backend-modules/public'
+            ]
+        ]);*/
     }
 
 }

@@ -20,11 +20,13 @@ class CreateAdminTable extends Migration
             $table->string('mobile');
             $table->string('password');
             $table->string('passwordDecrypt');
+            $table->string("rfid")->nullable()->default(null);
 
             $table->integer('responsible')->unsigned()->nullable();
             $table->foreign('responsible')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

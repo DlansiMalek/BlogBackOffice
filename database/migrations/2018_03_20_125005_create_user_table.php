@@ -15,6 +15,7 @@ class CreateUserTable extends Migration
     {
         Schema::create('User', function (Blueprint $table) {
             $table->increments('user_id');
+
             $table->string('first_name');
             $table->string('last_name');
             $table->integer('gender')->nullable();
@@ -28,12 +29,22 @@ class CreateUserTable extends Migration
 
             $table->string('qr_code');
             $table->tinyInteger('isPresent')->unsigned()->default(0);
-
             $table->tinyInteger('isPaied')->unsigned()->default(0);
+
+            $table->string("path_payement")->nullable()->default(null);
+            $table->string("ref_payment")->nullable()->default(null);
+            $table->string("autorisation_num")->nullable()->default(null);
+
+            $table->tinyInteger("email_sended")->default(0);
+            $table->tinyInteger("email_attestation_sended")->default(0);
+
+            $table->string("rfid")->nullable()->default(null);
+
 
             # champs calculé
             $table->double('price')
                 ->nullable();
+
 
             #foreign congressId
             $table->integer('congress_id')->unsigned();
@@ -52,6 +63,23 @@ class CreateUserTable extends Migration
                 ->onDelete('cascade');
 
 
+            #foreign Pack
+            $table->integer('pack_id')->unsigned()->nullable();
+            $table->foreign('pack_id')->references('pack_id')->on('Pack')
+                ->onDelete('cascade');
+
+            #foreign Pack
+            $table->integer('privilege_id')->unsigned()->default(3);
+            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege')
+                ->onDelete('cascade');
+
+            #foreign Country
+            $table->integer('country_id')->unsigned()->nullable()->default(null);
+            $table->foreign('country_id')->references('country_id')->on('Country')
+                ->onDelete('cascade');
+
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

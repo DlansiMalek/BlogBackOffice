@@ -17,6 +17,7 @@ class CreateTableFormInputType extends Migration
             $table->increments("form_input_type_id");
             $table->string("name");
             $table->string("display_name");
+            $table->softDeletes();
             $table->timestamps();
         });
     }

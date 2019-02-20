@@ -20,6 +20,8 @@ class CreateTableFormInputReponse extends Migration
             $table->unsignedInteger('form_input_id');
             $table->foreign('user_id')->references('user_id')->on("User");
             $table->foreign('form_input_id')->references('form_input_id')->on("Form_Input");
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

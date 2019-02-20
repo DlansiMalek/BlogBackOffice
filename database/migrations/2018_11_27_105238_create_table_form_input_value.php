@@ -17,7 +17,9 @@ class CreateTableFormInputValue extends Migration
             $table->increments('form_input_value_id');
             $table->string("value");
             $table->unsignedInteger("form_input_id");
-            $table->foreign("form_input_id")->references("form_input_id")->on("form_input");
+            $table->foreign("form_input_id")->references("form_input_id")->on("Form_Input");
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
