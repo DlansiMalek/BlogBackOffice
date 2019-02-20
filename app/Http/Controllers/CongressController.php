@@ -28,7 +28,8 @@ class CongressController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packService;
-    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
+//    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
+    public $baseUrl = "https://congress-api.vayetek.com/api/";
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,

@@ -626,7 +626,8 @@ class UserController extends Controller
             $this->badgeServices->saveAttestationsInPublic($request);
 
             $mailtype = $this->congressServices->getMailType('attestation');
-            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+            if (!$mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id))
+                return response()->json(['error' => 'attestation mail not sent']);
 
             $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
         } else {
@@ -647,6 +648,14 @@ class UserController extends Controller
         }
 
         $user = $this->userServices->uploadPayement($user, $request);
+
+        if ($mailtype = $this->congressServices->getMailType('upload')) {
+            if ($mail = $this->congressServices->getMail($user->congress_id, $mailtype->mail_type_id)) {
+                $congress = $this->congressServices->getCongressById($user->congress_id);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                    null);
+            }
+        }
 
         return response()->json($user);
     }
@@ -678,5 +687,6 @@ class UserController extends Controller
         return response()->json(['response' => 'success'], 200);
 
     }
+
 
 }
