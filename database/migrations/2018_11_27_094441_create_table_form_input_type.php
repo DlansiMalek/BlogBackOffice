@@ -16,7 +16,6 @@ class CreateTableFormInputType extends Migration
         Schema::create('Form_Input_Type', function (Blueprint $table) {
             $table->increments("form_input_type_id");
             $table->string("name");
-            $table->string("display_name");
             $table->timestamps();
         });
     }
