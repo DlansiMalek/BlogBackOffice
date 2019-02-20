@@ -649,6 +649,14 @@ class UserController extends Controller
 
         $user = $this->userServices->uploadPayement($user, $request);
 
+        if ($mailtype = $this->congressServices->getMailType('upload')) {
+            if ($mail = $this->congressServices->getMail($user->congress_id, $mailtype->mail_type_id)) {
+                $congress = $this->congressServices->getCongressById($user->congress_id);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                    null);
+            }
+        }
+
         return response()->json($user);
     }
 
