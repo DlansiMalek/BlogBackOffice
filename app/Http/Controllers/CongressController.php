@@ -99,6 +99,7 @@ class CongressController extends Controller
             $request->input("username_mail"),
             $request->input('has_paiement'),
             $request->input('price'),
+            $request->input('free'),
             $admin->admin_id);
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
         $this->packService->addPacks($accesses, $request->input("packs"), $congress);
