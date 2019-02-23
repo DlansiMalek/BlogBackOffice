@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Access;
 use App\Models\Mail;
 use App\Models\User;
 use App\Services\AccessServices;
@@ -72,6 +73,7 @@ class CongressController extends Controller
 
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
+        Access::where("congress_id", '=', $congressId)->delete();
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
 
         $this->packService->addPacks($accesses, $request->input("packs"), $congress);
@@ -102,6 +104,7 @@ class CongressController extends Controller
             $request->input('free'),
             $admin->admin_id);
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+        $intuitiveAccesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("intuitiveAccesss"));
         $this->packService->addPacks($accesses, $request->input("packs"), $congress);
         $this->congressServices->addFormInputs($request->input('form_inputs'), $congress->congress_id);
         return $congress;

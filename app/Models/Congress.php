@@ -20,7 +20,7 @@ class Congress extends Model
     public $timestamps = true;
 
 
-    public function accesss()
+    public function accesses()
     {
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
     }
