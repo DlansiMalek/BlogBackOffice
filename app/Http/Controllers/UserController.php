@@ -219,7 +219,7 @@ class UserController extends Controller
 //                        'price', 'gender', 'country_id', 'organization_id']], 400);
 //            }
 //        } else
-            if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
+        if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
             'price', 'gender', 'country_id'])) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['first_name', 'last_name', 'mobile', 'email',
@@ -245,10 +245,9 @@ class UserController extends Controller
         $request->merge(["congressId" => $congressId]);
         $freeUsersCount = $this->userServices->getFreeCountByCongressId($congressId);
         $totalUsersCount = $this->userServices->getUsersCountByCongressId($congressId);
-        if ($freeUsersCount<$congress->free && !$totalUsersCount%10)
+        if ($freeUsersCount < $congress->free && !$totalUsersCount % 10)
             $request->merge(["organization_accepted" => 1]);
         $user = $this->userServices->registerUser($request);
-
 
 
         $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
@@ -303,11 +302,39 @@ class UserController extends Controller
 //        }
 //        else
 
-            if ($congress->has_paiement) {
-            if ($mailtype = $this->congressServices->getMailType('inscription')) {
-                if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
-                        $link);
+        if ($congress->has_paiement) {
+
+            if($user->organization_accepted){
+                if ($mailtype = $this->congressServices->getMailType('free')) {
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                            null);
+                    }
+                }
+
+                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+                $fileAttached = false;
+                if ($badgeIdGenerator != null) {
+                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                        $user->qr_code);
+                    $fileAttached = true;
+                }
+
+                if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
+                            null);
+                    }
+                }
+            }
+
+            else{
+                if ($mailtype = $this->congressServices->getMailType('inscription')) {
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
+                            $link);
+                    }
                 }
             }
         } else {
@@ -360,13 +387,13 @@ class UserController extends Controller
 
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
         $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesss);
-        if ($accessIds && array_count_values($accessIds)){
+        if ($accessIds && array_count_values($accessIds)) {
             $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
             $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
             $accessDiffAdded = array_diff($accessIds, $userAccessIds);
             $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
-        } else if($userAccessIds && array_count_values($userAccessIds)) $user->deleteAccess($user->user_id,$userAccessIds);
+        } else if ($userAccessIds && array_count_values($userAccessIds)) $user->deleteAccess($user->user_id, $userAccessIds);
         $user = $this->userServices->getParticipatorById($user->user_id);
 
         return response()->json($user, 200);
