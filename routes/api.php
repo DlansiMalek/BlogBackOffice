@@ -22,6 +22,7 @@ Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
+Route::get('/congress-banner/{path}', 'SharedController@getBannerCongress');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/form-input-types', 'SharedController@getFormInputTypes');
 
@@ -76,6 +77,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
 
         Route::post('/upload-logo', 'CongressController@uploadLogo');
+        Route::post('/upload-banner', 'CongressController@uploadBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
 

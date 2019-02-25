@@ -269,6 +269,15 @@ class CongressController extends Controller
 
         return response()->json($congress);
     }
+    public function uploadBanner($congressId, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $congress = $this->congressServices->uploadBanner($congress, $request);
+
+        return response()->json($congress);
+    }
 
     public function saveMail(Request $request, $congress_id, $mode)
     {

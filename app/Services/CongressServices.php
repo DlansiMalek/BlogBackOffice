@@ -196,6 +196,18 @@ class CongressServices
         return $congress;
     }
 
+    public function uploadBanner($congress, Request $request)
+    {
+        $file = $request->file('file_data');
+        $chemin = config('media.congress-banner');
+        $path = $file->store('congress-banner'.$chemin);
+
+        $congress->banner = $path;
+        $congress->update();
+
+        return $congress;
+    }
+
     public function addFormInputs($inputs, $congress_id)
     {
         $old = Form_Input::where("congress_id", '=', $congress_id);
