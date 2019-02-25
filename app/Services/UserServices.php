@@ -71,8 +71,9 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-        if ($request->has('organization_id'))
-            $newUser->organization_id = $request->input('organization_id');
+//        organization code
+//        if ($request->has('organization_id'))
+//            $newUser->organization_id = $request->input('organization_id');
 
         if ($request->has('organization_accepted') && $request->get('organization_accepted')==true){
             $newUser->organization_accepted = $request->input('organization_accepted');
@@ -826,5 +827,18 @@ class UserServices
                 }
             }
         }
+    }
+
+    public function getFreeCountByCongressId($congress_id){
+        $users = User::where("congress_id", "=", $congress_id)
+            ->where("organization_accepted","=",1)
+            ->get();
+        return $users? count($users):0;
+    }
+
+    public function getUsersCountByCongressId($congress_id){
+        $users = User::where("congress_id", "=", $congress_id)
+            ->get();
+        return $users? count($users):0;
     }
 }

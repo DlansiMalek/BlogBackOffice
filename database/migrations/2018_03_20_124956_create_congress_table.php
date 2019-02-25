@@ -20,8 +20,10 @@ class CreateCongressTable extends Migration
 
             $table->string("username_mail")->nullable()->default(null);
             $table->string("logo")->nullable()->default(null);
+            $table->string("banner")->nullable()->default(null);
 
             $table->integer("price")->nullable()->default(null);
+            $table->integer("free")->nullable()->default(null);
 
             $table->integer('admin_id')->unsigned();
             $table->foreign('admin_id')->references('admin_id')->on('Admin')

@@ -33,6 +33,12 @@ class SharedController extends Controller
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 
+    public function getBannerCongress($path)
+    {
+        $chemin = config('media.congress-banner');
+        return response()->download(storage_path('app/congress-banner/' . $chemin . "/" . $path));
+    }
+
     public function getRecuPaiement($path)
     {
         $chemin = config('media.payement-user-recu');

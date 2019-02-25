@@ -19,13 +19,13 @@ class AccessServices
 
     public function addAccessToCongress($congress_id, $accesss)
     {
-        Access::where("congress_id", '=', $congress_id)->delete();
         $resAccesses = [];
         foreach ($accesss as $access) {
             $accessData = new Access();
             $accessData->name = $access["name"];
             $accessData->price = $access["price"];
             $accessData->packless = $access["packless"];
+            $accessData->intuitive = $access["intuitive"];
             $accessData->seuil = array_key_exists("seuil", $access) ? $access["seuil"] : null;
             $accessData->max_places = array_key_exists("max_places", $access) ? $access["max_places"] : null;
             $accessData->theoric_start_data = array_key_exists("theoric_start_data", $access) ? $access["theoric_start_data"] : null;

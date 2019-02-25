@@ -209,16 +209,18 @@ class UserController extends Controller
 
     public function registerUserToCongress(Request $request, $congressId)
     {
-        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
-            if (!$request->has(['first_name', 'last_name', 'gender'])
-            ) {
-                return response()->json(['response' => 'invalid request',
-                    'content' => ['first_name', 'last_name', 'mobile', 'email',
-                        'price', 'gender', 'country_id', 'organization_id']], 400);
-            }
-        } else if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
-            'price', 'gender', 'country_id'])
-        ) {
+
+        //organization code
+//        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
+//            if (!$request->has(['first_name', 'last_name', 'gender'])
+//            ) {
+//                return response()->json(['response' => 'invalid request',
+//                    'content' => ['first_name', 'last_name', 'mobile', 'email',
+//                        'price', 'gender', 'country_id', 'organization_id']], 400);
+//            }
+//        } else
+        if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
+            'price', 'gender', 'country_id'])) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['first_name', 'last_name', 'mobile', 'email',
                     'price', 'gender', 'country_id', 'organization_id']], 400);
@@ -228,18 +230,25 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
 
-        if ($request->has("organization_id") && $request->input("organization_id") &&
-            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
-            return response()->json(['error' => 'organization not found'], 404);
-        }
+        //organization code
+//        if ($request->has("organization_id") && $request->input("organization_id") &&
+//            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
+//            return response()->json(['error' => 'organization not found'], 404);
+//        }
+//
+//        if ((!$request->has('organization_accepted') || !$request->get('organization_accepted')) && $user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
+//            return response()->json(['error' => 'user exist'], 400);
+//        }
 
-        if ((!$request->has('organization_accepted') || !$request->get('organization_accepted')) && $user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
-            return response()->json(['error' => 'user exist'], 400);
-        }
         $accessIds = $request->input("accessIds");
 
         $request->merge(["congressId" => $congressId]);
+        $freeUsersCount = $this->userServices->getFreeCountByCongressId($congressId);
+        $totalUsersCount = $this->userServices->getUsersCountByCongressId($congressId);
+        if ($freeUsersCount < $congress->free && !$totalUsersCount % 10)
+            $request->merge(["organization_accepted" => 1]);
         $user = $this->userServices->registerUser($request);
+
 
         $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
 
@@ -258,11 +267,51 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
-            $organization = $this->organizationServices->getOrganizationById($user->organization_id);
-            $organization->congress_organization->montant += $user->price;
-            $organization->congress_organization->update();
-            if ($user->email) {
+//        organization code
+//
+//        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
+//            $organization = $this->organizationServices->getOrganizationById($user->organization_id);
+//            $organization->congress_organization->montant += $user->price;
+//            $organization->congress_organization->update();
+//            if ($user->email) {
+//                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+//                $fileAttached = false;
+//                if ($badgeIdGenerator != null) {
+//                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+//                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+//                        $user->qr_code);
+//                    $fileAttached = true;
+//                }
+//
+//                $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+//                if ($mailtype = $this->congressServices->getMailType('subvention')) {
+//                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+//                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
+//                            $link);
+//                    }
+//                }
+//
+//                if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+//                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+//                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
+//                            $link);
+//                    }
+//                }
+//
+//            }
+//        }
+//        else
+
+        if ($congress->has_paiement) {
+
+            if($user->organization_accepted){
+                if ($mailtype = $this->congressServices->getMailType('free')) {
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                            null);
+                    }
+                }
+
                 $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
                 $fileAttached = false;
                 if ($badgeIdGenerator != null) {
@@ -272,27 +321,20 @@ class UserController extends Controller
                     $fileAttached = true;
                 }
 
-                $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-                if ($mailtype = $this->congressServices->getMailType('subvention')) {
-                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
-                            $link);
-                    }
-                }
-
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                            $link);
+                            null);
                     }
                 }
-
             }
-        } else if ($congress->has_paiement) {
-            if ($mailtype = $this->congressServices->getMailType('inscription')) {
-                if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
-                        $link);
+
+            else{
+                if ($mailtype = $this->congressServices->getMailType('inscription')) {
+                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
+                            $link);
+                    }
                 }
             }
         } else {
@@ -345,13 +387,13 @@ class UserController extends Controller
 
         $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
         $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesss);
-        if ($accessIds && array_count_values($accessIds)){
+        if ($accessIds && array_count_values($accessIds)) {
             $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
             $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
             $accessDiffAdded = array_diff($accessIds, $userAccessIds);
             $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
-        } else if($userAccessIds && array_count_values($userAccessIds)) $user->deleteAccess($user->user_id,$userAccessIds);
+        } else if ($userAccessIds && array_count_values($userAccessIds)) $user->deleteAccess($user->user_id, $userAccessIds);
         $user = $this->userServices->getParticipatorById($user->user_id);
 
         return response()->json($user, 200);

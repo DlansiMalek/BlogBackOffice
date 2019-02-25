@@ -49,5 +49,9 @@ class MailTypeSeeder extends Seeder
         DB::table('Mail_Type.php')->insert([
             'name' => 'upload',
         ]);
+
+        DB::table('Mail_Type.php')->insert([
+            'name' => 'free',
+        ]);
     }
 }
