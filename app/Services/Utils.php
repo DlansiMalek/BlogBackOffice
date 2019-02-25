@@ -14,9 +14,9 @@ class Utils
     public static $baseUrlPaiement = 'http://localhost:8080';
     // public static $baseUrlPaiement = 'http://localhost:8080';
 //    public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
-    public static $baseUrlBadge = 'http://congress-file-generater.vayetek.com';
+//    public static $baseUrlBadge = 'http://congress-file-generater.vayetek.com';
 
-//    public static $baseUrlBadge = 'http://137.74.165.25:8090';
+    public static $baseUrlBadge = 'http://137.74.165.25:8090';
 
     //public static $baseUrlRT = 'http://137.74.165.25:3002/api';
 
