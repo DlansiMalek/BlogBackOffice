@@ -35,21 +35,9 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        $congress = Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations"])
+        $congress = Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations",'accesss.participants','accesss.attestation'])
             ->where("congress_id", "=", $id_Congress)
             ->first();
-        $allAccess = $this->getAccesssByCongressId($id_Congress);
-//        return $congress;
-        if (count($congress->accesses)) {
-            $intuitiveAccesss = [];
-            $accesss = [];
-            foreach ($allAccess as $a){
-                if ($a->intuitive) array_push($intuitiveAccesss,$a);
-                else array_push($accesss,$a);
-            }
-            $congress->intuitiveAccesss = $intuitiveAccesss;
-            $congress->accesss = $accesss;
-        }
         return $congress;
     }
 

@@ -75,6 +75,7 @@ class CongressController extends Controller
 
         Access::where("congress_id", '=', $congressId)->delete();
         $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
+        $intuitiveAccesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("intuitiveAccesss"));
 
         $this->packService->addPacks($accesses, $request->input("packs"), $congress);
 

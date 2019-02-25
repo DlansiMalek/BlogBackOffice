@@ -19,8 +19,7 @@ class Congress extends Model
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
 
-
-    public function accesses()
+    public function accesss()
     {
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
     }
