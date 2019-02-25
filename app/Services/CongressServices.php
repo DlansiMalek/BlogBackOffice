@@ -72,7 +72,7 @@ class CongressServices
 
     public function getCongressAllAccess($adminId)
     {
-        $congress = Congress::with(["accesses.participants", "packs.accesses", "form_inputs.type", "users.responses.values", "users.responses.form_input"])
+        $congress = Congress::with(["accesss.participants", "packs.accesses", "form_inputs.type", "users.responses.values", "users.responses.form_input"])
             ->where("admin_id", "=", $adminId)
             ->get();
         $congress->accesss = $congress->accesses;
