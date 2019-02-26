@@ -597,23 +597,6 @@ class AdminController extends Controller
         $user->ref_payment = $reference;
         $user->update();
 
-
-
-        $this->client->request('POST', 'payment-api.vayetek.com/api/payment/user/set-refpayement', [
-            'json' => [
-                'user' => [
-                    "name" => $user->first_name,
-                    "email" => $user->email,
-                    "mobile" => $user->mobile
-                ],
-                'price' => $user->price,
-                'reference' => $user->ref_payment,
-                // 'url' => 'www.congress.vayetek.com'
-//                  'url' => 'http://localhost/congress-backend-modules/public'
-                'url' => 'http://www.congress.vayetek.com'
-            ]
-        ]);
-
         return response()->json(["reference" => $user->ref_payment]);
         /*$client = new Client();
         $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
