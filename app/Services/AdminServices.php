@@ -59,10 +59,13 @@ class AdminServices
             $congresses = Congress::with(["badges", "attestation", "accesss.attestation"])
                 ->where("admin_id", "=", $admin->responsible)
                 ->get();
+            foreach ($congresses as $congress) $congress->accesss = $congress->accesses;
+
         } else {
             $congresses = Congress::with(["badges", "attestation", "accesss.attestation"])
                 ->where("admin_id", "=", $admin->admin_id)
                 ->get();
+            foreach ($congresses as $congress) $congress->accesss = $congress->accesses;
         }
         return $congresses;
     }

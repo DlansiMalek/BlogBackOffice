@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use Zipper;
+use GuzzleHttp\Client;
 
 class AdminController extends Controller
 {
@@ -27,6 +28,7 @@ class AdminController extends Controller
     protected $privilegeServices;
     protected $sharedServices;
     protected $badgeServices;
+    protected $client;
 
     public function __construct(UserServices $userServices,
                                 AdminServices $adminServices,
@@ -41,6 +43,7 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->client= new Client();
     }
 
 
@@ -593,6 +596,23 @@ class AdminController extends Controller
 
         $user->ref_payment = $reference;
         $user->update();
+
+
+
+        $this->client->request('POST', 'payment-api.vayetek.com/api/payment/user/set-refpayement', [
+            'json' => [
+                'user' => [
+                    "name" => $user->first_name,
+                    "email" => $user->email,
+                    "mobile" => $user->mobile
+                ],
+                'price' => $user->price,
+                'reference' => $user->ref_payment,
+                // 'url' => 'www.congress.vayetek.com'
+//                  'url' => 'http://localhost/congress-backend-modules/public'
+                'url' => 'http://www.congress.vayetek.com'
+            ]
+        ]);
 
         return response()->json(["reference" => $user->ref_payment]);
         /*$client = new Client();

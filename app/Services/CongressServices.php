@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Access;
 use App\Models\Congress;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use JWTAuth;
 use PDF;
+use Illuminate\Database\Eloquent\Model;
+
 
 /**
  * @property OrganizationServices $organizationServices
@@ -32,9 +35,10 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        return Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "accesss.participants", "accesss.attestation", "accesss", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations"])
+        $congress = Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations",'accesss.participants','accesss.attestation'])
             ->where("congress_id", "=", $id_Congress)
             ->first();
+        return $congress;
     }
 
     function retrieveCongressFromToken()
@@ -52,7 +56,7 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $date, $email, $has_paiement, $price, $admin_id)
+    public function addCongress($name, $date, $email, $has_paiement, $price, $free, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
@@ -61,15 +65,18 @@ class CongressServices
         $congress->username_mail = $email;
         $congress->has_paiement = $has_paiement;
         $congress->price = $price ? $price : 0;
+        $congress->free = $free ? $free : 0;
         $congress->save();
         return $congress;
     }
 
     public function getCongressAllAccess($adminId)
     {
-        return Congress::with(["accesss.participants","packs.accesses","form_inputs.type", "users.responses.values", "users.responses.form_input"])
+        $congress = Congress::with(["accesss.participants", "packs.accesses", "form_inputs.type", "users.responses.values", "users.responses.form_input"])
             ->where("admin_id", "=", $adminId)
             ->get();
+        $congress->accesss = $congress->accesses;
+        return $congress;
     }
 
     public function getBadgesByUsers($badgeName, $users)
@@ -116,7 +123,8 @@ class CongressServices
         $congress->admin_id = $adminId;
         $congress->username_mail = $request->input("username_mail");
         $congress->has_paiement = $request->input('has_paiement');
-        $congress->price = $request->input('price')?$request->input('price'):0;
+        $congress->price = $request->input('price') ? $request->input('price') : 0;
+        $congress->free = $request->input('free') ? $request->input('free') : 0;
         $congress->update();
 
         return $congress;
@@ -188,6 +196,18 @@ class CongressServices
         return $congress;
     }
 
+    public function uploadBanner($congress, Request $request)
+    {
+        $file = $request->file('file_data');
+        $chemin = config('media.congress-banner');
+        $path = $file->store('congress-banner'.$chemin);
+
+        $congress->banner = $path;
+        $congress->update();
+
+        return $congress;
+    }
+
     public function addFormInputs($inputs, $congress_id)
     {
         $old = Form_Input::where("congress_id", '=', $congress_id);
@@ -217,7 +237,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link,$organization)
+    function renderMail($template, $congress, $participant, $link, $organization)
     {
         $accesses = "";
         if ($participant && sizeof($participant->accesss) > 0) {
@@ -252,7 +272,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 1 ? 'Mr.' : 'Mme';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization'=>$organization]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization]);
     }
 
     public function getMailType($name)
@@ -268,6 +288,12 @@ class CongressServices
     public function getMailById($id)
     {
         return Mail::find($id);
+    }
+
+    public function getAccesssByCongressId($congress_id){
+        return Access::with(['participants','attestation'])
+            ->where('congress_id','=',$congress_id)
+            ->get();
     }
 
 }
