@@ -245,7 +245,7 @@ class UserController extends Controller
         $request->merge(["congressId" => $congressId]);
         $freeUsersCount = $this->userServices->getFreeCountByCongressId($congressId);
         $totalUsersCount = $this->userServices->getUsersCountByCongressId($congressId);
-        if ($freeUsersCount < $congress->free && !$totalUsersCount % 10)
+        if ($freeUsersCount < $congress->free && !($totalUsersCount % 10))
             $request->merge(["organization_accepted" => 1]);
         $user = $this->userServices->registerUser($request);
 
