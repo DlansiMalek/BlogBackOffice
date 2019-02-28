@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use Zipper;
-use GuzzleHttp\Client;
 
 class AdminController extends Controller
 {
@@ -43,7 +42,7 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
-        $this->client= new Client();
+        $this->client = new Client();
     }
 
 
