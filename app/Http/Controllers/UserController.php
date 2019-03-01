@@ -230,6 +230,11 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
 
+        if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
+            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))) {
+            return response()->json(['error' => 'user exist'], 400);
+        }
+
         //organization code
 //        if ($request->has("organization_id") && $request->input("organization_id") &&
 //            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
