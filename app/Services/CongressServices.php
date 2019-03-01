@@ -241,7 +241,7 @@ class CongressServices
     {
         $accesses = "";
         if ($participant && sizeof($participant->accesss) > 0) {
-            $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
+            $accesses = "";
             foreach ($participant->accesss as $access) {
                 $accesses = $accesses
                     . "<li>" . $access->name

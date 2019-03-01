@@ -725,12 +725,20 @@ class UserServices
         }
     }
 
-
-    private function isExistCongress($user, $congressId)
+    public function getUserByNameAndFName($congressId, $first_name, $last_name)
     {
-        return Congress_User::where("id_User", "=", $user->id_User)
-            ->where("id_Congress", "=", $congressId)->first();
+        return User::where('first_name', '=', $first_name)
+            ->where('last_name','=',$last_name)
+            ->where('congress_id', '=', $congressId)
+            ->first();
     }
+
+
+//    private function isExistCongress($user, $congressId)
+//    {
+//        return Congress_User::where("id_User", "=", $user->id_User)
+//            ->where("id_Congress", "=", $congressId)->first();
+//    }
 
     private function removeAllPresencePerAccess($accessId, $user_id)
     {
