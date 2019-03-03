@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Access;
 use App\Models\Mail;
 use App\Models\User;
 use App\Services\AccessServices;
@@ -73,9 +72,9 @@ class CongressController extends Controller
 
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
-        Access::where("congress_id", '=', $congressId)->delete();
-        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-        $intuitiveAccesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("intuitiveAccesss"));
+        return $accesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(false, $congressId), $request->input("accesss"), $congressId);
+        $intuitiveAccesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(true, $congressId), $request->input("intuitiveAccesss"), $congressId);
+
 
         $this->packService->addPacks($accesses, $request->input("packs"), $congress);
 
@@ -269,6 +268,7 @@ class CongressController extends Controller
 
         return response()->json($congress);
     }
+
     public function uploadBanner($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
@@ -320,9 +320,9 @@ class CongressController extends Controller
     {
         $file = $request->file('image');
         $chemin = config('media.mail-images');
-        $path = $file->store('mail-images'.$chemin);
+        $path = $file->store('mail-images' . $chemin);
 //        return $path."+++".substr($path,12);
-        return response()->json(['link'=>$this->baseUrl."congress/file/".substr($path,12)]);
+        return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
     }
 
 
