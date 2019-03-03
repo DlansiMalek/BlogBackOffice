@@ -841,4 +841,13 @@ class UserServices
             ->get();
         return $users? count($users):0;
     }
+
+    public function getUserByNameAndFName($congressId, $first_name, $last_name)
+    {
+        return User::where('first_name', '=', $first_name)
+            ->where('last_name','=',$last_name)
+            ->where('congress_id', '=', $congressId)
+            ->first();
+    }
+
 }
