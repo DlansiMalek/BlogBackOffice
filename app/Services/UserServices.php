@@ -75,7 +75,7 @@ class UserServices
 //        if ($request->has('organization_id'))
 //            $newUser->organization_id = $request->input('organization_id');
 
-        if ($request->has('organization_accepted') && $request->get('organization_accepted')==true){
+        if ($request->has('organization_accepted') && $request->get('organization_accepted') == true) {
             $newUser->organization_accepted = $request->input('organization_accepted');
             $newUser->isPaied = true;
         }
@@ -107,7 +107,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        $user = User::with(['accesss','pack.accesses', 'responses.values', 'responses.form_input.values',
+        $user = User::with(['accesss', 'pack.accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
 //        $response = array_map(function ($response) {
@@ -267,7 +267,6 @@ class UserServices
         } else {
             $user->privilege_id = 3;
         }
-
 
 
         $user->qr_code = str_random(7);
@@ -441,6 +440,13 @@ class UserServices
         return User::where('email', '=', $email)
             ->where('congress_id', '=', $congressId)
             ->first();
+    }
+
+    public function getUsersByEmail($email)
+    {
+        return User::with(['congress'])
+            ->where('email', '=', $email)
+            ->get();
     }
 
     public function getUsersByCongressWithAccess($congressId)
@@ -699,7 +705,7 @@ class UserServices
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val;
-                    if(!$val)
+                    if (!$val)
                         continue;
 
                     $repVal->save();
@@ -708,7 +714,7 @@ class UserServices
                 $repVal = new Reponse_Value();
                 $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                 $repVal->form_input_value_id = $req['response'];
-                if(!$req['response'])
+                if (!$req['response'])
                     continue;
                 $repVal->save();
             }
@@ -724,7 +730,6 @@ class UserServices
             $resp->delete();
         }
     }
-
 
     private function isExistCongress($user, $congressId)
     {
@@ -812,7 +817,7 @@ class UserServices
             $userData->qr_code = $qrcode;
         }
 
-        if (array_key_exists('paid', $user)){
+        if (array_key_exists('paid', $user)) {
             $userData->isPaied = $user['paid'];
         }
 
@@ -829,23 +834,25 @@ class UserServices
         }
     }
 
-    public function getFreeCountByCongressId($congress_id){
+    public function getFreeCountByCongressId($congress_id)
+    {
         $users = User::where("congress_id", "=", $congress_id)
-            ->where("organization_accepted","=",1)
+            ->where("organization_accepted", "=", 1)
             ->get();
-        return $users? count($users):0;
+        return $users ? count($users) : 0;
     }
 
-    public function getUsersCountByCongressId($congress_id){
+    public function getUsersCountByCongressId($congress_id)
+    {
         $users = User::where("congress_id", "=", $congress_id)
             ->get();
-        return $users? count($users):0;
+        return $users ? count($users) : 0;
     }
 
     public function getUserByNameAndFName($congressId, $first_name, $last_name)
     {
         return User::where('first_name', '=', $first_name)
-            ->where('last_name','=',$last_name)
+            ->where('last_name', '=', $last_name)
             ->where('congress_id', '=', $congressId)
             ->first();
     }

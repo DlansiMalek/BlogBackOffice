@@ -246,3 +246,7 @@ Route::group(["prefix"=>"organization",'middleware' => 'organization'],function 
     Route::get('/accept/{organization_id}/{user_id}',"OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}',"OrganizationController@acceptAllParticipants");
 });
+
+Route::group(["prefix"=>"user-app"], function (){
+    Route::get('/connect/{qrCode}','UserController@userConnect');
+});
