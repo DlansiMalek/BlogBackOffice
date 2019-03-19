@@ -444,9 +444,15 @@ class UserServices
 
     public function getUsersByEmail($email)
     {
-        return User::with(['congress'])
+        $users = User::with(['congress'])
             ->where('email', '=', $email)
             ->get();
+        foreach ($users as $user){
+            $admin = Admin::find($user->congress->admin_id);
+            $user->adminPhone = $admin->mobile;
+            $user->adminEmail= $admin->email;
+        }
+        return $users;
     }
 
     public function getUsersByCongressWithAccess($congressId)
