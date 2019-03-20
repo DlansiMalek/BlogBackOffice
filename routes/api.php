@@ -250,4 +250,6 @@ Route::group(["prefix"=>"organization",'middleware' => 'organization'],function 
 Route::group(["prefix"=>"user-app"], function (){
     Route::get('/connect/{qrCode}','UserController@userConnect');
     Route::get('/congress','CongressController@getAllCongresses');
+    Route::get('/presence/{user_id}','UserController@getPresenceStatus');
+    Route::post('/presence','UserController@getAllPresenceStatus');
 });

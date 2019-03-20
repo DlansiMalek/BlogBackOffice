@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use Access_Presnce_Response;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -746,5 +747,23 @@ class UserController extends Controller
         else $users = null;
         return $users ? response()->json($users, 200) : response()->json(["error" => "wrong qrcode", 404]);
     }
+
+    function getPresenceStatus($user_id){
+        $table = [];
+        foreach ($this->userServices->getUserById($user_id)->accesss as $access){
+            array_push($table,$access->pivot);
+        }
+        return $table;
+    }
+
+    function getAllPresenceStatus(Request $request){
+        $table = [];
+        foreach ($request->all() as $user_id){
+            $table = array_merge($table,$this->getPresenceStatus($user_id));
+        }
+        return $table;
+    }
+
+
 
 }
