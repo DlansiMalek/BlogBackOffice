@@ -744,7 +744,9 @@ class UserController extends Controller
     function userConnect($qrCode)
     {
         $user = $this->userServices->getParticipatorByQrCode($qrCode);
-        if ($user) $users = $this->userServices->getUsersByEmail($user->email);
+        if ($user) {
+            $users = $this->userServices->getUsersByEmail($user->email);
+        }
         else $users = null;
         return $users ? response()->json($users, 200) : response()->json(["error" => "wrong qrcode", 404]);
     }

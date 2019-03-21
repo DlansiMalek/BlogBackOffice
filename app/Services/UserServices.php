@@ -445,7 +445,7 @@ class UserServices
 
     public function getUsersByEmail($email)
     {
-        $users = User::with(['congress.accesss'])
+        $users = User::with(['congress.accesss','accesss'])
             ->where('email', '=', $email)
             ->get();
         foreach ($users as $user){
