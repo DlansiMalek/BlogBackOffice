@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Access_Presence;
 use App\Models\Admin;
+use App\Models\Attestation_Request;
 use App\Models\Form_Input_Reponse;
 use App\Models\Payement_Type;
 use App\Models\Reponse_Value;
@@ -866,6 +867,10 @@ class UserServices
             ->where('last_name', '=', $last_name)
             ->where('congress_id', '=', $congressId)
             ->first();
+    }
+
+    public function getAttestationRequestsByUserId($user_id){
+        return Attestation_Request::where("user_id",'=',$user_id)->get();
     }
 
 }

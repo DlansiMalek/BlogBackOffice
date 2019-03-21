@@ -768,11 +768,21 @@ class UserController extends Controller
     function requestAttestations(Request $request,$user_id){
         if (!$this->userServices->getUserById($user_id)) return response()->json(['error'=>'user_does_not_exist'],404);
         $res = [];
+        $oldRequests = $this->userServices->getAttestationRequestsByUserId($user_id);
         foreach ($request->all() as $access_id){
             if (!$this->userServices->isRegisteredToAccess($user_id,$access_id)) continue;
+            $already_exists = false;
+            foreach ($oldRequests as $oldRequest){
+                if ($oldRequest->access_id == $access_id){
+                    $already_exists = true;
+                    array_push($res,$oldRequest);
+                }
+            }
+            if ($already_exists) continue;
             $attestation_request = new Attestation_Request();
             $attestation_request->access_id = $access_id;
             $attestation_request->user_id = (int)$user_id;
+            $attestation_request->save();
             array_push($res,$attestation_request);
         }
         return response()->json($res,200);
