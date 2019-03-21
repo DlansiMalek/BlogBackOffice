@@ -252,4 +252,5 @@ Route::group(["prefix"=>"user-app"], function (){
     Route::get('/congress','CongressController@getAllCongresses');
     Route::get('/presence/{user_id}','UserController@getPresenceStatus');
     Route::post('/presence','UserController@getAllPresenceStatus');
+    Route::post('/request-attestation/{user_id}','UserController@requestAttestations');
 });

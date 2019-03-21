@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use Access_Presnce_Response;
+use App\Models\Attestation_Request;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -762,6 +763,20 @@ class UserController extends Controller
             $table = array_merge($table,$this->getPresenceStatus($user_id));
         }
         return $table;
+    }
+
+    function requestAttestations(Request $request,$user_id){
+        if (!$this->userServices->getUserById($user_id)) return response()->json(['error'=>'user_does_not_exist'],404);
+        $res = [];
+        foreach ($request->all() as $access_id){
+            if (!$this->userServices->isRegisteredToAccess($user_id,$access_id)) continue;
+            $attestation_request = new Attestation_Request();
+            $attestation_request->access_id = $access_id;
+            $attestation_request->user_id = (int)$user_id;
+            array_push($res,$attestation_request);
+        }
+        return response()->json($res,200);
+
     }
 
 

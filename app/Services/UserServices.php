@@ -737,6 +737,11 @@ class UserServices
         }
     }
 
+    public function isRegisteredToAccess($user_id, $access_id)
+    {
+        return count(User_Access::where("user_id","=",$user_id)->where("access_id",'=',$access_id)->get())>0;
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
