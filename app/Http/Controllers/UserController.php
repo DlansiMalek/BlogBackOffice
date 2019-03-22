@@ -746,38 +746,40 @@ class UserController extends Controller
         $user = $this->userServices->getParticipatorByQrCode($qrCode);
         if ($user) {
             $users = $this->userServices->getUsersByEmail($user->email);
-        }
-        else $users = null;
+        } else $users = null;
         return $users ? response()->json($users, 200) : response()->json(["error" => "wrong qrcode", 404]);
     }
 
-    function getPresenceStatus($user_id){
+    function getPresenceStatus($user_id)
+    {
         $table = [];
-        foreach ($this->userServices->getUserById($user_id)->accesss as $access){
-            array_push($table,$access->pivot);
+        foreach ($this->userServices->getUserById($user_id)->accesss as $access) {
+            array_push($table, $access->pivot);
         }
         return $table;
     }
 
-    function getAllPresenceStatus(Request $request){
+    function getAllPresenceStatus(Request $request)
+    {
         $table = [];
-        foreach ($request->all() as $user_id){
-            $table = array_merge($table,$this->getPresenceStatus($user_id));
+        foreach ($request->all() as $user_id) {
+            $table = array_merge($table, $this->getPresenceStatus($user_id));
         }
         return $table;
     }
 
-    function requestAttestations(Request $request,$user_id){
-        if (!$this->userServices->getUserById($user_id)) return response()->json(['error'=>'user_does_not_exist'],404);
+    function requestAttestations(Request $request, $user_id)
+    {
+        if (!$this->userServices->getUserById($user_id)) return response()->json(['error' => 'user_does_not_exist'], 404);
         $res = [];
         $oldRequests = $this->userServices->getAttestationRequestsByUserId($user_id);
-        foreach ($request->all() as $access_id){
-            if (!$this->userServices->isRegisteredToAccess($user_id,$access_id)) continue;
+        foreach ($request->all() as $access_id) {
+            if (!$this->userServices->isRegisteredToAccess($user_id, $access_id)) continue;
             $already_exists = false;
-            foreach ($oldRequests as $oldRequest){
-                if ($oldRequest->access_id == $access_id){
+            foreach ($oldRequests as $oldRequest) {
+                if ($oldRequest->access_id == $access_id) {
                     $already_exists = true;
-                    array_push($res,$oldRequest);
+                    array_push($res, $oldRequest);
                 }
             }
             if ($already_exists) continue;
@@ -785,12 +787,20 @@ class UserController extends Controller
             $attestation_request->access_id = $access_id;
             $attestation_request->user_id = (int)$user_id;
             $attestation_request->save();
-            array_push($res,$attestation_request);
+            array_push($res, $attestation_request);
         }
-        return response()->json($res,200);
-
+        return response()->json($res, 200);
     }
 
 
+    function requestedAttestations(Request $request)
+    {
+        $res = [];
+        foreach ($request->all() as $user_id) {
+            $temp = $this->userServices->getAttestationRequestsByUserId($user_id);
+            $res = array_merge($res, $temp ? $temp : []);
+        }
+        return $res;
+    }
 
 }
