@@ -803,4 +803,14 @@ class UserController extends Controller
         return $res;
     }
 
+    public function setAttestationRequestStatus($user_id,$done)
+    {
+        $requests = $this->userServices->getAttestationRequestsByUserId($user_id);
+        foreach ($requests as $req) {
+            $req->done = $done?1:0;
+            $req->update();
+        }
+        return $this->userServices->getAttestationRequestsByUserId($user_id);
+    }
+
 }

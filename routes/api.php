@@ -67,8 +67,8 @@ Route::group(['prefix' => 'users'], function () {
 
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
-    Route::post('upload-mail-image','CongressController@uploadMailImage');
-    Route::get('file/{file_path}','SharedController@getFile');
+    Route::post('upload-mail-image', 'CongressController@uploadMailImage');
+    Route::get('file/{file_path}', 'SharedController@getFile');
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
@@ -94,10 +94,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 });
             });
         });
-        Route::post('mail/{mode}','CongressController@saveMail');
-        Route::post('editmail/{id}','CongressController@editCustomMail');
-        Route::post('organization','OrganizationController@addOrganization');
-        Route::get('organization','OrganizationController@getCongressOrganizations');
+        Route::post('mail/{mode}', 'CongressController@saveMail');
+        Route::post('editmail/{id}', 'CongressController@editCustomMail');
+        Route::post('organization', 'OrganizationController@addOrganization');
+        Route::get('organization', 'OrganizationController@getCongressOrganizations');
 
     });
 });
@@ -120,9 +120,10 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');
-            Route::get('mailTest','CongressController@sendMailTest');
+            Route::get('mailTest', 'CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
         });
+        Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
 
     });
     Route::group(['prefix' => 'access'], function () {
@@ -240,18 +241,18 @@ Route::group(['prefix' => 'payement'], function () {
     Route::get('/types', 'UserController@getAllPayementTypes');
 });
 
-Route::group(["prefix"=>"organization",'middleware' => 'organization'],function (){
-    Route::get('/admin/{admin_id}',"OrganizationController@getOrganizationByAdminId");
-    Route::get('/{organization_id}',"OrganizationController@getOrganizationById");
-    Route::get('/accept/{organization_id}/{user_id}',"OrganizationController@acceptParticipant");
-    Route::get('/acceptAll/{organization_id}',"OrganizationController@acceptAllParticipants");
+Route::group(["prefix" => "organization", 'middleware' => 'organization'], function () {
+    Route::get('/admin/{admin_id}', "OrganizationController@getOrganizationByAdminId");
+    Route::get('/{organization_id}', "OrganizationController@getOrganizationById");
+    Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
+    Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
 
-Route::group(["prefix"=>"user-app"], function (){
-    Route::get('/connect/{qrCode}','UserController@userConnect');
-    Route::get('/congress','CongressController@getAllCongresses');
-    Route::get('/presence/{user_id}','UserController@getPresenceStatus');
-    Route::post('/presence','UserController@getAllPresenceStatus');
-    Route::post('/request-attestation/{user_id}','UserController@requestAttestations');
-    Route::post('/requested-attestation/','UserController@requestedAttestations');
+Route::group(["prefix" => "user-app"], function () {
+    Route::get('/connect/{qrCode}', 'UserController@userConnect');
+    Route::get('/congress', 'CongressController@getAllCongresses');
+    Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
+    Route::post('/presence', 'UserController@getAllPresenceStatus');
+    Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
+    Route::post('/requested-attestation/', 'UserController@requestedAttestations');
 });
