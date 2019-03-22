@@ -19,9 +19,9 @@ class Attestation_Request extends Model
     protected $fillable = ['done','access_id','user_id',];
     protected $dates = ['created_at', 'updated_at'];
     public function access(){
-        return $this->hasOne("App\Model\Access",'access_id','access_id');
+        return $this->hasOne("App\Models\Access",'access_id','access_id');
     }
     public function user(){
-        return $this->hasOne("App\Model\User",'user_id','user_id');
+        return $this->hasOne("App\Models\User",'user_id','user_id');
     }
 }
