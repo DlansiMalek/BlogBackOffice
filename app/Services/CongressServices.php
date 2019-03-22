@@ -296,4 +296,10 @@ class CongressServices
             ->get();
     }
 
+    public function getAllCongresses()
+    {
+        return Congress::with(["packs.accesses", "form_inputs.values",'accesss'])
+            ->get();
+    }
+
 }
