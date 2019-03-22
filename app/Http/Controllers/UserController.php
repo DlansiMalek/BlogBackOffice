@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 
+use Access_Presnce_Response;
+use App\Models\Attestation_Request;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -247,7 +249,7 @@ class UserController extends Controller
 //        }
 
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
-            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))) {
+            || $user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'), $request->input('last_name'))) {
             return response()->json(['error' => 'user exist'], 400);
         }
 
@@ -315,7 +317,7 @@ class UserController extends Controller
 
         if ($congress->has_paiement) {
 
-            if($user->organization_accepted){
+            if ($user->organization_accepted) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
                     if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
@@ -338,9 +340,7 @@ class UserController extends Controller
                             null);
                     }
                 }
-            }
-
-            else{
+            } else {
                 if ($mailtype = $this->congressServices->getMailType('inscription')) {
                     if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
@@ -741,5 +741,66 @@ class UserController extends Controller
 
     }
 
+    function userConnect($qrCode)
+    {
+        $user = $this->userServices->getParticipatorByQrCode($qrCode);
+        if ($user) {
+            $users = $this->userServices->getUsersByEmail($user->email);
+        } else $users = null;
+        return $users ? response()->json($users, 200) : response()->json(["error" => "wrong qrcode", 404]);
+    }
+
+    function getPresenceStatus($user_id)
+    {
+        $table = [];
+        foreach ($this->userServices->getUserById($user_id)->accesss as $access) {
+            array_push($table, $access->pivot);
+        }
+        return $table;
+    }
+
+    function getAllPresenceStatus(Request $request)
+    {
+        $table = [];
+        foreach ($request->all() as $user_id) {
+            $table = array_merge($table, $this->getPresenceStatus($user_id));
+        }
+        return $table;
+    }
+
+    function requestAttestations(Request $request, $user_id)
+    {
+        if (!$this->userServices->getUserById($user_id)) return response()->json(['error' => 'user_does_not_exist'], 404);
+        $res = [];
+        $oldRequests = $this->userServices->getAttestationRequestsByUserId($user_id);
+        foreach ($request->all() as $access_id) {
+            if (!$this->userServices->isRegisteredToAccess($user_id, $access_id)) continue;
+            $already_exists = false;
+            foreach ($oldRequests as $oldRequest) {
+                if ($oldRequest->access_id == $access_id) {
+                    $already_exists = true;
+                    array_push($res, $oldRequest);
+                }
+            }
+            if ($already_exists) continue;
+            $attestation_request = new Attestation_Request();
+            $attestation_request->access_id = $access_id;
+            $attestation_request->user_id = (int)$user_id;
+            $attestation_request->save();
+            array_push($res, $attestation_request);
+        }
+        return response()->json($res, 200);
+    }
+
+
+    function requestedAttestations(Request $request)
+    {
+        $res = [];
+        foreach ($request->all() as $user_id) {
+            $temp = $this->userServices->getAttestationRequestsByUserId($user_id);
+            $res = array_merge($res, $temp ? $temp : []);
+        }
+        return $res;
+    }
 
 }

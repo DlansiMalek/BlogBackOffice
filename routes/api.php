@@ -246,3 +246,12 @@ Route::group(["prefix"=>"organization",'middleware' => 'organization'],function 
     Route::get('/accept/{organization_id}/{user_id}',"OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}',"OrganizationController@acceptAllParticipants");
 });
+
+Route::group(["prefix"=>"user-app"], function (){
+    Route::get('/connect/{qrCode}','UserController@userConnect');
+    Route::get('/congress','CongressController@getAllCongresses');
+    Route::get('/presence/{user_id}','UserController@getPresenceStatus');
+    Route::post('/presence','UserController@getAllPresenceStatus');
+    Route::post('/request-attestation/{user_id}','UserController@requestAttestations');
+    Route::post('/requested-attestation/','UserController@requestedAttestations');
+});
