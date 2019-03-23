@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Access_Presence;
 use App\Models\Admin;
+use App\Models\Attestation_Request;
 use App\Models\Form_Input_Reponse;
 use App\Models\Payement_Type;
 use App\Models\Reponse_Value;
@@ -75,7 +76,7 @@ class UserServices
 //        if ($request->has('organization_id'))
 //            $newUser->organization_id = $request->input('organization_id');
 
-        if ($request->has('organization_accepted') && $request->get('organization_accepted')==true){
+        if ($request->has('organization_accepted') && $request->get('organization_accepted') == true) {
             $newUser->organization_accepted = $request->input('organization_accepted');
             $newUser->isPaied = true;
         }
@@ -107,7 +108,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        $user = User::with(['accesss','pack.accesses', 'responses.values', 'responses.form_input.values',
+        $user = User::with(['accesss', 'pack.accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
 //        $response = array_map(function ($response) {
@@ -267,7 +268,6 @@ class UserServices
         } else {
             $user->privilege_id = 3;
         }
-
 
 
         $user->qr_code = str_random(7);
@@ -441,6 +441,19 @@ class UserServices
         return User::where('email', '=', $email)
             ->where('congress_id', '=', $congressId)
             ->first();
+    }
+
+    public function getUsersByEmail($email)
+    {
+        $users = User::with(['congress.accesss','accesss'])
+            ->where('email', '=', $email)
+            ->get();
+        foreach ($users as $user){
+            $admin = Admin::find($user->congress->admin_id);
+            $user->adminPhone = $admin->mobile;
+            $user->adminEmail= $admin->email;
+        }
+        return $users;
     }
 
     public function getUsersByCongressWithAccess($congressId)
@@ -699,7 +712,7 @@ class UserServices
                     $repVal = new Reponse_Value();
                     $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val;
-                    if(!$val)
+                    if (!$val)
                         continue;
 
                     $repVal->save();
@@ -708,7 +721,7 @@ class UserServices
                 $repVal = new Reponse_Value();
                 $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
                 $repVal->form_input_value_id = $req['response'];
-                if(!$req['response'])
+                if (!$req['response'])
                     continue;
                 $repVal->save();
             }
@@ -725,6 +738,10 @@ class UserServices
         }
     }
 
+    public function isRegisteredToAccess($user_id, $access_id)
+    {
+        return count(User_Access::where("user_id","=",$user_id)->where("access_id",'=',$access_id)->get())>0;
+    }
 
     private function isExistCongress($user, $congressId)
     {
@@ -812,7 +829,7 @@ class UserServices
             $userData->qr_code = $qrcode;
         }
 
-        if (array_key_exists('paid', $user)){
+        if (array_key_exists('paid', $user)) {
             $userData->isPaied = $user['paid'];
         }
 
@@ -829,25 +846,32 @@ class UserServices
         }
     }
 
-    public function getFreeCountByCongressId($congress_id){
+    public function getFreeCountByCongressId($congress_id)
+    {
         $users = User::where("congress_id", "=", $congress_id)
-            ->where("organization_accepted","=",1)
+            ->where("organization_accepted", "=", 1)
             ->get();
-        return $users? count($users):0;
+        return $users ? count($users) : 0;
     }
 
-    public function getUsersCountByCongressId($congress_id){
+    public function getUsersCountByCongressId($congress_id)
+    {
         $users = User::where("congress_id", "=", $congress_id)
             ->get();
-        return $users? count($users):0;
+        return $users ? count($users) : 0;
     }
 
     public function getUserByNameAndFName($congressId, $first_name, $last_name)
     {
         return User::where('first_name', '=', $first_name)
-            ->where('last_name','=',$last_name)
+            ->where('last_name', '=', $last_name)
             ->where('congress_id', '=', $congressId)
             ->first();
+    }
+
+
+    public function getAttestationRequestsByUserId($user_id){
+        return Attestation_Request::where("user_id",'=',$user_id)->get();
     }
 
 }

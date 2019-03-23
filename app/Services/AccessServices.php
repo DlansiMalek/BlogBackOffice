@@ -107,4 +107,64 @@ class AccessServices
             ->where('intuitive', '=', null)
             ->get();
     }
+
+    function editAccessesList($oldAccesses, $newAccesses,$congressId)
+    {
+
+        foreach ($oldAccesses as $oldAccess) {
+            $isDeleted = true;
+            foreach ($newAccesses as $newAccess) {
+                if (array_key_exists("access_id", $newAccess) && $newAccess['access_id'] == $oldAccess->access_id) {
+                    $isDeleted = false;
+                    break;
+                }
+            }
+            if ($isDeleted) $oldAccess->delete();
+        }
+        foreach ($newAccesses as $newAccess) {
+            if (!array_key_exists("access_id", $newAccess)) {
+                $accessData = new Access();
+                $accessData->name = $newAccess["name"];
+                $accessData->price = $newAccess["price"];
+                $accessData->packless = $newAccess["packless"];
+                $accessData->intuitive = $newAccess["intuitive"];
+                $accessData->seuil = array_key_exists("seuil", $newAccess) ? $newAccess["seuil"] : null;
+                $accessData->max_places = array_key_exists("max_places", $newAccess) ? $newAccess["max_places"] : null;
+                $accessData->theoric_start_data = array_key_exists("theoric_start_data", $newAccess) ? $newAccess["theoric_start_data"] : null;
+                $accessData->theoric_end_data = array_key_exists("theoric_end_data", $newAccess) ? $newAccess["theoric_end_data"] : null;
+                $accessData->duration = $newAccess["duration"];
+
+                /*if (array_key_exists('ponderation', $access))
+                    $accessData->ponderation = $access["ponderation"];
+                */
+
+                $accessData->congress_id = $congressId;
+                $accessData->save();
+            }
+            else {
+                $access = Access::find($newAccess['access_id']);
+                $access->price = $newAccess['price'];
+                $access->name = $newAccess['name'];
+                $access->duration  = $newAccess['duration'];
+                $access->seuil = $newAccess['seuil'];
+                $access->packless = $newAccess['packless'];
+                $access->max_places = $newAccess['max_places'];
+                $access->theoric_start_data = $newAccess['theoric_start_data'];
+                $access->theoric_end_data = $newAccess['theoric_end_data'];
+                $access->update();
+            }
+        }
+        return $this->getAccessesByCongressId(false, $congressId);
+    }
+
+    function getAccessesByCongressId($intuitive, $congressId){
+        return $intuitive?
+            Access::where("congress_id", '=', $congressId)
+            ->whereNotNull('intuitive')
+            ->get():
+            Access::where("congress_id", '=', $congressId)
+            ->whereNull('intuitive')
+            ->get();
+
+    }
 }

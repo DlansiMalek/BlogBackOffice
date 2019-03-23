@@ -241,7 +241,7 @@ class CongressServices
     {
         $accesses = "";
         if ($participant && sizeof($participant->accesss) > 0) {
-            $accesses = "<p>Votre pré-inscription à (l'/aux) atelier(s) :</p><ul>";
+            $accesses = "";
             foreach ($participant->accesss as $access) {
                 $accesses = $accesses
                     . "<li>" . $access->name
@@ -293,6 +293,12 @@ class CongressServices
     public function getAccesssByCongressId($congress_id){
         return Access::with(['participants','attestation'])
             ->where('congress_id','=',$congress_id)
+            ->get();
+    }
+
+    public function getAllCongresses()
+    {
+        return Congress::with(["packs.accesses", "form_inputs.values",'accesss'])
             ->get();
     }
 

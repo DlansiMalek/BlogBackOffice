@@ -32,7 +32,21 @@ class Utils
 
     public static function convertDateFrench($date)
     {
-        return (new Carbon($date))->formatLocalized('%d %B %Y');
+        $res = (new Carbon($date))->formatLocalized('%d %B %Y');
+        $res = str_replace('January', 'Janvier', $res);
+        $res = str_replace('February', 'Février', $res);
+        $res = str_replace('March', 'Mars', $res);
+        $res = str_replace('April', 'Avril', $res);
+        $res = str_replace('May', 'Mai', $res);
+        $res = str_replace('June', 'Jui', $res);
+        $res = str_replace('July', 'Juiller', $res);
+        $res = str_replace('August', 'Aout', $res);
+        $res = str_replace('September', 'September', $res);
+        $res = str_replace('October', 'Octobre', $res);
+        $res = str_replace('November', 'Novembre', $res);
+        $res = str_replace('December', 'Décembre', $res);
+        return $res;
+
     }
 
     public static function getTimeFromDateTime($date)
