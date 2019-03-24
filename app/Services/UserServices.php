@@ -869,6 +869,7 @@ class UserServices
             ->first();
     }
 
+
     public function getAttestationRequestsByUserId($user_id){
         return Attestation_Request::where("user_id",'=',$user_id)->get();
     }
