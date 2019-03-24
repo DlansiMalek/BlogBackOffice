@@ -233,6 +233,7 @@ class UserController extends Controller
         }
 
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
+
 //            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))
         ) {
             return response()->json(['error' => 'user exist'], 400);
@@ -801,6 +802,16 @@ class UserController extends Controller
             $res = array_merge($res, $temp ? $temp : []);
         }
         return $res;
+    }
+
+    public function setAttestationRequestStatus($user_id,$done)
+    {
+        $requests = $this->userServices->getAttestationRequestsByUserId($user_id);
+        foreach ($requests as $req) {
+            $req->done = $done?1:0;
+            $req->update();
+        }
+        return $this->userServices->getAttestationRequestsByUserId($user_id);
     }
 
 }

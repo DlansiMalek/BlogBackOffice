@@ -343,7 +343,7 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['accesss.attestation', 'organization', 'privilege', 'country'])
+        return User::with(['accesss.attestation', 'organization', 'privilege', 'country','attestation_requests.access.attestation'])
             ->where("congress_id", "=", $congressId)
             ->get();
     }
@@ -868,6 +868,7 @@ class UserServices
             ->where('congress_id', '=', $congressId)
             ->first();
     }
+
 
     public function getAttestationRequestsByUserId($user_id){
         return Attestation_Request::where("user_id",'=',$user_id)->get();
