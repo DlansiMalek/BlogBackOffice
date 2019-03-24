@@ -233,12 +233,9 @@ class UserController extends Controller
         }
 
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
-<<<<<<< HEAD
-            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))) {
-=======
+
 //            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))
         ) {
->>>>>>> ea21a6093fdc488658320a14540859e05b7c9233
             return response()->json(['error' => 'user exist'], 400);
         }
 
