@@ -13,10 +13,10 @@ class CreateTableMailType extends Migration
      */
     public function up()
     {
-        Schema::create('Mail_Type', function (Blueprint $table) {
-            $table->increments("mail_type_id");
+        Schema::create('Feedback_Question', function (Blueprint $table) {
+            $table->increments("feedback_question_id");
             $table->string("name");
-
+            $table->string("display_name");
             $table->softDeletes();
             $table->timestamps();
         });
