@@ -15,9 +15,8 @@ class CreateTableFeedbackQuestionType extends Migration
     {
         Schema::create('Feedback_Question_Type', function (Blueprint $table) {
             $table->increments('feedback_question_type_id');
-            $table->string("value");
-            $table->unsignedInteger("form_input_id");
-            $table->foreign("form_input_id")->references("form_input_id")->on("Form_Input");
+            $table->string("name");
+            $table->string("display_name");
 
             $table->softDeletes();
             $table->timestamps();
