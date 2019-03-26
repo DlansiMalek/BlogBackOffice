@@ -15,7 +15,7 @@ class Feedback_Question extends Model
     public $timestamps = true;
     protected $table = 'Feedback_Question';
     protected $primaryKey = 'feedback_question_id';
-    protected $fillable = ['label','congress_id','feedback_question_id', 'max_responses'];
+    protected $fillable = ['label','congress_id','feedback_question_type_id', 'max_responses'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function type(){

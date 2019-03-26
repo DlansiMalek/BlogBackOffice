@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableFeedbackQuestionType extends Migration
+class CreateTableFeedbackQuestionValue extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,11 @@ class CreateTableFeedbackQuestionType extends Migration
      */
     public function up()
     {
-        Schema::create('Feedback_Question_Type', function (Blueprint $table) {
-            $table->increments('feedback_question_type_id');
-            $table->string("name");
-            $table->string("display_name");
+        Schema::create('Feedback_Question_Value', function (Blueprint $table) {
+            $table->increments('feedback_question_id');
+            $table->string("value");
+            $table->unsignedInteger("feedback_question_id");
+            $table->foreign("feedback_question_id")->references("feedback_question_id")->on("Feedback_Question");
 
             $table->softDeletes();
             $table->timestamps();
