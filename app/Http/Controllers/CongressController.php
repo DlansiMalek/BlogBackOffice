@@ -337,12 +337,12 @@ class CongressController extends Controller
 
     public function setFeedbackForm(Request $request, $congress_id)
     {
-        if ($oldQuestions = $this->congressServices->getFeedbackForm($congress_id)) $oldQuestions = [];
+        if (!$oldQuestions = $this->congressServices->getFeedbackForm($congress_id)) $oldQuestions = [];
         foreach ($oldQuestions as $oldQuestion) {
             $found = false;
             $newQuestion = null;
             foreach ($request->all() as $q) {
-                if ($q->feedback_question_id == $oldQuestion->feedback_question_id) {
+                if ($q['feedback_question_id'] == $oldQuestion->feedback_question_id) {
                     $found = true;
                     $newQuestion = $q;
                     break;
@@ -350,11 +350,11 @@ class CongressController extends Controller
             }
             if (!$found) $oldQuestion->delete();
             else {
-                if ($oldQuestion->max_responses != $newQuestion->max_responses || $oldQuestion->label != $newQuestion->label || $newQuestion->feedback_question_type_id != $oldQuestion->feedback_question_type_id) {
-                    $oldQuestion->max_responses = $newQuestion->max_responses;
-                    $oldQuestion->label = $newQuestion->label;
-                    $oldQuestion->feedback_question_type_id = $newQuestion->feedback_question_type_id;
-                    $oldQuestion->save();
+                if ($oldQuestion->max_responses != $newQuestion['max_responses'] || $oldQuestion->label != $newQuestion['label'] || $newQuestion['feedback_question_type_id'] != $oldQuestion->feedback_question_type_id) {
+                    $oldQuestion->max_responses = $newQuestion['max_responses'];
+                    $oldQuestion->label = $newQuestion['label'];
+                    $oldQuestion->feedback_question_type_id = $newQuestion['feedback_question_type_id'];
+                    $oldQuestion->update();
                 }
                 $type = $this->congressServices->getFeedbackQuestionTypeById($oldQuestion->feedback_question_type_id);
                 if ($type->name == 'text') $this->congressServices->deleteFeedbackQuestionValues($oldQuestion->feedback_question_id);
@@ -367,12 +367,12 @@ class CongressController extends Controller
         foreach ($request->all() as $newQuestion) {
             $found = false;
             foreach ($oldQuestions as $oldQuestion) {
-                if ($oldQuestion->feedback_question_id == $newQuestion->feedback_question_id) {
+                if ($oldQuestion->feedback_question_id == $newQuestion['feedback_question_id']) {
                     $found = true;
                     break;
                 }
-                if (!$found) $this->congressServices->saveFeedbackQuestion($newQuestion, $congress_id);
             }
+            if (!$found) $this->congressServices->saveFeedbackQuestion($newQuestion, $congress_id);
         }
         return $this->congressServices->getFeedbackForm($congress_id);
 

@@ -325,10 +325,10 @@ class CongressServices
     public function saveFeedbackQuestion($request, $congress_id)
     {
         $question = new Feedback_Question();
-        $question->label = $request->label;
+        $question->label = $request['label'];
         $question->congress_id = $congress_id;
-        $question->feedback_question_type_id = $request->feedback_question_type_id;
-        $question->max_responses = $request->max_responses;
+        $question->feedback_question_type_id = $request['feedback_question_type_id'];
+        $question->max_responses = $request['max_responses'];
         $question->save();
         $type = $this->getFeedbackQuestionTypeById($question->feedback_question_type_id);
         if (!$type || $type->name != 'choice') return;
