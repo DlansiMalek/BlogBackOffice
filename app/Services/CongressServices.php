@@ -332,9 +332,9 @@ class CongressServices
         $question->save();
         $type = $this->getFeedbackQuestionTypeById($question->feedback_question_type_id);
         if (!$type || $type->name != 'choice') return;
-        foreach ($request->values as $requestValue){
+        foreach ($request['values'] as $requestValue){
             $value = new Feedback_Question_Value();
-            $value->value = $requestValue->value;
+            $value->value = $requestValue['value'];
             $value->feedback_question_id= $question->feedback_question_id;
             $value->save();
         }

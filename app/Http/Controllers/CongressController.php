@@ -342,7 +342,7 @@ class CongressController extends Controller
             $found = false;
             $newQuestion = null;
             foreach ($request->all() as $q) {
-                if ($q['feedback_question_id'] == $oldQuestion->feedback_question_id) {
+                if (array_key_exists('feedback_question_id', $q) && $q['feedback_question_id'] == $oldQuestion->feedback_question_id) {
                     $found = true;
                     $newQuestion = $q;
                     break;
@@ -367,7 +367,7 @@ class CongressController extends Controller
         foreach ($request->all() as $newQuestion) {
             $found = false;
             foreach ($oldQuestions as $oldQuestion) {
-                if ($oldQuestion->feedback_question_id == $newQuestion['feedback_question_id']) {
+                if (array_key_exists('feedback_question_id', $newQuestion) && $oldQuestion->feedback_question_id == $newQuestion['feedback_question_id']) {
                     $found = true;
                     break;
                 }
