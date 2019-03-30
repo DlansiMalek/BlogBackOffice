@@ -799,7 +799,7 @@ class UserController extends Controller
         $res = [];
         foreach ($request->all() as $user_id) {
             $temp = $this->userServices->getAttestationRequestsByUserId($user_id);
-            $res = array_merge($res, $temp ? $temp : []);
+            if ($temp && count($temp)) $res = array_merge($res, $temp);
         }
         return $res;
     }
