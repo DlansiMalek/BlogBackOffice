@@ -168,7 +168,7 @@ class CongressController extends Controller
         }
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        if ($mailtype = $this->congressServices->getMailType('inscription')) {
+        if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
                 foreach ($users as $user) {
                     $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
