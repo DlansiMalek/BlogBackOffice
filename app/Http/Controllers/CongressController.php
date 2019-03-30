@@ -176,7 +176,8 @@ class CongressController extends Controller
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $this->userServices->sendMail($mail->template, $user, $congress, $mail->object);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, true,
+                            null);
                     }
                 }
             }
