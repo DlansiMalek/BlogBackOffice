@@ -101,6 +101,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
         Route::get('feedback-form', 'CongressController@getFeedbackForm');
         Route::post('feedback-form', 'CongressController@setFeedbackForm');
+        Route::delete('feedback-form', 'CongressController@resetFeedbackForm');
 
     });
 });

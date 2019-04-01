@@ -376,5 +376,9 @@ class CongressServices
         }
     }
 
+    public function resetFeedbackForm($congress_id){
+        Feedback_Question::where("congress_id","=",$congress_id)->delete();
+    }
+
 
 }

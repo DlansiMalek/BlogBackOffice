@@ -378,4 +378,10 @@ class CongressController extends Controller
 
     }
 
+    public function resetFeedbackForm($congress_id)
+    {
+        $this->congressServices->resetFeedbackForm($congress_id);
+        return [];
+    }
+
 }
