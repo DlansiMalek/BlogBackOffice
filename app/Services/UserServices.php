@@ -871,7 +871,7 @@ class UserServices
 
 
     public function getAttestationRequestsByUserId($user_id){
-        return Attestation_Request::where("user_id",'=',$user_id)->get();
+        return Attestation_Request::where("user_id",'=',$user_id)->get()->toArray();
     }
 
 }
