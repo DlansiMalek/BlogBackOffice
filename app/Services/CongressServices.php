@@ -337,6 +337,7 @@ class CongressServices
         foreach ($request['values'] as $requestValue) {
             $value = new Feedback_Question_Value();
             $value->value = $requestValue['value'];
+            $value->order = $requestValue['order'];
             $value->feedback_question_id = $question->feedback_question_id;
             $value->save();
         }
@@ -356,8 +357,9 @@ class CongressServices
                 }
             }
             if (!$found) $oldValue->delete();
-            else if ($oldValue->value != $newValue['value']) {
+            else if ($oldValue->value != $newValue['value'] || $oldValue->order != $newValue['order']) {
                 $oldValue->value = $newValue['value'];
+                $oldValue->order = $newValue['order'];
                 $oldValue->save();
             }
         }
@@ -372,14 +374,16 @@ class CongressServices
             if (!$found) {
                 $value = new Feedback_Question_Value();
                 $value->value = $newValue['value'];
+                $value->order = $newValue['order'];
                 $value->feedback_question_id = $feedback_question_id;
                 $value->save();
             }
         }
     }
 
-    public function resetFeedbackForm($congress_id){
-        Feedback_Question::where("congress_id","=",$congress_id)->delete();
+    public function resetFeedbackForm($congress_id)
+    {
+        Feedback_Question::where("congress_id", "=", $congress_id)->delete();
     }
 
 

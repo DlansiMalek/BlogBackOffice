@@ -17,8 +17,8 @@ class CreateTableFeedbackQuestionValue extends Migration
             $table->increments('feedback_question_id');
             $table->string("value");
             $table->unsignedInteger("feedback_question_id");
+            $table->unsignedInteger("order");
             $table->foreign("feedback_question_id")->references("feedback_question_id")->on("Feedback_Question");
-
             $table->softDeletes();
             $table->timestamps();
         });

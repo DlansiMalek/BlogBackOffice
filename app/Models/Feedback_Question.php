@@ -23,7 +23,7 @@ class Feedback_Question extends Model
     }
 
     public function values(){
-        return $this->hasMany("App\Models\Feedback_Question_Value","feedback_question_id","feedback_question_id");
+        return $this->hasMany("App\Models\Feedback_Question_Value","feedback_question_id","feedback_question_id")->orderBy('order');
     }
 
 }
