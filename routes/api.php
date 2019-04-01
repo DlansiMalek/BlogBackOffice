@@ -99,9 +99,9 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('editmail/{id}', 'CongressController@editCustomMail');
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
-        Route::get('feedback-form', 'CongressController@getFeedbackForm');
-        Route::post('feedback-form', 'CongressController@setFeedbackForm');
-        Route::delete('feedback-form', 'CongressController@resetFeedbackForm');
+        Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
+        Route::post('feedback-form', 'FeedbackController@setFeedbackForm');
+        Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm');
 
     });
 });
