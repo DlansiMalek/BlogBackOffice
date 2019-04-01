@@ -19,6 +19,7 @@ class CreateTableFeedbackQuestion extends Migration
             $table->unsignedInteger("congress_id");
             $table->unsignedInteger('max_responses')->nullable()->default(1);
             $table->unsignedInteger('feedback_question_type_id');
+            $table->unsignedInteger('order');
             $table->foreign('congress_id')->references("congress_id")->on("Congress");
             $table->foreign('feedback_question_type_id')->references("feedback_question_type_id")->on("Feedback_Question_Type");
 

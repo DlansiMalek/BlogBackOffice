@@ -309,6 +309,7 @@ class CongressServices
     {
         return Feedback_Question::with(['type', 'values'])
             ->where('congress_id', '=', $congress_id)
+            ->orderBy("order")
             ->get();
     }
 
@@ -329,6 +330,7 @@ class CongressServices
         $question->congress_id = $congress_id;
         $question->feedback_question_type_id = $request['feedback_question_type_id'];
         $question->max_responses = $request['max_responses'];
+        $question->order = $request['order'];
         $question->save();
         $type = $this->getFeedbackQuestionTypeById($question->feedback_question_type_id);
         if (!$type || $type->name != 'choice') return;

@@ -350,10 +350,11 @@ class CongressController extends Controller
             }
             if (!$found) $oldQuestion->delete();
             else {
-                if ($oldQuestion->max_responses != $newQuestion['max_responses'] || $oldQuestion->label != $newQuestion['label'] || $newQuestion['feedback_question_type_id'] != $oldQuestion->feedback_question_type_id) {
+                if ($oldQuestion->max_responses != $newQuestion['max_responses'] || $oldQuestion->label != $newQuestion['label'] || $newQuestion['feedback_question_type_id'] != $oldQuestion->feedback_question_type_id || $newQuestion['order'] != $oldQuestion->order) {
                     $oldQuestion->max_responses = $newQuestion['max_responses'];
                     $oldQuestion->label = $newQuestion['label'];
                     $oldQuestion->feedback_question_type_id = $newQuestion['feedback_question_type_id'];
+                    $oldQuestion->order = $newQuestion['order'];
                     $oldQuestion->update();
                 }
                 $type = $this->congressServices->getFeedbackQuestionTypeById($oldQuestion->feedback_question_type_id);
