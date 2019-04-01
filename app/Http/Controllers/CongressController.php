@@ -358,8 +358,8 @@ class CongressController extends Controller
                 }
                 $type = $this->congressServices->getFeedbackQuestionTypeById($oldQuestion->feedback_question_type_id);
                 if ($type->name == 'text') $this->congressServices->deleteFeedbackQuestionValues($oldQuestion->feedback_question_id);
-                else if ($oldQuestion->name == 'choice') {
-                    $this->congressServices->updateFeedbackQuestionValues($newQuestion->values, $oldQuestion->values, $oldQuestion->feedback_question_id);
+                else if ($type->name == 'choice') {
+                    $this->congressServices->updateFeedbackQuestionValues($newQuestion['values'], $oldQuestion->values, $oldQuestion->feedback_question_id);
                 }
             }
         }

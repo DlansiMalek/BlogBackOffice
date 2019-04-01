@@ -332,10 +332,10 @@ class CongressServices
         $question->save();
         $type = $this->getFeedbackQuestionTypeById($question->feedback_question_type_id);
         if (!$type || $type->name != 'choice') return;
-        foreach ($request['values'] as $requestValue){
+        foreach ($request['values'] as $requestValue) {
             $value = new Feedback_Question_Value();
             $value->value = $requestValue['value'];
-            $value->feedback_question_id= $question->feedback_question_id;
+            $value->feedback_question_id = $question->feedback_question_id;
             $value->save();
         }
 
@@ -343,34 +343,34 @@ class CongressServices
 
     public function updateFeedbackQuestionValues($newValues, $oldValues, $feedback_question_id)
     {
-        foreach ($oldValues as $oldValue){
+        foreach ($oldValues as $oldValue) {
             $found = false;
             $newValue = new Feedback_Question_Value();
-            foreach($newValues as $val){
-                if ($oldValue->feedback_question_value_id == $val->feedback_question_value_id){
+            foreach ($newValues as $val) {
+                if (array_key_exists('feedback_question_value_id', $val) && $oldValue->feedback_question_value_id == $val['feedback_question_value_id']) {
                     $found = true;
                     $newValue = $val;
                     break;
                 }
             }
             if (!$found) $oldValue->delete();
-            else if ($oldValue->value!=$newValue->value) {
-                $oldValue->value = $newValue->value;
+            else if ($oldValue->value != $newValue['value']) {
+                $oldValue->value = $newValue['value'];
                 $oldValue->save();
             }
         }
-        foreach ($newValues as $newValue){
+        foreach ($newValues as $newValue) {
             $found = false;
-            foreach ($oldValues as $oldValue){
-                if ($oldValue->feedback_question_value_id == $newValue->feedback_question_value_id){
+            foreach ($oldValues as $oldValue) {
+                if (array_key_exists('feedback_question_value_id', $newValue) && $oldValue->feedback_question_value_id == $newValue['feedback_question_value_id']) {
                     $found = true;
                     break;
                 }
             }
-            if (!$found){
+            if (!$found) {
                 $value = new Feedback_Question_Value();
-                $value->value = $newValue->value;
-                $value->feedback_question_id= $feedback_question_id;
+                $value->value = $newValue['value'];
+                $value->feedback_question_id = $feedback_question_id;
                 $value->save();
             }
         }
