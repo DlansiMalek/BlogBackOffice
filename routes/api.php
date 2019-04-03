@@ -259,4 +259,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/presence', 'UserController@getAllPresenceStatus');
     Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
+    Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Feedback_Response;
 use App\Services\FeedbackService;
 use Illuminate\Http\Request;
 
@@ -64,7 +65,6 @@ class FeedbackController extends Controller
             if (!$found) $this->feedbackService->saveFeedbackQuestion($newQuestion, $congress_id);
         }
         return $this->feedbackService->getFeedbackForm($congress_id);
-
     }
 
     public function resetFeedbackForm($congress_id)
@@ -73,8 +73,12 @@ class FeedbackController extends Controller
         return [];
     }
 
-    public function saveResponses(){
-
+    public function saveFeedbackResponses(Request $request, $user_id){
+        $this->feedbackService->deleteResponses($user_id);
+        foreach($request->all() as $req){
+            $this->feedbackService->saveFeedbackResponse($req, $user_id);
+        }
+        return $this->feedbackService->getFeedbackResponses($user_id);
     }
 
 }

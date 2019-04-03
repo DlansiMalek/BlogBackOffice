@@ -7,6 +7,7 @@ use App\Models\Congress;
 use App\Models\Feedback_Question;
 use App\Models\Feedback_Question_Type;
 use App\Models\Feedback_Question_Value;
+use App\Models\Feedback_Response;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
 use App\Models\Mail;
@@ -109,6 +110,26 @@ class FeedbackService
     public function resetFeedbackForm($congress_id)
     {
         Feedback_Question::where("congress_id", "=", $congress_id)->delete();
+    }
+
+    public function deleteResponses($user_id)
+    {
+        Feedback_Response::where('user_id','=',$user_id)->delete();
+    }
+
+    public function saveFeedbackResponse($req,$user_id)
+    {
+        $resp = new Feedback_Response();
+        $resp->text = array_key_exists("text",$req)?$req['text']:"";
+        $resp->feedback_question_value_id = array_key_exists("feedback_question_value_id",$req)?$req['feedback_question_value_id']:null;
+        $resp->user_id = $user_id;
+        $resp->feedback_question_id = $req['feedback_question_id'];
+        $resp->save();
+    }
+
+    public function getFeedbackResponses($user_id)
+    {
+        return Feedback_Response::where('user_id','=',$user_id)->get();
     }
 
 
