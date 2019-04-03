@@ -57,4 +57,8 @@ class Congress extends Model
         return $this->belongsToMany("App\Models\Organization",'Congress_Organization',"congress_id","organization_id")->withPivot('montant');
     }
 
+    public function feedback_questions(){
+        return $this->hasMany("App\Models\Feedback_Question", "congress_id","congress_id");
+    }
+
 }

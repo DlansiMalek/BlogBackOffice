@@ -25,6 +25,7 @@ Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
 Route::get('/congress-banner/{path}', 'SharedController@getBannerCongress');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/form-input-types', 'SharedController@getFormInputTypes');
+Route::get('/feedback-question-types', 'SharedController@getFeedbackQuestionTypes');
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
@@ -98,6 +99,9 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('editmail/{id}', 'CongressController@editCustomMail');
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
+        Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
+        Route::post('feedback-form', 'FeedbackController@setFeedbackForm');
+        Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm');
 
     });
 });
@@ -255,4 +259,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/presence', 'UserController@getAllPresenceStatus');
     Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
+    Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 });

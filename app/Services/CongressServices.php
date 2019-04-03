@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Congress;
+use App\Models\Feedback_Question;
+use App\Models\Feedback_Question_Type;
+use App\Models\Feedback_Question_Value;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
 use App\Models\Mail;
@@ -18,7 +21,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use JWTAuth;
 use PDF;
-use Illuminate\Database\Eloquent\Model;
 
 
 /**
@@ -35,7 +37,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        $congress = Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations",'accesss.participants','accesss.attestation'])
+        $congress = Congress::with(["badges", "users.privilege", "users.responses.values", "users.responses.form_input", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", "organizations", 'accesss.participants', 'accesss.attestation'])
             ->where("congress_id", "=", $id_Congress)
             ->first();
         return $congress;
@@ -75,7 +77,7 @@ class CongressServices
         $congress = Congress::with(["accesss.participants", "packs.accesses", "form_inputs.type", "users.responses.values", "users.responses.form_input"])
             ->where("admin_id", "=", $adminId)
             ->get();
-        $congress->accesss = $congress->accesses;
+        //$congress->accesss = $congress->accesses; // ?????
         return $congress;
     }
 
@@ -200,7 +202,7 @@ class CongressServices
     {
         $file = $request->file('file_data');
         $chemin = config('media.congress-banner');
-        $path = $file->store('congress-banner'.$chemin);
+        $path = $file->store('congress-banner' . $chemin);
 
         $congress->banner = $path;
         $congress->update();
@@ -290,15 +292,16 @@ class CongressServices
         return Mail::find($id);
     }
 
-    public function getAccesssByCongressId($congress_id){
-        return Access::with(['participants','attestation'])
-            ->where('congress_id','=',$congress_id)
+    public function getAccesssByCongressId($congress_id)
+    {
+        return Access::with(['participants', 'attestation'])
+            ->where('congress_id', '=', $congress_id)
             ->get();
     }
 
     public function getAllCongresses()
     {
-        return Congress::with(["packs.accesses", "form_inputs.values",'accesss'])
+        return Congress::with(["packs.accesses", "form_inputs.values", 'accesss'])
             ->get();
     }
 

@@ -168,7 +168,7 @@ class CongressController extends Controller
         }
         $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        if ($mailtype = $this->congressServices->getMailType('inscription')) {
+        if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
                 foreach ($users as $user) {
                     $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
@@ -176,7 +176,8 @@ class CongressController extends Controller
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $this->userServices->sendMail($mail->template, $user, $congress, $mail->object);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, true,
+                            null);
                     }
                 }
             }
@@ -325,9 +326,9 @@ class CongressController extends Controller
         return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
     }
 
-    public function getAllCongresses(){
+    public function getAllCongresses()
+    {
         return $this->congressServices->getAllCongresses();
     }
-
 
 }
