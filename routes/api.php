@@ -104,7 +104,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('super-admin');
         Route::get('feedback-start', 'FeedbackController@getFeedbackStart');
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('super-admin');
-        Route::get('feedback-responses','FeedbackController@getFeedbackResponses')->middleware('super-admin');;
+        Route::get('feedback-responses','FeedbackController@getFeedbackResponses')->middleware('super-admin');
 
     });
 });
