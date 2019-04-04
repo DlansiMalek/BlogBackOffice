@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Congress;
 use App\Models\Feedback_Response;
 use App\Services\FeedbackService;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 
 class FeedbackController extends Controller
@@ -79,6 +81,18 @@ class FeedbackController extends Controller
             $this->feedbackService->saveFeedbackResponse($req, $user_id);
         }
         return $this->feedbackService->getFeedbackResponses($user_id);
+    }
+
+    public function getFeedbackStart($congress_id){
+        $res = Congress::find($congress_id)->feedback_start;
+        return response()->json($res!=null?$res:date('Y-m-d h:i:s'),200);
+    }
+
+    public function setFeedbackStart(Request $request, $congress_id){
+        $congress = Congress::find($congress_id);
+        $congress->feedback_start = $request->input('feedback_start');
+        $congress->update();
+        return $congress;
     }
 
 }

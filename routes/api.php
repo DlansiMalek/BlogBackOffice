@@ -100,8 +100,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
         Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
-        Route::post('feedback-form', 'FeedbackController@setFeedbackForm');
-        Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm');
+        Route::post('feedback-form', 'FeedbackController@setFeedbackForm')->middleware('super-admin');
+        Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('super-admin');
+        Route::get('feedback-start', 'FeedbackController@getFeedbackStart');
+        Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('super-admin');
 
     });
 });
