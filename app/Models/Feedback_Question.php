@@ -26,4 +26,8 @@ class Feedback_Question extends Model
         return $this->hasMany("App\Models\Feedback_Question_Value","feedback_question_id","feedback_question_id")->orderBy('order');
     }
 
+    public function responses(){
+        return $this->hasMany("App\Models\Feedback_Response", 'feedback_question_id','feedback_question_id');
+    }
+
 }

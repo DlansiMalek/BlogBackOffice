@@ -95,4 +95,8 @@ class FeedbackController extends Controller
         return $congress;
     }
 
+    public function getFeedbackResponses($congress_id){
+        return $this->feedbackService->getFeedbackResponsesByCongressId($congress_id);
+    }
+
 }

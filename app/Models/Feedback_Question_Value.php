@@ -18,4 +18,8 @@ class Feedback_Question_Value extends Model
     protected $fillable = ['value','feedback_question_id','order'];
     protected $dates = ['created_at', 'updated_at'];
 
+    public function responses(){
+        return $this->hasMany('App\Models\Feedback_Response','feedback_question_value_id','feedback_question_value_id');
+    }
+
 }
