@@ -132,5 +132,16 @@ class FeedbackService
         return Feedback_Response::where('user_id','=',$user_id)->get();
     }
 
+    public function getFeedbackResponsesByCongressId($congress_id)
+    {
+        return Feedback_Question::with(['type','values.responses','responses'])
+            ->where('congress_id','=',$congress_id)
+            ->get();
+    }
+
+    public function getFeedbackQuestionTypes()
+    {
+        return Feedback_Question_Type::get();
+    }
 
 }
