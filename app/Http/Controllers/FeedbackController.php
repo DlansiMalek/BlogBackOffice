@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Congress;
+use App\Models\Feedback_Question_Type;
 use App\Models\Feedback_Response;
 use App\Services\FeedbackService;
 use Illuminate\Http\Request;
@@ -97,6 +98,10 @@ class FeedbackController extends Controller
 
     public function getFeedbackResponses($congress_id){
         return $this->feedbackService->getFeedbackResponsesByCongressId($congress_id);
+    }
+
+    public function getFeedbackQuestionTypes(){
+        return $this->feedbackService->getFeedbackQuestionTypes();
     }
 
 }

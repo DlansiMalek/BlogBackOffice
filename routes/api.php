@@ -25,7 +25,7 @@ Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
 Route::get('/congress-banner/{path}', 'SharedController@getBannerCongress');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/form-input-types', 'SharedController@getFormInputTypes');
-Route::get('/feedback-question-types', 'SharedController@getFeedbackQuestionTypes');
+Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {

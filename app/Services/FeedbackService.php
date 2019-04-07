@@ -139,5 +139,9 @@ class FeedbackService
             ->get();
     }
 
+    public function getFeedbackQuestionTypes()
+    {
+        return Feedback_Question_Type::get();
+    }
 
 }

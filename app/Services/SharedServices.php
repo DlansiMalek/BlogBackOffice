@@ -57,8 +57,5 @@ class SharedServices
         return Form_Input_Type::get();
     }
 
-    public function getFeedbackQuestionTypes()
-    {
-        return Feedback_Question_Type::get();
-    }
+
 }
