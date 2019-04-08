@@ -14,7 +14,7 @@ class Congress extends Model
 {
     protected $table = 'Congress';
     protected $primaryKey = 'congress_id';
-    protected $fillable = ['name', 'date', 'admin_id', 'logo','banner', 'username_mail','has_paiement','free'];
+    protected $fillable = ['name', 'date', 'admin_id', 'logo','banner', 'username_mail','has_paiement','free', 'feedback_start'];
 
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
@@ -55,6 +55,10 @@ class Congress extends Model
 
     public function organizations(){
         return $this->belongsToMany("App\Models\Organization",'Congress_Organization',"congress_id","organization_id")->withPivot('montant');
+    }
+
+    public function feedback_questions(){
+        return $this->hasMany("App\Models\Feedback_Question", "congress_id","congress_id");
     }
 
 }

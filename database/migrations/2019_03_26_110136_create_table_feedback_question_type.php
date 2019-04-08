@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-class CreateTableMailType extends Migration
+class CreateTableFeedbackQuestionType extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,11 @@ class CreateTableMailType extends Migration
      */
     public function up()
     {
-        Schema::create('Feedback_Question', function (Blueprint $table) {
-            $table->increments("feedback_question_id");
+        Schema::create('Feedback_Question_Type', function (Blueprint $table) {
+            $table->increments('feedback_question_type_id');
             $table->string("name");
             $table->string("display_name");
+
             $table->softDeletes();
             $table->timestamps();
         });

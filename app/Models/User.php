@@ -71,4 +71,8 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Attestation_Request','user_id','user_id');
     }
 
+    function feedback_responses(){
+        return $this->hasMany('App\Models\Feedback_Response','user_id','user_id');
+    }
+
 }

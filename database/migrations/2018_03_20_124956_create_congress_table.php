@@ -31,6 +31,8 @@ class CreateCongressTable extends Migration
 
             $table->boolean("has_paiement")->default(false);
 
+            $table->dateTime('feedback_start')->nullable()->default(null);
+
             $table->softDeletes();
             $table->timestamps();
         });

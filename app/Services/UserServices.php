@@ -445,7 +445,7 @@ class UserServices
 
     public function getUsersByEmail($email)
     {
-        $users = User::with(['congress.accesss','accesss'])
+        $users = User::with(['congress.accesss','accesss','congress.feedback_questions.type','congress.feedback_questions.values','feedback_responses'])
             ->where('email', '=', $email)
             ->get();
         foreach ($users as $user){
@@ -871,7 +871,7 @@ class UserServices
 
 
     public function getAttestationRequestsByUserId($user_id){
-        return Attestation_Request::where("user_id",'=',$user_id)->get();
+        return Attestation_Request::where("user_id",'=',$user_id)->get()->toArray();
     }
 
 }

@@ -326,9 +326,9 @@ class CongressController extends Controller
         return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
     }
 
-    public function getAllCongresses(){
+    public function getAllCongresses()
+    {
         return $this->congressServices->getAllCongresses();
     }
-
 
 }
