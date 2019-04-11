@@ -264,3 +264,8 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 });
+
+Route::group(['prefix'=>'voting','middleware'=>'super-admin'], function (){
+   Route::put('token','VotingController@setToken');
+   Route::get('token','VotingController@getToken');
+});
