@@ -15,7 +15,7 @@ class Access_Vote extends Model
     public $timestamps = true;
     protected $table = 'Access_Vote';
     protected $primaryKey = 'access_vote_id';
-    protected $fillable = ['access_id', 'vote_id'];
+    protected $fillable = ['access_id', 'vote_id', 'congress_id'];
     protected $dates = ['created_at', 'updated_at'];
 
 

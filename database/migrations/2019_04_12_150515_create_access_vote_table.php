@@ -16,8 +16,10 @@ class CreateAccessVoteTable extends Migration
         Schema::create('Access_Vote', function (Blueprint $table) {
             $table->increments('access_vote_id');
             $table->integer('access_id')->unsigned();
+            $table->integer('congress_id')->unsigned();
             $table->integer('vote_id')->unsigned();
             $table->foreign('access_id')->references('access_id')->on("Access");
+            $table->foreign('congress_id')->references('congess_id')->on("Congess");
             $table->softDeletes();
             $table->timestamps();
         });

@@ -2,24 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Access;
-use App\Models\Congress;
-use App\Models\Feedback_Question;
-use App\Models\Feedback_Question_Type;
-use App\Models\Feedback_Question_Value;
-use App\Models\Feedback_Response;
-use App\Models\Form_Input;
-use App\Models\Form_Input_Value;
-use App\Models\Mail;
-use App\Models\Mail_Type;
-use App\Models\Organization;
-use App\Models\Pack;
-use App\Models\User;
-use Chumper\Zipper\Facades\Zipper;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
+use App\Models\Access_Vote;
 use JWTAuth;
 use PDF;
 
@@ -31,4 +14,22 @@ class VotingService
 {
 
 
+    public function saveAssociation($newAssociation, $congress_id)
+    {
+        $accessVote = new Access_Vote();
+        $accessVote->access_id = $newAssociation['access_id'];
+        $accessVote->vote_id = $newAssociation['vote_id'];
+        $accessVote->congress_id = $congress_id;
+        $accessVote->save();
+    }
+
+    public function getAssociations($congress_id)
+    {
+        return Access_Vote::where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function resetAssociation($congress_id)
+    {
+        return Access_Vote::where('congress_id', '=', $congress_id)->delete();
+    }
 }
