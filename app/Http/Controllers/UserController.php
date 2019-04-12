@@ -814,4 +814,12 @@ class UserController extends Controller
         return $this->userServices->getAttestationRequestsByUserId($user_id);
     }
 
+    public function changeQrCode($user_id, Request $request){
+        if (!$user = $this->userServices->getUserById($user_id))
+            return response()->json( ['error'=>'user not found'],400);
+        $user->qr_code = $request->get('qrCode');
+        $user->upadte();
+        return $user;
+    }
+
 }
