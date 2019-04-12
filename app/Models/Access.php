@@ -31,5 +31,9 @@ class Access extends Model
         return $this->hasOne('App\Models\Attestation_Access', 'access_id', 'access_id');
     }
 
+    public function votes(){
+        return $this->hasMany('App\Models\Access_Vote','access_id','access_id');
+    }
+
 
 }
