@@ -72,9 +72,11 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-//        organization code
-//        if ($request->has('organization_id'))
-//            $newUser->organization_id = $request->input('organization_id');
+        if ($request->has('organization_id'))
+            $newUser->organization_id = $request->input('organization_id');
+
+        if ($request->has('free'))
+            $newUser->organization_id = $request->input('free');
 
         if ($request->has('organization_accepted') && $request->get('organization_accepted') == true) {
             $newUser->organization_accepted = $request->input('organization_accepted');
