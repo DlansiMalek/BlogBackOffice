@@ -743,6 +743,12 @@ class UserServices
         return count(User_Access::where("user_id","=",$user_id)->where("access_id",'=',$access_id)->get())>0;
     }
 
+    public function usedQrCode($qr)
+    {
+        $users = User::where("qr_code",'=',$qr)->get();
+        return count($users)>0;
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
