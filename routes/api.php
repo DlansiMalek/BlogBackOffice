@@ -61,6 +61,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
+        Route::put('set-qr','UserController@changeQrCode')->middleware('organisateur');
     });
 
 
