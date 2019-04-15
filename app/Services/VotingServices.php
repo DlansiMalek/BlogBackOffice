@@ -21,7 +21,7 @@ class VotingServices
     {
         $this->client = new Client([
             // 'base_uri' => 'http://localhost:3000',
-            'base_uri' => 'http://appvoting-server',
+            'base_uri' => 'http://appvoting-server:3001',
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
