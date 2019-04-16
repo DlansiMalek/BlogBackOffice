@@ -72,9 +72,11 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-//        organization code
-//        if ($request->has('organization_id'))
-//            $newUser->organization_id = $request->input('organization_id');
+        if ($request->has('organization_id'))
+            $newUser->organization_id = $request->input('organization_id');
+
+        if ($request->has('free'))
+            $newUser->organization_id = $request->input('free');
 
         if ($request->has('organization_accepted') && $request->get('organization_accepted') == true) {
             $newUser->organization_accepted = $request->input('organization_accepted');
@@ -741,6 +743,12 @@ class UserServices
     public function isRegisteredToAccess($user_id, $access_id)
     {
         return count(User_Access::where("user_id","=",$user_id)->where("access_id",'=',$access_id)->get())>0;
+    }
+
+    public function usedQrCode($qr)
+    {
+        $users = User::where("qr_code",'=',$qr)->get();
+        return count($users)>0;
     }
 
     private function isExistCongress($user, $congressId)
