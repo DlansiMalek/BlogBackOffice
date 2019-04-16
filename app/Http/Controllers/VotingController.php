@@ -1,11 +1,17 @@
 <?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: ABBES
+ * Date: 15/04/2019
+ * Time: 17:36
+ */
 
 namespace App\Http\Controllers;
 
-
 use App\Services\AdminServices;
-use App\Services\VotingService;
+use App\Services\VotingServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 
 class VotingController extends Controller
@@ -14,7 +20,7 @@ class VotingController extends Controller
     protected $votingService;
     protected $adminService;
 
-    function __construct(VotingService $votingService, AdminServices $adminServices)
+    function __construct(VotingServices $votingService, AdminServices $adminServices)
     {
         $this->votingService = $votingService;
         $this->adminService = $adminServices;
@@ -56,7 +62,7 @@ class VotingController extends Controller
                 }
             }
             if (!$found) $old->delete();
-            else if ($old->access_id != $newAssociation['access_id'] || $old->vote_id != $newAssociation['vote_id'] || $old->congress_id !=$congress_id) {
+            else if ($old->access_id != $newAssociation['access_id'] || $old->vote_id != $newAssociation['vote_id'] || $old->congress_id != $congress_id) {
                 $old->access_id = $newAssociation['access_id'];
                 $old->vote_id = $newAssociation['vote_id'];
                 $old->congress_id = $congress_id;
@@ -83,8 +89,18 @@ class VotingController extends Controller
         return $this->votingService->getAssociations($congress_id);
     }
 
-    public function resetAssociation($congress_id){
+    public function resetAssociation($congress_id)
+    {
         $this->votingService->resetAssociation($congress_id);
         return [];
+    }
+
+    public function getListPolls(Request $request)
+    {
+        $token = $request->query("token");
+
+        $userResponse = $this->votingService->signinUser($token);
+
+        return $this->votingService->getListPolls($userResponse['token']);
     }
 }

@@ -104,7 +104,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('super-admin');
         Route::get('feedback-start', 'FeedbackController@getFeedbackStart');
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('super-admin');
-        Route::get('feedback-responses','FeedbackController@getFeedbackResponses')->middleware('super-admin');
+        Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('super-admin');
 
     });
 });
@@ -265,10 +265,15 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 });
 
+<<<<<<< HEAD
 Route::group(['prefix'=>'voting','middleware'=>'super-admin'], function (){
    Route::put('token','VotingController@setToken');
    Route::get('token','VotingController@getToken');
     Route::get('{congress_id}','VotingController@getAssociation');
     Route::put('{congress_id}','VotingController@setAssociation');
     Route::delete('{congress_id}','VotingController@resetAssociation');
+=======
+Route::group(["prefix" => "voting"], function () {
+    Route::get("polls", "VotingController@getListPolls");
+>>>>>>> master
 });
