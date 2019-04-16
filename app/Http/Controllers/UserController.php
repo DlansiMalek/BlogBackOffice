@@ -212,15 +212,14 @@ class UserController extends Controller
     public function registerUserToCongress(Request $request, $congressId)
     {
 
-        //organization code
-//        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
-//            if (!$request->has(['first_name', 'last_name', 'gender'])
-//            ) {
-//                return response()->json(['response' => 'invalid request',
-//                    'content' => ['first_name', 'last_name', 'mobile', 'email',
-//                        'price', 'gender', 'country_id', 'organization_id']], 400);
-//            }
-//        } else
+        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
+            if (!$request->has(['first_name', 'last_name', 'gender'])
+            ) {
+                return response()->json(['response' => 'invalid request',
+                    'content' => ['first_name', 'last_name', 'mobile', 'email',
+                        'price', 'gender', 'country_id', 'organization_id']], 400);
+            }
+        } else
         if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
             'price', 'gender', 'country_id'])) {
             return response()->json(['response' => 'invalid request',
@@ -239,15 +238,14 @@ class UserController extends Controller
             return response()->json(['error' => 'user exist'], 400);
         }
 
-        //organization code
-//        if ($request->has("organization_id") && $request->input("organization_id") &&
-//            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
-//            return response()->json(['error' => 'organization not found'], 404);
-//        }
-//
-//        if ((!$request->has('organization_accepted') || !$request->get('organization_accepted')) && $user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
-//            return response()->json(['error' => 'user exist'], 400);
-//        }
+        if ($request->has("organization_id") && $request->input("organization_id") &&
+            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
+            return response()->json(['error' => 'organization not found'], 404);
+        }
+
+        if ((!$request->has('organization_accepted') || !$request->get('organization_accepted')) && $user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
+            return response()->json(['error' => 'user exist'], 400);
+        }
 
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
             || $user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'), $request->input('last_name'))) {
@@ -260,7 +258,7 @@ class UserController extends Controller
         $freeUsersCount = $this->userServices->getFreeCountByCongressId($congressId);
         $totalUsersCount = $this->userServices->getUsersCountByCongressId($congressId);
         if ($freeUsersCount < $congress->free && !($totalUsersCount % 10))
-            $request->merge(["organization_accepted" => 1]);
+            $request->merge(["free" => 1]);
         $user = $this->userServices->registerUser($request);
 
 
@@ -281,42 +279,37 @@ class UserController extends Controller
 
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
 
-//        organization code
-//
-//        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
-//            $organization = $this->organizationServices->getOrganizationById($user->organization_id);
-//            $organization->congress_organization->montant += $user->price;
-//            $organization->congress_organization->update();
-//            if ($user->email) {
-//                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-//                $fileAttached = false;
-//                if ($badgeIdGenerator != null) {
-//                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-//                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-//                        $user->qr_code);
-//                    $fileAttached = true;
-//                }
-//
-//                $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-//                if ($mailtype = $this->congressServices->getMailType('subvention')) {
-//                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-//                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
-//                            $link);
-//                    }
-//                }
-//
-//                if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-//                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-//                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-//                            $link);
-//                    }
-//                }
-//
-//            }
-//        }
-//        else
+         if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
+            $organization = $this->organizationServices->getOrganizationById($user->organization_id);
+            $organization->congress_organization->montant += $user->price;
+            $organization->congress_organization->update();
+            if ($user->email) {
+                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+                $fileAttached = false;
+                if ($badgeIdGenerator != null) {
+                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                        $user->qr_code);
+                    $fileAttached = true;
+                }
 
-        if ($congress->has_paiement) {
+                $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+                if ($mailtype = $this->congressServices->getMailType('subvention')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
+                            $link);
+                    }
+                }
+
+                if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
+                            $link);
+                    }
+                }
+
+            }
+        } else if ($congress->has_paiement) {
 
             if ($user->organization_accepted) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -812,6 +805,17 @@ class UserController extends Controller
             $req->update();
         }
         return $this->userServices->getAttestationRequestsByUserId($user_id);
+    }
+
+    public function changeQrCode($user_id, Request $request){
+        if (!$user = $this->userServices->getUserById($user_id))
+            return response()->json( ['error'=>'user not found'],400);
+//        return response()->json( ['error'=>$this->userServices->usedQrCode($request->get('qrcode'))],400);
+        if ($this->userServices->usedQrCode($request->qrCode))
+            return response()->json( ['error'=>'used-qr-code'],400);
+        $user->qr_code = $request->get('qrcode');
+        $user->save();
+        return $user;
     }
 
 }

@@ -22,6 +22,7 @@ class CreateUserTable extends Migration
             $table->string('mobile');
             $table->string('email');
             $table->boolean('organization_accepted')->default(false);
+            $table->boolean('free')->default(false);
             $table->tinyInteger('email_verified')->default(0);
 
             $table->string('verification_code')

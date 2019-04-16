@@ -61,6 +61,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
+        Route::put('set-qr','UserController@changeQrCode')->middleware('organisateur');
     });
 
 
@@ -265,6 +266,7 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 });
 
+Route::post("switch-qr/{userId}","UserController@changeQrCode")->middleware('organisateur');
 Route::group(["prefix" => "voting"], function () {
     Route::get("polls", "VotingController@getListPolls");
 });
