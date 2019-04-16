@@ -272,6 +272,6 @@ Route::group(['prefix'=>'voting','middleware'=>'super-admin'], function (){
     Route::put('{congress_id}','VotingController@setAssociation');
     Route::delete('{congress_id}','VotingController@resetAssociation');
 });
-Route::group(["prefix" => "voting"], function () {
+Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
 });
