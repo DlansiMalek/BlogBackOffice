@@ -105,7 +105,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('super-admin');
         Route::get('feedback-start', 'FeedbackController@getFeedbackStart');
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('super-admin');
-        Route::get('feedback-responses','FeedbackController@getFeedbackResponses')->middleware('super-admin');
+        Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('super-admin');
 
     });
 });
@@ -267,3 +267,7 @@ Route::group(["prefix" => "user-app"], function () {
 });
 
 Route::post("switch-qr/{userId}","UserController@changeQrCode")->middleware('organisateur');
+
+Route::group(["prefix" => "voting"], function () {
+    Route::get("polls", "VotingController@getListPolls");
+});
