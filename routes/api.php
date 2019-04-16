@@ -271,8 +271,8 @@ Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () 
     Route::get('{congress_id}', 'VotingController@getAssociation');
     Route::put('{congress_id}', 'VotingController@setAssociation');
     Route::delete('{congress_id}', 'VotingController@resetAssociation');
-
 });
 Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
+    Route::post("send-scores", "VotingController@sendScores");
 });

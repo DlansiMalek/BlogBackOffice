@@ -10,6 +10,7 @@ namespace App\Services;
 
 
 use App\Models\Access_Vote;
+use App\Models\Vote_Score;
 use GuzzleHttp\Client;
 
 /**
@@ -74,6 +75,28 @@ class VotingServices
     public function resetAssociation($congress_id)
     {
         return Access_Vote::where('congress_id', '=', $congress_id)->delete();
+    }
+
+    public function addScore($scoreVoteData)
+    {
+        $scoreVote = new Vote_Score();
+        $scoreVote->user_id = $scoreVoteData['userId'];
+        $scoreVote->access_vote_id = $scoreVoteData['accessVoteId'];
+        $scoreVote->score = $scoreVoteData['score'];
+        $scoreVote->save();
+    }
+
+    public function getByUserIdAndAccessVote($userId, $accessVoteId)
+    {
+        return Vote_Score::where('user_id', '=', $userId)
+            ->where('access_vote_id', '=', $accessVoteId)
+            ->first();
+    }
+
+    public function updateScore($oldVoteScore, $scoreVoteData)
+    {
+        $oldVoteScore->score = $scoreVoteData['score'];
+        $oldVoteScore->update();
     }
 
 }
