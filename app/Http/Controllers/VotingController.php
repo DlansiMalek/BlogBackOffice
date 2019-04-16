@@ -102,4 +102,16 @@ class VotingController extends Controller
 
         return $this->votingService->getListPolls($userResponse['token']);
     }
+
+    public function sendScores(Request $request)
+    {
+        $scoreVotes = $request->all();
+        foreach ($scoreVotes as $scoreVote) {
+            if (!$oldVoteScore = $this->votingService->getByUserIdAndAccessVote($scoreVote['userId'], $scoreVote['accessVoteId']))
+                $this->votingService->addScore($scoreVote);
+            else
+                $this->votingService->updateScore($oldVoteScore, $scoreVote);
+        }
+        return response()->json(["adding successs", 200]);
+    }
 }
