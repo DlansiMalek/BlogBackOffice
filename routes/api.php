@@ -265,3 +265,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 });
+
+Route::post("switch-qr/{userId}","UserController@changeQrCode")->middleware('organisateur');
