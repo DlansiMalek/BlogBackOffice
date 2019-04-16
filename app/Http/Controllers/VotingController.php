@@ -11,7 +11,6 @@ namespace App\Http\Controllers;
 use App\Services\AdminServices;
 use App\Services\VotingServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 
 class VotingController extends Controller
