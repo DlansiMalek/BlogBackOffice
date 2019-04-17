@@ -132,4 +132,11 @@ class AdminServices
             ->first();
     }
 
+    public function getConnectedAdmin(Request $request)
+    {
+        if (!request()->user()) return null;
+        if (!$admin = $this->getAdminById($request->user()['admin_id'])) return null;
+        return $admin;
+    }
+
 }
