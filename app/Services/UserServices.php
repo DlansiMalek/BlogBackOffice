@@ -72,11 +72,11 @@ class UserServices
         if ($request->has('price'))
             $newUser->price = $request->input('price');
 
-        if ($request->has('organization_id'))
+        if ($request->has('organization_id') && $request->input('organization_id'))
             $newUser->organization_id = $request->input('organization_id');
 
         if ($request->has('free'))
-            $newUser->organization_id = $request->input('free');
+            $newUser->free = $request->input('free');
 
         if ($request->has('organization_accepted') && $request->get('organization_accepted') == true) {
             $newUser->organization_accepted = $request->input('organization_accepted');
@@ -447,13 +447,14 @@ class UserServices
 
     public function getUsersByEmail($email)
     {
-        $users = User::with(['congress.accesss','accesss','congress.feedback_questions.type','congress.feedback_questions.values','feedback_responses'])
+        $users = User::with(['congress.accesss.quizAssociations','accesss','congress.feedback_questions.type','congress.feedback_questions.values','feedback_responses'])
             ->where('email', '=', $email)
             ->get();
         foreach ($users as $user){
             $admin = Admin::find($user->congress->admin_id);
-            $user->adminPhone = $admin->mobile;
+            $user->adminPhone = $admin->mobile? $admin->mobile:0;
             $user->adminEmail= $admin->email;
+            $user->voting_token = $admin->voting_token;
         }
         return $users;
     }
