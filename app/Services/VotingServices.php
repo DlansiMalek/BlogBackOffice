@@ -10,6 +10,7 @@ namespace App\Services;
 
 
 use App\Models\Access_Vote;
+use App\Models\Admin;
 use App\Models\Vote_Score;
 use GuzzleHttp\Client;
 
@@ -18,7 +19,6 @@ use GuzzleHttp\Client;
  */
 class VotingServices
 {
-
     public function __construct()
     {
         $this->client = new Client([
@@ -69,7 +69,7 @@ class VotingServices
 
     public function getAssociations($congress_id)
     {
-        return Access_Vote::where('congress_id', '=', $congress_id)->get();
+        return $res = Access_Vote::where('congress_id', '=', $congress_id)->get();
     }
 
     public function resetAssociation($congress_id)
