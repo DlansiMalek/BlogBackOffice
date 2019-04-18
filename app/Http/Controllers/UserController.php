@@ -741,7 +741,7 @@ class UserController extends Controller
         if ($user) {
             $users = $this->userServices->getUsersByEmail($user->email);
         } else $users = null;
-        return $users ? response()->json($users, 200) : response()->json(["error" => "wrong qrcode", 404]);
+        return $users ? response()->json($users, 200, [],JSON_NUMERIC_CHECK) : response()->json(["error" => "wrong qrcode"],404);
     }
 
     function getPresenceStatus($user_id)

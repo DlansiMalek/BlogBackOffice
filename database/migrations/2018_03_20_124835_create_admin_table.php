@@ -20,6 +20,7 @@ class CreateAdminTable extends Migration
             $table->string('mobile');
             $table->string('password');
             $table->string('passwordDecrypt');
+            $table->string('voting_token');
             $table->string("rfid")->nullable()->default(null);
 
             $table->integer('responsible')->unsigned()->nullable();

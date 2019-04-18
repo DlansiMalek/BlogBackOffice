@@ -264,10 +264,21 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
+    Route::get('/quiz/{congress_id}', 'VotingController@getAssociation');
 });
 
-Route::post("switch-qr/{userId}","UserController@changeQrCode")->middleware('organisateur');
 
-Route::group(["prefix" => "voting"], function () {
+
+Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {
+    Route::put('token', 'VotingController@setToken');
+    Route::get('token', 'VotingController@getToken');
+    Route::get('{congress_id}', 'VotingController@getAssociation');
+    Route::put('{congress_id}', 'VotingController@setAssociation');
+    Route::delete('{congress_id}', 'VotingController@resetAssociation');
+});
+Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
+    Route::post("polls", "VotingController@getMultipleListPolls");
+    Route::post("send-scores", "VotingController@sendScores");
 });
+Route::post("switch-qr/{userId}","UserController@changeQrCode")->middleware('organisateur');
