@@ -268,6 +268,7 @@ Route::group(["prefix" => "user-app"], function () {
 });
 
 
+
 Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {
     Route::put('token', 'VotingController@setToken');
     Route::get('token', 'VotingController@getToken');
