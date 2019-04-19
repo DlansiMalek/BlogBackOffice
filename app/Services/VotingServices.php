@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Access_Vote;
+use App\Models\Admin;
 use App\Models\Vote_Score;
 use GuzzleHttp\Client;
 
@@ -19,13 +20,12 @@ use GuzzleHttp\Client;
  */
 class VotingServices
 {
-
     public function __construct()
     {
         $this->client = new Client([
             // 'base_uri' => 'http://localhost:3000', // Testing Local VayeCongress Local VayeVoting
-            // 'base_uri' => 'https://ws.vayetek.com', // Testing Local VayeCongress Server VayeVoting
-            'base_uri' => 'http://appvoting-server:3000',
+             'base_uri' => 'http://137.74.165.25:3001/', // Testing Local VayeCongress Server VayeVoting
+//            'base_uri' => 'http://appvoting-server:3000',
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
@@ -70,7 +70,7 @@ class VotingServices
 
     public function getAssociations($congress_id)
     {
-        return Access_Vote::where('congress_id', '=', $congress_id)->get();
+        return $res = Access_Vote::where('congress_id', '=', $congress_id)->get();
     }
 
     public function resetAssociation($congress_id)

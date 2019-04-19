@@ -17,7 +17,7 @@ class CreateAccessVoteTable extends Migration
             $table->increments('access_vote_id');
             $table->integer('access_id')->unsigned();
             $table->integer('congress_id')->unsigned();
-            $table->integer('vote_id')->unsigned();
+            $table->string('vote_id');
             $table->foreign('access_id')->references('access_id')->on("Access");
             $table->foreign('congress_id')->references('congess_id')->on("Congess");
             $table->softDeletes();

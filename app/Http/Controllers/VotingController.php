@@ -106,6 +106,20 @@ class VotingController extends Controller
         return $this->votingService->getListPolls($userResponse['token']);
     }
 
+    public function getMultipleListPolls(Request $request)
+    {
+        $res = [];
+        foreach ($request->all() as $token){
+            $userResponse = $this->votingService->signinUser($token);
+
+            $temp = $this->votingService->getListPolls($userResponse['token']);
+            if ($temp && count($temp)){
+                $res = array_merge($res, $temp);
+            }
+        }
+        return $res;
+    }
+
     public function sendScores(Request $request)
     {
         $scoreVotes = $request->all();
