@@ -9,6 +9,7 @@
 namespace App\Services;
 
 
+use App\Models\Access;
 use App\Models\Access_Vote;
 use App\Models\Vote_Score;
 use GuzzleHttp\Client;
@@ -97,6 +98,12 @@ class VotingServices
     {
         $oldVoteScore->score = $scoreVoteData['score'];
         $oldVoteScore->update();
+    }
+
+    public function getAccessVoteById($accessVoteId)
+    {
+        return Access_Vote::where('access_vote_id', '=', $accessVoteId)
+            ->first();
     }
 
 }

@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AdminServices;
+use App\Services\UserServices;
 use App\Services\VotingServices;
 use Illuminate\Http\Request;
 
@@ -18,11 +19,13 @@ class VotingController extends Controller
 
     protected $votingService;
     protected $adminService;
+    protected $userService;
 
-    function __construct(VotingServices $votingService, AdminServices $adminServices)
+    function __construct(VotingServices $votingService, AdminServices $adminServices, UserServices $userServices)
     {
         $this->votingService = $votingService;
         $this->adminService = $adminServices;
+        $this->userService = $userServices;
     }
 
 
@@ -107,11 +110,13 @@ class VotingController extends Controller
     {
         $scoreVotes = $request->all();
         foreach ($scoreVotes as $scoreVote) {
-            if (!$oldVoteScore = $this->votingService->getByUserIdAndAccessVote($scoreVote['userId'], $scoreVote['accessVoteId']))
-                $this->votingService->addScore($scoreVote);
-            else
-                $this->votingService->updateScore($oldVoteScore, $scoreVote);
+            if ($this->userService->getUserById($scoreVote['userId']) && $this->votingService->getAccessVoteById($scoreVote['accessVoteId'])) {
+                if (!$oldVoteScore = $this->votingService->getByUserIdAndAccessVote($scoreVote['userId'], $scoreVote['accessVoteId']))
+                    $this->votingService->addScore($scoreVote);
+                else
+                    $this->votingService->updateScore($oldVoteScore, $scoreVote);
+            }
         }
-        return response()->json(["adding successs", 200]);
+        return response()->json(["message" => "adding successs"], 200);
     }
 }
