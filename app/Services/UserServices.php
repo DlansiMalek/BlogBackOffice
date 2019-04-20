@@ -45,6 +45,9 @@ class UserServices
             $newUser->organization_id = $request->input('organization_id');
         else $newUser->organization_id = null;
 
+        if ($request->has('privilege_id')) {
+            $newUser->privilege_id = $request->input('privilege_id');
+        }
         $newUser->update();
         return $newUser;
     }
