@@ -20,7 +20,11 @@ class Vote_Score extends Model
 
     public function access_vote()
     {
-        return $this->hasOne("App\Models\Access_Vote","access_vote_id","access_vote_id");
-}
+        return $this->hasOne("App\Models\Access_Vote", "access_vote_id", "access_vote_id");
+    }
+
+    public function user(){
+        return $this->hasOne('App\Models\User','user_id','user_id');
+    }
 
 }
