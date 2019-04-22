@@ -35,7 +35,7 @@ class Access extends Model
         return $this->hasMany('App\Models\Access_Vote','access_id','access_id');
     }
 
-    public function quizAssociations(){
+    public function quiz_associations(){
         return $this->hasMany('App\Models\Access_Vote','access_id','access_id');
     }
 
