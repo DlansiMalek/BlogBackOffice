@@ -15,7 +15,7 @@ class Vote_Score extends Model
     public $timestamps = true;
     protected $table = 'Vote_Score';
     protected $primaryKey = 'vote_score_id';
-    protected $fillable = ['access_vote_id', 'user_id', 'score'];
+    protected $fillable = ['access_vote_id', 'user_id', 'score', 'num_user_vote'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function access_vote()
