@@ -10,6 +10,7 @@ use App\Models\Payement_Type;
 use App\Models\Reponse_Value;
 use App\Models\User;
 use App\Models\User_Access;
+use App\Models\Vote_Score;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -456,7 +457,7 @@ class UserServices
 
     public function getUsersByEmail($email)
     {
-        $users = User::with(['congress.accesss.quizAssociations.score', 'accesss', 'congress.feedback_questions.type', 'congress.feedback_questions.values', 'feedback_responses'])
+        $users = User::with(['congress.accesss.quiz_associations.scores', 'accesss', 'congress.feedback_questions.type', 'congress.feedback_questions.values', 'feedback_responses'])
             ->where('email', '=', $email)
             ->get();
         foreach ($users as $user) {

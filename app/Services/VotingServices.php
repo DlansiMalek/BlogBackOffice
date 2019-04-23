@@ -70,7 +70,7 @@ class VotingServices
 
     public function getAssociations($congress_id)
     {
-        return $res = Access_Vote::where('congress_id', '=', $congress_id)->get();
+        return $res = Access_Vote::with(['scores.user', 'access'])->where('congress_id', '=', $congress_id)->get();
     }
 
     public function resetAssociation($congress_id)
