@@ -22,4 +22,8 @@ class Access_Vote extends Model
         return $this->hasOne('App\Models\Access',"access_id","access_id");
     }
 
+    public function scores(){
+        return $this->hasMany("App\Models\Vote_Score", "access_vote_id","access_vote_id");
+    }
+
 }
