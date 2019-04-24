@@ -128,8 +128,10 @@ class AdminServices
 
     public function getAdminByQrCode($QrCode)
     {
-        return Admin::where("passwordDecrypt", "=", $QrCode)
+        $admin = Admin::where("passwordDecrypt", "=", $QrCode)
             ->first();
+        $admin->admin = count(Admin_Privilege::where('admin_id', '=', $admin['admin_id'])->where('privilege_id', '=', 1)->get()) > 0;
+        return $admin;
     }
 
     public function getConnectedAdmin(Request $request)
