@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mail;
 use App\Models\User;
+use App\Models\User_Mail;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -72,7 +73,7 @@ class CongressController extends Controller
 
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
-        return $accesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(false, $congressId), $request->input("accesss"), $congressId);
+        $accesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(false, $congressId), $request->input("accesss"), $congressId);
         $intuitiveAccesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(true, $congressId), $request->input("intuitiveAccesss"), $congressId);
 
 
@@ -330,5 +331,26 @@ class CongressController extends Controller
     {
         return $this->congressServices->getAllCongresses();
     }
+
+    public function sendCustomMailToAllUsers($mail_id)
+    {
+        if (!$mail = $this->congressServices->getEmailById($mail_id))
+            return response()->json(['response' => 'mail not found'], 404);
+        $congress = $this->congressServices->getCongressById($mail->congress_id);
+        foreach ($congress->users as $user) {
+            $userMail = User_Mail::where('user_id','=',$user->user_id)->where('mail_id','=',$mail->mail_id)->get();
+            if($userMail && count($userMail)) continue;
+            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                null);
+            $userMail = new User_Mail();
+            $userMail->user_id = $user->user_id;
+            $userMail->mail_id = $mail_id;
+            $userMail->save();
+        }
+        return response()->json(["status"=>"success"],200);
+
+
+    }
+
 
 }

@@ -127,7 +127,6 @@ class UserController extends Controller
         return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
-
     public function sendingMailWithAttachement($userId)
     {
         if (!$user = $this->userServices->getParticipatorById($userId)) {
@@ -786,7 +785,6 @@ class UserController extends Controller
         return response()->json($res, 200);
     }
 
-
     function requestedAttestations(Request $request)
     {
         $res = [];
@@ -811,9 +809,9 @@ class UserController extends Controller
     {
         if (!$user = $this->userServices->getUserById($user_id))
             return response()->json(['error' => 'user not found'], 400);
-//        return response()->json( ['error'=>$this->userServices->usedQrCode($request->get('qrcode'))],400);
         if ($this->userServices->usedQrCode($request->qrCode))
             return response()->json(['error' => 'used-qr-code'], 400);
+        $user->isPresent = 1;
         $user->qr_code = $request->get('qrcode');
         $user->save();
         return $user;
