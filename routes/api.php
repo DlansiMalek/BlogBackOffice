@@ -71,6 +71,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
+    Route::get('/custom-mail/send-to-all/{mail_id}','CongressController@sendCustomMailToAllUsers')->middleware("super-admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
