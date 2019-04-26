@@ -283,4 +283,4 @@ Route::group(["prefix" => "voting-users"], function () {
     Route::post("polls", "VotingController@getMultipleListPolls");
     Route::post("send-scores", "VotingController@sendScores");
 });
-Route::post("switch-qr /{userId}", "UserController@changeQrCode")->middleware('organisateur');
+Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
