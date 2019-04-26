@@ -267,9 +267,14 @@ class UserController extends Controller
 
         $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
 
-        if ($user->pack)
-            $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
-        else $this->userServices->affectAccess($user->user_id, $accessIds, []);
+        if ($user->privilege_id == 3) {
+            if ($user->pack)
+                $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
+            else $this->userServices->affectAccess($user->user_id, $accessIds, []);
+        } else {
+            $accesss = $this->accessServices->getAllAccessByCongress($congressId);
+            $this->userServices->affectAllAccess($user->user_id, $accesss);
+        }
 
         if (!$user) {
             return response()->json(['response' => 'user exist'], 400);

@@ -766,6 +766,23 @@ class UserServices
         return count($users) > 0;
     }
 
+    public function getUsersByParticipantTypeId($congressId, $participantTypeId)
+    {
+        return User::where('privilege_id', '=', $participantTypeId)
+            ->where('congress_id', '=', $congressId)
+            ->get();
+    }
+
+    public function affectAllAccess($user_id, $accesss)
+    {
+        foreach ($accesss as $access) {
+            $userAccess = new User_Access();
+            $userAccess->user_id = $user_id;
+            $userAccess->access_id = $access->access_id;
+            $userAccess->save();
+        }
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
