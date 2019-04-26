@@ -259,7 +259,7 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
 
-Route::group(["prefix" => "user - app"], function () {
+Route::group(["prefix" => "user-app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
     Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
