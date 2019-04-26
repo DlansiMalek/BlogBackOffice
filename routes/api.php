@@ -83,6 +83,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('/upload-banner', 'CongressController@uploadBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
+        Route::post('program-link','CongressController@setProgramLink');
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
