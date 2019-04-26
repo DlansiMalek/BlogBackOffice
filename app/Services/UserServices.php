@@ -600,7 +600,7 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $link = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $link = null, $userMail = null)
     {
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
@@ -619,6 +619,10 @@ class UserServices
         } catch (\Exception $exception) {
             Log::info($exception);
             $user->email_sended = -1;
+            if ($userMail) {
+                $userMail->status = -1;
+                $userMail->update();
+            }
             $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
             Storage::delete('app/badge.png');
