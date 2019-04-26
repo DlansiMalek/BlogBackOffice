@@ -33,6 +33,8 @@ class CreateCongressTable extends Migration
 
             $table->dateTime('feedback_start')->nullable()->default(null);
 
+
+            $table->string("program_congress")->nullable()->default(null);
             $table->softDeletes();
             $table->timestamps();
         });
