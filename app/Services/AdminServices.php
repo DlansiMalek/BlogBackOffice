@@ -89,6 +89,9 @@ class AdminServices
     public function getListPersonelsByAdmin($admin_id)
     {
         return Admin::where("responsible", "=", $admin_id)
+            ->whereHas('privileges', function ($query) {
+                $query->where('privilege_id', '=', 2);
+            })
             ->with(['congress_responsible.badges'])
             ->get();
     }

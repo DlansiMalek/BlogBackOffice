@@ -455,11 +455,15 @@ class AdminController extends Controller
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->addPersonnel($request, $admin->admin_id);
 
-        $this->privilegeServices->affectPrivilegeToAdmin(2, $personels->admin_id);
+        if (!$this->adminServices->getAdminByLogin($request->input("email"))) {
+            $personels = $this->adminServices->addPersonnel($request, $admin->admin_id);
+            $this->privilegeServices->affectPrivilegeToAdmin(2, $personels->admin_id);
+            return response()->json($personels);
+        } else {
+            return response()->json(['message' => 'email existe'], 402);
+        }
 
-        return response()->json($personels);
     }
 
     public
