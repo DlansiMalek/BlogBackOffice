@@ -61,7 +61,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
-        Route::put('set-qr','UserController@changeQrCode')->middleware('organisateur');
+        Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
     });
 
 
@@ -71,7 +71,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
-    Route::get('/custom-mail/send-to-all/{mail_id}','CongressController@sendCustomMailToAllUsers')->middleware("super-admin");
+    Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("super-admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
@@ -196,6 +196,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 //Access API
 Route::group(['prefix' => 'access'], function () {
     Route::post('/grant-access-country/{countryId}', 'AccessController@grantAccessByCountry');
+    Route::post("/grant-access-participant/{participantTypeId}", 'AccessController@grantAccessByParticipantType');
     Route::group(['prefix' => 'congress'], function () {
         Route::get('{congress_id}/list', 'AccessController@getAllAccessByCongress');
     });
@@ -257,7 +258,7 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
 
-Route::group(["prefix" => "user-app"], function () {
+Route::group(["prefix" => "user - app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
     Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
@@ -269,7 +270,6 @@ Route::group(["prefix" => "user-app"], function () {
 });
 
 
-
 Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {
     Route::put('token', 'VotingController@setToken');
     Route::get('token', 'VotingController@getToken');
@@ -277,9 +277,9 @@ Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () 
     Route::put('{congress_id}', 'VotingController@setAssociation');
     Route::delete('{congress_id}', 'VotingController@resetAssociation');
 });
-Route::group(["prefix" => "voting-users"], function () {
+Route::group(["prefix" => "voting - users"], function () {
     Route::get("polls", "VotingController@getListPolls");
     Route::post("polls", "VotingController@getMultipleListPolls");
-    Route::post("send-scores", "VotingController@sendScores");
+    Route::post("send - scores", "VotingController@sendScores");
 });
-Route::post("switch-qr/{userId}","UserController@changeQrCode")->middleware('organisateur');
+Route::post("switch-qr /{userId}", "UserController@changeQrCode")->middleware('organisateur');

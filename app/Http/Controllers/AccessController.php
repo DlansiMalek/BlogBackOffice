@@ -75,4 +75,24 @@ class AccessController extends Controller
         return response()->json(['message' => 'success', 'user_number' => sizeof($users)]);
     }
 
+    public function grantAccessByParticipantType($participantTypeId, Request $request)
+    {
+        $congressId = $request->input('congressId');
+
+        $users = $this->userServices->getUsersByParticipantTypeId($congressId, $participantTypeId);
+
+        $accesss = $this->accessServices->getAllAccessByCongress($congressId);
+        foreach ($users as $user) {
+            User_Access::where('user_id', '=', $user->user_id)
+                ->delete();
+            foreach ($accesss as $access) {
+                $userAccess = new User_Access();
+                $userAccess->user_id = $user->user_id;
+                $userAccess->access_id = $access->access_id;
+                $userAccess->save();
+            }
+        }
+        return response()->json(['message' => 'success', 'user_number' => sizeof($users)]);
+    }
+
 }
