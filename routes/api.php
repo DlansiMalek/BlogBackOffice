@@ -278,9 +278,9 @@ Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () 
     Route::put('{congress_id}', 'VotingController@setAssociation');
     Route::delete('{congress_id}', 'VotingController@resetAssociation');
 });
-Route::group(["prefix" => "voting - users"], function () {
+Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
     Route::post("polls", "VotingController@getMultipleListPolls");
-    Route::post("send - scores", "VotingController@sendScores");
+    Route::post("send-scores", "VotingController@sendScores");
 });
 Route::post("switch-qr /{userId}", "UserController@changeQrCode")->middleware('organisateur');
