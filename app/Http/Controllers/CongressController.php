@@ -361,9 +361,18 @@ class CongressController extends Controller
 
 
         }
+
         return response()->json(["status" => "success"], 200);
+    }
 
-
+    public function setProgramLink(Request $request, $congress_id)
+    {
+        if (!$request->has("programLink")) return response()->json(['error' => 'invalid request'], 400);
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(['error' => 'congress not found'], 402);
+        $congress->program_link = $request->input('programLink');
+        $congress->update();
+        return $congress;
     }
 
 
