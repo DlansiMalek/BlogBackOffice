@@ -338,16 +338,30 @@ class CongressController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         foreach ($congress->users as $user) {
-            $userMail = User_Mail::where('user_id','=',$user->user_id)->where('mail_id','=',$mail->mail_id)->get();
-            if($userMail && count($userMail)) continue;
-            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                null);
-            $userMail = new User_Mail();
-            $userMail->user_id = $user->user_id;
-            $userMail->mail_id = $mail_id;
-            $userMail->save();
+            $userMail = User_Mail::where('user_id', '=', $user->user_id)
+                ->where('mail_id', '=', $mail->mail_id)
+                ->first();
+
+            if (!$userMail) {
+                $userMail = new User_Mail();
+                $userMail->user_id = $user->user_id;
+                $userMail->mail_id = $mail_id;
+                $userMail->save();
+            } else if ($userMail->status == 1) {
+                $userMail = null;
+            } else {
+                $userMail->status = 1;
+                $userMail->update();
+            }
+
+            if ($userMail) {
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                    null, $userMail);
+            }
+
+
         }
-        return response()->json(["status"=>"success"],200);
+        return response()->json(["status" => "success"], 200);
 
 
     }
