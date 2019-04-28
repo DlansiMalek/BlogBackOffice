@@ -83,7 +83,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('/upload-banner', 'CongressController@uploadBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
-        Route::post('program-link','CongressController@setProgramLink');
+        Route::post('program-link', 'CongressController@setProgramLink');
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
@@ -259,7 +259,7 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
 
-Route::group(["prefix" => "user - app"], function () {
+Route::group(["prefix" => "user-app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
     Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
@@ -278,9 +278,9 @@ Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () 
     Route::put('{congress_id}', 'VotingController@setAssociation');
     Route::delete('{congress_id}', 'VotingController@resetAssociation');
 });
-Route::group(["prefix" => "voting - users"], function () {
+Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
     Route::post("polls", "VotingController@getMultipleListPolls");
-    Route::post("send - scores", "VotingController@sendScores");
+    Route::post("send-scores", "VotingController@sendScores");
 });
 Route::post("switch-qr /{userId}", "UserController@changeQrCode")->middleware('organisateur');
