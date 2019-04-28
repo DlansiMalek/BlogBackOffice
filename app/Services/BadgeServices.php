@@ -140,6 +140,8 @@ class BadgeServices
 
     public function saveAttestationsInPublic(array $request)
     {
+        Log::info($request);
+
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
             Utils::$baseUrlBadge . '/badge/generateParticipantsAll', [

@@ -653,7 +653,7 @@ class UserServices
             });
         } catch (\Exception $exception) {
             Log::info($exception);
-            $user->email_sended = -1;
+            $user->email_attestation_sended = -1;
             $user->gender = $user->gender == 'Mr.' ? 1 : 2;
             $user->update();
             Storage::delete('app/badge.png');

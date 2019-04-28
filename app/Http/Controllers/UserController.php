@@ -655,17 +655,18 @@ class UserController extends Controller
 
         $congress = $this->congressServices->getCongressById($user->congress_id);
         $request = array();
-        if ($user->email != null && $user->email != "-" && $user->email != "" && $user->isPresent == 1) {
-            array_push($request,
-                array(
-                    'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
-                    'name' => Utils::getFullName($user->first_name, $user->last_name),
-                    'qrCode' => false
-                ));
+        if ($user->email != null && $user->email != "-" && $user->email != "") {
+            if ($congress->attestation) {
+                array_push($request,
+                    array(
+                        'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
+                        'name' => Utils::getFullName($user->first_name, $user->last_name),
+                        'qrCode' => false
+                    ));
+            }
             foreach ($user->accesss as $access) {
                 if ($access->pivot->isPresent == 1) {
-                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                    if ($infoPresence['enabled'] == 1) {
+                    if ($access->attestation) {
                         array_push($request,
                             array(
                                 'badgeIdGenerator' => $access->attestation->attestation_generator_id,
@@ -673,6 +674,7 @@ class UserController extends Controller
                                 'qrCode' => false
                             ));
                     }
+
                 }
             }
             $this->badgeServices->saveAttestationsInPublic($request);
@@ -685,11 +687,7 @@ class UserController extends Controller
         } else {
             return response()->json(['error' => 'user not present or empty email'], 501);
         }
-        if ($user->email_attestation_sended == 1) {
-            return response()->json(['message' => 'email sended success']);
-        } else {
-            return response()->json(['error' => 'cannot send mail', 'email' => $user->emaill], 501);
-        }
+        return response()->json(['message' => 'email sended success']);
     }
 
     public function uploadPayement($userId, Request $request)

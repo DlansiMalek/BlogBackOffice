@@ -231,14 +231,16 @@ class CongressController extends Controller
         foreach ($users as $user) {
             $request = array();
             if ($user->email != null && $user->email != "-" && $user->email != "" && $user->isPresent == 1) {
-                array_push($request,
-                    array(
-                        'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
-                        'name' => Utils::getFullName($user->first_name, $user->last_name),
-                        'qrCode' => false
-                    ));
+                if ($congress->attestation) {
+                    array_push($request,
+                        array(
+                            'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
+                            'name' => Utils::getFullName($user->first_name, $user->last_name),
+                            'qrCode' => false
+                        ));
+                }
                 foreach ($user->accesss as $access) {
-                    if ($access->pivot->isPresent == 1) {
+                    if ($access->pivot->isPresent == 1 && $access->attestation) {
                         $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
                         if ($infoPresence['enabled'] == 1) {
                             array_push($request,
@@ -254,8 +256,11 @@ class CongressController extends Controller
                 $mailtype = $this->congressServices->getMailType('attestation');
                 $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
-                $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object, $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
+                if ($mail) {
+                    $this->badgeServices->saveAttestationsInPublic($request);
+                    $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object,
+                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
+                }
             }
         }
         return response()->json(['message' => 'send mail successs']);
