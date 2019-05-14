@@ -11,8 +11,10 @@ class Utils
 
     const baseUrlWEB = "https://congress.vayetek.com";
     public static $baseUrlRT = 'http://apprtcongress-server:3000/api';
-    // public static $baseUrlPaiement = 'http://paiement-api:8080';
-    public static $baseUrlPaiement = 'http://localhost:8080';
+
+    public static $baseUrlPaiement = "http://137.74.165.25:3007";
+    //public static $baseUrlPaiement = 'http://paiement-api:8080';
+    //public static $baseUrlPaiement = 'http://localhost:8080';
     // public static $baseUrlPaiement = 'http://localhost:8080';
     public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
     // public static $baseUrlBadge = 'http://congress-file-generater.vayetek.com';
