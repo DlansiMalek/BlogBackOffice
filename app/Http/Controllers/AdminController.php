@@ -611,8 +611,7 @@ class AdminController extends Controller
                 ],
                 'price' => $user->price,
                 'reference' => $user->ref_payment,
-                // 'url' => 'www.congress.vayetek.com'
-                'url' => 'http://localhost/congress-backend-modules/public'
+                'url' => 'http://congress-backend-modules_web_1'
             ]
         ]);
 
