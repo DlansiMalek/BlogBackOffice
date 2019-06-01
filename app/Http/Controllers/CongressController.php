@@ -95,7 +95,6 @@ class CongressController extends Controller
     private function addFullCongress(Request $request)
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
-
         $congress = $this->congressServices->addCongress(
             $request->input("name"),
             $request->input("date"),
