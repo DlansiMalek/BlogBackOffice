@@ -122,7 +122,6 @@ class CongressServices
         $congress->name = $request->input("name");
         $congress->date = $request->input("date");
         $congress->admin_id = $adminId;
-        $congress->username_mail = $request->input("username_mail");
         $congress->has_paiement = $request->input('has_paiement');
         $congress->price = $request->input('price') ? $request->input('price') : 0;
         $congress->free = $request->input('free') ? $request->input('free') : 0;

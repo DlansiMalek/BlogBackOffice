@@ -72,26 +72,17 @@ class CongressController extends Controller
 
     public function editCongress(Request $request, $congressId)
     {
+        if (!$request->has(['name', 'date']))
+            return response()->json(['message'=>'bad request'],400);
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
 
         $admin = $this->adminServices->retrieveAdminFromToken();
 
-//        if (!$this->isAllowedEdit($congress->congress_id)) {
-//            return response()->json(['error' => 'edit not allowed'], 401);
-//        }
-
         $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
 
-        $accesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(false, $congressId), $request->input("accesss"), $congressId);
-
-        $intuitiveAccesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(true, $congressId), $request->input("intuitiveAccesss"), $congressId);
-        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
-
-        $this->congressServices->addFormInputs($request->input("form_inputs"), $congress->congress_id);
-
-        return response()->json($this->congressServices->getCongressById($congress->congress_id));
+        return response()->json($congress);
     }
 
     public function getCongressById($congress_id)
