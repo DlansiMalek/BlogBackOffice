@@ -16,7 +16,8 @@ class Access extends Model
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
     protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block',
-        'seuil', 'total_present_in_congress', 'intuitive', 'packless', 'seuil', 'max_places', 'theoric_start_data', 'theoric_end_data', 'description', 'room' ];
+        'seuil', 'total_present_in_congress', 'intuitive', 'packless', 'seuil', 'max_places',
+        'theoric_start_data', 'theoric_end_data', 'description', 'room', 'parent_id'];
     protected $dates = ['created_at', 'updated_at'];
 
 
@@ -27,13 +28,15 @@ class Access extends Model
     }
 
     // speakers
-    public function speakers(){
+    public function speakers()
+    {
         return $this->belongsToMany('App\Models\User', 'Speaker_Access', 'access_id', 'user_id')
             ->withPivot('isPresent');
     }
 
     //chair persons
-    public function chairPersons(){
+    public function chairPersons()
+    {
         return $this->belongsToMany('App\Models\User', 'ChairPerson_Access', 'access_id', 'user_id')
             ->withPivot('isPresent');
     }
@@ -56,7 +59,7 @@ class Access extends Model
     //sub-access
     public function sub_access()
     {
-        return $this->hasMany('App\Models\Access', 'access_id', 'access_id');
+        return $this->hasMany('App\Models\Access', 'access_id', 'parent_id');
     }
 
     //topic

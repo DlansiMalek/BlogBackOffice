@@ -18,6 +18,6 @@ class User_Congress extends Model
     }
     public function privilege()
     {
-        return $this->hasOne('App\Models\Privilege','user_id', 'user_id');
+        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'privilege_id');
     }
 }

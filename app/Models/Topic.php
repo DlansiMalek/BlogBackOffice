@@ -10,6 +10,7 @@ class Topic extends Model
     protected $table = 'Topic';
     protected $primaryKey = 'topic_id';
     protected $dates = ['created_at', 'updated_at'];
+    protected $fillable = ['name'];
 
     public function accesses()
     {

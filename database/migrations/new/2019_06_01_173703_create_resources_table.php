@@ -14,12 +14,18 @@ class CreateResourcesTable extends Migration
     public function up()
     {
         Schema::create('Resource', function (Blueprint $table) {
+            $table->softDeletes();
+
             $table->increments('resource_id');
 
             //access
             $table->integer('access_id')->unsigned();
             $table->foreign('access_id')->references('access_id')->on('Access')
                 ->onDelete('cascade');
+
+            $table->string('name');
+            $table->string('path');
+
 
             $table->timestamps();
         });

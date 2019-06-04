@@ -18,12 +18,19 @@ class CreateUserCongressTable extends Migration
 
             //Congress
             $table->integer('congress_id')->unsigned();
-            $table->foreign('congress_id')->references('congress_id')->on("Congress");
+            $table->foreign('congress_id')->references('congress_id')->on("Congress")
+                ->onDelete('cascade');
 
             //User
             $table->integer('user_id')->unsigned();
-            $table->foreign('user_id')->references('user_id')->on("User");
+            $table->foreign('user_id')->references('user_id')->on("User")
+                ->onDelete('cascade');
 
+            //Privilege
+            $table->integer('privilege_id')->unsigned();
+            $table->foreign('privilege_id')->references('privilege_id')->on("Privilege");
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

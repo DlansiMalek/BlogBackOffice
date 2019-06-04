@@ -14,8 +14,10 @@ class CreateAccessTable extends Migration
     public function up()
     {
         Schema::create('Access', function (Blueprint $table) {
+            $table->softDeletes();
+
             $table->increments('access_id');
-            $table->double('price');
+            $table->double('price')->default(0);
             $table->string('name');
 
             //description
@@ -24,16 +26,17 @@ class CreateAccessTable extends Migration
             //room
             $table->string('room');
 
+            $table->integer('parent_id')->unsigned();
+            $table->foreign('parent_id')->references('access_id')->on('Access');
+
 
             $table->integer('duration')->nullable()->default(null);
             $table->integer('seuil')->nullable()->default(null);
             $table->dateTime("start_date")->nullable()->default(null);
+            $table->dateTime("end_date")->nullable()->default(null);
 
-            $table->dateTime("theoric_start_data")->nullable()->default(null);
-            $table->dateTime("theoric_end_data")->nullable()->default(null);
+            $table->dateTime("real_start_date")->nullable()->default(null);
 
-            $table->tinyInteger("block")->default(0);
-            $table->tinyInteger("intuitive")->nullable()->default(null);
 
             $table->integer("max_places")->nullable()->default(null);
             $table->integer("total_present_in_congress")->default(0);
@@ -52,7 +55,6 @@ class CreateAccessTable extends Migration
             //access_type
             $table->integer('access_type_id')->unsigned();
             $table->foreign('access_type_id')->references('access_type_id')->on('Access_Type');
-
 
 
             $table->timestamps();

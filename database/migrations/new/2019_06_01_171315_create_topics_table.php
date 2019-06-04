@@ -14,7 +14,9 @@ class CreateTopicsTable extends Migration
     public function up()
     {
         Schema::create('Topic', function (Blueprint $table) {
+            $table->softDeletes();
             $table->increments('topic_id');
+            $table->string('name');
             $table->timestamps();
         });
     }

@@ -18,13 +18,15 @@ class CreateSpeakerAccess extends Migration
 
             //Access
             $table->integer('access_id')->unsigned();
-            $table->foreign('access_id')->references('access_id')->on("Access");
+            $table->foreign('access_id')->references('access_id')->on("Access")
+                ->onDelete('cascade');
 
             //User
             $table->integer('user_id')->unsigned();
-            $table->foreign('user_id')->references('user_id')->on("User");
+            $table->foreign('user_id')->references('user_id')->on("User")
+                ->onDelete('cascade');
 
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -18,8 +18,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
-        'price', 'email_sended', 'email_verified', 'verification_code', 'congress_id',
-        'organization_id', 'pack_id', 'privilege_id', 'rfid', 'email_attestation_sended', 'path_payement',
+        'price', 'email_sended', 'email_verified', 'verification_code',
+        'organization_id', 'pack_id', 'rfid', 'email_attestation_sended', 'path_payement',
         'ref_payment', 'autorisation_num', 'organization_accepted'
     ];
     /**
@@ -48,7 +48,7 @@ class User extends Authenticatable
     //ChairPerson Access
     function chairPerson_access()
     {
-        return $this->belongsToMany('App\Models\Access', 'ChairPerson_Access', 'user_id', 'access_id')
+        return $this->belongsToMany('App\Models\Access', 'Chair_Person_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
     }
 
@@ -69,11 +69,6 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Models\User', 'User_Congress', 'congress_id', 'user_id');
     }
 
-
-    function privilege()
-    {
-        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'privilege_id');
-    }
 
     function pack()
     {

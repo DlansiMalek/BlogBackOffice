@@ -13,18 +13,20 @@ class CreateChairPersonAccess extends Migration
      */
     public function up()
     {
-        Schema::create('ChairPerson_Access', function (Blueprint $table) {
-            $table->increments('chairperson_Access_id');
+        Schema::create('Chair_Person_Access', function (Blueprint $table) {
+            $table->increments('chair_person_access_id');
 
             //Access
             $table->integer('access_id')->unsigned();
-            $table->foreign('access_id')->references('access_id')->on("Access");
+            $table->foreign('access_id')->references('access_id')->on("Access")
+                ->onDelete('cascade');
 
             //User
             $table->integer('user_id')->unsigned();
-            $table->foreign('user_id')->references('user_id')->on("User");
+            $table->foreign('user_id')->references('user_id')->on("User")
+                ->onDelete('cascade');
 
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }
