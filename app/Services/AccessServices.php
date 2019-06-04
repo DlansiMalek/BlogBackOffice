@@ -159,10 +159,10 @@ class AccessServices
     function getAccessesByCongressId($intuitive, $congressId){
         return $intuitive?
             Access::where("congress_id", '=', $congressId)
-            ->whereNotNull('intuitive')
+            ->where('intuitive','=',true)
             ->get():
             Access::where("congress_id", '=', $congressId)
-            ->whereNull('intuitive')
+            ->where('intuitive','=',false)
             ->get();
 
     }

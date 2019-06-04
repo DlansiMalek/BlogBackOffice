@@ -386,8 +386,7 @@ class UserController extends Controller
         $accessIds = $request->input("accessIds");
         $request->merge(["congressId" => $congressId]);
 
-        $user->price = $this->calculPrice($request->input('pack_id'), $accessIds);
-
+        $user->price = $this->calculPrice($congress, $request->input('pack_id'), $accessIds);
 
         $user = $this->userServices->editerUser($request, $user);
 
@@ -403,7 +402,7 @@ class UserController extends Controller
             $accessDiffAdded = array_diff($accessIds, $userAccessIds);
             $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
-        } else if ($userAccessIds && array_count_values($userAccessIds)) $user->deleteAccess($user->user_id, $userAccessIds);
+        } else if ($userAccessIds && array_count_values($userAccessIds)) $this->userServices->deleteAccess($user->user_id, $userAccessIds);
         $user = $this->userServices->getParticipatorById($user->user_id);
 
         return response()->json($user, 200);
@@ -709,9 +708,9 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function calculPrice($packId, $accessIds)
+    public function calculPrice($congress, $packId, $accessIds)
     {
-        $price = 0;
+        $price = $congress->price;
         if ($packId) {
             $pack = $this->packServices->getPackById($packId);
             $price += $pack->price;

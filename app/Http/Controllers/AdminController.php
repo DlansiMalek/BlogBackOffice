@@ -600,20 +600,21 @@ class AdminController extends Controller
         $user->ref_payment = $reference;
         $user->update();
 
-
-        $client = new Client();
-        $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
-            'json' => [
-                'user' => [
-                    'email' => $user->email,
-                    'mobile' => $user->mobile,
-                    'name' => $user->first_name . " " . $user->last_name
-                ],
-                'price' => $user->price,
-                'reference' => $user->ref_payment,
-                'url' => 'http://congress-backend-modules_web_1'
-            ]
-        ]);
+        if ($user->email && $user->mobile && $user->first_name && $user->last_name) {
+            $client = new Client();
+            $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
+                'json' => [
+                    'user' => [
+                        'email' => $user->email,
+                        'mobile' => $user->mobile,
+                        'name' => $user->first_name . " " . $user->last_name
+                    ],
+                    'price' => $user->price,
+                    'reference' => $user->ref_payment,
+                    'url' => 'http://congress-backend-modules_web_1'
+                ]
+            ]);
+        }
 
         return response()->json(["reference" => $user->ref_payment]);
     }
