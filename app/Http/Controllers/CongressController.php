@@ -30,8 +30,8 @@ class CongressController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packService;
-//    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
-    public $baseUrl = "https://congress-api.vayetek.com/api/";
+    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
+//    public $baseUrl = "https://congress-api.vayetek.com/api/";
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -54,9 +54,19 @@ class CongressController extends Controller
 
     public function addCongress(Request $request)
     {
-        $congress = $this->addFullCongress($request);
+        if (!$request->has(['name', 'date']))
+            return response()->json(['message'=>'bad request'],400);
+        $admin = $this->adminServices->retrieveAdminFromToken();
+        $congress = $this->congressServices->addCongress(
+            $request->input("name"),
+            $request->input("date"),
+            $request->input('has_paiement'),
+            $request->input('price'),
+            $request->input('free'),
+            $admin->admin_id);
+        return $congress;
 
-        return response()->json($this->congressServices->getCongressById($congress->congress_id));
+
 
     }
 
@@ -90,24 +100,6 @@ class CongressController extends Controller
             return response()->json(["error" => "congress not found"], 404);
         }
         return response()->json($congress);
-    }
-
-    private function addFullCongress(Request $request)
-    {
-        $admin = $this->adminServices->retrieveAdminFromToken();
-        $congress = $this->congressServices->addCongress(
-            $request->input("name"),
-            $request->input("date"),
-            $request->input("username_mail"),
-            $request->input('has_paiement'),
-            $request->input('price'),
-            $request->input('free'),
-            $admin->admin_id);
-        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-        $intuitiveAccesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("intuitiveAccesss"));
-        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
-        $this->congressServices->addFormInputs($request->input('form_inputs'), $congress->congress_id);
-        return $congress;
     }
 
 
