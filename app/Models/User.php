@@ -18,9 +18,9 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
-        'price', 'email_sended', 'email_verified', 'verification_code', 'congress_id',
-        'organization_id', 'pack_id', 'privilege_id', 'rfid', 'email_attestation_sended', 'path_payement',
-        'ref_payment', 'autorisation_num','organization_accepted'
+        'price', 'email_sended', 'email_verified', 'verification_code',
+        'organization_id', 'pack_id', 'rfid', 'email_attestation_sended', 'path_payement',
+        'ref_payment', 'autorisation_num', 'organization_accepted'
     ];
     /**
      * The attributes that should be hidden for arrays.
@@ -38,20 +38,37 @@ class User extends Authenticatable
             ->withPivot('isPresent');
     }
 
+    //Speaker Access
+    function speaker_access()
+    {
+        return $this->belongsToMany('App\Models\Access', 'Speaker_Access', 'user_id', 'access_id')
+            ->withPivot('isPresent');
+    }
+
+    //ChairPerson Access
+    function chairPerson_access()
+    {
+        return $this->belongsToMany('App\Models\Access', 'Chair_Person_Access', 'user_id', 'access_id')
+            ->withPivot('isPresent');
+    }
+
+
     function organization()
     {
         return $this->belongsTo('App\Models\Organization', 'organization_id', 'organization_id');
     }
 
+    /*
     function congress()
     {
         return $this->hasOne('App\Models\Congress', 'congress_id', 'congress_id');
+    }*/
+
+    function congresses()
+    {
+        return $this->belongsToMany('App\Models\User', 'User_Congress', 'congress_id', 'user_id');
     }
 
-    function privilege()
-    {
-        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'privilege_id');
-    }
 
     function pack()
     {
@@ -63,16 +80,19 @@ class User extends Authenticatable
         return $this->hasOne('App\Models\Country', 'country_id', 'country_id');
     }
 
-    function responses(){
-        return $this->hasMany("App\Models\Form_Input_Reponse",'user_id','user_id');
+    function responses()
+    {
+        return $this->hasMany("App\Models\Form_Input_Reponse", 'user_id', 'user_id');
     }
 
-    function attestation_requests(){
-        return $this->hasMany('App\Models\Attestation_Request','user_id','user_id');
+    function attestation_requests()
+    {
+        return $this->hasMany('App\Models\Attestation_Request', 'user_id', 'user_id');
     }
 
-    function feedback_responses(){
-        return $this->hasMany('App\Models\Feedback_Response','user_id','user_id');
+    function feedback_responses()
+    {
+        return $this->hasMany('App\Models\Feedback_Response', 'user_id', 'user_id');
     }
 
 }
