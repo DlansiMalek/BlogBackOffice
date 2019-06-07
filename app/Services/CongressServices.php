@@ -58,13 +58,12 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $date, $email, $has_paiement, $price, $free, $admin_id)
+    public function addCongress($name, $date, $has_paiement, $price, $free, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
         $congress->date = $date;
         $congress->admin_id = $admin_id;
-        $congress->username_mail = $email;
         $congress->has_paiement = $has_paiement;
         $congress->price = $price ? $price : 0;
         $congress->free = $free ? $free : 0;
@@ -123,7 +122,6 @@ class CongressServices
         $congress->name = $request->input("name");
         $congress->date = $request->input("date");
         $congress->admin_id = $adminId;
-        $congress->username_mail = $request->input("username_mail");
         $congress->has_paiement = $request->input('has_paiement');
         $congress->price = $request->input('price') ? $request->input('price') : 0;
         $congress->free = $request->input('free') ? $request->input('free') : 0;
