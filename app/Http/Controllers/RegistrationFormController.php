@@ -25,7 +25,8 @@ class RegistrationFormController extends Controller{
     }
 
     public function setForm(Request $request, $congress_id){
-        return $this->registrationFormServices->setForm($request,$congress_id);
+        $this->registrationFormServices->setForm($request,$congress_id);
+        return $this->registrationFormServices->getForm($congress_id);
     }
 
 }
