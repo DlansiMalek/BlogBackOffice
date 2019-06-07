@@ -54,11 +54,6 @@ class SharedController extends Controller
     {
         return response()->json($this->sharedServices->getAllCountries());
     }
-
-    public function getFormInputTypes(){
-        return $this->sharedServices->getFormInputTypes();
-    }
-
     public function getFile($file_path){
         return response()->file('../storage/app/mail-images/'.$file_path);
     }

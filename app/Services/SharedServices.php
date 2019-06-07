@@ -52,10 +52,5 @@ class SharedServices
         return Country::all();
     }
 
-    public function getFormInputTypes()
-    {
-        return Form_Input_Type::get();
-    }
-
 
 }

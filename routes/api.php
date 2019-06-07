@@ -24,7 +24,6 @@ Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
 Route::get('/congress-banner/{path}', 'SharedController@getBannerCongress');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
-Route::get('/form-input-types', 'SharedController@getFormInputTypes');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
 
 //Mobile API
@@ -69,6 +68,12 @@ Route::group(['prefix' => 'users'], function () {
 
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
+
+    Route::group(["prefix"=>'form'],function (){
+        Route::get('input-types','RegistrationFormController@getInputTypes');
+        Route::get('{congress_id}','RegistrationFormController@getForm');
+        Route::post('{congress_id}','RegistrationFormController@setForm')->middleware('super-admin');
+    });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("super-admin");

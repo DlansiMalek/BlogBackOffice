@@ -35,8 +35,7 @@ class OrganizationController extends Controller
         $this->sharedServices = $sharedServices;
     }
 
-    public
-    function addOrganization($congress_id, Request $request)
+    public function addOrganization($congress_id, Request $request)
     {
         if (!$request->has(['email', 'name'])) {
             return response()->json(["message" => "invalid request", "required inputs" => ['email', 'nom']], 404);
@@ -46,7 +45,7 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
-        if($this->organizationServices->exist($congress_id,$request->input('email'))){
+        if ($this->organizationServices->exist($congress_id, $request->input('email'))) {
             return response()->json(["message" => "organization already exists"], 401);
         }
 
@@ -68,7 +67,7 @@ class OrganizationController extends Controller
 
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://congress.vayetek.com'>VayeCongress</a>: " . $organization["admin"]->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://congress.vayetek.com'>VayeCongress</a>: " . $organization["admin"]->passwordDecrypt;
-            $this->organizationServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null,$organization['organization']), $congress, $mail->object, $organization["organization"]->email);
+            $this->organizationServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization['organization']), $congress, $mail->object, $organization["organization"]->email);
         }
 
         return $organization["organization"];
@@ -106,11 +105,11 @@ class OrganizationController extends Controller
         $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
         foreach ($organization->users as $user) {
             $organization->congress_organization->montant += $user->price;
-            if(!$user->organization_accepted || !$user->isPaied) {
+            if (!$user->organization_accepted || !$user->isPaied) {
                 $user->organization_accepted = true;
                 $user->isPaied = 1;
                 $user->update();
-                $this->sendMail($congress,$user);
+                $this->sendMail($congress, $user);
             }
 
         }
@@ -134,7 +133,7 @@ class OrganizationController extends Controller
         $user->update();
         $organization->congress_organization->update();
         $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
-        $this->sendMail($congress,$user);
+        $this->sendMail($congress, $user);
         return $this->organizationServices->getOrganizationById($organization->organization_id);
     }
 
@@ -153,14 +152,14 @@ class OrganizationController extends Controller
         $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null,$organization), $user, $congress, $mail->object, null,
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, $organization), $user, $congress, $mail->object, null,
                     $link);
             }
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null,null), $user, $congress, $mail->object, $fileAttached,
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
                     $link);
             }
         }

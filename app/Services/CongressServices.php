@@ -208,30 +208,6 @@ class CongressServices
         return $congress;
     }
 
-    public function addFormInputs($inputs, $congress_id)
-    {
-        $old = Form_Input::where("congress_id", '=', $congress_id);
-        foreach ($old as $input) {
-            Form_Input_Value::where('form_input_id', '=', $input->form_input_id)->delete();
-        }
-        $old->delete();
-        foreach ($inputs as $inputRequest) {
-            $input = new Form_Input();
-            $input->form_input_type_id = $inputRequest["type"]["form_input_type_id"];
-            $input->congress_id = $congress_id;
-            $input->label = $inputRequest["label"];
-            $input->save();
-            if ($inputRequest["type"]["name"] == "checklist" || $inputRequest["type"]["name"] == "multiselect" || $inputRequest["type"]["name"] == "select" || $inputRequest["type"]["name"] == "radio") {
-                foreach ($inputRequest["values"] as $valueRequest) {
-                    $value = new Form_Input_Value();
-                    $value->value = $valueRequest['value'];
-                    $value->form_input_id = $input->form_input_id;
-                    $value->save();
-                }
-            }
-        }
-    }
-
     public function getEmailById($id)
     {
         return Mail::find($id);
