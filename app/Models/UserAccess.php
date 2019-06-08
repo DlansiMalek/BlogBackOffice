@@ -11,7 +11,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class User_Access extends Model
+class UserAccess extends Model
 {
     public $timestamps = true;
     protected $table = 'User_Access';
@@ -22,5 +22,10 @@ class User_Access extends Model
     public function user()
     {
         return $this->belongsTo('App\Models\User', 'user_id', 'user_id');
+    }
+
+    public function access()
+    {
+        return $this->belongsTo('App\Models\Access', 'access_id', 'access_id');
     }
 }

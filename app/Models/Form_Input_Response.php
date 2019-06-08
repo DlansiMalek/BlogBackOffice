@@ -10,17 +10,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Form_Input_Reponse extends Model
+class Form_Input_Response extends Model
 {
     public $timestamps = true;
-    protected $table = 'Form_Input_Reponse';
-    protected $primaryKey = 'form_input_reponse_id';
-    protected $fillable = ['reponse','user_id','form_input_id'];
+    protected $table = 'Form_Input_Response';
+    protected $primaryKey = 'form_input_response_id';
+    protected $fillable = ['response','user_id','form_input_id','form_input_value_id'];
     protected $dates = ['created_at', 'updated_at'];
 
     function values()
     {
-        return $this->belongsToMany('App\Models\Form_Input_Value', 'Reponse_Value', 'form_input_reponse_id', 'form_input_value_id');
+        return $this->has('App\Models\Form_Input_Value', 'form_input_value_id', 'form_input_value_id');
     }
 
     function form_input(){

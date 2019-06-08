@@ -15,9 +15,9 @@ class Access extends Model
     public $timestamps = true;
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
-    protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block',
-        'seuil', 'total_present_in_congress', 'intuitive', 'packless', 'seuil', 'max_places',
-        'theoric_start_data', 'theoric_end_data', 'description', 'room', 'parent_id'];
+    protected $fillable = ['name', 'price', 'duration', 'max_places', 'total_present_in_congress',
+        'seuil', 'room', 'description', 'congress_id', 'packless',
+        'start_date', 'real_start_date', 'end_date', 'parent_id'];
     protected $dates = ['created_at', 'updated_at'];
 
 
@@ -30,15 +30,13 @@ class Access extends Model
     // speakers
     public function speakers()
     {
-        return $this->belongsToMany('App\Models\User', 'Speaker_Access', 'access_id', 'user_id')
-            ->withPivot('isPresent');
+        return $this->belongsToMany('App\Models\User', 'Speaker_Access', 'access_id', 'user_id');
     }
 
     //chair persons
-    public function chairPersons()
+    public function chairs()
     {
-        return $this->belongsToMany('App\Models\User', 'ChairPerson_Access', 'access_id', 'user_id')
-            ->withPivot('isPresent');
+        return $this->belongsToMany('App\Models\User', 'ChairPerson_Access', 'access_id', 'user_id');
     }
 
     public function attestation()

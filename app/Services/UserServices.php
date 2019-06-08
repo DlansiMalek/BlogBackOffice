@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Access_Presence;
 use App\Models\Admin;
 use App\Models\Attestation_Request;
-use App\Models\Form_Input_Reponse;
+use App\Models\Form_Input_Response;
 use App\Models\Payement_Type;
 use App\Models\Reponse_Value;
 use App\Models\User;
@@ -706,7 +706,7 @@ class UserServices
     {
         foreach ($responses as $req) {
 
-            $reponse = new Form_Input_Reponse();
+            $reponse = new Form_Input_Response();
             if (!array_key_exists("response", $req)) {
 
                 $reponse->user_id = $userId;
@@ -748,7 +748,7 @@ class UserServices
 
     public function deleteUserResponses($user_id)
     {
-        $responses = Form_Input_Reponse::with('values')->where('user_id', '=', $user_id)->get();
+        $responses = Form_Input_Response::with('values')->where('user_id', '=', $user_id)->get();
         foreach ($responses as $resp) {
             Reponse_Value::where('form_input_reponse_id', '=', $resp->form_input_reponse_id)->delete();
             $resp->delete();

@@ -10,11 +10,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Mail_Type extends Model
+class Payment_Type extends Model
 {
     public $timestamps = true;
-    protected $table = 'Mail_Type';
-    protected $primaryKey = 'mail_type_id';
+    protected $table = 'Payment_Type';
+    protected $primaryKey = 'payment_type_id';
     protected $fillable = ['name','display_name'];
 
 }

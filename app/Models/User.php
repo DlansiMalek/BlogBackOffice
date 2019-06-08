@@ -8,31 +8,13 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use Notifiable;
-    public $timestamps = true;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
-        'price', 'email_sended', 'email_verified', 'verification_code',
-        'organization_id', 'pack_id', 'rfid', 'email_attestation_sended', 'path_payement',
-        'ref_payment', 'autorisation_num', 'organization_accepted'
-    ];
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password'
-    ];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'email_verified', 'verification_code', 'rfid'];
+    public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 
-    function accesss()
+    function accesses()
     {
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
@@ -41,38 +23,27 @@ class User extends Authenticatable
     //Speaker Access
     function speaker_access()
     {
-        return $this->belongsToMany('App\Models\Access', 'Speaker_Access', 'user_id', 'access_id')
-            ->withPivot('isPresent');
+        return $this->belongsToMany('App\Models\Access', 'Speaker_Access', 'user_id', 'access_id');
     }
 
     //ChairPerson Access
     function chairPerson_access()
     {
-        return $this->belongsToMany('App\Models\Access', 'Chair_Person_Access', 'user_id', 'access_id')
-            ->withPivot('isPresent');
+        return $this->belongsToMany('App\Models\Access', 'Chair_Access', 'user_id', 'access_id');
     }
 
+    public function payments(){
+        return $this->hasMany('App\Models\Payment','user_id','user_id');
+    }
 
     function organization()
     {
-        return $this->belongsTo('App\Models\Organization', 'organization_id', 'organization_id');
+        return $this->belongsToMany('App\Models\Organization', 'User_Congress', 'user_id','organization_id');
     }
-
-    /*
-    function congress()
-    {
-        return $this->hasOne('App\Models\Congress', 'congress_id', 'congress_id');
-    }*/
 
     function congresses()
     {
-        return $this->belongsToMany('App\Models\User', 'User_Congress', 'congress_id', 'user_id');
-    }
-
-
-    function pack()
-    {
-        return $this->hasOne('App\Models\Pack', 'pack_id', 'pack_id');
+        return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
     }
 
     function country()
@@ -82,7 +53,7 @@ class User extends Authenticatable
 
     function responses()
     {
-        return $this->hasMany("App\Models\Form_Input_Reponse", 'user_id', 'user_id');
+        return $this->hasMany("App\Models\Form_Input_Response", 'user_id', 'user_id');
     }
 
     function attestation_requests()

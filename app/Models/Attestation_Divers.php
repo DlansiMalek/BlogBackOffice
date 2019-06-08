@@ -19,11 +19,6 @@ class Attestation_Divers extends Model
     protected $dates = ['created_at', 'updated_at'];
 
 
-    public function attestations()
-    {
-        return $this->hasMany('App\Models\Attestation_Divers', 'attestation_type_id', 'attestation_type_id');
-    }
-
     public function type()
     {
         return $this->belongsTo('App\Models\Attestation_Type', 'attestation_type_id', 'attestation_type_id');

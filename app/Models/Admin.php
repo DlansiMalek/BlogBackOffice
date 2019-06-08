@@ -23,49 +23,26 @@ class Admin extends Authenticatable implements JWTSubject
 {
     protected $table = 'Admin';
     protected $primaryKey = 'admin_id';
-    protected $fillable = ['email', 'mobile', 'name', 'responsible', "passwordDecrypt",'voting_token'];
+    protected $fillable = ['email', 'mobile', 'name', "passwordDecrypt", 'voting_token'];
 
-    protected $hidden = ["password"];
+    protected $hidden = ["passwordDecrypt", "password"];
     protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
 
-
-    public function privileges()
-    {
-        return $this->hasMany('App\Models\Admin_Privilege', 'admin_id', 'admin_id');
-    }
-
     public function congresses()
     {
-        return $this->hasMany('App\Models\Congress', 'admin_id', 'admin_id');
+        return $this->belongsToMany('App\Models\Congress', 'Admin_Congress', 'admin_id','congress_id');
     }
 
-    public function congress_allowed()
-    {
-        return $this->hasMany('App\Models\Congress', 'admin_id', 'admin_id');
+    public function payments(){
+        return $this->hasMany('App\Models\Payment','admin_id','admin_id');
     }
 
-    public function congress_responsible()
-    {
-        return $this->hasMany('App\Models\Congress', 'admin_id', 'responsible');
-    }
-
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
         return [];

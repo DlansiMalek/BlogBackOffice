@@ -22,10 +22,6 @@ class CreateAdminTable extends Migration
             $table->string('passwordDecrypt');
             $table->string("rfid")->nullable()->default(null);
 
-            $table->unsignedInteger('responsible')->nullable()->default(null);
-            $table->foreign('responsible')->references('admin_id')->on('Admin')
-                ->onDelete('cascade');
-
             $table->softDeletes();
             $table->timestamps();
         });

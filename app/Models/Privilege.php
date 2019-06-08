@@ -17,17 +17,10 @@ class Privilege extends Model
     protected $primaryKey = 'privilege_id';
     protected $fillable = ['name'];
 
-    protected $dates = ['created_at', 'updated_at'];
     public $timestamps = true;
 
     public function badges()
     {
         return $this->hasMany('App\Models\Badge', 'privilege_id', 'privilege_id');
     }
-
-    public function user_congress()
-    {
-        return $this->hasMany('App\Models\User_Congress', 'privilege_id', 'privilege_id');
-    }
-
 }

@@ -10,7 +10,7 @@ class Resource extends Model
     protected $table = 'Resource';
     protected $primaryKey = 'resource_id';
     protected $dates = ['created_at', 'updated_at'];
-    protected $fillable = ['access_id', 'name', 'path'];
+    protected $fillable = ['access_id', 'path'];
 
     public function access()
     {

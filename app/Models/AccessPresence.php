@@ -11,7 +11,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Access_Presence extends Model
+class AccessPresence extends Model
 {
     protected $table = 'Access_Presence';
     protected $primaryKey = 'access_presence_id';
@@ -19,4 +19,14 @@ class Access_Presence extends Model
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'user_id', 'user_id');
+    }
+
+    public function access()
+    {
+        return $this->belongsTo('App\Models\Access', 'access_id', 'access_id');
+    }
 }

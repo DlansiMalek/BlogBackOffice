@@ -23,6 +23,11 @@ class CreateFormInputResponseTable extends Migration
             $table->unsignedInteger('form_input_id');
             $table->foreign('form_input_id')->references('form_input_id')->on("Form_Input")->onDelete('cascade');
 
+            $table->unsignedInteger('form_input_value_id');
+            $table->foreign('form_input_value_id')->references('form_input_value_id')->on("Form_Input_Value")->onDelete('cascade');
+
+
+
             $table->softDeletes();
             $table->timestamps();
         });

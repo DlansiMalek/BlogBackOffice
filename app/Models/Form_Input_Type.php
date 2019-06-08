@@ -16,6 +16,4 @@ class Form_Input_Type extends Model
     protected $table = 'Form_Input_Type';
     protected $primaryKey = 'form_input_type_id';
     protected $fillable = ['name', "display_name"];
-    protected $dates = ['created_at', 'updated_at'];
-
 }

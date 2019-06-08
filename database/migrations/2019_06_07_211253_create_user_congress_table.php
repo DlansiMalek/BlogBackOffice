@@ -27,6 +27,9 @@ class CreateUserCongressTable extends Migration
             $table->unsignedInteger('organization_id')->nullable()->default(null);
             $table->foreign('organization_id')->references('organization_id')->on('Organization')->onDelete('cascade');
 
+            $table->unsignedInteger('pack_id')->nullable()->default(null);
+            $table->foreign('pack_id')->references('pack_id')->on('Pack');
+
             $table->timestamps();
         });
     }

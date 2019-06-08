@@ -9,12 +9,7 @@ class Topic extends Model
     public $timestamps = true;
     protected $table = 'Topic';
     protected $primaryKey = 'topic_id';
-    protected $dates = ['created_at', 'updated_at'];
     protected $fillable = ['name'];
-
-    public function accesses()
-    {
-        return $this->hasMany('App\Models\Access', 'topic_id', 'topic_id');
-    }
+    protected $dates = ['created_at', 'updated_at'];
 }
 

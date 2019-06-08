@@ -13,9 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Country extends Model
 {
-    public $timestamps = false;
-    public $incrementing = false;
     protected $table = 'Country';
     protected $primaryKey = 'country_id';
-    protected $fillable = ['name'];
+    protected $fillable = ['name','code','label','nationality','nationality_arabe'];
+    public $timestamps = false;
 }

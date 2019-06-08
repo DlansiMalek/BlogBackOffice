@@ -14,38 +14,20 @@ class Congress extends Model
 {
     protected $table = 'Congress';
     protected $primaryKey = 'congress_id';
-    protected $fillable = ['name', 'date', 'admin_id', 'logo', 'banner', 'username_mail', 'has_paiement', 'free', 'feedback_start', 'program_link'];
+    protected $fillable = ['name', 'start_date', 'end_date', 'price'];
 
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
 
-    public function accesss()
+
+    public function config()
     {
-        return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
+        return $this->hasOne('App\Models\Congress_Config', 'congress_id', 'congress_id');
     }
 
-    public function packs()
+    public function mail_config()
     {
-        return $this->hasMany('App\Models\Pack', "congress_id", "congress_id");
-    }
-
-
-    /* public function users()
-     {
-         return $this->hasMany('App\Models\User', 'congress_id', 'congress_id');
-     }
-    */
-
-    public function users()
-    {
-        return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
-
-    }
-
-
-    public function attestation()
-    {
-        return $this->hasOne('App\Models\Attestation', 'congress_id', 'congress_id');
+        return $this->hasOne('App\Models\Mail_Config', 'congress_id', 'congress_id');
     }
 
     public function badges()
@@ -53,24 +35,59 @@ class Congress extends Model
         return $this->hasMany('App\Models\Badge', 'congress_id', 'congress_id');
     }
 
-    public function form_inputs()
-    {
-        return $this->hasMany("App\Models\Form_Input", "congress_id", "congress_id");
-    }
-
     public function mails()
     {
         return $this->hasMany('App\Models\Mail', 'congress_id', 'congress_id');
     }
 
-    public function organizations()
+    public function attestation()
     {
-        return $this->belongsToMany("App\Models\Organization", 'Congress_Organization', "congress_id", "organization_id")->withPivot('montant');
+        return $this->hasOne('App\Models\Attestation', 'congress_id', 'congress_id');
     }
 
-    public function feedback_questions()
+    public function admins()
     {
-        return $this->hasMany("App\Models\Feedback_Question", "congress_id", "congress_id");
+        return $this->belongsToMany('App\Models\Admin', 'Admin_Congress','congress_id', 'admin_id');
     }
+
+    public function payments(){
+        return $this->hasMany('App\Models\Payment','congress_id','congress_id');
+    }
+
+//    public function accesss()
+//    {
+//        return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
+//    }
+//
+//
+//    public function packs()
+//    {
+//        return $this->hasMany('App\Models\Pack', "congress_id", "congress_id");
+//    }
+//
+//    public function users()
+//    {
+//        return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
+//
+//    }
+//
+//
+//
+//    public function form_inputs()
+//    {
+//        return $this->hasMany("App\Models\Form_Input", "congress_id", "congress_id");
+//    }
+//
+
+//
+//    public function organizations()
+//    {
+//        return $this->belongsToMany("App\Models\Organization", 'Congress_Organization', "congress_id", "organization_id")->withPivot('montant');
+//    }
+//
+//    public function feedback_questions()
+//    {
+//        return $this->hasMany("App\Models\Feedback_Question", "congress_id", "congress_id");
+//    }
 
 }
