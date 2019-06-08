@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CountriesSeedTable extends Seeder
 {
@@ -11,251 +12,246 @@ class CountriesSeedTable extends Seeder
      */
     public function run()
     {
-        DB::table('Country')->delete();
-        $countries = array(
-            array('code' => 'US', 'name' => 'United States'),
-            array('code' => 'CA', 'name' => 'Canada'),
-            array('code' => 'AF', 'name' => 'Afghanistan'),
-            array('code' => 'AL', 'name' => 'Albania'),
-            array('code' => 'DZ', 'name' => 'Algeria'),
-            array('code' => 'AS', 'name' => 'American Samoa'),
-            array('code' => 'AD', 'name' => 'Andorra'),
-            array('code' => 'AO', 'name' => 'Angola'),
-            array('code' => 'AI', 'name' => 'Anguilla'),
-            array('code' => 'AQ', 'name' => 'Antarctica'),
-            array('code' => 'AG', 'name' => 'Antigua and/or Barbuda'),
-            array('code' => 'AR', 'name' => 'Argentina'),
-            array('code' => 'AM', 'name' => 'Armenia'),
-            array('code' => 'AW', 'name' => 'Aruba'),
-            array('code' => 'AU', 'name' => 'Australia'),
-            array('code' => 'AT', 'name' => 'Austria'),
-            array('code' => 'AZ', 'name' => 'Azerbaijan'),
-            array('code' => 'BS', 'name' => 'Bahamas'),
-            array('code' => 'BH', 'name' => 'Bahrain'),
-            array('code' => 'BD', 'name' => 'Bangladesh'),
-            array('code' => 'BB', 'name' => 'Barbados'),
-            array('code' => 'BY', 'name' => 'Belarus'),
-            array('code' => 'BE', 'name' => 'Belgium'),
-            array('code' => 'BZ', 'name' => 'Belize'),
-            array('code' => 'BJ', 'name' => 'Benin'),
-            array('code' => 'BM', 'name' => 'Bermuda'),
-            array('code' => 'BT', 'name' => 'Bhutan'),
-            array('code' => 'BO', 'name' => 'Bolivia'),
-            array('code' => 'BA', 'name' => 'Bosnia and Herzegovina'),
-            array('code' => 'BW', 'name' => 'Botswana'),
-            array('code' => 'BV', 'name' => 'Bouvet Island'),
-            array('code' => 'BR', 'name' => 'Brazil'),
-            array('code' => 'IO', 'name' => 'British lndian Ocean Territory'),
-            array('code' => 'BN', 'name' => 'Brunei Darussalam'),
-            array('code' => 'BG', 'name' => 'Bulgaria'),
-            array('code' => 'BF', 'name' => 'Burkina Faso'),
-            array('code' => 'BI', 'name' => 'Burundi'),
-            array('code' => 'KH', 'name' => 'Cambodia'),
-            array('code' => 'CM', 'name' => 'Cameroon'),
-            array('code' => 'CV', 'name' => 'Cape Verde'),
-            array('code' => 'KY', 'name' => 'Cayman Islands'),
-            array('code' => 'CF', 'name' => 'Central African Republic'),
-            array('code' => 'TD', 'name' => 'Chad'),
-            array('code' => 'CL', 'name' => 'Chile'),
-            array('code' => 'CN', 'name' => 'China'),
-            array('code' => 'CX', 'name' => 'Christmas Island'),
-            array('code' => 'CC', 'name' => 'Cocos (Keeling) Islands'),
-            array('code' => 'CO', 'name' => 'Colombia'),
-            array('code' => 'KM', 'name' => 'Comoros'),
-            array('code' => 'CG', 'name' => 'Congo'),
-            array('code' => 'CK', 'name' => 'Cook Islands'),
-            array('code' => 'CR', 'name' => 'Costa Rica'),
-            array('code' => 'HR', 'name' => 'Croatia (Hrvatska)'),
-            array('code' => 'CU', 'name' => 'Cuba'),
-            array('code' => 'CY', 'name' => 'Cyprus'),
-            array('code' => 'CZ', 'name' => 'Czech Republic'),
-            array('code' => 'CD', 'name' => 'Democratic Republic of Congo'),
-            array('code' => 'DK', 'name' => 'Denmark'),
-            array('code' => 'DJ', 'name' => 'Djibouti'),
-            array('code' => 'DM', 'name' => 'Dominica'),
-            array('code' => 'DO', 'name' => 'Dominican Republic'),
-            array('code' => 'TP', 'name' => 'East Timor'),
-            array('code' => 'EC', 'name' => 'Ecudaor'),
-            array('code' => 'EG', 'name' => 'Egypt'),
-            array('code' => 'SV', 'name' => 'El Salvador'),
-            array('code' => 'GQ', 'name' => 'Equatorial Guinea'),
-            array('code' => 'ER', 'name' => 'Eritrea'),
-            array('code' => 'EE', 'name' => 'Estonia'),
-            array('code' => 'ET', 'name' => 'Ethiopia'),
-            array('code' => 'FK', 'name' => 'Falkland Islands (Malvinas)'),
-            array('code' => 'FO', 'name' => 'Faroe Islands'),
-            array('code' => 'FJ', 'name' => 'Fiji'),
-            array('code' => 'FI', 'name' => 'Finland'),
-            array('code' => 'FR', 'name' => 'France'),
-            array('code' => 'FX', 'name' => 'France, Metropolitan'),
-            array('code' => 'GF', 'name' => 'French Guiana'),
-            array('code' => 'PF', 'name' => 'French Polynesia'),
-            array('code' => 'TF', 'name' => 'French Southern Territories'),
-            array('code' => 'GA', 'name' => 'Gabon'),
-            array('code' => 'GM', 'name' => 'Gambia'),
-            array('code' => 'GE', 'name' => 'Georgia'),
-            array('code' => 'DE', 'name' => 'Germany'),
-            array('code' => 'GH', 'name' => 'Ghana'),
-            array('code' => 'GI', 'name' => 'Gibraltar'),
-            array('code' => 'GR', 'name' => 'Greece'),
-            array('code' => 'GL', 'name' => 'Greenland'),
-            array('code' => 'GD', 'name' => 'Grenada'),
-            array('code' => 'GP', 'name' => 'Guadeloupe'),
-            array('code' => 'GU', 'name' => 'Guam'),
-            array('code' => 'GT', 'name' => 'Guatemala'),
-            array('code' => 'GN', 'name' => 'Guinea'),
-            array('code' => 'GW', 'name' => 'Guinea-Bissau'),
-            array('code' => 'GY', 'name' => 'Guyana'),
-            array('code' => 'HT', 'name' => 'Haiti'),
-            array('code' => 'HM', 'name' => 'Heard and Mc Donald Islands'),
-            array('code' => 'HN', 'name' => 'Honduras'),
-            array('code' => 'HK', 'name' => 'Hong Kong'),
-            array('code' => 'HU', 'name' => 'Hungary'),
-            array('code' => 'IS', 'name' => 'Iceland'),
-            array('code' => 'IN', 'name' => 'India'),
-            array('code' => 'ID', 'name' => 'Indonesia'),
-            array('code' => 'IR', 'name' => 'Iran (Islamic Republic of)'),
-            array('code' => 'IQ', 'name' => 'Iraq'),
-            array('code' => 'IE', 'name' => 'Ireland'),
-            array('code' => 'IL', 'name' => 'Israel'),
-            array('code' => 'IT', 'name' => 'Italy'),
-            array('code' => 'CI', 'name' => 'Ivory Coast'),
-            array('code' => 'JM', 'name' => 'Jamaica'),
-            array('code' => 'JP', 'name' => 'Japan'),
-            array('code' => 'JO', 'name' => 'Jordan'),
-            array('code' => 'KZ', 'name' => 'Kazakhstan'),
-            array('code' => 'KE', 'name' => 'Kenya'),
-            array('code' => 'KI', 'name' => 'Kiribati'),
-            array('code' => 'KP', 'name' => 'Korea, Democratic People\'s Republic of'),
-            array('code' => 'KR', 'name' => 'Korea, Republic of'),
-            array('code' => 'KW', 'name' => 'Kuwait'),
-            array('code' => 'KG', 'name' => 'Kyrgyzstan'),
-            array('code' => 'LA', 'name' => 'Lao People\'s Democratic Republic'),
-            array('code' => 'LV', 'name' => 'Latvia'),
-            array('code' => 'LB', 'name' => 'Lebanon'),
-            array('code' => 'LS', 'name' => 'Lesotho'),
-            array('code' => 'LR', 'name' => 'Liberia'),
-            array('code' => 'LY', 'name' => 'Libyan Arab Jamahiriya'),
-            array('code' => 'LI', 'name' => 'Liechtenstein'),
-            array('code' => 'LT', 'name' => 'Lithuania'),
-            array('code' => 'LU', 'name' => 'Luxembourg'),
-            array('code' => 'MO', 'name' => 'Macau'),
-            array('code' => 'MK', 'name' => 'Macedonia'),
-            array('code' => 'MG', 'name' => 'Madagascar'),
-            array('code' => 'MW', 'name' => 'Malawi'),
-            array('code' => 'MY', 'name' => 'Malaysia'),
-            array('code' => 'MV', 'name' => 'Maldives'),
-            array('code' => 'ML', 'name' => 'Mali'),
-            array('code' => 'MT', 'name' => 'Malta'),
-            array('code' => 'MH', 'name' => 'Marshall Islands'),
-            array('code' => 'MQ', 'name' => 'Martinique'),
-            array('code' => 'MR', 'name' => 'Mauritania'),
-            array('code' => 'MU', 'name' => 'Mauritius'),
-            array('code' => 'TY', 'name' => 'Mayotte'),
-            array('code' => 'MX', 'name' => 'Mexico'),
-            array('code' => 'FM', 'name' => 'Micronesia, Federated States of'),
-            array('code' => 'MD', 'name' => 'Moldova, Republic of'),
-            array('code' => 'MC', 'name' => 'Monaco'),
-            array('code' => 'MN', 'name' => 'Mongolia'),
-            array('code' => 'MS', 'name' => 'Montserrat'),
-            array('code' => 'MA', 'name' => 'Morocco'),
-            array('code' => 'MZ', 'name' => 'Mozambique'),
-            array('code' => 'MM', 'name' => 'Myanmar'),
-            array('code' => 'NA', 'name' => 'Namibia'),
-            array('code' => 'NR', 'name' => 'Nauru'),
-            array('code' => 'NP', 'name' => 'Nepal'),
-            array('code' => 'NL', 'name' => 'Netherlands'),
-            array('code' => 'AN', 'name' => 'Netherlands Antilles'),
-            array('code' => 'NC', 'name' => 'New Caledonia'),
-            array('code' => 'NZ', 'name' => 'New Zealand'),
-            array('code' => 'NI', 'name' => 'Nicaragua'),
-            array('code' => 'NE', 'name' => 'Niger'),
-            array('code' => 'NG', 'name' => 'Nigeria'),
-            array('code' => 'NU', 'name' => 'Niue'),
-            array('code' => 'NF', 'name' => 'Norfork Island'),
-            array('code' => 'MP', 'name' => 'Northern Mariana Islands'),
-            array('code' => 'NO', 'name' => 'Norway'),
-            array('code' => 'OM', 'name' => 'Oman'),
-            array('code' => 'PK', 'name' => 'Pakistan'),
-            array('code' => 'PW', 'name' => 'Palau'),
-            array('code' => 'PA', 'name' => 'Panama'),
-            array('code' => 'PG', 'name' => 'Papua New Guinea'),
-            array('code' => 'PY', 'name' => 'Paraguay'),
-            array('code' => 'PE', 'name' => 'Peru'),
-            array('code' => 'PH', 'name' => 'Philippines'),
-            array('code' => 'PN', 'name' => 'Pitcairn'),
-            array('code' => 'PL', 'name' => 'Poland'),
-            array('code' => 'PT', 'name' => 'Portugal'),
-            array('code' => 'PR', 'name' => 'Puerto Rico'),
-            array('code' => 'QA', 'name' => 'Qatar'),
-            array('code' => 'SS', 'name' => 'Republic of South Sudan'),
-            array('code' => 'RE', 'name' => 'Reunion'),
-            array('code' => 'RO', 'name' => 'Romania'),
-            array('code' => 'RU', 'name' => 'Russian Federation'),
-            array('code' => 'RW', 'name' => 'Rwanda'),
-            array('code' => 'KN', 'name' => 'Saint Kitts and Nevis'),
-            array('code' => 'LC', 'name' => 'Saint Lucia'),
-            array('code' => 'VC', 'name' => 'Saint Vincent and the Grenadines'),
-            array('code' => 'WS', 'name' => 'Samoa'),
-            array('code' => 'SM', 'name' => 'San Marino'),
-            array('code' => 'ST', 'name' => 'Sao Tome and Principe'),
-            array('code' => 'SA', 'name' => 'Saudi Arabia'),
-            array('code' => 'SN', 'name' => 'Senegal'),
-            array('code' => 'RS', 'name' => 'Serbia'),
-            array('code' => 'SC', 'name' => 'Seychelles'),
-            array('code' => 'SL', 'name' => 'Sierra Leone'),
-            array('code' => 'SG', 'name' => 'Singapore'),
-            array('code' => 'SK', 'name' => 'Slovakia'),
-            array('code' => 'SI', 'name' => 'Slovenia'),
-            array('code' => 'SB', 'name' => 'Solomon Islands'),
-            array('code' => 'SO', 'name' => 'Somalia'),
-            array('code' => 'ZA', 'name' => 'South Africa'),
-            array('code' => 'GS', 'name' => 'South Georgia South Sandwich Islands'),
-            array('code' => 'ES', 'name' => 'Spain'),
-            array('code' => 'LK', 'name' => 'Sri Lanka'),
-            array('code' => 'SH', 'name' => 'St. Helena'),
-            array('code' => 'PM', 'name' => 'St. Pierre and Miquelon'),
-            array('code' => 'SD', 'name' => 'Sudan'),
-            array('code' => 'SR', 'name' => 'Suriname'),
-            array('code' => 'SJ', 'name' => 'Svalbarn and Jan Mayen Islands'),
-            array('code' => 'SZ', 'name' => 'Swaziland'),
-            array('code' => 'SE', 'name' => 'Sweden'),
-            array('code' => 'CH', 'name' => 'Switzerland'),
-            array('code' => 'SY', 'name' => 'Syrian Arab Republic'),
-            array('code' => 'TW', 'name' => 'Taiwan'),
-            array('code' => 'TJ', 'name' => 'Tajikistan'),
-            array('code' => 'TZ', 'name' => 'Tanzania, United Republic of'),
-            array('code' => 'TH', 'name' => 'Thailand'),
-            array('code' => 'TG', 'name' => 'Togo'),
-            array('code' => 'TK', 'name' => 'Tokelau'),
-            array('code' => 'TO', 'name' => 'Tonga'),
-            array('code' => 'TT', 'name' => 'Trinidad and Tobago'),
-            array('code' => 'TN', 'name' => 'Tunisia'),
-            array('code' => 'TR', 'name' => 'Turkey'),
-            array('code' => 'TM', 'name' => 'Turkmenistan'),
-            array('code' => 'TC', 'name' => 'Turks and Caicos Islands'),
-            array('code' => 'TV', 'name' => 'Tuvalu'),
-            array('code' => 'UG', 'name' => 'Uganda'),
-            array('code' => 'UA', 'name' => 'Ukraine'),
-            array('code' => 'AE', 'name' => 'United Arab Emirates'),
-            array('code' => 'GB', 'name' => 'United Kingdom'),
-            array('code' => 'UM', 'name' => 'United States minor outlying islands'),
-            array('code' => 'UY', 'name' => 'Uruguay'),
-            array('code' => 'UZ', 'name' => 'Uzbekistan'),
-            array('code' => 'VU', 'name' => 'Vanuatu'),
-            array('code' => 'VA', 'name' => 'Vatican City State'),
-            array('code' => 'VE', 'name' => 'Venezuela'),
-            array('code' => 'VN', 'name' => 'Vietnam'),
-            array('code' => 'VG', 'name' => 'Virgin Islands (British)'),
-            array('code' => 'VI', 'name' => 'Virgin Islands (U.S.)'),
-            array('code' => 'WF', 'name' => 'Wallis and Futuna Islands'),
-            array('code' => 'EH', 'name' => 'Western Sahara'),
-            array('code' => 'YE', 'name' => 'Yemen'),
-            array('code' => 'YU', 'name' => 'Yugoslavia'),
-            array('code' => 'ZR', 'name' => 'Zaire'),
-            array('code' => 'ZM', 'name' => 'Zambia'),
-            array('code' => 'ZW', 'name' => 'Zimbabwe'),
-        );
-        DB::table('Country')->insert($countries);
+        $query = "INSERT INTO `country` (`country_id`, `code`, `label`, `nationality`, `nationality_arabe`) VALUES"
+            . "(177, 'PSE', 'Palestine', 'Palestinienne', 'فلسطينية'),"
+            . "(215, 'TUN', 'Tunisia', 'Tunisienne', 'تونسية'),"
+            . "(1, 'ABW', 'Aruba', NULL, NULL),"
+            . "(2, 'AFG', 'Afghanistan', 'Afghane', NULL),"
+            . "(3, 'AGO', 'Angola', 'Angolaise', NULL),"
+            . "(4, 'AIA', 'Anguilla', NULL, NULL),"
+            . "(5, 'ALB', 'Albania', 'Albanaise', NULL),"
+            . "(6, 'AND', 'Andorra', 'Andorrane', NULL),"
+            . "(7, 'ANT', 'Netherlands Antilles', NULL, NULL),"
+            . "(8, 'ARE', 'United Arab Emirates', 'Tunisienne', NULL),"
+            . "(9, 'ARG', 'Argentina', 'Argentine', NULL),"
+            . "(10, 'ARM', 'Armenia', 'Armenienne', NULL),"
+            . "(11, 'ASM', 'American Samoa', 'fvdc', NULL),"
+            . "(12, 'ATA', 'Antarctica', NULL, NULL),"
+            . "(13, 'ATF', 'French Southern territories', NULL, NULL),"
+            . "(14, 'ATG', 'Antigua and Barbuda', 'Antiguaise et barbudienne', NULL),"
+            . "(15, 'AUS', 'Australia', 'Australienne', NULL),"
+            . "(16, 'AUT', 'Austria', 'Autrichienne', NULL),"
+            . "(17, 'AZE', 'Azerbaijan', 'Azerbaïdjanaise', NULL),"
+            . "(18, 'BDI', 'Burundi', 'Burundaise', NULL),"
+            . "(19, 'BEL', 'Belgium', 'Belge', NULL),"
+            . "(20, 'BEN', 'Benin', 'Beninoise', NULL),"
+            . "(21, 'BFA', 'Burkina Faso', 'Burkinabe', NULL),"
+            . "(22, 'BGD', 'Bangladesh', 'Bangladaise', NULL),"
+            . "(23, 'BGR', 'Bulgaria', 'Bulgare', NULL),"
+            . "(24, 'BHR', 'Bahrain', 'Bahreinienne', NULL),"
+            . "(25, 'BHS', 'Bahamas', 'Bahamienne', NULL),"
+            . "(26, 'BIH', 'Bosnia and Herzegovina', 'Bosnienne', NULL),"
+            . "(27, 'BLR', 'Belarus', NULL, NULL),"
+            . "(28, 'BLZ', 'Belize', 'Belizienne', NULL),"
+            . "(29, 'BMU', 'Bermuda', NULL, NULL),"
+            . "(30, 'BOL', 'Bolivia', 'Bolivienne', NULL),"
+            . "(31, 'BRA', 'Brazil', 'Bresilienne', NULL),"
+            . "(32, 'BRB', 'Barbados', 'Barbadienne', NULL),"
+            . "(33, 'BRN', 'Brunei', 'Bruneienne', NULL),"
+            . "(34, 'BTN', 'Bhutan', 'Bhoutanaise', NULL),"
+            . "(35, 'BVT', 'Bouvet Island', NULL, NULL),"
+            . "(36, 'BWA', 'Botswana', 'Botswanaise', NULL),"
+            . "(37, 'CAF', 'Central African Republic', 'Centrafricaine', NULL),"
+            . "(38, 'CAN', 'Canada', 'Canadienne', NULL),"
+            . "(39, 'CCK', 'Cocos (Keeling) Islands', NULL, NULL),"
+            . "(40, 'CHE', 'Switzerland', NULL, NULL),"
+            . "(41, 'CHL', 'Chile', 'Chilienne', NULL),"
+            . "(42, 'CHN', 'China', 'Chinoise', NULL),"
+            . "(43, 'CIV', 'Côte d’Ivoire', 'IVOIRIENNE', NULL),"
+            . "(44, 'CMR', 'Cameroon', 'Camerounaise', NULL),"
+            . "(45, 'COD', 'Congo, The Democratic Republic of the', NULL, NULL),"
+            . "(46, 'COG', 'Congo', 'Congolaise', NULL),"
+            . "(47, 'COK', 'Cook Islands', NULL, NULL),"
+            . "(48, 'COL', 'Colombia', 'Colombienne', NULL),"
+            . "(49, 'COM', 'Comoros', 'Comorienne', NULL),"
+            . "(50, 'CPV', 'Cape Verde', 'Cap-verdienne', NULL),"
+            . "(51, 'CRI', 'Costa Rica', 'Costaricaine', NULL),"
+            . "(52, 'CUB', 'Cuba', 'Cubaine', NULL),"
+            . "(53, 'CXR', 'Christmas Island', NULL, NULL),"
+            . "(54, 'CYM', 'Cayman Islands', NULL, NULL),"
+            . "(55, 'CYP', 'Cyprus', NULL, NULL),"
+            . "(56, 'CZE', 'Czech Republic', NULL, NULL),"
+            . "(57, 'DEU', 'Germany', 'Allemande', NULL),"
+            . "(58, 'DJI', 'Djibouti', 'Djiboutienne', NULL),"
+            . "(59, 'DMA', 'Dominica', NULL, NULL),"
+            . "(60, 'DNK', 'Denmark', NULL, NULL),"
+            . "(61, 'DOM', 'Dominican Republic', NULL, NULL),"
+            . "(62, 'DZA', 'Algeria', 'Algerienne', NULL),"
+            . "(63, 'ECU', 'Ecuador', NULL, NULL),"
+            . "(64, 'EGY', 'Egypt', 'Egyptienne', NULL),"
+            . "(65, 'ERI', 'Eritrea', NULL, NULL),"
+            . "(66, 'ESH', 'Western Sahara', NULL, NULL),"
+            . "(67, 'ESP', 'Spain', NULL, NULL),"
+            . "(68, 'EST', 'Estonia', NULL, NULL),"
+            . "(69, 'ETH', 'Ethiopia', NULL, NULL),"
+            . "(70, 'FIN', 'Finland', NULL, NULL),"
+            . "(71, 'FJI', 'Fiji Islands', NULL, NULL),"
+            . "(72, 'FLK', 'Falkland Islands', NULL, NULL),"
+            . "(73, 'FRA', 'France', 'Française', NULL),"
+            . "(74, 'FRO', 'Faroe Islands', NULL, NULL),"
+            . "(75, 'FSM', 'Micronesia, Federated States of', NULL, NULL),"
+            . "(76, 'GAB', 'Gabon', 'Gabonaise', NULL),"
+            . "(77, 'GBR', 'United Kingdom', 'Britannique', NULL),"
+            . "(78, 'GEO', 'Georgia', NULL, NULL),"
+            . "(79, 'GHA', 'Ghana', NULL, NULL),"
+            . "(80, 'GIB', 'Gibraltar', NULL, NULL),"
+            . "(81, 'GIN', 'Guinea', 'Guinéenne', NULL),"
+            . "(82, 'GLP', 'Guadeloupe', NULL, NULL),"
+            . "(83, 'GMB', 'Gambia', NULL, NULL),"
+            . "(84, 'GNB', 'Guinea-Bissau', 'Bissau-Guinéenne', NULL),"
+            . "(85, 'GNQ', 'Equatorial Guinea', NULL, NULL),"
+            . "(86, 'GRC', 'Greece', NULL, NULL),"
+            . "(87, 'GRD', 'Grenada', NULL, NULL),"
+            . "(88, 'GRL', 'Greenland', NULL, NULL),"
+            . "(89, 'GTM', 'Guatemala', NULL, NULL),"
+            . "(90, 'GUF', 'French Guiana', NULL, NULL),"
+            . "(91, 'GUM', 'Guam', NULL, NULL),"
+            . "(92, 'GUY', 'Guyana', NULL, NULL),"
+            . "(93, 'HKG', 'Hong Kong', NULL, NULL),"
+            . "(94, 'HMD', 'Heard Island and McDonald Islands', NULL, NULL),"
+            . "(95, 'HND', 'Honduras', NULL, NULL),"
+            . "(96, 'HRV', 'Croatia', 'Croate', NULL),"
+            . "(97, 'HTI', 'Haiti', NULL, NULL),"
+            . "(98, 'HUN', 'Hungary', NULL, NULL),"
+            . "(99, 'IDN', 'Indonesia', NULL, NULL),"
+            . "(100, 'IND', 'India', NULL, NULL),"
+            . "(101, 'IOT', 'British Indian Ocean Territory', NULL, NULL),"
+            . "(102, 'IRL', 'Ireland', NULL, NULL),"
+            . "(103, 'IRN', 'Iran', NULL, NULL),"
+            . "(104, 'IRQ', 'Iraq', NULL, NULL),"
+            . "(105, 'ISL', 'Iceland', NULL, NULL),"
+            . "(106, 'ISR', 'Israel', NULL, NULL),"
+            . "(107, 'ITA', 'Italy', NULL, NULL),"
+            . "(108, 'JAM', 'Jamaica', NULL, NULL),"
+            . "(109, 'JOR', 'Jordan', NULL, NULL),"
+            . "(110, 'JPN', 'Japan', NULL, NULL),"
+            . "(111, 'KAZ', 'Kazakstan', NULL, NULL),"
+            . "(112, 'KEN', 'Kenya', NULL, NULL),"
+            . "(113, 'KGZ', 'Kyrgyzstan', NULL, NULL),"
+            . "(114, 'KHM', 'Cambodia', 'Cambodgienne', NULL),"
+            . "(115, 'KIR', 'Kiribati', NULL, NULL),"
+            . "(116, 'KNA', 'Saint Kitts and Nevis', NULL, NULL),"
+            . "(117, 'KOR', 'South Korea', NULL, NULL),"
+            . "(118, 'KWT', 'Kuwait', NULL, NULL),"
+            . "(119, 'LAO', 'Laos', NULL, NULL),"
+            . "(120, 'LBN', 'Lebanon', NULL, NULL),"
+            . "(121, 'LBR', 'Liberia', NULL, NULL),"
+            . "(122, 'LBY', 'Libyan Arab Jamahiriya', 'Tunisienne', NULL),"
+            . "(123, 'LCA', 'Saint Lucia', NULL, NULL),"
+            . "(124, 'LIE', 'Liechtenstein', NULL, NULL),"
+            . "(125, 'LKA', 'Sri Lanka', NULL, NULL),"
+            . "(126, 'LSO', 'Lesotho', NULL, NULL),"
+            . "(127, 'LTU', 'Lithuania', NULL, NULL),"
+            . "(128, 'LUX', 'Luxembourg', NULL, NULL),"
+            . "(129, 'LVA', 'Latvia', NULL, NULL),"
+            . "(130, 'MAC', 'Macao', NULL, NULL),"
+            . "(131, 'MAR', 'Morocco', 'Marocaine', NULL),"
+            . "(132, 'MCO', 'Monaco', NULL, NULL),"
+            . "(133, 'MDA', 'Moldova', NULL, NULL),"
+            . "(134, 'MDG', 'Madagascar', 'Malgache', NULL),"
+            . "(135, 'MDV', 'Maldives', NULL, NULL),"
+            . "(136, 'MEX', 'Mexico', NULL, NULL),"
+            . "(137, 'MHL', 'Marshall Islands', NULL, NULL),"
+            . "(138, 'MKD', 'Macedonia', NULL, NULL),"
+            . "(139, 'MLI', 'Mali', 'Malienne', NULL),"
+            . "(140, 'MLT', 'Malta', 'Maltaise', NULL),"
+            . "(141, 'MMR', 'Myanmar', NULL, NULL),"
+            . "(142, 'MNG', 'Mongolia', NULL, NULL),"
+            . "(143, 'MNP', 'Northern Mariana Islands', NULL, NULL),"
+            . "(144, 'MOZ', 'Mozambique', 'Mozambicaine', NULL),"
+            . "(145, 'MRT', 'Mauritania', 'Mauritanienne', NULL),"
+            . "(146, 'MSR', 'Montserrat', NULL, NULL),"
+            . "(147, 'MTQ', 'Martinique', NULL, NULL),"
+            . "(148, 'MUS', 'Mauritius', 'mauricienne', NULL),"
+            . "(149, 'MWI', 'Malawi', 'Malawienne', NULL),"
+            . "(150, 'MYS', 'Malaysia', 'Malaisienne', NULL),"
+            . "(151, 'MYT', 'Mayotte', NULL, NULL),"
+            . "(152, 'NAM', 'Namibia', NULL, NULL),"
+            . "(153, 'NCL', 'New Caledonia', NULL, NULL),"
+            . "(154, 'NER', 'Niger', 'Nigerienne ', NULL),"
+            . "(155, 'NFK', 'Norfolk Island', NULL, NULL),"
+            . "(156, 'NGA', 'Nigeria', 'Nigeriane', NULL),"
+            . "(157, 'NIC', 'Nicaragua', NULL, NULL),"
+            . "(158, 'NIU', 'Niue', NULL, NULL),"
+            . "(159, 'NLD', 'Netherlands', NULL, NULL),"
+            . "(160, 'NOR', 'Norway', NULL, NULL),"
+            . "(161, 'NPL', 'Nepal', NULL, NULL),"
+            . "(162, 'NRU', 'Nauru', NULL, NULL),"
+            . "(163, 'NZL', 'New Zealand', NULL, NULL),"
+            . "(164, 'OMN', 'Oman', NULL, NULL),"
+            . "(165, 'PAK', 'Pakistan', NULL, NULL),"
+            . "(166, 'PAN', 'Panama', NULL, NULL),"
+            . "(167, 'PCN', 'Pitcairn', NULL, NULL),"
+            . "(168, 'PER', 'Peru', NULL, NULL),"
+            . "(169, 'PHL', 'Philippines', NULL, NULL),"
+            . "(170, 'PLW', 'Palau', NULL, NULL),"
+            . "(171, 'PNG', 'Papua New Guinea', NULL, NULL),"
+            . "(172, 'POL', 'Poland', 'Polonaise', NULL),"
+            . "(173, 'PRI', 'Puerto Rico', NULL, NULL),"
+            . "(174, 'PRK', 'North Korea', NULL, NULL),"
+            . "(175, 'PRT', 'Portugal', 'Portugaise', NULL),"
+            . "(176, 'PRY', 'Paraguay', NULL, NULL),"
+            . "(178, 'PYF', 'French Polynesia', NULL, NULL),"
+            . "(179, 'QAT', 'Qatar', NULL, NULL),"
+            . "(180, 'REU', 'Réunion', NULL, NULL),"
+            . "(181, 'ROM', 'Romania', NULL, NULL),"
+            . "(182, 'RUS', 'Russian Federation', NULL, NULL),"
+            . "(183, 'RWA', 'Rwanda', NULL, NULL),"
+            . "(184, 'SAU', 'Saudi Arabia', NULL, NULL),"
+            . "(185, 'SDN', 'Sudan', NULL, NULL),"
+            . "(186, 'SEN', 'Senegal', NULL, NULL),"
+            . "(187, 'SGP', 'Singapore', NULL, NULL),"
+            . "(188, 'SGS', 'South Georgia and the South Sandwich Islands', NULL, NULL),"
+            . "(189, 'SHN', 'Saint Helena', NULL, NULL),"
+            . "(190, 'SJM', 'Svalbard and Jan Mayen', NULL, NULL),"
+            . "(191, 'SLB', 'Solomon Islands', NULL, NULL),"
+            . "(192, 'SLE', 'Sierra Leone', NULL, NULL),"
+            . "(193, 'SLV', 'El Salvador', NULL, NULL),"
+            . "(194, 'SMR', 'San Marino', NULL, NULL),"
+            . "(195, 'SOM', 'Somalia', NULL, NULL),"
+            . "(196, 'SPM', 'Saint Pierre and Miquelon', NULL, NULL),"
+            . "(197, 'STP', 'Sao Tome and Principe', NULL, NULL),"
+            . "(198, 'SUR', 'Suriname', NULL, NULL),"
+            . "(199, 'SVK', 'Slovakia', NULL, NULL),"
+            . "(200, 'SVN', 'Slovenia', NULL, NULL),"
+            . "(201, 'SWE', 'Sweden', NULL, NULL),"
+            . "(202, 'SWZ', 'Swaziland', NULL, NULL),"
+            . "(203, 'SYC', 'Seychelles', NULL, NULL),"
+            . "(204, 'SYR', 'Syria', 'Syrienne', NULL),"
+            . "(205, 'TCA', 'Turks and Caicos Islands', NULL, NULL),"
+            . "(206, 'TCD', 'Chad', NULL, NULL),"
+            . "(207, 'TGO', 'Togo', NULL, NULL),"
+            . "(208, 'THA', 'Thailand', NULL, NULL),"
+            . "(209, 'TJK', 'Tajikistan', NULL, NULL),"
+            . "(210, 'TKL', 'Tokelau', NULL, NULL),"
+            . "(211, 'TKM', 'Turkmenistan', NULL, NULL),"
+            . "(212, 'TMP', 'East Timor', NULL, NULL),"
+            . "(213, 'TON', 'Tonga', 'Tonguienne', NULL),"
+            . "(214, 'TTO', 'Trinidad and Tobago', NULL, NULL),"
+            . "(216, 'TUR', 'Turkey', 'Turque', NULL),"
+            . "(217, 'TUV', 'Tuvalu', NULL, NULL),"
+            . "(218, 'TWN', 'Taiwan', NULL, NULL),"
+            . "(219, 'TZA', 'Tanzania', NULL, NULL),"
+            . "(220, 'UGA', 'Uganda', NULL, NULL),"
+            . "(221, 'UKR', 'Ukraine', 'Ukrainienne', NULL),"
+            . "(222, 'UMI', 'United States Minor Outlying Islands', NULL, NULL),"
+            . "(223, 'URY', 'Uruguay', 'Uruguayenne', NULL),"
+            . "(224, 'USA', 'United States', 'Americaine', NULL),"
+            . "(225, 'UZB', 'Uzbekistan', NULL, NULL),"
+            . "(226, 'VAT', 'Holy See (Vatican City State)', NULL, NULL),"
+            . "(227, 'VCT', 'Saint Vincent and the Grenadines', NULL, NULL),"
+            . "(228, 'VEN', 'Venezuela', NULL, NULL),"
+            . "(229, 'VGB', 'Virgin Islands, British', NULL, NULL),"
+            . "(230, 'VIR', 'Virgin Islands, U.S.', NULL, NULL),"
+            . "(231, 'VNM', 'Vietnam', 'Vietnamienne', NULL),"
+            . "(232, 'VUT', 'Vanuatu', NULL, NULL),"
+            . "(233, 'WLF', 'Wallis and Futuna', NULL, NULL),"
+            . "(234, 'WSM', 'Samoa', NULL, NULL),"
+            . "(235, 'YEM', 'Yemen', 'Yemenite', NULL),"
+            . "(236, 'YUG', 'Yugoslavia', NULL, NULL),"
+            . "(237, 'ZAF', 'South Africa', 'Sud-africaine', NULL),"
+            . "(238, 'ZMB', 'Zambia', 'Zambienne', NULL),"
+            . "(239, 'ZWE', 'Zimbabwe', 'Zimbabweenne', NULL);";
+        DB::insert($query);
     }
 }

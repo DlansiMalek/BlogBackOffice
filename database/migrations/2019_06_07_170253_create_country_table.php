@@ -17,8 +17,8 @@ class CreateCountryTable extends Migration
             $table->increments('country_id');
             $table->string("code");
             $table->string("label");
-            $table->string("nationality");
-            $table->string("nationality_arabe");
+            $table->string("nationality")->nullable();
+            $table->string("nationality_arabe")->nullable();
         });
     }
 

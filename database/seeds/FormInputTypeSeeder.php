@@ -36,7 +36,7 @@ class FormInputTypeSeeder extends Seeder
 
         DB::table('Form_Input_Type')->insert([
             'name' => 'datetime',
-            'name' => 'Date et Temps',
+            'display_name' => 'Date et Temps',
         ]);
 
         DB::table('Form_Input_Type')->insert([
@@ -58,15 +58,15 @@ class FormInputTypeSeeder extends Seeder
             'name' => 'Radio',
             'display_name' => 'radio',
         ]);
-
-        DB::table('Form_Input_Type')->insert([
-            'name' => 'file',
-            'display_name' => 'Fichier',
-
-        ]);
-
-        DB::table('Form_Input_Type')->insert([
-            'name' => 'Fichiers multiples',
-        ]);
+//
+//        DB::table('Form_Input_Type')->insert([
+//            'name' => 'file',
+//            'display_name' => 'Fichier',
+//
+//        ]);
+//
+//        DB::table('Form_Input_Type')->insert([
+//            'name' => 'Fichiers multiples',
+//        ]);
     }
 }
