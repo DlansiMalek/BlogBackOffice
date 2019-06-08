@@ -36,7 +36,7 @@ class Access extends Model
     //chair persons
     public function chairs()
     {
-        return $this->belongsToMany('App\Models\User', 'ChairPerson_Access', 'access_id', 'user_id');
+        return $this->belongsToMany('App\Models\User', '_AccessChair', 'access_id', 'user_id');
     }
 
     public function attestation()

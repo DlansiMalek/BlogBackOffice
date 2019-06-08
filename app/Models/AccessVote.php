@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Access_Vote extends Model
+class AccessVote extends Model
 {
     public $timestamps = true;
     protected $table = 'Access_Vote';
@@ -23,7 +23,7 @@ class Access_Vote extends Model
     }
 
     public function scores(){
-        return $this->hasMany("App\Models\Vote_Score", "access_vote_id","access_vote_id");
+        return $this->hasMany("App\Models\VoteScore", "access_vote_id","access_vote_id");
     }
 
 }

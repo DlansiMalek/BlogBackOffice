@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Payment_Type extends Model
+class PaymentType extends Model
 {
     public $timestamps = true;
     protected $table = 'Payment_Type';

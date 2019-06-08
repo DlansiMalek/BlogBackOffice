@@ -11,7 +11,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Attestation_Request extends Model
+class AttestationRequest extends Model
 {
     public $timestamps = true;
     protected $table = 'Attestation_Request';

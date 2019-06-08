@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Attestation_Divers extends Model
+class AttestationDivers extends Model
 {
     public $timestamps = true;
     protected $table = 'Attestation_Divers';
@@ -21,7 +21,7 @@ class Attestation_Divers extends Model
 
     public function type()
     {
-        return $this->belongsTo('App\Models\Attestation_Type', 'attestation_type_id', 'attestation_type_id');
+        return $this->belongsTo('App\Models\AttestationType', 'attestation_type_id', 'attestation_type_id');
     }
 
 

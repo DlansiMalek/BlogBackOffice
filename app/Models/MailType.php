@@ -10,10 +10,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Form_Input_Type extends Model
+class MailType extends Model
 {
     public $timestamps = true;
-    protected $table = 'Form_Input_Type';
-    protected $primaryKey = 'form_input_type_id';
-    protected $fillable = ['name', "display_name"];
+    protected $table = 'Mail_Type';
+    protected $primaryKey = 'mail_type_id';
+    protected $fillable = ['name','display_name'];
+
 }

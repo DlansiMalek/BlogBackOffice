@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Form_Input_Response extends Model
+class FormInputResponse extends Model
 {
     public $timestamps = true;
     protected $table = 'Form_Input_Response';
@@ -20,11 +20,11 @@ class Form_Input_Response extends Model
 
     function values()
     {
-        return $this->has('App\Models\Form_Input_Value', 'form_input_value_id', 'form_input_value_id');
+        return $this->has('App\Models\FormInputValue', 'form_input_value_id', 'form_input_value_id');
     }
 
     function form_input(){
-        return $this->hasOne('App\Models\Form_Input', 'form_input_id','form_input_id');
+        return $this->hasOne('App\Models\FormInput', 'form_input_id','form_input_id');
     }
 
 }

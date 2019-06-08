@@ -19,7 +19,7 @@ class Payment extends Model
         'payment_type_id','user_id','congress_id','admin_id'];
 
     public function type(){
-        return $this->hasOne('App\Models\Payment_Type','payment_type_id','payment_type_id');
+        return $this->hasOne('App\Models\PaymentType','payment_type_id','payment_type_id');
     }
 
     public function user(){

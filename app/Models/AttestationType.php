@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Attestation_Type extends Model
+class AttestationType extends Model
 {
     public $timestamps = true;
     protected $table = 'Attestation_Type';
@@ -21,7 +21,7 @@ class Attestation_Type extends Model
 
     public function attestations()
     {
-        return $this->hasMany('App\Models\Attestation_Divers', 'attestation_type_id', 'attestation_type_id');
+        return $this->hasMany('App\Models\AttestationDivers', 'attestation_type_id', 'attestation_type_id');
     }
 
 

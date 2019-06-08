@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Form_Input_Value extends Model
+class FormInputValue extends Model
 {
     public $timestamps = true;
     protected $table = 'Form_Input_Value';

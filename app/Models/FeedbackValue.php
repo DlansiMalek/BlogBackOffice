@@ -10,16 +10,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Feedback_Question_Value extends Model
+class FeedbackValue extends Model
 {
     public $timestamps = true;
-    protected $table = 'Feedback_Question_Value';
-    protected $primaryKey = 'feedback_question_value_id';
+    protected $table = 'Feedback_Value';
+    protected $primaryKey = 'feedback_value_id';
     protected $fillable = ['value','feedback_question_id','order'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function responses(){
-        return $this->hasMany('App\Models\Feedback_Response','feedback_question_value_id','feedback_question_value_id');
+        return $this->hasMany('App\Models\FeedbackResponse','feedback_question_value_id','feedback_question_value_id');
     }
 
 }

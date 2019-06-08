@@ -6,7 +6,7 @@ use App\Models\Access;
 use App\Models\Congress;
 use App\Models\Feedback_Question;
 use App\Models\Feedback_Question_Type;
-use App\Models\Feedback_Question_Value;
+use App\Models\Feedback__Value;
 use App\Models\Feedback_Response;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
@@ -46,7 +46,7 @@ class FeedbackService
 
     public function deleteFeedbackQuestionValues($feedback_question_id)
     {
-        Feedback_Question_Value::where('feedback_question_id', '=', $feedback_question_id);
+        Feedback__Value::where('feedback_question_id', '=', $feedback_question_id);
     }
 
     public function saveFeedbackQuestion($request, $congress_id)
@@ -61,7 +61,7 @@ class FeedbackService
         $type = $this->getFeedbackQuestionTypeById($question->feedback_question_type_id);
         if (!$type || $type->name != 'choice') return;
         foreach ($request['values'] as $requestValue) {
-            $value = new Feedback_Question_Value();
+            $value = new Feedback__Value();
             $value->value = $requestValue['value'];
             $value->order = $requestValue['order'];
             $value->feedback_question_id = $question->feedback_question_id;
@@ -74,7 +74,7 @@ class FeedbackService
     {
         foreach ($oldValues as $oldValue) {
             $found = false;
-            $newValue = new Feedback_Question_Value();
+            $newValue = new Feedback__Value();
             foreach ($newValues as $val) {
                 if (array_key_exists('feedback_question_value_id', $val) && $oldValue->feedback_question_value_id == $val['feedback_question_value_id']) {
                     $found = true;
@@ -98,7 +98,7 @@ class FeedbackService
                 }
             }
             if (!$found) {
-                $value = new Feedback_Question_Value();
+                $value = new Feedback__Value();
                 $value->value = $newValue['value'];
                 $value->order = $newValue['order'];
                 $value->feedback_question_id = $feedback_question_id;

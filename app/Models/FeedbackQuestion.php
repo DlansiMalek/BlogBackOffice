@@ -10,20 +10,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Feedback_Question extends Model
+class FeedbackQuestion extends Model
 {
     public $timestamps = true;
     protected $table = 'Feedback_Question';
     protected $primaryKey = 'feedback_question_id';
-    protected $fillable = ['label','congress_id','feedback_question_type_id', 'max_responses','order'];
+    protected $fillable = ['question','congress_id','access_id', 'isText'];
     protected $dates = ['created_at', 'updated_at'];
 
-    public function type(){
-        return $this->hasOne("App\Models\Feedback_Question_Type","feedback_question_type_id","feedback_question_type_id");
+    public function values(){
+        return $this->hasMany("App\Models\FeedbackValue","feedback_question_id","feedback_question_id")->orderBy('order');
     }
 
-    public function values(){
-        return $this->hasMany("App\Models\Feedback_Question_Value","feedback_question_id","feedback_question_id")->orderBy('order');
+    public function access(){
+        return $this->belongsTo('App\Models\Access','access_id','access_id');
+    }
+
+    public function congress(){
+        return $this->belongsTo('App\Models\Congress','congress_id','congress_id');
     }
 
     public function responses(){

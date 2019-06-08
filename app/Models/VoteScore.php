@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Vote_Score extends Model
+class VoteScore extends Model
 {
     public $timestamps = true;
     protected $table = 'Vote_Score';
@@ -20,7 +20,7 @@ class Vote_Score extends Model
 
     public function access_vote()
     {
-        return $this->hasOne("App\Models\Access_Vote", "access_vote_id", "access_vote_id");
+        return $this->hasOne("App\Models\AccessVote", "access_vote_id", "access_vote_id");
     }
 
     public function user(){
