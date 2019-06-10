@@ -15,7 +15,7 @@ class AccessPresence extends Model
 {
     protected $table = 'Access_Presence';
     protected $primaryKey = 'access_presence_id';
-    protected $fillable = ['enter_time', 'leave_time', 'user_id', 'access_id'];
+    protected $fillable = ['entered_at', 'left_at', 'user_id', 'access_id'];
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];

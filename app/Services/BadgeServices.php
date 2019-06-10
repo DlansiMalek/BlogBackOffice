@@ -105,7 +105,7 @@ class BadgeServices
     {
         $presenceAccess = Access_Presence::where('user_id', '=', $user_id)
             ->where('access_id', '=', $access->access_id)
-            ->orderBy('enter_time', 'asc')
+            ->orderBy('entered_at', 'asc')
             ->get();
         if (sizeof($presenceAccess) == 0) {
             return 0;
@@ -116,10 +116,10 @@ class BadgeServices
 
         $calculatedTime = 0;
         foreach ($presenceAccess as $item) {
-            if ($item->leave_time == null) {
-                $diff = Utils::diffMinutes($item->enter_time, $endCongress);
+            if ($item->left_at == null) {
+                $diff = Utils::diffMinutes($item->entered_at, $endCongress);
             } else {
-                $diff = Utils::diffMinutes($item->enter_time, $item->leave_time);
+                $diff = Utils::diffMinutes($item->entered_at, $item->left_at);
             }
             $calculatedTime += $diff;
         }

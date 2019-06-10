@@ -26,14 +26,14 @@ class CreatePaymentTable extends Migration
             $table->foreign('payment_type_id')->references('payment_type_id')->on('Payment_Type');
 
 
-            $table->unsignedInteger('user_id');
-            $table->foreign('user_id')->references('user_id')->on('User')->nullable()->onDelete('cascade');
+            $table->unsignedInteger('user_id')->nullable()->default(null);
+            $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');
 
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
 
-            $table->unsignedInteger('admin_id');
-            $table->foreign('admin_id')->references('admin_id')->on('Admin')->nullable()->onDelete('cascade');
+            $table->unsignedInteger('admin_id')->nullable()->default(null);
+            $table->foreign('admin_id')->references('admin_id')->on('Admin')->onDelete('cascade');
 
             $table->softDeletes();
             $table->timestamps();

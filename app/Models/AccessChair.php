@@ -9,7 +9,7 @@ class AccessChair extends Model
     public $timestamps = true;
     protected $table = 'Access_Chair';
     protected $primaryKey = 'access_chair_id';
-    protected $fillable = ['user_id', 'access_id', 'isPresent'];
+    protected $fillable = ['user_id', 'access_id'];
     protected $dates = ['created_at', 'updated_at'];
 
     public function user()

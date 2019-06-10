@@ -20,7 +20,7 @@ class CreateFeedbackResponseTable extends Migration
             $table->unsignedInteger('feedback_value_id')->nullable()->default(null);
             $table->foreign('feedback_value_id')->references('feedback_value_id')->on('Feedback_Value')->onDelete('cascade');
 
-            $table->unsignedInteger('feedback_question_id')->nullable()->default(null);
+            $table->unsignedInteger('feedback_question_id');
             $table->foreign('feedback_question_id')->references('feedback_question_id')->on('Feedback_Question')->onDelete('cascade');
 
             $table->unsignedInteger('user_id');

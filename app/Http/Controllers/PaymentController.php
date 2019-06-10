@@ -41,7 +41,7 @@ class PaymentController extends Controller
 
     function notification(Request $request)
     {
-
+        //TODO A changer
         $action = $request->input("Action");
         $ref = $request->input("Reference");
         $param = $request->input("Param");
@@ -58,7 +58,7 @@ class PaymentController extends Controller
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=" . $price;
             case "ACCORD" :
                 $user->isPaied = 1;
-                $user->autorisation_num = $param;
+                $user->authorization = $param;
                 $user->update();
 
                 $congress = $this->congressServices->getCongressById($user->congress_id);

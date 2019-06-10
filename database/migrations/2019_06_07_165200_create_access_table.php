@@ -22,14 +22,14 @@ class CreateAccessTable extends Migration
             $table->integer("max_places")->nullable()->default(null);
             $table->integer("total_present_in_congress")->default(0);
             $table->integer('seuil')->nullable()->default(null);
-            $table->string('room');
-            $table->string('description');
+            $table->string('room')->nullable()->default(null);
+            $table->string('description')->nullable()->default(null);
             $table->dateTime("real_start_date")->nullable()->default(null);
-            $table->dateTime("start_date")->nullable()->default(null);
-            $table->dateTime("end_date")->nullable()->default(null);
+            $table->dateTime("start_date");
+            $table->dateTime("end_date");
             $table->unsignedTinyInteger('packless')->default(1);
 
-            $table->integer('parent_id')->unsigned();
+            $table->integer('parent_id')->unsigned()->nullable()->default(null);
             $table->foreign('parent_id')->references('access_id')->on('Access');
 
             $table->integer('congress_id')->unsigned();
@@ -37,15 +37,13 @@ class CreateAccessTable extends Migration
                 ->onDelete('cascade');
 
             //topic
-            $table->integer('topic_id')->unsigned();
+            $table->integer('topic_id')->unsigned()->nullable()->default(null);
             $table->foreign('topic_id')->references('topic_id')->on('Topic');
 
 
             //access_type
-            $table->integer('access_type_id')->unsigned();
+            $table->integer('access_type_id')->unsigned()->nullable()->default(null);
             $table->foreign('access_type_id')->references('access_type_id')->on('Access_Type');
-
-
 
 
             $table->softDeletes();

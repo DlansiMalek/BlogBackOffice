@@ -399,7 +399,7 @@ class UserServices
             } else {
                 //Leave
                 if ($presence_access = $this->getLastEnterUser($user->user_id, $accessId)) {
-                    $presence_access->leave_time = date('Y-m-d H:i:s');
+                    $presence_access->left_at = date('Y-m-d H:i:s');
                     $presence_access->update();
                 }
             }
@@ -801,13 +801,13 @@ class UserServices
         $access_presence = new Access_Presence();
         $access_presence->user_id = $user_id;
         $access_presence->access_id = $accessId;
-        $access_presence->enter_time = date('Y-m-d H:i:s');
+        $access_presence->entered_at = date('Y-m-d H:i:s');
         $access_presence->save();
     }
 
     private function getLastEnterUser($user_id, $accessId)
     {
-        return Access_Presence::whereNull('leave_time')
+        return Access_Presence::whereNull('left_at')
             ->where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
             ->first();
