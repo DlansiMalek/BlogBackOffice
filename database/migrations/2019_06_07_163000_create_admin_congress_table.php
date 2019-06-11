@@ -25,6 +25,9 @@ class CreateAdminCongressTable extends Migration
             $table->unsignedInteger('organization_id')->nullable()->default(null);
             $table->foreign('organization_id')->references('organization_id')->on('Organization');
 
+            $table->unsignedInteger('privilege_id');
+            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege');
+
             $table->softDeletes();
             $table->timestamps();
         });

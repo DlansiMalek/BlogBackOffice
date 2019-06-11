@@ -22,7 +22,7 @@ class AdminServices
     public function getAdminByLogin($login)
     {
         return Admin::whereEmail($login)
-            ->with(["privileges"])
+            ->with(["congresses"])
             ->first();
 
     }

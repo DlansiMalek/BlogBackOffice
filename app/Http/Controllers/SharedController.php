@@ -57,4 +57,8 @@ class SharedController extends Controller
     public function getFile($file_path){
         return response()->file('../storage/app/mail-images/'.$file_path);
     }
+
+    public function encrypt($password){
+        return bcrypt($password);
+    }
 }
