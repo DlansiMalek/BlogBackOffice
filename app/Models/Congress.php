@@ -54,6 +54,10 @@ class Congress extends Model
         return $this->hasMany('App\Models\Payment','congress_id','congress_id');
     }
 
+
+    public function admin_congresses(){
+        return $this->hasMany('App\Models\AdminCongress','congress_id','congress_id');
+    }
 //    public function accesss()
 //    {
 //        return $this->hasMany('App\Models\Access', "congress_id", "congress_id");

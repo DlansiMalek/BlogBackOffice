@@ -158,7 +158,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 
     });
     Route::group(['prefix' => 'me'], function () {
-        Route::get('', 'AdminController@getAuhentificatedAdmin');
+        Route::get('', 'AdminController@getAuhenticatedAdmin');
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list', 'AdminController@getListPersonels');

@@ -219,50 +219,17 @@ class AdminController extends Controller
         return response()->json(["message" => "success sending and scaning"], 200);
     }
 
-
-    /**
-     * @SWG\Get(
-     *   path="/admin/me",
-     *   summary="Get Admin By Token",
-     *   operationId="getAuhentificatedAdmin",
-     *   security={
-     *     {"Bearer": {}}
-     *   },
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error")
-     * )
-     *
-     */
-    public
-    function getAuhentificatedAdmin()
+    public function getAuhenticatedAdmin()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $this->adminServices->getAdminById($admin->admin_id);
 
-        // the token is valid and we have found the user via the sub claim
         return response()->json(compact('admin'));
     }
 
-
-    /**
-     * @SWG\Get(
-     *   path="/admin/me/congress",
-     *   summary="Get Congress By Admin",
-     *   operationId="getAdminCongresses",
-     *   security={
-     *     {"Bearer": {}}
-     *   },
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error")
-     * )
-     *
-     */
-    public
-    function getAdminCongresses()
+    public function getAdminCongresses()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
