@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Access;
+use App\Models\AdminCongress;
+use App\Models\ConfigCongress;
 use App\Models\Congress;
 use App\Models\Feedback_Question;
 use App\Models\Feedback_Question_Type;
@@ -58,16 +60,27 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $date, $has_paiement, $price, $free, $admin_id)
+    public function addCongress($name, $start_date, $end_date, $price, $has_payment, $free, $prise_charge_option, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
-        $congress->date = $date;
-        $congress->admin_id = $admin_id;
-        $congress->has_paiement = $has_paiement;
+        $congress->start_date = $start_date;
+        $congress->end_date = $end_date;
         $congress->price = $price ? $price : 0;
-        $congress->free = $free ? $free : 0;
         $congress->save();
+
+        $config = new ConfigCongress();
+        $config->congress_id = $congress->congress_id;
+        $config->free = $free ? $free : 0;
+        $config->has_payment = $has_payment ? 1 : 0;
+        $config->prise_charge_option = $prise_charge_option ? 1 : 0;
+        $config->save();
+
+        $admin_congress = new AdminCongress();
+        $admin_congress->admin_id = $admin_id;
+        $admin_congress->congress_id = $congress->congress_id;
+        $admin_congress->privilege_id = 1;
+        $admin_congress->save();
         return $congress;
     }
 
