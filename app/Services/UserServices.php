@@ -5,11 +5,15 @@ namespace App\Services;
 use App\Models\Access_Presence;
 use App\Models\Admin;
 use App\Models\Attestation_Request;
+use App\Models\Congress;
 use App\Models\Form_Input_Response;
+use App\Models\FormInputResponse;
 use App\Models\Payement_Type;
 use App\Models\Reponse_Value;
 use App\Models\User;
 use App\Models\User_Access;
+use App\Models\UserAccess;
+use App\Models\UserCongress;
 use App\Models\Vote_Score;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -704,9 +708,9 @@ class UserServices
 
     public function saveUserResponses($responses, $userId)
     {
-        foreach ($responses as $req) {
+        foreach ($responses ? $responses : [] as $req) {
 
-            $reponse = new Form_Input_Response();
+            $reponse = new FormInputResponse();
             if (!array_key_exists("response", $req)) {
 
                 $reponse->user_id = $userId;
@@ -776,7 +780,7 @@ class UserServices
     public function affectAllAccess($user_id, $accesss)
     {
         foreach ($accesss as $access) {
-            $userAccess = new User_Access();
+            $userAccess = new UserAccess();
             $userAccess->user_id = $user_id;
             $userAccess->access_id = $access->access_id;
             $userAccess->save();
@@ -789,6 +793,46 @@ class UserServices
             ->whereHas('user_congresses', function ($query) use ($congress_id, $privilege_id) {
                 $query->where('congress_id', '=', $congress_id)->where('privilege_id', '=', $privilege_id);
             })->get();
+    }
+
+    public function saveUser(Request $request, User $user)
+    {
+        $user->email = $request->email;
+        if ($request->input('first_name')) $user->first_name = $request->input('first_name');
+        if ($request->input('last_name')) $user->last_name = $request->input('last_name');
+        if ($request->input('gender') != null) $user->gender = $request->input('gender');
+        if ($request->input('mobile')) $user->mobile = $request->input('mobile');
+        if ($request->input('country_id')) $user->country_id = $request->country_id;
+        $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->save();
+        }
+        return $user;
+    }
+
+    public function getUserCongress($congress_id, $user_id)
+    {
+        return UserCongress::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)->first();
+    }
+
+    public function saveUserCongress(UserCongress $user_congress, Congress $congress, User $user, Request $request)
+    {
+        $user_congress->user_id = $user->user_id;
+        $user_congress->congress_id = $congress->congress_id;
+        $user_congress->privilege_id = $request->privilege_id;
+        if ($request->has('organization_accepted') && $request->input('organization_accepted')) $user_congress->organization_accepted = 1;
+        if ($request->has('organization_id') && $request->input('organization_id')) $user_congress->organization_id = 1;
+        if ($request->has('pack_id')) $user_congress->pack_id = $pack_id;
+        $user_congress->save();
+        return $user_congress;
+    }
+
+    public function deleteUserAccesses($user_id, $congress_id)
+    {
+        UserAccess::with('access')->whereHas('access', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        })->delete();
     }
 
     private function isExistCongress($user, $congressId)

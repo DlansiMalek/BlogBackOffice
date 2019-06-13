@@ -58,30 +58,29 @@ class Congress extends Model
     public function admin_congresses(){
         return $this->hasMany('App\Models\AdminCongress','congress_id','congress_id');
     }
-//    public function accesss()
-//    {
-//        return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
-//    }
-//
-//
-//    public function packs()
-//    {
-//        return $this->hasMany('App\Models\Pack', "congress_id", "congress_id");
-//    }
-//
-//    public function users()
-//    {
-//        return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
-//
-//    }
-//
-//
-//
-//    public function form_inputs()
-//    {
-//        return $this->hasMany("App\Models\Form_Input", "congress_id", "congress_id");
-//    }
-//
+
+
+    public function users()
+    {
+        return $this->belongsToMany('App\Models\Congress', 'UserCongress', 'user_id', 'congress_id');
+    }
+
+    public function accesss()
+    {
+        return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
+    }
+
+
+    public function packs()
+    {
+        return $this->hasMany('App\Models\Pack', "congress_id", "congress_id");
+    }
+
+    public function form_inputs()
+    {
+        return $this->hasMany("App\Models\FormInput", "congress_id", "congress_id");
+    }
+
 
 //
 //    public function organizations()

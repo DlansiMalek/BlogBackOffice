@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\User_Access;
+use App\Models\UserAccess;
 use App\Services\AccessServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;

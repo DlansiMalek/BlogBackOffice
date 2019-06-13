@@ -130,7 +130,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::get('list', 'UserController@getUsersByCongress');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
-            Route::post('register', 'UserController@registerUserToCongress');
+            Route::post('register/{strict_mode}', 'UserController@saveUser');
             Route::put('edit', 'UserController@editerUserToCongress');
             Route::post('add-fast-user', 'UserController@addingFastUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');

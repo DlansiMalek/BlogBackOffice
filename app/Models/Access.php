@@ -41,17 +41,17 @@ class Access extends Model
 
     public function attestation()
     {
-        return $this->hasOne('App\Models\Attestation_Access', 'access_id', 'access_id');
+        return $this->hasOne('App\Models\AttestationAccess', 'access_id', 'access_id');
     }
 
     public function votes()
     {
-        return $this->hasMany('App\Models\Access_Vote', 'access_id', 'access_id');
+        return $this->hasMany('App\Models\AccessVote', 'access_id', 'access_id');
     }
 
     public function quiz_associations()
     {
-        return $this->hasMany('App\Models\Access_Vote', 'access_id', 'access_id');
+        return $this->hasMany('App\Models\AccessVote', 'access_id', 'access_id');
     }
 
     //sub-access
