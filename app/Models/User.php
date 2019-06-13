@@ -46,6 +46,10 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
     }
 
+    function user_congresses(){
+        return $this->hasMany('App\Models\UserCongress','user_id','user_id');
+    }
+
     function country()
     {
         return $this->hasOne('App\Models\Country', 'country_id', 'country_id');

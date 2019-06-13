@@ -48,6 +48,10 @@ class UserController extends Controller
         $this->organizationServices = $organizationServices;
     }
 
+    public function getUserByTypeAndCongressId($congress_id, $privilege_id){
+        return $this->userServices->getUserByTypeAndCongressId($congress_id, $privilege_id);
+    }
+
     public function index()
     {
         return $this->userServices->getAllUsers();

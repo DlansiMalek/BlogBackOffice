@@ -783,6 +783,14 @@ class UserServices
         }
     }
 
+    public function getUserByTypeAndCongressId($congress_id, $privilege_id)
+    {
+        return User::with('user_congresses.congress', 'user_congresses.privilege')
+            ->whereHas('user_congresses', function ($query) use ($congress_id, $privilege_id) {
+                $query->where('congress_id', '=', $congress_id)->where('privilege_id', '=', $privilege_id);
+            })->get();
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)

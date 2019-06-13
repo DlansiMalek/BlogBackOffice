@@ -21,6 +21,9 @@ class CreateUserCongressTable extends Migration
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');
 
+            $table->unsignedInteger('privilege_id');
+            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege')->onDelete('cascade');
+
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
 

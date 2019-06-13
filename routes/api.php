@@ -62,6 +62,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
         Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
     });
+    Route::get('{congress_id}/{privilege_id}', 'UserController@getUserByTypeAndCongressId')->middleware('super-admin');
 
 
 });
@@ -294,5 +295,5 @@ Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('or
 Route::get('encrypt/{password}','SharedController@encrypt');
 
 Route::group(['prefix'=>'resource'],function (){
-    Route::post('', 'ResourcesController@uploadResource');
+    Route::post('', 'ResourcesController@uploadResource')->middleware('super-admin');
 });
