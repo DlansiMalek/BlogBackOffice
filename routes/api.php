@@ -292,3 +292,7 @@ Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('or
 
 
 Route::get('encrypt/{password}','SharedController@encrypt');
+
+Route::group(['prefix'=>'resource'],function (){
+    Route::post('', 'ResourcesController@uploadResource');
+});
