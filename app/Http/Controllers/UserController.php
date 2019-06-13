@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 
 use Access_Presnce_Response;
 use App\Models\Attestation_Request;
+use App\Models\User;
+use App\Models\UserCongress;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -46,6 +48,11 @@ class UserController extends Controller
         $this->accessServices = $accessServices;
         $this->packServices = $packServices;
         $this->organizationServices = $organizationServices;
+    }
+
+    public function getUserByTypeAndCongressId($congress_id, $privilege_id)
+    {
+        return $this->userServices->getUserByTypeAndCongressId($congress_id, $privilege_id);
     }
 
     public function index()
@@ -195,17 +202,45 @@ class UserController extends Controller
         $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
         return response()->json(['add success'], 200);
-        /*$file = new Filesystem();
+    }
 
-        Utils::generateQRcode($user->qr_code, "qrcode.png");
+    public function saveUser(Request $request, $congress_id, $strict_mode)
+    {
+        if (!$request->has('email'))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
+        $user = $this->userServices->getUserById($request->input('email'));
 
+        if ($user && !$request->has(['accesses', 'privilege_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['accesses', 'privilege_id']], 400);
+        if (!$user && $strict_mode && !$request->has(['first_name', 'last_name', 'gender', 'mobile', 'country_id', 'accesses', 'privilege_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['first_name', 'last_name', 'gender', 'mobile', 'country_id', 'accesses', 'privilege_id']], 400);
+        if (!$user && !$strict_mode && !$request->has(['first_name', 'last_name', 'accesses', 'privilege_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['first_name', 'last_name', 'accesses', 'privilege_id']], 400);
 
-        if ($file->exists(public_path() . "/qrcode.png")) {
-            return response()->download(public_path() . "/qrcode.png")
-                ->deleteFileAfterSend(true);
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(['response' => 'congress not found'], 404);
+
+        if (!$user) $user = new User();
+        $user = $this->userServices->saveUser($request, $user);
+
+        if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id))
+            $user_congress = new UserCongress();
+        $user_congress = $this->userServices->saveUserCongress($user_congress, $congress, $user, $request);
+        $user->user_congress = $user_congress;
+        $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
+        $this->userServices->deleteUserAccesses($user->user_id, $congress_id);
+        if ($user->privilege_id == 3) {
+            if ($user_congress->pack_id) {
+                $pack = $this->packServices->getPackById($user->pack_id);
+                $this->userServices->affectAccess($user->user_id, $request->input('accesses'), $pack->accesses);
+            } else $this->userServices->affectAccess($user->user_id, $request->input('accesses'), []);
         } else {
-            return response()->json(["error" => "dossier vide"]);
-        }*/
+            $accesss = $this->accessServices->getAllAccessByCongress($congress_id);
+            $this->userServices->affectAllAccess($user->user_id, $accesss);
+        }
+        return $user;
+        //TODO Mail sending is to be redone depending on the new design
+        //TODO Manage organization cases (accepted...)
     }
 
     public function registerUserToCongress(Request $request, $congressId)

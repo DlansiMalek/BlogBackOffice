@@ -18,4 +18,13 @@ class AdminCongress extends Model
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
+
+    public function congress()
+    {
+        return $this->belongsTo('App\Models\Congress', 'congress_id', 'congress_id');
+    }
+
+    public function privilege(){
+        return $this->belongsTo('App\Models\Privilege','privilege_id','privilege_id');
+    }
 }

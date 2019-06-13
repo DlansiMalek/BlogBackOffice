@@ -22,7 +22,7 @@ class AdminServices
     public function getAdminByLogin($login)
     {
         return Admin::whereEmail($login)
-            ->with(["privileges"])
+            ->with(["congresses"])
             ->first();
 
     }
@@ -46,45 +46,16 @@ class AdminServices
     public function getAdminById($admin_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(["privileges", 'congresses'])
+            ->with(['admin_congresses.congress','admin_congresses.privilege'])
             ->first();
     }
 
     public function getAdminCongresses(Admin $admin)
     {
-        if (count(Admin_Privilege::where(function ($query) use ($admin) {
-                $query->where('admin_id', '=', $admin->admin_id)->where('privilege_id', '=', '2');
-            })->get()) > 0
-        ) {
-            $congresses = Congress::with(["badges", "attestation", "accesss.attestation"])
-                ->where("admin_id", "=", $admin->responsible)
-                ->get();
-            foreach ($congresses as $congress) $congress->accesss = $congress->accesses;
-
-        } else {
-            $congresses = Congress::with(["badges", "attestation", "accesss.attestation"])
-                ->where("admin_id", "=", $admin->admin_id)
-                ->get();
-            foreach ($congresses as $congress) $congress->accesss = $congress->accesses;
-        }
-        return $congresses;
+        return Congress::whereHas('admin_congresses',function ($query) use ($admin){
+           $query->where('admin_id','=',$admin->admin_id);
+        })->get();
     }
-
-    /*
-    public function updateStatusPaied($userId, $status, $congressId)
-    {
-
-        $userCongress = Congress_User::where("id_User", "=", $userId)
-            ->where("id_Congress", "=", $congressId)
-            ->first();
-
-        if ($userCongress) {
-            $userCongress->isPaid = $status;
-            $userCongress->update();
-        }
-        return $userCongress;
-    }
-    */
 
     public function getListPersonelsByAdmin($admin_id)
     {

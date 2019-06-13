@@ -19,13 +19,13 @@ class CreateUserTable extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->integer('gender')->nullable();
-            $table->string('mobile');
+            $table->string('mobile')->nullable()->default(null);
 
             $table->string('email');
             $table->unsignedTinyInteger('email_verified')->default(0);
             $table->string('verification_code')->nullable();
 
-            $table->string('qr_code');
+            $table->string('qr_code')->nullable()->default(null);
             $table->string("rfid")->nullable()->default(null);
 
             $table->integer('country_id')->unsigned()->nullable()->default(null);

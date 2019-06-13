@@ -62,6 +62,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
         Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
     });
+    Route::get('{congress_id}/{privilege_id}', 'UserController@getUserByTypeAndCongressId')->middleware('super-admin');
 
 
 });
@@ -129,7 +130,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::get('list', 'UserController@getUsersByCongress');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
-            Route::post('register', 'UserController@registerUserToCongress');
+            Route::post('register/{strict_mode}', 'UserController@saveUser');
             Route::put('edit', 'UserController@editerUserToCongress');
             Route::post('add-fast-user', 'UserController@addingFastUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
@@ -158,7 +159,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
 
     });
     Route::group(['prefix' => 'me'], function () {
-        Route::get('', 'AdminController@getAuhentificatedAdmin');
+        Route::get('', 'AdminController@getAuhenticatedAdmin');
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list', 'AdminController@getListPersonels');
@@ -289,3 +290,10 @@ Route::group(["prefix" => "voting-users"], function () {
     Route::post("send-scores", "VotingController@sendScores");
 });
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
+
+
+Route::get('encrypt/{password}','SharedController@encrypt');
+
+Route::group(['prefix'=>'resource'],function (){
+    Route::post('', 'ResourcesController@uploadResource')->middleware('super-admin');
+});

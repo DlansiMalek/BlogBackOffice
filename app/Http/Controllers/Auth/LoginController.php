@@ -52,9 +52,8 @@ class LoginController extends Controller
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
 
 
-        // verify the credentials and create a token for the user
         if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'invalid credentials'], 401);
+                return response()->json(['error' => 'invalid credentials'], 401);
         }
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
