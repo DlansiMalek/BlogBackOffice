@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Resource;
-use Illuminate\Http\Request;
+use App\Models\Access;
+use App\Models\Resource;
 
 class ResourcesServices
 {
@@ -11,8 +11,8 @@ class ResourcesServices
 
     public function uploadResource($file)
     {
-        $timestamp = microtime(true)*10000;
-        $path = $file->storeAs( $this->path.$timestamp,$file->getClientOriginalName());
+        $timestamp = microtime(true) * 10000;
+        $path = $file->storeAs($this->path . $timestamp, $file->getClientOriginalName());
 
         $resource = new Resource();
         $resource->path = $path;
@@ -26,5 +26,14 @@ class ResourcesServices
         if (!$resource = Resource::find($resource_id)) return null;
         $resource->access_id = $access_id;
         return $resource;
+    }
+
+    public function addResources(Access $access, $resources)
+    {
+        foreach ($resources as $resource) {
+            $dbResource = Resource::find($resource);
+            $dbResource->access_id = $access->access_id;
+            $dbResource->update();
+        }
     }
 }

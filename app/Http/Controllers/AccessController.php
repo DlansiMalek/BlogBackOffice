@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Access;
 use App\Models\UserAccess;
+use App\Resource;
 use App\Services\AccessServices;
+use App\Services\CongressServices;
+use App\Services\ResourcesServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
@@ -13,12 +17,19 @@ class AccessController extends Controller
 
     protected $accessServices;
     protected $userServices;
+    protected $congressServices;
+    protected $resourcesServices;
 
 
-    function __construct(AccessServices $accessServices, UserServices $userServices)
+    function __construct(AccessServices $accessServices,
+                         UserServices $userServices,
+                         CongressServices $congressServices,
+                         ResourcesServices $resourcesServices)
     {
         $this->accessServices = $accessServices;
         $this->userServices = $userServices;
+        $this->congressServices = $congressServices;
+        $this->resourcesServices = $resourcesServices;
     }
 
 
@@ -93,6 +104,36 @@ class AccessController extends Controller
             }
         }
         return response()->json(['message' => 'success', 'user_number' => sizeof($users)]);
+    }
+
+    public function addAccess(Request $request, $congress_id)
+    {
+        if (!$request->has(['name', 'start_date', 'end_date', 'access_type_id']))
+            return response()->json(['response' => 'invalid request',
+                'required fields' => ['name', 'start_date', 'end_date', 'access_type_id']], 400);
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(['response' => 'congress not found'], 404);
+
+        $access = $this->accessServices->addAccess($congress_id, $request);
+
+        if ($request->has('chair_ids') && count($request->input('chair_ids'))){
+            $this->accessServices->addChairs($access, $request->input('chair_ids'));
+        }
+
+        if ($request->has('speaker_ids') && count($request->input('chair_ids'))){
+            $this->accessServices->addSpeakers($access, $request->input('speaker_ids'));
+        }
+
+        if ($request->has('resource_ids') && count($request->input('resource_ids'))){
+            $this->resourcesServices->addResources($access, $request->input('resource_ids'));
+        }
+
+        if ($request->has('sub_accesses') && count($request->input('sub_accesses'))){
+            $this->accessServices->addSubAccesses($access, $request->input('sub_accesses'));
+        }
+
+        return $this->accessServices->getAccessById($access->access_id);
+
     }
 
 }

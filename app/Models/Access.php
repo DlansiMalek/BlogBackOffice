@@ -17,7 +17,7 @@ class Access extends Model
     protected $primaryKey = 'access_id';
     protected $fillable = ['name', 'price', 'duration', 'max_places', 'total_present_in_congress',
         'seuil', 'room', 'description', 'congress_id', 'packless',
-        'start_date', 'real_start_date', 'end_date', 'parent_id'];
+        'start_date', 'real_start_date', 'end_date', 'parent_id','show_in_program'];
     protected $dates = ['created_at', 'updated_at'];
 
 
@@ -30,13 +30,13 @@ class Access extends Model
     // speakers
     public function speakers()
     {
-        return $this->belongsToMany('App\Models\User', 'Speaker_Access', 'access_id', 'user_id');
+        return $this->belongsToMany('App\Models\User', 'Access_Speaker', 'access_id', 'user_id');
     }
 
     //chair persons
     public function chairs()
     {
-        return $this->belongsToMany('App\Models\User', '_AccessChair', 'access_id', 'user_id');
+        return $this->belongsToMany('App\Models\User', 'Access_Chair', 'access_id', 'user_id');
     }
 
     public function attestation()
@@ -55,7 +55,7 @@ class Access extends Model
     }
 
     //sub-access
-    public function sub_access()
+    public function sub_accesses()
     {
         return $this->hasMany('App\Models\Access', 'access_id', 'parent_id');
     }
@@ -63,7 +63,7 @@ class Access extends Model
     //topic
     public function topic()
     {
-        return $this->hasOne('App\Models\Topic', 'access_id', 'access_id');
+        return $this->hasOne('App\Models\Topic', 'topic_id', 'topic_id');
     }
 
     //resources
@@ -72,10 +72,9 @@ class Access extends Model
         return $this->hasMany('App\Models\Resource', 'access_id', 'access_id');
     }
 
-    //access_type
-    public function access_type()
+    public function type()
     {
-        return $this->hasOne('App\Models\Access_type', 'access_id', 'access_id');
+        return $this->hasOne('App\Models\AccessType', 'access_type_id', 'access_type_id');
     }
 
 

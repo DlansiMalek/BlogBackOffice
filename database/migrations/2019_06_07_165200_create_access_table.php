@@ -22,12 +22,13 @@ class CreateAccessTable extends Migration
             $table->integer("max_places")->nullable()->default(null);
             $table->integer("total_present_in_congress")->default(0);
             $table->integer('seuil')->nullable()->default(null);
-            $table->string('room');
+            $table->string('room')->nullable()->default(null);
             $table->string('description');
             $table->dateTime("real_start_date")->nullable()->default(null);
             $table->dateTime("start_date")->nullable()->default(null);
             $table->dateTime("end_date")->nullable()->default(null);
             $table->unsignedTinyInteger('packless')->default(1);
+            $table->unsignedTinyInteger('show_in_program')->nullable()->default(null);
 
             $table->integer('parent_id')->unsigned();
             $table->foreign('parent_id')->references('access_id')->on('Access');
@@ -37,7 +38,7 @@ class CreateAccessTable extends Migration
                 ->onDelete('cascade');
 
             //topic
-            $table->integer('topic_id')->unsigned();
+            $table->integer('topic_id')->unsigned()->nullable()->default(null);
             $table->foreign('topic_id')->references('topic_id')->on('Topic');
 
 

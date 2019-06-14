@@ -297,3 +297,7 @@ Route::get('encrypt/{password}','SharedController@encrypt');
 Route::group(['prefix'=>'resource'],function (){
     Route::post('', 'ResourcesController@uploadResource')->middleware('super-admin');
 });
+
+Route::group(['prefix'=>'access'],function (){
+    Route::post('{congress_id}','AccessController@addAccess');
+});
