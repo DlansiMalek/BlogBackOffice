@@ -136,4 +136,8 @@ class AccessController extends Controller
 
     }
 
+    public function getAccessById($access_id){
+        return $this->accessServices->getAccessById($access_id);
+    }
+
 }

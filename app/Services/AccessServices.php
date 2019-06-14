@@ -118,7 +118,8 @@ class AccessServices
 
     public function getAccessById($access_id)
     {
-        return Access::with(['speakers','chairs','sub_accesses','topic','resources','type'])->find($access_id);
+        return Access::with(['speakers','chairs','topic','resources','type',
+            'sub_accesses.speakers','sub_accesses.chairs','sub_accesses.topic','sub_accesses.resources','sub_accesses.type'])->find($access_id);
     }
 
 

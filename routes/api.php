@@ -299,5 +299,6 @@ Route::group(['prefix'=>'resource'],function (){
 });
 
 Route::group(['prefix'=>'access'],function (){
-    Route::post('{congress_id}','AccessController@addAccess');
+    Route::post('add/{congress_id}','AccessController@addAccess');
+    Route::get('get/{access_d}','AccessController@getAccessById');
 });
