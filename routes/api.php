@@ -300,5 +300,7 @@ Route::group(['prefix'=>'resource'],function (){
 
 Route::group(['prefix'=>'access'],function (){
     Route::post('add/{congress_id}','AccessController@addAccess');
-    Route::get('get/{access_d}','AccessController@getAccessById');
+    Route::get('get/{access_id}','AccessController@getAccessById');
+    Route::get('congress/{access_id}','AccessController@getByCongressId');
+    Route::delete('{access_id}','AccessController@deleteAccess');
 });

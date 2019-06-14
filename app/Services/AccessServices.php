@@ -122,6 +122,16 @@ class AccessServices
             'sub_accesses.speakers','sub_accesses.chairs','sub_accesses.topic','sub_accesses.resources','sub_accesses.type'])->find($access_id);
     }
 
+    public function getByCongressId($congress_id)
+    {
+        return Access::with(['speakers','chairs','topic','resources','type',
+            'sub_accesses.speakers','sub_accesses.chairs','sub_accesses.topic','sub_accesses.resources','sub_accesses.type'])->where('congress_id','=',$congress_id)->get();
+    }
+
+    public function deleteAccess($access_id){
+        Access::where('access_id','=',$access_id)->delete();
+    }
+
 
     private function deleteAccessByCongress($congressId)
     {
@@ -130,24 +140,11 @@ class AccessServices
     }
 
 
-    public
-    function getAllAccessByCongress($congressId)
+    public function getAllAccessByCongress($congressId)
     {
         return Access::with(['participants'])
             ->where("congress_id", "=", $congressId)
             ->get();
-    }
-
-    function getAccessesByCongressId($intuitive, $congressId)
-    {
-        return $intuitive ?
-            Access::where("congress_id", '=', $congressId)
-                ->where('intuitive', '=', true)
-                ->get() :
-            Access::where("congress_id", '=', $congressId)
-                ->where('intuitive', '=', false)
-                ->get();
-
     }
 
     private function addSubAccess(Access $access, $sub)
