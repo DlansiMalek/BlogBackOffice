@@ -22,7 +22,7 @@ class Congress extends Model
 
     public function config()
     {
-        return $this->hasOne('App\Models\Congress_Config', 'congress_id', 'congress_id');
+        return $this->hasOne('App\Models\ConfigCongress', 'congress_id', 'congress_id');
     }
 
     public function mail_config()

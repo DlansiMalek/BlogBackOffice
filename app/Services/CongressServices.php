@@ -39,7 +39,7 @@ class CongressServices
 
     public function getCongressById($id_Congress)
     {
-        $congress = Congress::with(["badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation'])
+        $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation'])
             ->where("congress_id", "=", $id_Congress)
             ->first();
         return $congress;
@@ -130,17 +130,20 @@ class CongressServices
 
     }
 
-    public function editCongress($congress, $adminId, $request)
+    public function editCongress($congress, $config, $request)
     {
-        $congress->name = $request->input("name");
-        $congress->date = $request->input("date");
-        $congress->admin_id = $adminId;
-        $congress->has_paiement = $request->input('has_paiement');
+        $congress->name = $request->input('name');
+        $congress->start_date = $request->input('start_date');
+        $congress->end_date = $request->input('end_date');
         $congress->price = $request->input('price') ? $request->input('price') : 0;
-        $congress->free = $request->input('free') ? $request->input('free') : 0;
         $congress->update();
 
-        return $congress;
+        $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
+        $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
+        $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
+        $config->update();
+
+        return $this->getCongressById($congress->congress_id);
     }
 
     public function getUsersByStatus($congressId, int $status)
