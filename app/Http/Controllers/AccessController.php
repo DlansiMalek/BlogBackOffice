@@ -116,19 +116,19 @@ class AccessController extends Controller
 
         $access = $this->accessServices->addAccess($congress_id, $request);
 
-        if ($request->has('chair_ids') && count($request->input('chair_ids'))){
+        if ($request->has('chair_ids') && count($request->input('chair_ids'))) {
             $this->accessServices->addChairs($access, $request->input('chair_ids'));
         }
 
-        if ($request->has('speaker_ids') && count($request->input('chair_ids'))){
+        if ($request->has('speaker_ids') && count($request->input('chair_ids'))) {
             $this->accessServices->addSpeakers($access, $request->input('speaker_ids'));
         }
 
-        if ($request->has('resource_ids') && count($request->input('resource_ids'))){
+        if ($request->has('resource_ids') && count($request->input('resource_ids'))) {
             $this->resourcesServices->addResources($access, $request->input('resource_ids'));
         }
 
-        if ($request->has('sub_accesses') && count($request->input('sub_accesses'))){
+        if ($request->has('sub_accesses') && count($request->input('sub_accesses'))) {
             $this->accessServices->addSubAccesses($access, $request->input('sub_accesses'));
         }
 
@@ -136,17 +136,49 @@ class AccessController extends Controller
 
     }
 
-    public function getAccessById($access_id){
+    public function getAccessById($access_id)
+    {
         return $this->accessServices->getAccessById($access_id);
     }
 
-    public function getByCongressId($access_id){
+    public function getByCongressId($access_id)
+    {
         return $this->accessServices->getByCongressId($access_id);
     }
 
-    public function deleteAccess($access_id){
+    public function deleteAccess($access_id)
+    {
         $this->accessServices->deleteAccess($access_id);
-        return response()->json(['message'=>'success'],200);
+        return response()->json(['message' => 'success'], 200);
+    }
+
+    public function editAccess(Request $request, $access_id)
+    {
+        if (!$access = $this->accessServices->getAccessById($access_id))
+            return response()->json(['message' => 'access not found'], 404);
+
+        $this->accessServices->editAccess($access, $request);
+
+        if ($request->has('chair_ids') && count($request->input('chair_ids'))) {
+            $this->accessServices->editChairs($access_id, $request->input('chair_ids'));
+        } else $this->accessServices->removeAllChairs($access_id);
+
+        if ($request->has('speaker_ids') && count($request->input('speaker_ids'))) {
+            $this->accessServices->editSpeakers($access_id, $request->input('speaker_ids'));
+        } else $this->accessServices->removeAllSpeakers($access_id);
+
+        if ($request->has('resource_ids') && count($request->input('resource_ids'))) {
+            $this->resourcesServices->editAccessResources($access_id, $request->input('resource_ids'));
+        } else $this->resourcesServices->removeAllResources($access_id);
+
+
+        if ($request->has('sub_accesses') && count($request->input('sub_accesses'))) {
+            $this->accessServices->editSubAccesses($access, $request->input('sub_accesses'));
+        }else $this->accessServices->deleteAllSubAccesses($access_id);
+
+        return $this->accessServices->getAccessById($access->access_id);
+
+
     }
 
 }

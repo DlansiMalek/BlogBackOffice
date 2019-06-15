@@ -303,4 +303,5 @@ Route::group(['prefix'=>'access'],function (){
     Route::get('get/{access_id}','AccessController@getAccessById');
     Route::get('congress/{access_id}','AccessController@getByCongressId');
     Route::delete('{access_id}','AccessController@deleteAccess');
+    Route::put('{access_id}', 'AccessController@editAccess');
 });

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Resource;
+use App\SpeakerAccess;
 
 class ResourcesServices
 {
@@ -34,6 +35,47 @@ class ResourcesServices
             $dbResource = Resource::find($resource);
             $dbResource->access_id = $access->access_id;
             $dbResource->update();
+        }
+    }
+
+    public function removeAllResources($access_id)
+    {
+        $resources = Resource::where('access_id','=',$access_id)->get();
+        foreach ($resources as $resource){
+            $resource->access_id = null;
+            $resource->update();
+        }
+    }
+
+    public function editAccessResources($access_id, $newResources)
+    {
+        $oldResources = Resource::where('access_id','=',$access_id)->get();
+        foreach ($oldResources as $old) {
+            $found = false;
+            foreach ($newResources as $new) {
+                if ($new == $old->user_id) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $old->access_id = null;
+                $old->save();
+            }
+        }
+        foreach ($newResources as $new){
+            $found = false;
+            foreach ($oldResources as $old){
+                if ($old->user_id == $new){
+                    $found = true;
+                    break;
+                }
+            }
+            if(!$found) {
+                $resource = Resource::find($new);
+                $resource->access_id = $access_id;
+                $resource->update();
+            }
         }
     }
 }
