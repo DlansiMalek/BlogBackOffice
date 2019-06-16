@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Access;
+use App\Models\ConfigCongress;
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\User_Mail;
@@ -31,6 +32,7 @@ class CongressController extends Controller
     protected $badgeServices;
     protected $packService;
     public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
+
 //    public $baseUrl = "https://congress-api.vayetek.com/api/";
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
@@ -54,34 +56,31 @@ class CongressController extends Controller
 
     public function addCongress(Request $request)
     {
-        if (!$request->has(['name', 'start_date','end_date','price','config_congress']))
-            return response()->json(['message'=>'bad request'],400);
+        if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
+            return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
         return $this->congressServices->addCongress(
             $request->input("name"),
             $request->input("start_date"),
             $request->input("end_date"),
             $request->input('price'),
-            $request->input('config_congress')['has_payment'],
-            $request->input('config_congress')['free'],
-            $request->input('config_congress')['prise_charge_option'],
+            $request->input('config')['has_payment'],
+            $request->input('config')['free'],
+            $request->input('config')['prise_charge_option'],
             $admin->admin_id);
-
-
-
     }
 
     public function editCongress(Request $request, $congressId)
     {
-        if (!$request->has(['name', 'date']))
-            return response()->json(['message'=>'bad request'],400);
+        if (!$request->has(['name', 'start_date']))
+            return response()->json(['message' => 'bad request'], 400);
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
+        if (!$config = ConfigCongress::where('congress_id', '=', $congressId)->first())
+            $config = new ConfigCongress();
 
-        $admin = $this->adminServices->retrieveAdminFromToken();
-
-        $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
+        $congress = $this->congressServices->editCongress($congress, $config, $request);
 
         return response()->json($congress);
     }

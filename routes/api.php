@@ -297,3 +297,11 @@ Route::get('encrypt/{password}','SharedController@encrypt');
 Route::group(['prefix'=>'resource'],function (){
     Route::post('', 'ResourcesController@uploadResource')->middleware('super-admin');
 });
+
+Route::group(['prefix'=>'access'],function (){
+    Route::post('add/{congress_id}','AccessController@addAccess');
+    Route::get('get/{access_id}','AccessController@getAccessById');
+    Route::get('congress/{access_id}','AccessController@getByCongressId');
+    Route::delete('{access_id}','AccessController@deleteAccess');
+    Route::put('{access_id}', 'AccessController@editAccess');
+});

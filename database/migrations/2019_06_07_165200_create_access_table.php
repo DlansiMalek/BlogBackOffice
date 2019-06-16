@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateAccessTable extends Migration
 {
@@ -28,6 +28,7 @@ class CreateAccessTable extends Migration
             $table->dateTime("start_date");
             $table->dateTime("end_date");
             $table->unsignedTinyInteger('packless')->default(1);
+            $table->unsignedTinyInteger('show_in_program')->nullable()->default(null);
 
             $table->integer('parent_id')->unsigned()->nullable()->default(null);
             $table->foreign('parent_id')->references('access_id')->on('Access');
