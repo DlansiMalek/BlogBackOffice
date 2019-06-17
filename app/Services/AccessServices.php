@@ -11,6 +11,8 @@ namespace App\Services;
 
 use App\AccessChair;
 use App\Models\Access;
+use App\Models\AccessType;
+use App\Models\Topic;
 use App\Models\User;
 use App\SpeakerAccess;
 use Illuminate\Support\Facades\Log;
@@ -261,6 +263,16 @@ class AccessServices
 
         }
 
+    }
+
+    public function getAccessTypes()
+    {
+        return AccessType::all();
+    }
+
+    public function getAccessTopics()
+    {
+        return Topic::all();
     }
 
 

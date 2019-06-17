@@ -177,8 +177,14 @@ class AccessController extends Controller
         }else $this->accessServices->deleteAllSubAccesses($access_id);
 
         return $this->accessServices->getAccessById($access->access_id);
+    }
 
+    public function getAccessTypes(){
+        return $this->accessServices->getAccessTypes();
+    }
 
+    public function getAccessTopics(){
+        return $this->accessServices->getAccessTopics();
     }
 
 }
