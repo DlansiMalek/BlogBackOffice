@@ -70,10 +70,10 @@ Route::group(['prefix' => 'users'], function () {
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
-    Route::group(["prefix"=>'form'],function (){
-        Route::get('input-types','RegistrationFormController@getInputTypes');
-        Route::get('{congress_id}','RegistrationFormController@getForm');
-        Route::post('{congress_id}','RegistrationFormController@setForm')->middleware('super-admin');
+    Route::group(["prefix" => 'form'], function () {
+        Route::get('input-types', 'RegistrationFormController@getInputTypes');
+        Route::get('{congress_id}', 'RegistrationFormController@getForm');
+        Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('super-admin');
     });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
@@ -292,16 +292,18 @@ Route::group(["prefix" => "voting-users"], function () {
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
 
 
-Route::get('encrypt/{password}','SharedController@encrypt');
+Route::get('encrypt/{password}', 'SharedController@encrypt');
 
-Route::group(['prefix'=>'resource'],function (){
+Route::group(['prefix' => 'resource'], function () {
     Route::post('', 'ResourcesController@uploadResource')->middleware('super-admin');
 });
 
-Route::group(['prefix'=>'access'],function (){
-    Route::post('add/{congress_id}','AccessController@addAccess');
-    Route::get('get/{access_id}','AccessController@getAccessById');
-    Route::get('congress/{access_id}','AccessController@getByCongressId');
-    Route::delete('{access_id}','AccessController@deleteAccess');
+Route::group(['prefix' => 'access'], function () {
+    Route::get('types', 'AccessController@getAccessTypes');
+    Route::get('topics', 'AccessController@getAccessTopics');
+    Route::post('add/{congress_id}', 'AccessController@addAccess');
+    Route::get('get/{access_id}', 'AccessController@getAccessById');
+    Route::get('congress/{access_id}', 'AccessController@getByCongressId');
+    Route::delete('{access_id}', 'AccessController@deleteAccess');
     Route::put('{access_id}', 'AccessController@editAccess');
 });
