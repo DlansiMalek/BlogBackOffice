@@ -120,7 +120,7 @@ class AccessController extends Controller
             $this->accessServices->addChairs($access, $request->input('chair_ids'));
         }
 
-        if ($request->has('speaker_ids') && count($request->input('chair_ids'))) {
+        if ($request->has('speaker_ids') && count($request->input('speaker_ids'))) {
             $this->accessServices->addSpeakers($access, $request->input('speaker_ids'));
         }
 

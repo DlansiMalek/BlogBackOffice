@@ -9,12 +9,12 @@
 namespace App\Services;
 
 
-use App\AccessChair;
+use App\Models\AccessChair;
 use App\Models\Access;
 use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
-use App\SpeakerAccess;
+use App\Models\AccessSpeaker;
 use Illuminate\Support\Facades\Log;
 
 class AccessServices
@@ -130,10 +130,10 @@ class AccessServices
     public function addSpeakers(Access $access, $speakers)
     {
         foreach ($speakers as $speaker) {
-            $access_chair = new AccessChair();
-            $access_chair->access_id = $access['access_id'];
-            $access_chair->user_id = $speaker;
-            $access_chair->save();
+            $access_speaker = new AccessSpeaker();
+            $access_speaker->access_id = $access['access_id'];
+            $access_speaker->user_id = $speaker;
+            $access_speaker->save();
         }
     }
 
@@ -168,7 +168,7 @@ class AccessServices
 
     public function removeAllSpeakers($access_id)
     {
-        SpeakerAccess::where('access_id', "=", $access_id)->delete();
+        AccessSpeaker::where('access_id', "=", $access_id)->delete();
     }
 
     public function editChairs($access_id, $newChairs)
@@ -203,7 +203,7 @@ class AccessServices
 
     public function editSpeakers($access_id, $newSpeakers)
     {
-        $oldSpeakers = SpeakerAccess::where('access_id', "=", $access_id)->get();
+        $oldSpeakers = AccessSpeaker::where('access_id', "=", $access_id)->get();
         foreach ($oldSpeakers as $old) {
             $found = false;
             foreach ($newSpeakers as $new) {
@@ -223,7 +223,7 @@ class AccessServices
                 }
             }
             if (!$found) {
-                $speaker_access = new SpeakerAccess();
+                $speaker_access = new AccessSpeaker();
                 $speaker_access->access_id = $access_id;
                 $speaker_access->user_id = $new;
                 $speaker_access->save();
