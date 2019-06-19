@@ -238,7 +238,7 @@ class AccessServices
 
     public function editSubAccesses($access, $newSubAccesses)
     {
-        $oldSubAccesses = Access::where('parent_id', '=', $access->access_id);
+        $oldSubAccesses = Access::where('parent_id', '=', $access->access_id)->get();
         foreach ($oldSubAccesses as $old) {
             $found = false;
             foreach ($newSubAccesses as $new) {
@@ -296,7 +296,6 @@ class AccessServices
         $sub_access->name = $sub["name"];
         $sub_access->start_date = $sub["start_date"];
         $sub_access->end_date = $sub["end_date"];
-        $sub_access->access_type_id = $sub['access_type_id'];
         if (array_key_exists('description', $sub)) $sub_access->description = $sub['description'];
         if (array_key_exists('room', $sub)) $sub_access->room = $sub["room"];
         if (array_key_exists('topic_id', $sub)) $sub_access->topic_id = $sub["topic_id"];
@@ -324,7 +323,6 @@ class AccessServices
         if (array_key_exists('name', $new)) $old->name = $new["name"];
         if (array_key_exists('start_date', $new)) $old->start_date = $new["start_date"];
         if (array_key_exists('end_date', $new)) $old->end_date = $new["end_date"];
-        if (array_key_exists('access_type_id', $new)) $old->access_type_id = $new['access_type_id'];
         if (array_key_exists('description', $new)) $old->description = $new['description'];
         if (array_key_exists('room', $new)) $old->room = $new["room"];
         if (array_key_exists('topic_id', $new)) $old->topic_id = $new["topic_id"];
