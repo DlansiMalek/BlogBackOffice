@@ -798,16 +798,17 @@ class UserServices
     public function saveUser(Request $request, User $user)
     {
         $user->email = $request->email;
-        if ($request->input('first_name')) $user->first_name = $request->input('first_name');
-        if ($request->input('last_name')) $user->last_name = $request->input('last_name');
-        if ($request->input('gender') != null) $user->gender = $request->input('gender');
-        if ($request->input('mobile')) $user->mobile = $request->input('mobile');
-        if ($request->input('country_id')) $user->country_id = $request->country_id;
+        if ($request->has('first_name')) $user->first_name = $request->input('first_name');
+        if ($request->has('last_name')) $user->last_name = $request->input('last_name');
+        if ($request->has('gender')) $user->gender = $request->input('gender');
+        if ($request->has('mobile')) $user->mobile = $request->input('mobile');
+        if ($request->has('country_id')) $user->country_id = $request->country_id;
         $user->save();
         if (!$user->qr_code) {
             $user->qr_code = Utils::generateCode($user->user_id);
-            $user->save();
+            $user->update();
         }
+
         return $user;
     }
 
@@ -816,14 +817,14 @@ class UserServices
         return UserCongress::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)->first();
     }
 
-    public function saveUserCongress(UserCongress $user_congress, Congress $congress, User $user, Request $request)
+    public function saveUserCongress(UserCongress $user_congress, $congress, User $user, Request $request)
     {
         $user_congress->user_id = $user->user_id;
         $user_congress->congress_id = $congress->congress_id;
         $user_congress->privilege_id = $request->privilege_id;
         if ($request->has('organization_accepted') && $request->input('organization_accepted')) $user_congress->organization_accepted = 1;
         if ($request->has('organization_id') && $request->input('organization_id')) $user_congress->organization_id = 1;
-        if ($request->has('pack_id')) $user_congress->pack_id = $pack_id;
+        if ($request->has('pack_id')) $user_congress->pack_id = $request->input("pack_id");
         $user_congress->save();
         return $user_congress;
     }

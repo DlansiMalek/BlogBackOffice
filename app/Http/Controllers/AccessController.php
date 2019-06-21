@@ -141,9 +141,9 @@ class AccessController extends Controller
         return $this->accessServices->getAccessById($access_id);
     }
 
-    public function getByCongressId($access_id)
+    public function getByCongressId($congressId)
     {
-        return $this->accessServices->getByCongressId($access_id);
+        return $this->accessServices->getByCongressId($congressId);
     }
 
     public function deleteAccess($access_id)

@@ -146,14 +146,19 @@ class AccessServices
 
     public function getAccessById($access_id)
     {
-        return Access::with(['speakers', 'chairs', 'topic', 'resources', 'type',
-            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])->find($access_id);
+        return Access::with(
+            ['speakers', 'chairs', 'topic', 'resources', 'type',
+            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
+            ->find($access_id);
     }
 
     public function getByCongressId($congress_id)
     {
         return Access::with(['speakers', 'chairs', 'topic', 'resources', 'type',
-            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])->where('congress_id', '=', $congress_id)->get();
+            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
+            ->whereNull('parent_id')
+            ->where('congress_id', '=', $congress_id)
+            ->get();
     }
 
     public function deleteAccess($access_id)

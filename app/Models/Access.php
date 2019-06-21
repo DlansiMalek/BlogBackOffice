@@ -57,7 +57,7 @@ class Access extends Model
     //sub-access
     public function sub_accesses()
     {
-        return $this->hasMany('App\Models\Access', 'access_id', 'parent_id');
+        return $this->hasMany('App\Models\Access', 'parent_id', 'access_id');
     }
 
     //topic

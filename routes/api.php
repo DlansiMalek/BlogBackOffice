@@ -62,7 +62,13 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
         Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
     });
-    Route::get('{congress_id}/{privilege_id}', 'UserController@getUserByTypeAndCongressId')->middleware('super-admin');
+
+    //API PER CONGRESS
+    Route::group(['prefix' => 'congress/{congress_id}'], function () {
+        Route::group(['prefix' => 'privilege'], function () {
+            Route::get('{privilege_id}', 'UserController@getUserByTypeAndCongressId');
+        });
+    });
 
 
 });
