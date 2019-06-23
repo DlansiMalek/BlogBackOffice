@@ -23,13 +23,13 @@ class User extends Authenticatable
     //Speaker Access
     function speaker_access()
     {
-        return $this->belongsToMany('App\Models\Access', 'Speaker_Access', 'user_id', 'access_id');
+        return $this->belongsToMany('App\Models\Access', 'Access_speaker', 'user_id', 'access_id');
     }
 
     //ChairPerson Access
-    function chairPerson_access()
+    function chair_access()
     {
-        return $this->belongsToMany('App\Models\Access', 'Chair_Access', 'user_id', 'access_id');
+        return $this->belongsToMany('App\Models\Access', 'Access_Chair', 'user_id', 'access_id');
     }
 
     public function payments(){

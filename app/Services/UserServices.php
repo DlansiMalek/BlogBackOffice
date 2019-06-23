@@ -210,8 +210,7 @@ class UserServices
 
     public function getParticipatorByQrCode($qr_code)
     {
-        return User::with(['accesss.attestation'])
-            ->where('qr_code', '=', $qr_code)
+        return User::where('qr_code', '=', $qr_code)
             ->first();
     }
 
@@ -834,6 +833,23 @@ class UserServices
         UserAccess::with('access')->whereHas('access', function ($query) use ($congress_id) {
             $query->where('congress_id', '=', $congress_id);
         })->delete();
+    }
+
+    public function getUserByQrCode($qrCode)
+    {
+        return User::with(['user_congresses.congress.accesses.speakers',
+            'user_congresses.congress.accesses.chairs',
+            'user_congresses.congress.accesses.sub_accesses',
+            'user_congresses.congress.accesses.topic',
+            'user_congresses.congress.accesses.type',
+            'user_congresses.privilege',
+            'user_congresses.pack',
+            'accesses',
+            'speaker_access',
+            'chair_access',
+            'country'])
+            ->where('qr_code', '=', $qrCode)
+            ->first();
     }
 
     private function isExistCongress($user, $congressId)

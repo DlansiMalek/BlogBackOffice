@@ -271,16 +271,6 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
 
-Route::group(["prefix" => "user-app"], function () {
-    Route::get('/connect/{qrCode}', 'UserController@userConnect');
-    Route::get('/congress', 'CongressController@getAllCongresses');
-    Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
-    Route::post('/presence', 'UserController@getAllPresenceStatus');
-    Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
-    Route::post('/requested-attestation/', 'UserController@requestedAttestations');
-    Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
-    Route::get('/quiz/{congress_id}', 'VotingController@getAssociation');
-});
 
 
 Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {
@@ -312,4 +302,15 @@ Route::group(['prefix' => 'access'], function () {
     Route::get('congress/{access_id}', 'AccessController@getByCongressId');
     Route::delete('{access_id}', 'AccessController@deleteAccess');
     Route::put('{access_id}', 'AccessController@editAccess');
+});
+
+Route::group(["prefix" => "user-app"], function () {
+    Route::get('/connect/{qrCode}', 'UserController@userConnect');
+    Route::get('/congress', 'CongressController@getAllCongresses');
+    Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
+    Route::post('/presence', 'UserController@getAllPresenceStatus');
+    Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
+    Route::post('/requested-attestation/', 'UserController@requestedAttestations');
+    Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
+    Route::get('/quiz/{congress_id}', 'VotingController@getAssociation');
 });
