@@ -296,7 +296,7 @@ class CongressServices
             'accesses.sub_accesses',
             'accesses.topic',
             'accesses.type'])
-            ->getg();
+            ->get();
 
     }
 
