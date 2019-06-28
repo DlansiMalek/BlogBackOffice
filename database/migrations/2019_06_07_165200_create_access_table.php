@@ -46,7 +46,6 @@ class CreateAccessTable extends Migration
             $table->integer('access_type_id')->unsigned()->nullable()->default(null);
             $table->foreign('access_type_id')->references('access_type_id')->on('Access_Type');
 
-
             $table->softDeletes();
             $table->timestamps();
         });
