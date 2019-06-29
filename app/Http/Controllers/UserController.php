@@ -850,4 +850,20 @@ class UserController extends Controller
         $user->save();
         return $user;
     }
+
+    public function mobileEditUser(Request $request, $user_id)
+    {
+        if (!$request->has(['first_name', 'last_name', 'gender', 'mobile', 'email', 'country_id']))
+            return response()->json(['error' => 'bad request'], 400);
+        $user = $this->userServices->getUserById($user_id);
+        $user->first_name = $request->input('first_name');
+        $user->last_name = $request->input('last_name');
+        $user->gender = $request->input('gender');
+        $user->mobile = $request->input('mobile');
+        $user->email= $request->input('email');
+        $user->country_id = $request->input('country_id');
+        $user->update();
+        return $user;
+
+    }
 }

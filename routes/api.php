@@ -313,4 +313,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
     Route::get('/quiz/{congress_id}', 'VotingController@getAssociation');
+    Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
 });
