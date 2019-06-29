@@ -31,7 +31,7 @@ class CreateAccessTable extends Migration
             $table->unsignedTinyInteger('show_in_program')->nullable()->default(null);
 
             $table->integer('parent_id')->unsigned()->nullable()->default(null);
-            $table->foreign('parent_id')->references('access_id')->on('Access');
+            $table->foreign('parent_id')->references('access_id')->on('Access')->onDelete('cascade');
 
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
@@ -45,7 +45,6 @@ class CreateAccessTable extends Migration
             //access_type
             $table->integer('access_type_id')->unsigned()->nullable()->default(null);
             $table->foreign('access_type_id')->references('access_type_id')->on('Access_Type');
-
 
             $table->softDeletes();
             $table->timestamps();

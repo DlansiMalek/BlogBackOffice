@@ -361,5 +361,8 @@ class CongressController extends Controller
         return $congress;
     }
 
+    public function getAll(){
 
+
+    }
 }
