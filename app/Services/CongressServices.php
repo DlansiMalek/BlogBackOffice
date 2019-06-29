@@ -32,9 +32,14 @@ class CongressServices
         $this->organizationServices = $organizationServices;
     }
 
+    public function getById($congressId)
+    {
+        return Congress::find($congressId);
+    }
+
     public function getCongressById($id_Congress)
     {
-        $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesses.attestation'])
+        $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation'])
             ->where("congress_id", "=", $id_Congress)
             ->first();
         return $congress;
@@ -286,11 +291,11 @@ class CongressServices
 
     public function getAllCongresses()
     {
-        return Congress::with(['accesses.speakers',
-            'accesses.chairs',
-            'accesses.sub_accesses',
-            'accesses.topic',
-            'accesses.type'])
+        return Congress::with(['accesss.speakers',
+            'accesss.chairs',
+            'accesss.sub_accesses',
+            'accesss.topic',
+            'accesss.type'])
             ->get();
 
     }

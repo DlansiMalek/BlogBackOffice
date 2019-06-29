@@ -97,14 +97,17 @@ class UserController extends Controller
         return response()->json($this->userServices->updateUser($request, $user), 202);
     }
 
-    public function delete($user_id)
+    public function delete($userId, $congressId)
     {
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
+        $userCongress = $this->userServices->getUserCongress($congressId, $userId);
+        $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
+        if ($userCongress) {
+            $userCongress->delete();
         }
-        $user->delete();
-        return response()->json(['response' => 'user deleted'], 202);
+        if ($payment) {
+            $payment->delete();
+        }
+        return response()->json(['response' => 'user disaffected to congress'], 202);
     }
 
     public function validateUser($user_id, $validation_code)
@@ -148,13 +151,13 @@ class UserController extends Controller
 
     public function getUsersByCongress($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(["error" => "congress not found"], 404);
         }
         $users = $this->userServices->getUsersByCongress($congressId);
 
         foreach ($users as $user) {
-            foreach ($user->accesss as $access) {
+            foreach ($user->accesses as $access) {
                 if ($access->pivot->isPresent == 1) {
                     $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
                     $access->attestation_status = $infoPresence['enabled'];

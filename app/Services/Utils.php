@@ -57,6 +57,16 @@ class Utils
         return date('H:i', strtotime($date));
     }
 
+    public static function objArraySearch($array, $index, $value)
+    {
+        foreach($array as $arrayInf) {
+            if($arrayInf->{$index} == $value) {
+                return $arrayInf;
+            }
+        }
+        return null;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");

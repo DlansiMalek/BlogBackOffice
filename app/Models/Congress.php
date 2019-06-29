@@ -65,7 +65,7 @@ class Congress extends Model
         return $this->belongsToMany('App\Models\Congress', 'UserCongress', 'user_id', 'congress_id');
     }
 
-    public function accesses()
+    public function accesss()
     {
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
     }

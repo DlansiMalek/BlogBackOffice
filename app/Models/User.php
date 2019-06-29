@@ -57,17 +57,17 @@ class User extends Authenticatable
 
     function responses()
     {
-        return $this->hasMany("App\Models\Form_Input_Response", 'user_id', 'user_id');
+        return $this->hasMany('App\Models\FormInputResponse', 'user_id', 'user_id');
     }
 
     function attestation_requests()
     {
-        return $this->hasMany('App\Models\Attestation_Request', 'user_id', 'user_id');
+        return $this->hasMany('App\Models\AttestationRequest', 'user_id', 'user_id');
     }
 
     function feedback_responses()
     {
-        return $this->hasMany('App\Models\Feedback_Response', 'user_id', 'user_id');
+        return $this->hasMany('App\Models\FeedbackResponse', 'user_id', 'user_id');
     }
 
 }

@@ -52,7 +52,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');
-        Route::delete('delete', 'UserController@delete');
+        Route::delete('congress/{congressId}/delete', 'UserController@delete');
         Route::post('upload-payement', 'UserController@uploadPayement');
         Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
@@ -270,7 +270,6 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
-
 
 
 Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {

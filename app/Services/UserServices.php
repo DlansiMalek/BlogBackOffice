@@ -345,8 +345,13 @@ class UserServices
 
     public function getUsersByCongress($congressId)
     {
-        return User::with(['accesss.attestation', 'organization', 'privilege', 'country', 'attestation_requests.access.attestation'])
-            ->where("congress_id", "=", $congressId)
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->with(['user_congresses' => function ($query) use ($congressId) {
+                return $query->where('congress_id', '=', $congressId)
+                    ->first();
+            }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments'])
             ->get();
     }
 
@@ -821,7 +826,7 @@ class UserServices
             $query->where('congress_id', '=', $congress_id);
         })->delete();
     }
-    
+
     public function getUserByQrCode($qrCode)
     {
         return User::with(['user_conggetUserByQrCoderesses.congress.accesses.speakers',
@@ -836,6 +841,20 @@ class UserServices
             'chair_access',
             'country'])
             ->where('qr_code', '=', $qrCode)
+            ->first();
+    }
+
+
+    public function getUserCongressLocal($userCongresss, $congressId)
+    {
+        return Utils::objArraySearch($userCongresss, 'congress_id', $congressId);
+
+    }
+
+    public function getPaymentInfoByUserAndCongress($userId, $congressId)
+    {
+        return Payment::where('congress_id', '=', $congressId)
+            ->where('user_id', '=', $userId)
             ->first();
     }
 
