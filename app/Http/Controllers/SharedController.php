@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 
 use App\Services\SharedServices;
-use Illuminate\Support\Facades\Log;
 
 class SharedController extends Controller
 {
@@ -54,11 +53,14 @@ class SharedController extends Controller
     {
         return response()->json($this->sharedServices->getAllCountries());
     }
-    public function getFile($file_path){
-        return response()->file('../storage/app/mail-images/'.$file_path);
+
+    public function getFile($file_path)
+    {
+        return response()->file('../storage/app/mail-images/' . $file_path);
     }
 
-    public function encrypt($password){
+    public function encrypt($password)
+    {
         return bcrypt($password);
     }
 }

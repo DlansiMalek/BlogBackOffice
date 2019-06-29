@@ -6,13 +6,8 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
-use App\Models\Feedback_Question;
-use App\Models\Feedback_Question_Type;
-use App\Models\Feedback__Value;
-use App\Models\Form_Input;
-use App\Models\Form_Input_Value;
 use App\Models\Mail;
-use App\Models\Mail_Type;
+use App\Models\MailType;
 use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\User;
@@ -269,7 +264,7 @@ class CongressServices
 
     public function getMailType($name)
     {
-        return Mail_Type::where("name", "=", $name)->first();
+        return MailType::where("name", "=", $name)->first();
     }
 
     public function getMail($congressId, $mail_type_id)

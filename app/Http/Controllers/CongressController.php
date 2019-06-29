@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\ConfigCongress;
 use App\Models\Mail;
 use App\Models\User;
-use App\Models\User_Mail;
+use App\Models\UserMail;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -324,12 +324,12 @@ class CongressController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         foreach ($congress->users as $user) {
-            $userMail = User_Mail::where('user_id', '=', $user->user_id)
+            $userMail = UserMail::where('user_id', '=', $user->user_id)
                 ->where('mail_id', '=', $mail->mail_id)
                 ->first();
 
             if (!$userMail) {
-                $userMail = new User_Mail();
+                $userMail = new UserMail();
                 $userMail->user_id = $user->user_id;
                 $userMail->mail_id = $mail_id;
                 $userMail->save();

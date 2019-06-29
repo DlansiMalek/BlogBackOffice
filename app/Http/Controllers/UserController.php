@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use Access_Presnce_Response;
-use App\Models\Attestation_Request;
+use App\Models\AttestationRequest;
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Services\AccessServices;
@@ -497,11 +496,6 @@ class UserController extends Controller
         }
     }
 
-    public function getAllPayementTypes()
-    {
-        return response()->json($this->userServices->getAllPayementTypes());
-    }
-
     public function editFastUserToCongress($congressId, $userId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
@@ -813,7 +807,7 @@ class UserController extends Controller
                 }
             }
             if ($already_exists) continue;
-            $attestation_request = new Attestation_Request();
+            $attestation_request = new AttestationRequest();
             $attestation_request->access_id = $access_id;
             $attestation_request->user_id = (int)$user_id;
             $attestation_request->save();

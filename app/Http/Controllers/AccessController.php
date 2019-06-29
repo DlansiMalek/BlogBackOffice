@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Access;
 use App\Models\UserAccess;
-use App\Resource;
 use App\Services\AccessServices;
 use App\Services\CongressServices;
 use App\Services\ResourcesServices;
@@ -74,10 +72,10 @@ class AccessController extends Controller
 
         $accesss = $this->accessServices->getAllAccessByCongress($congressId);
         foreach ($users as $user) {
-            User_Access::where('user_id', '=', $user->user_id)
+            UserAccess::where('user_id', '=', $user->user_id)
                 ->delete();
             foreach ($accesss as $access) {
-                $userAccess = new User_Access();
+                $userAccess = new UserAccess();
                 $userAccess->user_id = $user->user_id;
                 $userAccess->access_id = $access->access_id;
                 $userAccess->save();
@@ -94,10 +92,10 @@ class AccessController extends Controller
 
         $accesss = $this->accessServices->getAllAccessByCongress($congressId);
         foreach ($users as $user) {
-            User_Access::where('user_id', '=', $user->user_id)
+            UserAccess::where('user_id', '=', $user->user_id)
                 ->delete();
             foreach ($accesss as $access) {
-                $userAccess = new User_Access();
+                $userAccess = new UserAccess();
                 $userAccess->user_id = $user->user_id;
                 $userAccess->access_id = $access->access_id;
                 $userAccess->save();
@@ -174,16 +172,18 @@ class AccessController extends Controller
 
         if ($request->has('sub_accesses') && count($request->input('sub_accesses'))) {
             $this->accessServices->editSubAccesses($access, $request->input('sub_accesses'));
-        }else $this->accessServices->deleteAllSubAccesses($access_id);
+        } else $this->accessServices->deleteAllSubAccesses($access_id);
 
         return $this->accessServices->getAccessById($access->access_id);
     }
 
-    public function getAccessTypes(){
+    public function getAccessTypes()
+    {
         return $this->accessServices->getAccessTypes();
     }
 
-    public function getAccessTopics(){
+    public function getAccessTopics()
+    {
         return $this->accessServices->getAccessTopics();
     }
 

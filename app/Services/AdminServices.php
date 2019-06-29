@@ -10,8 +10,7 @@ namespace App\Services;
 
 
 use App\Models\Admin;
-use App\Models\Admin_Congress;
-use App\Models\Admin_Privilege;
+use App\Models\AdminCongress;
 use App\Models\Congress;
 use Illuminate\Http\Request;
 use JWTAuth;
@@ -46,14 +45,14 @@ class AdminServices
     public function getAdminById($admin_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(['admin_congresses.congress','admin_congresses.privilege'])
+            ->with(['admin_congresses.congress', 'admin_congresses.privilege'])
             ->first();
     }
 
     public function getAdminCongresses(Admin $admin)
     {
-        return Congress::whereHas('admin_congresses',function ($query) use ($admin){
-           $query->where('admin_id','=',$admin->admin_id);
+        return Congress::whereHas('admin_congresses', function ($query) use ($admin) {
+            $query->where('admin_id', '=', $admin->admin_id);
         })->get();
     }
 
@@ -70,7 +69,7 @@ class AdminServices
     public function addResponsibleCongress($responsibleIds, $congress_id)
     {
         foreach ($responsibleIds as $responsibleId) {
-            $congressAdmin = new Admin_Congress();
+            $congressAdmin = new AdminCongress();
             $congressAdmin->admin_id = $responsibleId;
             $congressAdmin->congress_id = $congress_id;
             $congressAdmin->save();
@@ -102,6 +101,7 @@ class AdminServices
 
     public function getAdminByQrCode($QrCode)
     {
+        //TODO Fixing with the new Design
         $admin = Admin::where("passwordDecrypt", "=", $QrCode)
             ->first();
         $admin->admin = count(Admin_Privilege::where('admin_id', '=', $admin['admin_id'])->where('privilege_id', '=', 1)->get()) > 0;

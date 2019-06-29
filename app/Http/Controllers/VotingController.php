@@ -109,11 +109,11 @@ class VotingController extends Controller
     public function getMultipleListPolls(Request $request)
     {
         $res = [];
-        foreach ($request->all() as $token){
+        foreach ($request->all() as $token) {
             $userResponse = $this->votingService->signinUser($token);
 
             $temp = $this->votingService->getListPolls($userResponse['token']);
-            if ($temp && count($temp)){
+            if ($temp && count($temp)) {
                 $res = array_merge($res, $temp);
             }
         }

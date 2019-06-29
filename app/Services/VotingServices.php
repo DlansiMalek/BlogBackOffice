@@ -8,11 +8,8 @@
 
 namespace App\Services;
 
-
-use App\Models\Access;
-use App\Models\Access_Vote;
-use App\Models\Admin;
-use App\Models\Vote_Score;
+use App\Models\AccessVote;
+use App\Models\VoteScore;
 use GuzzleHttp\Client;
 
 /**
@@ -61,7 +58,7 @@ class VotingServices
 
     public function saveAssociation($newAssociation, $congress_id)
     {
-        $accessVote = new Access_Vote();
+        $accessVote = new AccessVote();
         $accessVote->access_id = $newAssociation['access_id'];
         $accessVote->vote_id = $newAssociation['vote_id'];
         $accessVote->congress_id = $congress_id;
@@ -70,17 +67,17 @@ class VotingServices
 
     public function getAssociations($congress_id)
     {
-        return $res = Access_Vote::with(['scores.user', 'access'])->where('congress_id', '=', $congress_id)->get();
+        return $res = AccessVote::with(['scores.user', 'access'])->where('congress_id', '=', $congress_id)->get();
     }
 
     public function resetAssociation($congress_id)
     {
-        return Access_Vote::where('congress_id', '=', $congress_id)->delete();
+        return AccessVote::where('congress_id', '=', $congress_id)->delete();
     }
 
     public function addScore($scoreVoteData)
     {
-        $scoreVote = new Vote_Score();
+        $scoreVote = new VoteScore();
         $scoreVote->user_id = $scoreVoteData['userId'];
         $scoreVote->access_vote_id = $scoreVoteData['accessVoteId'];
         $scoreVote->score = $scoreVoteData['score'];
@@ -90,7 +87,7 @@ class VotingServices
 
     public function getByUserIdAndAccessVote($userId, $accessVoteId)
     {
-        return Vote_Score::where('user_id', '=', $userId)
+        return VoteScore::where('user_id', '=', $userId)
             ->where('access_vote_id', '=', $accessVoteId)
             ->first();
     }
@@ -103,7 +100,7 @@ class VotingServices
 
     public function getAccessVoteById($accessVoteId)
     {
-        return Access_Vote::where('access_vote_id', '=', $accessVoteId)
+        return AccessVote::where('access_vote_id', '=', $accessVoteId)
             ->first();
     }
 

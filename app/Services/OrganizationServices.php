@@ -27,11 +27,12 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id)
     {
-        return Organization::with(['congress_organization','users'])->find($organization_id);
+        return Organization::with(['congress_organization', 'users'])->find($organization_id);
     }
 
     public function addOrganization(Request $request, $congress_id, $admin_id)
     {
+        // TODO With new Design
         $organization = new Organization();
         $organization->email = $request->input("email");
         $organization->name = $request->input("name");
@@ -48,7 +49,7 @@ class OrganizationServices
 
         $admin = new Admin();
         $admin->name = $request->input("name");
-        $admin->email = $congress_id."-".$request->input("email");
+        $admin->email = $congress_id . "-" . $request->input("email");
         $admin->mobile = $request->input("mobile");
 
         $admin->responsible = $admin_id;
@@ -88,12 +89,12 @@ class OrganizationServices
 
     public function getOrganizationByAdminId($admin_id)
     {
-        return Organization::with(['congress_organization'])->where('admin_id',"=",$admin_id)->first();
+        return Organization::with(['congress_organization'])->where('admin_id', "=", $admin_id)->first();
     }
 
     public function exist($congress_id, $email)
     {
-        $organizations = Organization::with(['congress_organization'])->where('email',"=",$email)->get();
+        $organizations = Organization::with(['congress_organization'])->where('email', "=", $email)->get();
         foreach ($organizations as $org)
             if ($org->congress_organization->congress_id == $congress_id) return true;
         return false;

@@ -9,12 +9,12 @@
 namespace App\Services;
 
 
-use App\Models\AccessChair;
 use App\Models\Access;
+use App\Models\AccessChair;
+use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
-use App\Models\AccessSpeaker;
 use Illuminate\Support\Facades\Log;
 
 class AccessServices
@@ -148,7 +148,7 @@ class AccessServices
     {
         return Access::with(
             ['speakers', 'chairs', 'topic', 'resources', 'type',
-            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
+                'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
             ->find($access_id);
     }
 

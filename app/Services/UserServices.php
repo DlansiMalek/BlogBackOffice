@@ -2,19 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Access_Presence;
+use App\Models\AccessPresence;
 use App\Models\Admin;
-use App\Models\Attestation_Request;
-use App\Models\Congress;
-use App\Models\Form_Input_Response;
+use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
-use App\Models\Payement_Type;
-use App\Models\Reponse_Value;
+use App\Models\Payment;
+use App\Models\ResponseValue;
 use App\Models\User;
-use App\Models\User_Access;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
-use App\Models\Vote_Score;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -147,7 +143,7 @@ class UserServices
         return $user;
     }
 
-    public function updateUser($request, $updateUser)
+    public function updateUser(Request $request, $updateUser)
     {
         if (!$updateUser) {
             return null;
@@ -249,8 +245,7 @@ class UserServices
 
     public function getParticipatorByIdByCongress($userId, $congressId)
     {
-        return User::
-        withCount(['congresses as isPresent' => function ($query) use ($congressId) {
+        return User::withCount(['congresses as isPresent' => function ($query) use ($congressId) {
             $query->where("Congress_User . id_Congress", "=", $congressId)
                 ->where("Congress_User . isPresent", "=", 1);
         }])->
@@ -341,14 +336,6 @@ class UserServices
             ->get();
     }
 
-    public function generateQrCode($qr_code)
-    {
-    }
-
-    public function getAllPayementTypes()
-    {
-        return Payement_Type::all();
-    }
 
     public function getAllowedBadgeUsersByCongress($congressId)
     {
@@ -415,7 +402,7 @@ class UserServices
 
     public function getUserAccessByUser($userId, $accessId)
     {
-        return User_Access::where("user_id", "=", $userId)
+        return UserAccess::where("user_id", "=", $userId)
             ->where("access_id", "=", $accessId)
             ->first();
     }
@@ -730,8 +717,8 @@ class UserServices
             $reponse->save();
             if (in_array($req['type']['name'], ['checklist', 'multiselect']))
                 foreach ($req['response'] as $val) {
-                    $repVal = new Reponse_Value();
-                    $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                    $repVal = new ResponseValue();
+                    $repVal->form = $reponse->form_input_reponse_id;
                     $repVal->form_input_value_id = $val;
                     if (!$val)
                         continue;
@@ -739,8 +726,8 @@ class UserServices
                     $repVal->save();
                 }
             else if (in_array($req['type']['name'], ['radio', 'select'])) {
-                $repVal = new Reponse_Value();
-                $repVal->form_input_reponse_id = $reponse->form_input_reponse_id;
+                $repVal = new ResponseValue();
+                $repVal->form_input_response_id = $reponse->form_input_response_id;
                 $repVal->form_input_value_id = $req['response'];
                 if (!$req['response'])
                     continue;
@@ -752,16 +739,16 @@ class UserServices
 
     public function deleteUserResponses($user_id)
     {
-        $responses = Form_Input_Response::with('values')->where('user_id', '=', $user_id)->get();
+        $responses = FormInputResponse::with('values')->where('user_id', '=', $user_id)->get();
         foreach ($responses as $resp) {
-            Reponse_Value::where('form_input_reponse_id', '=', $resp->form_input_reponse_id)->delete();
+            ResponseValue::where('form_input_response_id', '=', $resp->form_input_response_id)->delete();
             $resp->delete();
         }
     }
 
     public function isRegisteredToAccess($user_id, $access_id)
     {
-        return count(User_Access::where("user_id", "=", $user_id)->where("access_id", '=', $access_id)->get()) > 0;
+        return count(UserAccess::where("user_id", "=", $user_id)->where("access_id", '=', $access_id)->get()) > 0;
     }
 
     public function usedQrCode($qr)
@@ -836,22 +823,16 @@ class UserServices
         })->delete();
     }
 
-    private function isExistCongress($user, $congressId)
-    {
-        return Congress_User::where("id_User", "=", $user->id_User)
-            ->where("id_Congress", "=", $congressId)->first();
-    }
-
     private function removeAllPresencePerAccess($accessId, $user_id)
     {
-        return Access_Presence::where('user_id', '=', $user_id)
+        return AccessPresence::where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
             ->delete();
     }
 
     private function addingNewEnter($user_id, $accessId)
     {
-        $access_presence = new Access_Presence();
+        $access_presence = new AccessPresence();
         $access_presence->user_id = $user_id;
         $access_presence->access_id = $accessId;
         $access_presence->entered_at = date('Y-m-d H:i:s');
@@ -860,7 +841,7 @@ class UserServices
 
     private function getLastEnterUser($user_id, $accessId)
     {
-        return Access_Presence::whereNull('left_at')
+        return AccessPresence::whereNull('left_at')
             ->where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
             ->first();
@@ -868,7 +849,7 @@ class UserServices
 
     private function affectAccessById($user_id, $accessId)
     {
-        $user_access = new User_Access();
+        $user_access = new UserAccess();
         $user_access->access_id = $accessId;
         $user_access->user_id = $user_id;
         $user_access->save();
@@ -876,7 +857,7 @@ class UserServices
 
     private function deleteAccessById($user_id, $accessId)
     {
-        return User_Access::where('user_id', '=', $user_id)
+        return UserAccess::where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
             ->delete();
     }
@@ -930,7 +911,7 @@ class UserServices
         if (array_key_exists('accesss', $user)) {
             foreach ($user['accesss'] as $accessId) {
                 if ($accessId != 0) {
-                    $accessUser = new User_Access();
+                    $accessUser = new UserAccess();
                     $accessUser->access_id = $accessId;
                     $accessUser->user_id = $userData->user_id;
                     $accessUser->save();
@@ -965,7 +946,7 @@ class UserServices
 
     public function getAttestationRequestsByUserId($user_id)
     {
-        return Attestation_Request::where("user_id", '=', $user_id)->get()->toArray();
+        return AttestationRequest::where("user_id", '=', $user_id)->get()->toArray();
     }
 
 }
