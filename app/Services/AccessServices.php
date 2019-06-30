@@ -57,7 +57,7 @@ class AccessServices
         return $access;
     }
 
-    public function editAccess($access, $request)
+    public function editAccess($access, Request $request)
     {
         if ($request->has('name')) $access->name = $request->input("name");
         if ($request->has('start_date')) $access->start_date = $request->input("start_date");
@@ -71,7 +71,15 @@ class AccessServices
         if ($request->has('seuil')) $access->seuil = $request->input('seuil');
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
         if ($request->has('show_in_program')) $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
-        $access->save();
+
+        if ($request->has('show_in_register'))
+            $access->show_in_register = $request->input('show_in_register');
+
+        if ($request->has('with_attestation'))
+            $access->with_attestation = $request->input('with_attestation');
+
+
+        $access->update();
         return $access;
     }
 

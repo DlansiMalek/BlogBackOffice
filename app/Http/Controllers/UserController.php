@@ -59,6 +59,17 @@ class UserController extends Controller
         return $this->userServices->getAllUsers();
     }
 
+    public function getUserByEmail(Request $request)
+    {
+        $email = $request->input('email');
+
+        if (!$user = $this->userServices->getUserByEmail($email)) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+
+        return response()->json($user);
+    }
+
     public function getUserById($user_id)
     {
         $user = $this->userServices->getParticipatorById($user_id);
@@ -267,6 +278,7 @@ class UserController extends Controller
             return response()->json(['error' => 'congress not found'], 404);
         }
 
+        //TODO Fixing Register User with new Design
         if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
 
 //            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))
@@ -857,7 +869,7 @@ class UserController extends Controller
         $user->last_name = $request->input('last_name');
         $user->gender = $request->input('gender');
         $user->mobile = $request->input('mobile');
-        $user->email= $request->input('email');
+        $user->email = $request->input('email');
         $user->country_id = $request->input('country_id');
         $user->update();
         return $user;

@@ -49,6 +49,8 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
+
+    Route::post('by-email', 'UserController@getUserByEmail');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');
@@ -257,9 +259,6 @@ Route::get('generateTickets', 'AdminController@generateTickets');
 Route::get('updateUsers', 'AdminController@updateUsers');
 Route::get('generateUserQrCode', 'AdminController@generateUserQrCode');
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
 Route::group(['prefix' => 'payement'], function () {
     Route::get('/types', 'UserController@getAllPayementTypes');
 });
@@ -313,5 +312,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
     Route::get('/quiz/{congress_id}', 'VotingController@getAssociation');
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
-    Route::get('/like/{user_id}/{access_id}','LikeController@like');
+    Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
 });

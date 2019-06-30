@@ -442,10 +442,9 @@ class UserServices
         return json_decode($res->getBody(), true);
     }
 
-    public function getUserByEmail($congressId, $email)
+    public function getUserByEmail($email)
     {
         return User::where('email', '=', $email)
-            ->where('congress_id', '=', $congressId)
             ->first();
     }
 
