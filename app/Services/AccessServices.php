@@ -15,6 +15,7 @@ use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AccessServices
@@ -28,7 +29,7 @@ class AccessServices
     }
 
 
-    public function addAccess($congress_id, $request)
+    public function addAccess($congress_id, Request $request)
     {
         $access = new Access();
         $access->name = $request->input("name");
@@ -43,6 +44,14 @@ class AccessServices
         if ($request->has('seuil')) $access->seuil = $request->input('seuil');
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
         $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
+
+        if ($request->has('show_in_register'))
+            $access->show_in_register = $request->input('show_in_register');
+
+        if ($request->has('with_attestation'))
+            $access->with_attestation = $request->input('with_attestation');
+
+
         $access->congress_id = $congress_id;
         $access->save();
         return $access;
