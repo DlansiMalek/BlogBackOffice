@@ -312,9 +312,8 @@ class UserServices
 
     public function getUserById($user_id)
     {
-        return User::with(["accesss", 'privilege', 'pack.accesses'])
-            ->where("user_id", "=", $user_id)
-            ->first();
+        return User::with(["accesses"])
+            ->find($user_id);
 
     }
 
