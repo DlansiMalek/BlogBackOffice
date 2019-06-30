@@ -70,4 +70,8 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Feedback_Response', 'user_id', 'user_id');
     }
 
+    function likes(){
+        return $this->hasMany('App\Models\Like','user_id','user_id');
+    }
+
 }
