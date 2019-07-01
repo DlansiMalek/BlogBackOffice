@@ -36,7 +36,7 @@ Route::group(['prefix' => 'mobile'], function () {
             Route::post('participant', 'AdminController@scanParticipatorQrCode');
         });
         Route::group(['prefix' => 'presence/{id_Participator}'], function () {
-            Route::post('status/update', 'AdminController@makeUserPresentCongress');
+            Route::post('statgetListPersonelsByAdminus/update', 'AdminController@makeUserPresentCongress');
             Route::post('status/update/access', 'AdminController@makeUserPresentAccess');
         });
     });

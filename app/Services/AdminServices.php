@@ -59,11 +59,15 @@ class AdminServices
 
     public function getListPersonelsByAdmin($congress_id)
     {
-        return AdminCongress::where('congress_id','=',$congress_id)
-            ->with(['admin'])
+        return Admin::whereHas('admin_congresses', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        })
+            ->with(['admin_congresses' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)
+                    ->first();
+            }])
             ->get();
     }
-
 
 
     public function addResponsibleCongress($responsibleIds, $congress_id)
