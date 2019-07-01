@@ -12,6 +12,7 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
+use App\Models\Privilege;
 use Illuminate\Http\Request;
 use JWTAuth;
 
@@ -56,15 +57,14 @@ class AdminServices
         })->get();
     }
 
-    public function getListPersonelsByAdmin($admin_id)
+    public function getListPersonelsByAdmin($congress_id)
     {
-        return Admin::where("responsible", "=", $admin_id)
-            ->whereHas('privileges', function ($query) {
-                $query->where('privilege_id', '=', 2);
-            })
-            ->with(['congress_responsible.badges'])
+        return AdminCongress::where('congress_id','=',$congress_id)
+            ->with(['admin'])
             ->get();
     }
+
+
 
     public function addResponsibleCongress($responsibleIds, $congress_id)
     {
@@ -78,6 +78,10 @@ class AdminServices
 
     public function addPersonnel(Request $request, $admin_id)
     {
+        // add select privilege front
+        // check if admin exists add it
+        // add privilege in database in admin congress
+
         $personnel = new Admin();
         $personnel->name = $request->input("name");
         $personnel->email = $request->input("email");

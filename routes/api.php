@@ -170,7 +170,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
         Route::get('', 'AdminController@getAuhenticatedAdmin');
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
-            Route::get('list', 'AdminController@getListPersonels');
+            Route::get('list/{congress_id}', 'AdminController@getListPersonels');
             Route::post('add', 'AdminController@addPersonnel');
             Route::delete('{admin_id}/delete', 'AdminController@deletePersonnel');
             Route::post('{admin_id}/send-credentials-email', 'AdminController@sendCredentialsViaEmailToOrganizer');

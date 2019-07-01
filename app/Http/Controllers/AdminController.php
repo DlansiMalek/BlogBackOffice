@@ -406,19 +406,26 @@ class AdminController extends Controller
      *
      */
     public
-    function getListPersonels()
+    function getListPersonels($congress_id)
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->getListPersonelsByAdmin($admin->admin_id);
+        $personels = $this->adminServices->getListPersonelsByAdmin($congress_id);
 
         return response()->json($personels);
 
     }
 
+
+
     public function addPersonnel(Request $request)
     {
+        // check if email is binded to event ->exit
+        // check if email exists in other admin
+        // add if n admin to admin column and get his id
+        // add privilege to the admin in th second table
+
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
