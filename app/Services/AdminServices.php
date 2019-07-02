@@ -80,18 +80,12 @@ class AdminServices
         }
     }
 
-    public function addPersonnel(Request $request, $admin_id)
+    public function addPersonnel(Request $request)
     {
-        // add select privilege front
-        // check if admin exists add it
-        // add privilege in database in admin congress
-
         $personnel = new Admin();
-        $personnel->name = $request->input("name");
-        $personnel->email = $request->input("email");
-        $personnel->mobile = $request->input("mobile");
-
-        $personnel->responsible = $admin_id;
+        $personnel->name = $request->input('admin')["name"];
+        $personnel->email = $request->input('admin')["email"];
+        $personnel->mobile = $request->input('admin')["mobile"];
 
         $password = str_random(8);
         $personnel->passwordDecrypt = $password;
