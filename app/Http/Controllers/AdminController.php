@@ -431,7 +431,7 @@ class AdminController extends Controller
             $admin = $this->adminServices->addPersonnel($admin);
         }
 
-        $admin_congress = $this->privilegeServices->checkIfHasPrivilege($admin->admin_id,
+        $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin->admin_id,
             $congress_id);
 
         if ($admin_congress) {
@@ -446,14 +446,13 @@ class AdminController extends Controller
     }
 
     public
-    function deletePersonnel($personnelId)
+    function deletePersonnel($congress_id,$admin_id)
     {
-        if (!$admin = $this->adminServices->getAdminById($personnelId)) {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,$congress_id)) {
             return response()->json(["message" => "admin not found"], 404);
         }
-        $this->adminServices->deleteAdminById($admin);
+        $this->privilegeServices->deleteAdminCongressByIds($admincongress);
         return response()->json(["message" => "deleted success"]);
-
     }
 
     public

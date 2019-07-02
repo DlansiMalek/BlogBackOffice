@@ -28,11 +28,16 @@ class PrivilegeServices
         return $admin_congress;
     }
 
-    public function checkIfHasPrivilege($adminId,$congress_id)
+    public function checkIfAdminOfCongress($adminId,$congress_id)
     {
         return AdminCongress::where('admin_id','=',$adminId)
             ->where('congress_id','=',$congress_id)
             ->first();
+    }
+
+    public function deleteAdminCongressByIds($admincongress)
+    {
+        $admincongress->delete();
     }
 
 }

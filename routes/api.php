@@ -172,7 +172,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
             Route::post('add/{congress_id}', 'AdminController@addPersonnel');
-            Route::delete('{admin_id}/delete', 'AdminController@deletePersonnel');
+            Route::delete('{congress_id}/delete/{admin_id}', 'AdminController@deletePersonnel');
             Route::post('{admin_id}/send-credentials-email', 'AdminController@sendCredentialsViaEmailToOrganizer');
             Route::get('{admin_id}/qr-code', 'AdminController@downloadQrCode');
         });
