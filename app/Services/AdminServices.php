@@ -69,6 +69,18 @@ class AdminServices
             ->get();
     }
 
+    public function getPersonelsByIdAndCongressId($congress_id,$admin_id)
+    {
+        return Admin::where('admin_id','=',$admin_id)
+        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        })
+            ->with(['admin_congresses' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)
+                    ->first();
+            }])
+            ->first();
+    }
 
     public function addResponsibleCongress($responsibleIds, $congress_id)
     {
@@ -94,6 +106,14 @@ class AdminServices
         $personnel->save();
 
         return $personnel;
+    }
+    public function editPersonnel($admin)
+    {
+        return Admin::where("admin_id", "=", $admin['admin_id'])
+            ->update(['name' => $admin["name"],
+                    'email' => $admin["email"],
+                    'mobile' => $admin["mobile"]]);
+
     }
 
     public function deleteAdminById($admin)

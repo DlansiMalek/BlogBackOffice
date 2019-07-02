@@ -28,6 +28,13 @@ class PrivilegeServices
         return $admin_congress;
     }
 
+    public function editPrivilege($privilegeId, $adminId, $congress_id) {
+        return AdminCongress::where('admin_id','=',$adminId)
+            ->where('congress_id','=',$congress_id)
+            ->update(['privilege_id' => $privilegeId]);
+
+    }
+
     public function checkIfAdminOfCongress($adminId,$congress_id)
     {
         return AdminCongress::where('admin_id','=',$adminId)
