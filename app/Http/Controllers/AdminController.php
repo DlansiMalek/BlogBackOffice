@@ -419,30 +419,29 @@ class AdminController extends Controller
 
 
 
-    public function addPersonnel(Request $request)
+    public function addPersonnel(Request $request,$congress_id)
     {
 
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        $personels = $this->adminServices->getAdminByLogin($request->input('admin')['email']);
-
-        if (!$personels) {
-            $personels = $this->adminServices->addPersonnel($request);
+        $admin = $request->input('admin');
+        if (!$this->adminServices->getAdminByLogin($admin['email'])) {
+            $admin = $this->adminServices->addPersonnel($admin);
         }
 
-        $admin_congress = $this->privilegeServices->checkIfHasPrivilege($personels->admin_id,
-            $request->input('congress'));
+        $admin_congress = $this->privilegeServices->checkIfHasPrivilege($admin->admin_id,
+            $congress_id);
 
-        if (sizeof($admin_congress)) {
+        if ($admin_congress) {
             return response()->json(['error' => 'Organisateur existant'], 404);
         }
 
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
             (int)$request->input('privilege'),
-            $personels->admin_id,
-            $request->input('congress'));
+            $admin->admin_id,
+            $congress_id);
         return response()->json($admin_congress);
     }
 

@@ -32,7 +32,7 @@ class PrivilegeServices
     {
         return AdminCongress::where('admin_id','=',$adminId)
             ->where('congress_id','=',$congress_id)
-            ->get();
+            ->first();
     }
 
 }

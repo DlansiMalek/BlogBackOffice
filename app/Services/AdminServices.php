@@ -80,12 +80,12 @@ class AdminServices
         }
     }
 
-    public function addPersonnel(Request $request)
+    public function addPersonnel($admin)
     {
         $personnel = new Admin();
-        $personnel->name = $request->input('admin')["name"];
-        $personnel->email = $request->input('admin')["email"];
-        $personnel->mobile = $request->input('admin')["mobile"];
+        $personnel->name = $admin["name"];
+        $personnel->email = $admin["email"];
+        $personnel->mobile = $admin["mobile"];
 
         $password = str_random(8);
         $personnel->passwordDecrypt = $password;
