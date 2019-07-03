@@ -72,11 +72,12 @@ class AdminServices
     public function getPersonelsByIdAndCongressId($congress_id,$admin_id)
     {
         return Admin::where('admin_id','=',$admin_id)
-        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
-            $query->where('congress_id', '=', $congress_id);
-        })
-            ->with(['admin_congresses' => function ($query) use ($congress_id) {
+//        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
+//            $query->where('congress_id', '=', $congress_id);
+//        })
+            ->with(['admin_congresses' => function ($query) use ($congress_id,$admin_id) {
                 $query->where('congress_id', '=', $congress_id)
+                    ->where('admin_id','=',$admin_id)
                     ->first();
             }])
             ->first();

@@ -417,22 +417,6 @@ class AdminController extends Controller
 
     }
 
-    public function editPersonels (Request $request,$congress_id) {
-        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
-            return response()->json(['error' => 'admin_not_found'], 404);
-        }
-        $admin = $request->input('admin');
-        $this->adminServices->editPersonnel($admin);
-        $this->privilegeServices->editPrivilege(
-            (int) $request->input('privilege_id'),
-            $admin['admin_id'],
-            $congress_id);
-        //message d'erreur à revoir
-        return response()->json(['message' => 'working'], 200);
-    }
-
-
-
     public function addPersonnel(Request $request,$congress_id)
     {
 
@@ -441,22 +425,47 @@ class AdminController extends Controller
         }
 
         $admin = $request->input('admin');
-        if (!$this->adminServices->getAdminByLogin($admin['email'])) {
+
+        // if exists then update or create admin in DB
+        if ( !($fetched = $this->adminServices->getAdminByLogin($admin['email'])) ) {
             $admin = $this->adminServices->addPersonnel($admin);
+            $admin_id = $admin->admin_id;
+        } else {
+            $admin_id = $fetched->admin_id;
+            // check if he has already privilege to congress
+            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,
+                $congress_id);
+
+            if ($admin_congress) {
+                return response()->json(['error' => 'Organisateur existant'], 505);
+            }
+            // else edit changed infos while creating
+
+            $admin['admin_id'] = $admin_id;
+            $this->adminServices->editPersonnel($admin);
         }
 
-        $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin->admin_id,
-            $congress_id);
-
-        if ($admin_congress) {
-            return response()->json(['error' => 'Organisateur existant'], 404);
-        }
-
+        //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
             (int)$request->input('privilege_id'),
-            $admin->admin_id,
+            $admin_id,
             $congress_id);
+
         return response()->json($admin_congress);
+    }
+
+    public function editPersonels (Request $request,$congress_id,$admin_id) {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $admin = $request->input('admin');
+        $this->adminServices->editPersonnel($admin);
+        $this->privilegeServices->editPrivilege(
+            (int) $request->input('privilege_id'),
+            $admin_id,
+            $congress_id);
+        //message d'erreur à revoir
+        return response()->json(['message' => 'working'], 200);
     }
 
     public
@@ -469,7 +478,7 @@ class AdminController extends Controller
         return response()->json(["message" => "deleted success"]);
     }
 
-    public function getPersonelById($congress_id,$admin_id) {
+    public function getPersonelByIdAndCongressId($congress_id,$admin_id) {
         if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,$congress_id)) {
             return response()->json(["message" => "admin not found"], 404);
         }
