@@ -837,7 +837,8 @@ class UserServices
             'accesses',
             'speaker_access',
             'chair_access',
-            'country'])
+            'country',
+            'likes'])
             ->where('qr_code', '=', $qrCode)
             ->first();
     }
