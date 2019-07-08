@@ -272,8 +272,8 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
 
 
 Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {
-    Route::put('token', 'VotingController@setToken');
-    Route::get('token', 'VotingController@getToken');
+    Route::put('{congress_id}/token', 'VotingController@setToken');
+    Route::get('{congress_id}/token', 'VotingController@getToken');
     Route::get('{congress_id}', 'VotingController@getAssociation');
     Route::put('{congress_id}', 'VotingController@setAssociation');
     Route::delete('{congress_id}', 'VotingController@resetAssociation');

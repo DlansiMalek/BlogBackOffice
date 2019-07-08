@@ -827,7 +827,7 @@ class UserServices
 
     public function getUserByQrCode($qrCode)
     {
-        return User::with(['user_conggetUserByQrCoderesses.congress.accesses.speakers',
+        return User::with(['user_congresses.congress.accesses.speakers',
             'user_congresses.congress.accesses.chairs',
             'user_congresses.congress.accesses.sub_accesses',
             'user_congresses.congress.accesses.topic',

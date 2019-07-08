@@ -300,4 +300,8 @@ class CongressServices
 
     }
 
+    public function getCongressConfig($congress_id){
+        return ConfigCongress::where('congress_id','=',$congress_id)->first();
+    }
+
 }
