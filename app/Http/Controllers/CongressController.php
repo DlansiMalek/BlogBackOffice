@@ -13,6 +13,7 @@ use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\PackServices;
 use App\Services\PrivilegeServices;
+use App\Services\ResourcesServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -30,6 +31,7 @@ class CongressController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packService;
+    protected $resourceService;
     public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
 
 //    public $baseUrl = "https://congress-api.vayetek.com/api/";
@@ -40,7 +42,8 @@ class CongressController extends Controller
                          UserServices $userServices,
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
-                         PackServices $packService)
+                         PackServices $packService,
+                         ResourcesServices $resourceService)
     {
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -50,6 +53,7 @@ class CongressController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->packService = $packService;
+        $this->resourceService = $resourceService;
     }
 
 
@@ -67,6 +71,15 @@ class CongressController extends Controller
             $request->input('config')['free'],
             $request->input('config')['prise_charge_option'],
             $admin->admin_id);
+    }
+
+    public function editConfigCongress(Request $request, $congressId) {
+
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        return response()->json(['message' =>  $request->input("configCongress")], 200);
+        //return $this->congressServices->editConfigCongress($request->input('configCongress'));
     }
 
     public function editCongress(Request $request, $congressId)
@@ -90,6 +103,14 @@ class CongressController extends Controller
             return response()->json(["error" => "congress not found"], 404);
         }
         return response()->json($congress);
+    }
+
+    public function getCongressConfigById($congress_id)
+    {
+        if (!$configCongress = $this->congressServices->getCongressConfigById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        return response()->json($configCongress);
     }
 
 
@@ -247,9 +268,9 @@ class CongressController extends Controller
         return response()->json(['message' => 'send mail successs']);
     }
 
-    public function uploadLogo($congressId, Request $request)
+    public function uploadLogo($congress_id, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getCongressConfigById($congress_id)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $congress = $this->congressServices->uploadLogo($congress, $request);
@@ -259,8 +280,8 @@ class CongressController extends Controller
 
     public function uploadBanner($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
+        if (!$congress = $this->congressServices->getCongressConfigById($congressId)) {
+            return response()->json(['error' => 'congress not found '], 404);
         }
         $congress = $this->congressServices->uploadBanner($congress, $request);
 

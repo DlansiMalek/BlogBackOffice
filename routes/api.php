@@ -88,6 +88,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("super-admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::get('config', 'CongressController@getCongressConfigById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
         Route::get('/sendMailAllParticipants', 'AdminController@sendMailAllParticipants');
         Route::get('badges', 'CongressController@getBadgesByCongress');
@@ -184,6 +185,7 @@ Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
                     Route::get('send-confirm-inscription', 'CongressController@sendMailAllParticipants');
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
                 });
+                Route::post('edit-config', 'CongressController@editConfigCongress');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
             });

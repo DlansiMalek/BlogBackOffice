@@ -17,4 +17,8 @@ class Country extends Model
     protected $primaryKey = 'country_id';
     protected $fillable = ['name','code','label','nationality','nationality_arabe'];
     public $timestamps = false;
+
+    public function cities(){
+        return $this->hasMany('App\Models\City','city_id','city_id');
+    }
 }
