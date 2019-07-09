@@ -297,6 +297,13 @@ class AccessServices
         return Topic::all();
     }
 
+    public function getMainByCongressId($congress_id)
+    {
+        return Access::where('congress_id','=',$congress_id)
+            ->whereNull('parent_id')
+            ->get();
+    }
+
 
     private function deleteAccessByCongress($congressId)
     {

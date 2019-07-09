@@ -187,4 +187,9 @@ class AccessController extends Controller
         return $this->accessServices->getAccessTopics();
     }
 
+    public function getMainByCongressId($congress_id)
+    {
+        return $this->accessServices->getMainByCongressId($congress_id);
+    }
+
 }
