@@ -17,6 +17,7 @@ use App\Services\ResourcesServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use http\Env\Response;
 use Illuminate\Http\Request;
 
 
@@ -78,8 +79,10 @@ class CongressController extends Controller
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        return response()->json(['message' =>  $request->input("configCongress")], 200);
-        //return $this->congressServices->editConfigCongress($request->input('configCongress'));
+
+        $congress = $this->congressServices->editConfigCongress($request,$congressId);
+        return response()->json($congress);
+
     }
 
     public function editCongress(Request $request, $congressId)

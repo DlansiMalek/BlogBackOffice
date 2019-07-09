@@ -90,18 +90,17 @@ class CongressServices
         return $congress;
     }
 
-    public function editConfigCongress($newConfigCongress) {
+    public function editConfigCongress($request,$congressId) {
 
-        $config_congress = new ConfigCongress();
-        $config_congress->congress_id = $newConfigCongress['congress_id'];
-        $config_congress->logo = $newConfigCongress['logo'];
-        $config_congress->banner = $newConfigCongress['banner'];
-        $config_congress->free = $newConfigCongress['free'];
-        $config_congress->has_payment = $newConfigCongress['has_payment'];
-        $config_congress->program_link = $newConfigCongress['program_link'];
-        $config_congress->voting_token = $newConfigCongress['voting_token'];
-        $config_congress->prise_charge_option = $newConfigCongress['prise_charge_option'];
-        $config_congress->feedback_start = $newConfigCongress['feedback_start'];
+        $config_congress = ConfigCongress::where("congress_id",'=',$congressId)->first();
+        $config_congress->logo = $request->input('logo');
+        $config_congress->banner =$request->input('banner');
+        $config_congress->free = $request->input('free');
+        $config_congress->has_payment = $request->input('has_payment');
+        $config_congress->program_link = $request->input('program_link');
+        $config_congress->voting_token = $request->input('voting_token');
+        $config_congress->prise_charge_option = $request->input('prise_charge_option');
+        $config_congress->feedback_start = $request->input('feedback_start');
         $config_congress->update();
         return $config_congress;
     }
