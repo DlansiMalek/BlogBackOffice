@@ -369,6 +369,8 @@ class CongressController extends Controller
     function getParticipantsCounts(Request $request){
         $result = [];
         foreach ($request->all() as $congress_id){
+            if (!$this->congressServices->getCongressById($congress_id))
+                return response()->json(['message'=>'congresses not found'],404);
             array_push($result,(object) [
                 'congress_id'=>$congress_id,
                 'count'=> $this->congressServices->getParticipantsCount($congress_id)
