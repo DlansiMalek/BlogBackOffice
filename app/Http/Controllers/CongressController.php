@@ -365,4 +365,16 @@ class CongressController extends Controller
 
 
     }
+
+    function getParticipantsCounts(Request $request){
+        $result = [];
+        foreach ($request->all() as $congress_id){
+            array_push($result,(object) [
+                'congress_id'=>$congress_id,
+                'count'=> $this->congressServices->getParticipantsCount($congress_id)
+            ]);
+        }
+        return $result;
+    }
 }
+

@@ -314,4 +314,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::get('/quiz/{congress_id}', 'VotingController@getAssociation');
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
     Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
+    Route::post('/participant-count', 'CongressController@getParticipantsCounts');
 });

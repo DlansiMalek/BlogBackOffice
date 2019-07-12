@@ -300,8 +300,18 @@ class CongressServices
 
     }
 
-    public function getCongressConfig($congress_id){
-        return ConfigCongress::where('congress_id','=',$congress_id)->first();
+    public function getCongressConfig($congress_id)
+    {
+        return ConfigCongress::where('congress_id', '=', $congress_id)->first();
+    }
+
+    public function getParticipantsCount($congress_id)
+    {
+        return User::whereHas('user_congresses', function ($q) use ($congress_id) {
+            $q->where('congress_id', '=', $congress_id);
+        })->whereHas('payments', function ($q) use ($congress_id) {
+            $q->where('congress_id', '=', $congress_id);
+        })->count();
     }
 
 }
