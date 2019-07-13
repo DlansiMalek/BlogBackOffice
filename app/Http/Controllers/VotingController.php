@@ -140,8 +140,9 @@ class VotingController extends Controller
             $token = $this->congressServices->getCongressConfig($congress_id)->voting_token;
             if ($token && !in_array($token, $tokens)) array_push($tokens, $token);
             $a = $this->votingService->getAssociations($congress_id);
-            $associations = array_merge($associations, (array) $a);
+            if (count($a)) $associations = array_merge($associations, $a->toArray());
         }
+
         $polls = [];
         foreach ($tokens as $token) {
             $userResponse = $this->votingService->signinUser($token);
