@@ -66,6 +66,7 @@ class CongressController extends Controller
             $request->input('config')['has_payment'],
             $request->input('config')['free'],
             $request->input('config')['prise_charge_option'],
+            $request->input('description'),
             $admin->admin_id);
     }
 

@@ -60,13 +60,14 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $has_payment, $free, $prise_charge_option, $admin_id)
+    public function addCongress($name, $start_date, $end_date, $price, $has_payment, $free, $prise_charge_option,$description, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
         $congress->start_date = $start_date;
         $congress->end_date = $end_date;
         $congress->price = $price ? $price : 0;
+        $congress->description = $description;
         $congress->save();
 
         $config = new ConfigCongress();
@@ -136,6 +137,7 @@ class CongressServices
         $congress->start_date = $request->input('start_date');
         $congress->end_date = $request->input('end_date');
         $congress->price = $request->input('price') ? $request->input('price') : 0;
+        $congress->description = $request->input('description');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
