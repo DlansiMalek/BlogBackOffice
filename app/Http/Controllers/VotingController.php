@@ -131,4 +131,24 @@ class VotingController extends Controller
         }
         return response()->json(["message" => "adding successs"], 200);
     }
+
+    public function getQuiz(Request $request)
+    {
+        $tokens = [];
+        $associations = [];
+        foreach ($request->all() as $congress_id) {
+            $token = $this->congressServices->getCongressConfig($congress_id)->voting_token;
+            if ($token && !in_array($token, $tokens)) array_push($tokens, $token);
+            $a = $this->votingService->getAssociations($congress_id);
+            $associations = array_merge($associations, (array) $a);
+        }
+        $polls = [];
+        foreach ($tokens as $token) {
+            $userResponse = $this->votingService->signinUser($token);
+            $p = $this->votingService->getListPolls($userResponse['token']);
+            $polls = array_merge($polls, $p);
+        }
+
+        return response()->json(['quiz' => $polls, 'associations' => $associations], 200);
+    }
 }
