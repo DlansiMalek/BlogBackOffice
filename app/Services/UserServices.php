@@ -827,11 +827,11 @@ class UserServices
 
     public function getUserByQrCode($qrCode)
     {
-        return User::with(['user_congresses.congress.accesses.speakers',
-            'user_congresses.congress.accesses.chairs',
-            'user_congresses.congress.accesses.sub_accesses',
-            'user_congresses.congress.accesses.topic',
-            'user_congresses.congress.accesses.type',
+        return User::with(['user_congresses.congress.accesss.speakers',
+            'user_congresses.congress.accesss.chairs',
+            'user_congresses.congress.accesss.sub_accesses',
+            'user_congresses.congress.accesss.topic',
+            'user_congresses.congress.accesss.type',
             'user_congresses.privilege',
             'user_congresses.pack',
             'accesses',
