@@ -12,6 +12,7 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
+use App\Models\Privilege;
 use Illuminate\Http\Request;
 use JWTAuth;
 
@@ -56,14 +57,30 @@ class AdminServices
         })->get();
     }
 
-    public function getListPersonelsByAdmin($admin_id)
+    public function getListPersonelsByAdmin($congress_id)
     {
-        return Admin::where("responsible", "=", $admin_id)
-            ->whereHas('privileges', function ($query) {
-                $query->where('privilege_id', '=', 2);
-            })
-            ->with(['congress_responsible.badges'])
+        return Admin::whereHas('admin_congresses', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        })
+            ->with(['admin_congresses' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)
+                    ->first();
+            }])
             ->get();
+    }
+
+    public function getPersonelsByIdAndCongressId($congress_id,$admin_id)
+    {
+        return Admin::where('admin_id','=',$admin_id)
+//        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
+//            $query->where('congress_id', '=', $congress_id);
+//        })
+            ->with(['admin_congresses' => function ($query) use ($congress_id,$admin_id) {
+                $query->where('congress_id', '=', $congress_id)
+                    ->where('admin_id','=',$admin_id)
+                    ->first();
+            }])
+            ->first();
     }
 
     public function addResponsibleCongress($responsibleIds, $congress_id)
@@ -76,14 +93,12 @@ class AdminServices
         }
     }
 
-    public function addPersonnel(Request $request, $admin_id)
+    public function addPersonnel($admin)
     {
         $personnel = new Admin();
-        $personnel->name = $request->input("name");
-        $personnel->email = $request->input("email");
-        $personnel->mobile = $request->input("mobile");
-
-        $personnel->responsible = $admin_id;
+        $personnel->name = $admin["name"];
+        $personnel->email = $admin["email"];
+        $personnel->mobile = $admin["mobile"];
 
         $password = str_random(8);
         $personnel->passwordDecrypt = $password;
@@ -92,6 +107,14 @@ class AdminServices
         $personnel->save();
 
         return $personnel;
+    }
+    public function editPersonnel($admin)
+    {
+        return Admin::where("admin_id", "=", $admin['admin_id'])
+            ->update(['name' => $admin["name"],
+                    'email' => $admin["email"],
+                    'mobile' => $admin["mobile"]]);
+
     }
 
     public function deleteAdminById($admin)

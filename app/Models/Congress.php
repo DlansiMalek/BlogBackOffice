@@ -24,42 +24,32 @@ class Congress extends Model
     {
         return $this->hasOne('App\Models\ConfigCongress', 'congress_id', 'congress_id');
     }
-
     public function mail_config()
     {
         return $this->hasOne('App\Models\Mail_Config', 'congress_id', 'congress_id');
     }
-
     public function badges()
     {
         return $this->hasMany('App\Models\Badge', 'congress_id', 'congress_id');
     }
-
     public function mails()
     {
         return $this->hasMany('App\Models\Mail', 'congress_id', 'congress_id');
     }
-
     public function attestation()
     {
         return $this->hasOne('App\Models\Attestation', 'congress_id', 'congress_id');
     }
-
     public function admins()
     {
         return $this->belongsToMany('App\Models\Admin', 'Admin_Congress','congress_id', 'admin_id');
     }
-
     public function payments(){
         return $this->hasMany('App\Models\Payment','congress_id','congress_id');
     }
-
-
     public function admin_congresses(){
         return $this->hasMany('App\Models\AdminCongress','congress_id','congress_id');
     }
-
-
     public function users()
     {
         return $this->belongsToMany('App\Models\Congress', 'UserCongress', 'user_id', 'congress_id');
@@ -70,15 +60,16 @@ class Congress extends Model
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
     }
 
-
     public function packs()
     {
         return $this->hasMany('App\Models\Pack', "congress_id", "congress_id");
     }
-
     public function form_inputs()
     {
         return $this->hasMany("App\Models\FormInput", "congress_id", "congress_id");
+    }
+    public function location(){
+        return $this->belongsTo('App\Models\Location','location_id','location_id');
     }
 
 

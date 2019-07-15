@@ -44,6 +44,12 @@ class CongressServices
             ->first();
         return $congress;
     }
+    public function getCongressConfigById($id_Congress)
+    {
+        $congress = ConfigCongress::where("congress_id", "=", $id_Congress)
+            ->first();
+        return $congress;
+    }
 
     function retrieveCongressFromToken()
     {
@@ -83,6 +89,21 @@ class CongressServices
         $admin_congress->privilege_id = 1;
         $admin_congress->save();
         return $congress;
+    }
+
+    public function editConfigCongress($request,$congressId) {
+
+        $config_congress = ConfigCongress::where("congress_id",'=',$congressId)->first();
+        $config_congress->logo = $request->input('logo');
+        $config_congress->banner =$request->input('banner');
+        $config_congress->free = $request->input('free');
+        $config_congress->has_payment = $request->input('has_payment');
+        $config_congress->program_link = $request->input('program_link');
+        $config_congress->voting_token = $request->input('voting_token');
+        $config_congress->prise_charge_option = $request->input('prise_charge_option');
+        $config_congress->feedback_start = $request->input('feedback_start');
+        $config_congress->update();
+        return $config_congress;
     }
 
     public function getCongressAllAccess($adminId)
@@ -204,26 +225,26 @@ class CongressServices
 
     public function uploadLogo($congress, Request $request)
     {
-        $file = $request->file('file_data');
+        $file = $request->file('logo-file');
         $chemin = config('media.congress-logo');
         $path = $file->store($chemin);
 
         $congress->logo = $path;
         $congress->update();
 
-        return $congress;
+        return $path ;
     }
 
     public function uploadBanner($congress, Request $request)
     {
-        $file = $request->file('file_data');
+        $file = $request->file('banner-file');
         $chemin = config('media.congress-banner');
         $path = $file->store('congress-banner' . $chemin);
 
         $congress->banner = $path;
         $congress->update();
 
-        return $congress;
+        return $path ;
     }
 
     public function getEmailById($id)

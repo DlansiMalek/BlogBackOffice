@@ -23,6 +23,10 @@ class AdminCongress extends Model
     {
         return $this->belongsTo('App\Models\Congress', 'congress_id', 'congress_id');
     }
+    public function admin()
+    {
+        return $this->belongsTo('App\Models\Admin', 'admin_id', 'admin_id');
+    }
 
     public function privilege(){
         return $this->belongsTo('App\Models\Privilege','privilege_id','privilege_id');
