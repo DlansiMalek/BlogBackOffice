@@ -346,7 +346,7 @@ class UserController extends Controller
                         $fileAttached = true;
                     }
 
-                    $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+                    $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
                     if ($mailtype = $this->congressServices->getMailType('subvention')) {
                         if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                             $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
@@ -467,7 +467,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/upload-payement?token=" . $token);
+            return response()->redirectTo(Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -657,7 +657,7 @@ class UserController extends Controller
                 $fileAttached = true;
             }
 
-            $link = Utils::baseUrlWEB . "/#/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+            $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
             if ($mailtype = $this->congressServices->getMailType('paiement')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,

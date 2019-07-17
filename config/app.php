@@ -161,7 +161,6 @@ return [
         Illuminate\Session\SessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
-        Wpb\String_Blade_Compiler\ViewServiceProvider::class,
 
 
         /*

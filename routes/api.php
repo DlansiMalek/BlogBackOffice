@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -113,6 +112,12 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 });
             });
         });
+
+        Route::group(['prefix' => 'mail'], function () {
+            Route::get('types', 'MailController@getAllMailTypes');
+            Route::get('types/{typeId}', 'MailController@getMailTypeById');
+            Route::get('types/{typeId}/congress/{congressId}', 'MailController@getByMailTypeAndCongress');
+        });
         Route::post('mail/{mode}', 'CongressController@saveMail');
         Route::post('editmail/{id}', 'CongressController@editCustomMail');
         Route::post('organization', 'OrganizationController@addOrganization');
@@ -161,7 +166,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
     });
 });
 //Admin API
-Route::group(['prefix' => 'admin', "middelware" => "super-admin"], function () {
+Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
     Route::group(['prefix' => 'rfid'], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
@@ -221,6 +226,12 @@ Route::group(['prefix' => 'access'], function () {
     });
 
 });
+
+// Super Admin API
+Route::group(['middelware' => 'marketing'], function () {
+
+});
+
 
 //Pack API
 Route::group(['prefix' => 'pack'], function () {
