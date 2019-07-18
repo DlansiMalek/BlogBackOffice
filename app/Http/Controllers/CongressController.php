@@ -82,7 +82,7 @@ class CongressController extends Controller
         }
 
         $congress = $this->congressServices->editConfigCongress($request->input('congress'),$request->input('eventLocation'),$congressId);
-        return response()->json($request->input('eventLocation'));
+        return response()->json($congress);
 
     }
 

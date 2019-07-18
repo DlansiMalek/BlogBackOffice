@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
+use App\Models\City;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
 use App\Models\Mail;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use JWTAuth;
 use PDF;
+use phpDocumentor\Reflection\Location;
 
 
 /**
@@ -117,12 +119,25 @@ class CongressServices
         );
         $location = $this->geoServices->getCongressLocationByCongressId($congressId);
         if(!$city) {
+            $city = new City();
+            $city->name = $eventLocation['cityName'];
+            $city->country_code = $eventLocation['countryCode'];
+            $city->save();
             // add city to db
         }
         if($location) {
             // create -- insert
+            $location = new Location();
+            $location->lng = $eventLocation['lng'];
+            $location->lat = $eventLocation['lat'];
+            $location->address = $eventLocation['address'];
+            $location->save();
         } else {
             // update
+            Location::where('congress_id','=',$congressId)
+                ->update( [  'lng'=> $eventLocation['lng'],
+                             'lat' => $eventLocation['lat'],
+                             'address' => $eventLocation['address']  ]);
         }
         //the end :D
     }
