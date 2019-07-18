@@ -27,9 +27,10 @@ class CongressServices
 {
 
 
-    public function __construct(OrganizationServices $organizationServices)
+    public function __construct(OrganizationServices $organizationServices, GeoServices $geoServices)
     {
         $this->organizationServices = $organizationServices;
+        $this->geoServices = $geoServices;
     }
 
     public function getById($congressId)
@@ -91,19 +92,39 @@ class CongressServices
         return $congress;
     }
 
-    public function editConfigCongress($request,$congressId) {
+    public function editConfigCongress($congress,$eventLocation,$congressId) {
 
         $config_congress = ConfigCongress::where("congress_id",'=',$congressId)->first();
-        $config_congress->logo = $request->input('logo');
-        $config_congress->banner =$request->input('banner');
-        $config_congress->free = $request->input('free');
-        $config_congress->has_payment = $request->input('has_payment');
-        $config_congress->program_link = $request->input('program_link');
-        $config_congress->voting_token = $request->input('voting_token');
-        $config_congress->prise_charge_option = $request->input('prise_charge_option');
-        $config_congress->feedback_start = $request->input('feedback_start');
+        $config_congress->logo = $congress['logo'];
+        $config_congress->banner =$congress['banner'];
+        $config_congress->free = $congress['free'];
+        $config_congress->has_payment = $congress['has_payment'];
+        $config_congress->program_link = $congress['program_link'];
+        $config_congress->voting_token = $congress['voting_token'];
+        $config_congress->prise_charge_option = $congress['prise_charge_option'];
+        $config_congress->feedback_start = $congress['feedback_start'];
+        $this->editCongressLocation($eventLocation,$congressId);
         $config_congress->update();
         return $config_congress;
+    }
+    public function editCongressLocation($eventLocation, $congressId){
+        // update congress Location
+        // add city in DB
+        $country = $this->geoServices->getCountryByCode($eventLocation['countryCode']);
+        $city = $this->geoServices->getCityByNameAndCountryCode(
+            $eventLocation['cityName'],
+            $eventLocation['countryCode']
+        );
+        $location = $this->geoServices->getCongressLocationByCongressId($congressId);
+        if(!$city) {
+            // add city to db
+        }
+        if($location) {
+            // create -- insert
+        } else {
+            // update
+        }
+        //the end :D
     }
 
     public function getCongressAllAccess($adminId)

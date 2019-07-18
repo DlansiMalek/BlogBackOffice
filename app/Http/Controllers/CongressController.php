@@ -81,8 +81,8 @@ class CongressController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        $congress = $this->congressServices->editConfigCongress($request,$congressId);
-        return response()->json($congress);
+        $congress = $this->congressServices->editConfigCongress($request->input('congress'),$request->input('eventLocation'),$congressId);
+        return response()->json($request->input('eventLocation'));
 
     }
 
