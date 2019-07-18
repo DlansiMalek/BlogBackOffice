@@ -77,6 +77,12 @@ Route::group(['prefix' => 'users'], function () {
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
+
+    Route::group(['prefix' => 'mail'], function () {
+        Route::get('{mailId}', 'MailController@getById');
+        Route::get('types/{typeId}', 'MailController@getMailTypeById');
+        Route::get('types/{typeId}/congress/{congressId}', 'MailController@getByMailTypeAndCongress');
+    });
     Route::group(["prefix" => 'form'], function () {
         Route::get('input-types', 'RegistrationFormController@getInputTypes');
         Route::get('{congress_id}', 'RegistrationFormController@getForm');
@@ -112,14 +118,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 });
             });
         });
-
-        Route::group(['prefix' => 'mail'], function () {
-            Route::get('types', 'MailController@getAllMailTypes');
-            Route::get('types/{typeId}', 'MailController@getMailTypeById');
-            Route::get('types/{typeId}/congress/{congressId}', 'MailController@getByMailTypeAndCongress');
-        });
-        Route::post('mail/{mode}', 'CongressController@saveMail');
-        Route::post('editmail/{id}', 'CongressController@editCustomMail');
+        Route::get('mail/types', 'MailController@getAllMailTypes');
+        Route::post('mail/type/{mailTypeId}', 'MailController@saveMail');
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
         Route::get('feedback-form', 'FeedbackController@getFeedbackForm');

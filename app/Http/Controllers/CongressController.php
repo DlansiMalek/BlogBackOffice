@@ -292,52 +292,6 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
-    public function saveMail(Request $request, $congress_id, $mode)
-    {
-        if (!$request->has(['object', 'template']))
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-
-        if (!$type = $this->congressServices->getMailType($mode))
-            return response()->json(['resposne' => 'bad url', 'error' => 'mail type not found'], 400);
-
-        if ($type->name != 'custom') {
-            $mail = $this->congressServices->getMail($congress_id, $type->mail_type_id);
-            if (!$mail) $mail = new Mail();
-        } else {
-            $mail = new Mail();
-        }
-        $mail->congress_id = $congress_id;
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->mail_type_id = $type->mail_type_id;
-        $mail->save();
-        return $mail;
-    }
-
-    public function editCustomMail(Request $request, $congress_id, $id)
-    {
-        if (!$request->has(['object', 'template']))
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-
-        if (!$mail = $this->congressServices->getMailById($id)) {
-            return response()->json(['resposne' => 'bad request', 'error' => ['email not found']], 400);
-        }
-
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->save();
-        return $mail;
-    }
-
-    public function uploadMailImage(Request $request)
-    {
-        $file = $request->file('image');
-        $chemin = config('media.mail-images');
-        $path = $file->store('mail-images' . $chemin);
-//        return $path."+++".substr($path,12);
-        return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
-    }
-
     public function getAllCongresses()
     {
         return $this->congressServices->getAllCongresses();
