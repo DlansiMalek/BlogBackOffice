@@ -44,6 +44,7 @@ Route::group(['prefix' => 'mobile'], function () {
 
 
 Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
+Route::post('auth/forgetPassword', 'Auth\LoginController@forgetPassword');
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API

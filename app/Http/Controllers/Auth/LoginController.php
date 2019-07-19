@@ -58,7 +58,18 @@ class LoginController extends Controller
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
+    public function forgetPassword(Request $request)
+    {
+        $admin = $this->adminServices->getAdminByLogin($request['email']);
 
+        if(!$admin)
+            return response()->json(['error' => 'invalid email'], 501);
+
+        // generate password
+        // send email
+
+        return response()->json('check your email', 200);
+    }
 
 
     /**
