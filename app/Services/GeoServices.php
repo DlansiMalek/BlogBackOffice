@@ -23,10 +23,11 @@ class GeoServices
         return Location::leftJoin('congress', 'Location.location_id', '=', 'congress.location_id')
             ->where('congress_id','=',$congressId)
             ->first();
+    }
 
-//        return Location::with(['congress'])
-//        ->whereHas('congress_id','=',$congressId)
-//            ->first();
+    public function getLocationById($locationId) {
+        return Location::where('location_id','=',$locationId)
+            ->first();
     }
     public function getCountryByCode($shortname) {
         return Country::where('code','=',$shortname)

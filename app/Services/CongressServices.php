@@ -113,12 +113,12 @@ class CongressServices
     public function editCongressLocation($eventLocation, $congressId){
         // update congress Location
         // add city in DB
+        $congress = $this->getCongressById($congressId);
         $country = $this->geoServices->getCountryByCode($eventLocation['countryCode']);
         $city = $this->geoServices->getCityByNameAndCountryCode(
             $eventLocation['cityName'],
             $eventLocation['countryCode']
         );
-        $location = $this->geoServices->getCongressLocationByCongressId($congressId);
         if(!$city) {
             $city = new City();
             $city->name = $eventLocation['cityName'];
@@ -126,7 +126,7 @@ class CongressServices
             $city->save();
             // add city to db
         }
-        if(!$location) {
+        if(!$congress->location_id) {
             // create -- insert
             $location = new Location();
             $location->lng = $eventLocation['lng'];
@@ -134,9 +134,11 @@ class CongressServices
             $location->address = $eventLocation['address'];
             $location->city_id = $city->city_id;
             $location->save();
+            $congress->location_id = $location->location_id;
+            $congress->save();
         } else {
             // update
-            Location::where('location_id','=',$location->location_id)
+            Location::where('location_id','=',$congress->location_id)
                 ->update( [  'lng'=> $eventLocation['lng'],
                              'lat' => $eventLocation['lat'],
                              'address' => $eventLocation['address']  ]);
