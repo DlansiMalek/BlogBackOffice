@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\AdminServices;
 use App\Services\PrivilegeServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 
 class LoginController extends Controller
@@ -65,8 +66,14 @@ class LoginController extends Controller
         if(!$admin)
             return response()->json(['error' => 'invalid email'], 501);
 
-        // generate password
+        $password = $this->adminServices->generateNewPassword($admin);
         // send email
+        // ??
+        $email = $admin->email;
+        Mail::send('forgetPasswordMail', ['user_name' => $admin->name, 'last_name' => $admin->last_name,
+             'password' => $password], function ($message) use ($email) {
+            $message->to($email)->subject('Change your password');
+        });
 
         return response()->json('check your email', 200);
     }
