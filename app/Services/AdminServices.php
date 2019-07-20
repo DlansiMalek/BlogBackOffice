@@ -93,6 +93,29 @@ class AdminServices
         }
     }
 
+    function generateRandomString($length = 10) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    public function generateNewPassword(Admin $admin) {
+        $newPassword =  $this->generateRandomString(20);
+        Admin::where('admin_id','=',$admin->admin_id)
+            ->update(['passwordDecrypt' => $newPassword,
+                'password' => bcrypt($newPassword)]);
+        return $newPassword;
+    }
+
+    public function sendForgetPasswordEmail(Admin $admin) {
+
+
+    }
+
     public function addPersonnel($admin)
     {
         $personnel = new Admin();

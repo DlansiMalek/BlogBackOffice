@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
+use App\Models\City;
+use App\Models\Location;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
 use App\Models\Mail;
@@ -20,6 +22,7 @@ use JWTAuth;
 use PDF;
 
 
+
 /**
  * @property OrganizationServices $organizationServices
  */
@@ -27,9 +30,10 @@ class CongressServices
 {
 
 
-    public function __construct(OrganizationServices $organizationServices)
+    public function __construct(OrganizationServices $organizationServices, GeoServices $geoServices)
     {
         $this->organizationServices = $organizationServices;
+        $this->geoServices = $geoServices;
     }
 
     public function getById($congressId)
@@ -91,19 +95,55 @@ class CongressServices
         return $congress;
     }
 
-    public function editConfigCongress($request,$congressId) {
+    public function editConfigCongress($congress,$eventLocation,$congressId) {
 
         $config_congress = ConfigCongress::where("congress_id",'=',$congressId)->first();
-        $config_congress->logo = $request->input('logo');
-        $config_congress->banner =$request->input('banner');
-        $config_congress->free = $request->input('free');
-        $config_congress->has_payment = $request->input('has_payment');
-        $config_congress->program_link = $request->input('program_link');
-        $config_congress->voting_token = $request->input('voting_token');
-        $config_congress->prise_charge_option = $request->input('prise_charge_option');
-        $config_congress->feedback_start = $request->input('feedback_start');
+        $config_congress->logo = $congress['logo'];
+        $config_congress->banner =$congress['banner'];
+        $config_congress->free = $congress['free'];
+        $config_congress->has_payment = $congress['has_payment'];
+        $config_congress->program_link = $congress['program_link'];
+        $config_congress->voting_token = $congress['voting_token'];
+        $config_congress->prise_charge_option = $congress['prise_charge_option'];
+        $config_congress->feedback_start = $congress['feedback_start'];
+        $this->editCongressLocation($eventLocation,$congressId);
         $config_congress->update();
         return $config_congress;
+    }
+    public function editCongressLocation($eventLocation, $congressId){
+        // update congress Location
+        // add city in DB
+        $congress = $this->getCongressById($congressId);
+        $country = $this->geoServices->getCountryByCode($eventLocation['countryCode']);
+        $city = $this->geoServices->getCityByNameAndCountryCode(
+            $eventLocation['cityName'],
+            $eventLocation['countryCode']
+        );
+        if(!$city) {
+            $city = new City();
+            $city->name = $eventLocation['cityName'];
+            $city->country_code = $eventLocation['countryCode'];
+            $city->save();
+            // add city to db
+        }
+        if(!$congress->location_id) {
+            // create -- insert
+            $location = new Location();
+            $location->lng = $eventLocation['lng'];
+            $location->lat = $eventLocation['lat'];
+            $location->address = $eventLocation['address'];
+            $location->city_id = $city->city_id;
+            $location->save();
+            $congress->location_id = $location->location_id;
+            $congress->save();
+        } else {
+            // update
+            Location::where('location_id','=',$congress->location_id)
+                ->update( [  'lng'=> $eventLocation['lng'],
+                             'lat' => $eventLocation['lat'],
+                             'address' => $eventLocation['address']  ]);
+        }
+        //the end :D
     }
 
     public function getCongressAllAccess($adminId)

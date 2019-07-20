@@ -11,6 +11,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\GeoServices;
 use App\Services\PackServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
@@ -33,6 +34,7 @@ class CongressController extends Controller
     protected $badgeServices;
     protected $packService;
     protected $resourceService;
+    protected $geoServices;
     public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
 
 //    public $baseUrl = "https://congress-api.vayetek.com/api/";
@@ -44,9 +46,11 @@ class CongressController extends Controller
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
                          PackServices $packService,
+                         GeoServices $geoServices,
                          ResourcesServices $resourceService)
     {
         $this->congressServices = $congressServices;
+        $this->geoServices = $geoServices;
         $this->adminServices = $adminServices;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
@@ -81,7 +85,7 @@ class CongressController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        $congress = $this->congressServices->editConfigCongress($request,$congressId);
+        $congress = $this->congressServices->editConfigCongress($request->input('congress'),$request->input('eventLocation'),$congressId);
         return response()->json($congress);
 
     }
@@ -114,7 +118,8 @@ class CongressController extends Controller
         if (!$configCongress = $this->congressServices->getCongressConfigById($congress_id)) {
             return response()->json(["error" => "congress not found"], 404);
         }
-        return response()->json($configCongress);
+        $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
+        return response()->json([$configCongress,$location]);
     }
 
 
@@ -183,7 +188,9 @@ class CongressController extends Controller
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, true,
+                        $this->userServices->sendMail($this->congressServices
+                            ->renderMail($mail->template, $congress, $user, null, null),
+                            $user, $congress, $mail->object, true,
                             null);
                     }
                 }
