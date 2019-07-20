@@ -105,7 +105,7 @@ class AdminServices
 
     public function generateNewPassword(Admin $admin) {
         $newPassword =  $this->generateRandomString(20);
-        AdminCongress::where('admin_id','=',$admin->admin_id)
+        Admin::where('admin_id','=',$admin->admin_id)
             ->update(['passwordDecrypt' => $newPassword,
                 'password' => bcrypt($newPassword)]);
         return $newPassword;
