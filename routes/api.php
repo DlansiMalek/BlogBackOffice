@@ -317,4 +317,6 @@ Route::group(["prefix" => "user-app"], function () {
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
     Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
     Route::post('/participant-count', 'CongressController@getParticipantsCounts');
+    Route::post('/profile-pic/{user_id}', 'UserController@uploadProfilePic');
+    Route::get('/profile-pic/{user_id}', 'UserController@getProfilePic');
 });

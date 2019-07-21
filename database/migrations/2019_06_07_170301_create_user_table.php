@@ -28,6 +28,7 @@ class CreateUserTable extends Migration
             $table->string('qr_code')->nullable()->default(null);
             $table->string("rfid")->nullable()->default(null);
 
+            $table->string('profile_pic')->nullable()->default(null);
             $table->integer('country_id')->unsigned()->nullable()->default(null);
             $table->foreign('country_id')->references('country_id')->on('Country')->onDelete('cascade');
 
