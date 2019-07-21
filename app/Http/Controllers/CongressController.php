@@ -393,4 +393,3 @@ class CongressController extends Controller
         return Storage::download($config->banner);
     }
 }
-
