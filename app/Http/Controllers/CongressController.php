@@ -17,6 +17,7 @@ use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 class CongressController extends Controller
@@ -378,6 +379,18 @@ class CongressController extends Controller
             ]);
         }
         return $result;
+    }
+
+    function getLogo($congress_id){
+        if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
+        if (!$config->logo) return response()->json(['response' => 'no logo'], 400);
+        return Storage::download($config->logo);
+    }
+
+    function getBanner($congress_id){
+        if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
+        if (!$config->banner) return response()->json(['response' => 'no logo'], 400);
+        return Storage::download($config->banner);
     }
 }
 

@@ -95,6 +95,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
         Route::post('/upload-logo', 'CongressController@uploadLogo');
         Route::post('/upload-banner', 'CongressController@uploadBanner');
+        Route::get('/logo', 'CongressController@getLogo');
+        Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
