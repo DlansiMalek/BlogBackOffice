@@ -250,22 +250,22 @@ class CongressController extends Controller
 
     public function uploadLogo($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congressConfig = $this->congressServices->getCongressConfig($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
-        $congress = $this->congressServices->uploadLogo($congress, $request);
+        $this->congressServices->uploadLogo($request->file('file_data'), $congressConfig);
 
-        return response()->json($congress);
+        return response()->json($this->congressServices->getCongressById($congressId));
     }
 
     public function uploadBanner($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congressConfig = $this->congressServices->getCongressConfig($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
-        $congress = $this->congressServices->uploadBanner($congress, $request);
+        $this->congressServices->uploadBanner($request->file('file_data'), $congressConfig);
 
-        return response()->json($congress);
+        return response()->json($this->congressServices->getCongressById($congressId));
     }
 
     public function saveMail(Request $request, $congress_id, $mode)
