@@ -9,30 +9,42 @@
 namespace App\Services;
 
 
+use App\Models\Admin;
 use App\Models\Admin_Privilege;
+use App\Models\AdminCongress;
 
 class PrivilegeServices
 {
-    public function affectPrivilegeToAdmin($privilegeId, $adminId)
+    public function affectPrivilegeToAdmin($privilegeId, $adminId, $congress_id)
     {
-        if ($admin_priv = $this->checkIfHasPrivilege($privilegeId, $adminId)) {
-            return $admin_priv;
-        }
-        $admin_priv = new Admin_Privilege();
+        $admin_congress = new AdminCongress();
 
-        $admin_priv->admin_id = $adminId;
-        $admin_priv->privilege_id = $privilegeId;
+        $admin_congress->admin_id = $adminId;
+        $admin_congress->privilege_id = $privilegeId;
+        $admin_congress->congress_id = $congress_id;
 
-        $admin_priv->save();
+        $admin_congress->save();
 
-        return $admin_priv;
+        return $admin_congress;
     }
 
-    public function checkIfHasPrivilege($privilegeId, $adminId)
+    public function editPrivilege($privilegeId, $adminId, $congress_id) {
+        return AdminCongress::where('admin_id','=',$adminId)
+            ->where('congress_id','=',$congress_id)
+            ->update(['privilege_id' => $privilegeId]);
+
+    }
+
+    public function checkIfAdminOfCongress($adminId,$congress_id)
     {
-        return Admin_Privilege::where("admin_id", "=", $adminId)
-            ->where("privilege_id", "=", $privilegeId)
+        return AdminCongress::where('admin_id','=',$adminId)
+            ->where('congress_id','=',$congress_id)
             ->first();
+    }
+
+    public function deleteAdminCongressByIds($admincongress)
+    {
+        $admincongress->delete();
     }
 
 }

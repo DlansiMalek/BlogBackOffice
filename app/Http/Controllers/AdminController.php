@@ -406,44 +406,85 @@ class AdminController extends Controller
      *
      */
     public
-    function getListPersonels()
+    function getListPersonels($congress_id)
     {
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->getListPersonelsByAdmin($admin->admin_id);
+        $personels = $this->adminServices->getListPersonelsByAdmin($congress_id);
 
         return response()->json($personels);
 
     }
 
-    public function addPersonnel(Request $request)
+    public function addPersonnel(Request $request,$congress_id)
     {
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        if (!$this->adminServices->getAdminByLogin($request->input("email"))) {
-            $personels = $this->adminServices->addPersonnel($request, $admin->admin_id);
-            $this->privilegeServices->affectPrivilegeToAdmin(2, $personels->admin_id);
-            return response()->json($personels);
+        $admin = $request->input('admin');
+
+        // if exists then update or create admin in DB
+        if ( !($fetched = $this->adminServices->getAdminByLogin($admin['email'])) ) {
+            $admin = $this->adminServices->addPersonnel($admin);
+            $admin_id = $admin->admin_id;
         } else {
-            return response()->json(['message' => 'email existe'], 402);
+            $admin_id = $fetched->admin_id;
+            // check if he has already privilege to congress
+            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,
+                $congress_id);
+
+            if ($admin_congress) {
+                return response()->json(['error' => 'Organisateur existant'], 505);
+            }
+            // else edit changed infos while creating
+
+            $admin['admin_id'] = $admin_id;
+            $this->adminServices->editPersonnel($admin);
         }
 
+        //create admin congress bind privilege admin and congress
+        $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
+            (int)$request->input('privilege_id'),
+            $admin_id,
+            $congress_id);
+
+        return response()->json($admin_congress);
+    }
+
+    public function editPersonels (Request $request,$congress_id,$admin_id) {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $admin = $request->input('admin');
+        $this->adminServices->editPersonnel($admin);
+        $this->privilegeServices->editPrivilege(
+            (int) $request->input('privilege_id'),
+            $admin_id,
+            $congress_id);
+        //message d'erreur à revoir
+        return response()->json(['message' => 'working'], 200);
     }
 
     public
-    function deletePersonnel($personnelId)
+    function deletePersonnel($congress_id,$admin_id)
     {
-        if (!$admin = $this->adminServices->getAdminById($personnelId)) {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,$congress_id)) {
             return response()->json(["message" => "admin not found"], 404);
         }
-        $this->adminServices->deleteAdminById($admin);
+        $this->privilegeServices->deleteAdminCongressByIds($admincongress);
         return response()->json(["message" => "deleted success"]);
-
     }
 
+    public function getPersonelByIdAndCongressId($congress_id,$admin_id) {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,$congress_id)) {
+            return response()->json(["message" => "admin not found"], 404);
+        }
+        $result = $this->adminServices->getPersonelsByIdAndCongressId($congress_id,$admin_id);
+        return response()->json($result);
+    }
     public
     function downloadQrCode($adminId)
     {

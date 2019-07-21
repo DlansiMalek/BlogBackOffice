@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
+use App\Models\City;
+use App\Models\Location;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
 use App\Models\Mail;
@@ -21,6 +23,7 @@ use JWTAuth;
 use PDF;
 
 
+
 /**
  * @property OrganizationServices $organizationServices
  */
@@ -28,9 +31,10 @@ class CongressServices
 {
 
 
-    public function __construct(OrganizationServices $organizationServices)
+    public function __construct(OrganizationServices $organizationServices, GeoServices $geoServices)
     {
         $this->organizationServices = $organizationServices;
+        $this->geoServices = $geoServices;
     }
 
     public function getById($congressId)
@@ -42,6 +46,12 @@ class CongressServices
     {
         $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation'])
             ->where("congress_id", "=", $id_Congress)
+            ->first();
+        return $congress;
+    }
+    public function getCongressConfigById($id_Congress)
+    {
+        $congress = ConfigCongress::where("congress_id", "=", $id_Congress)
             ->first();
         return $congress;
     }
@@ -84,6 +94,57 @@ class CongressServices
         $admin_congress->privilege_id = 1;
         $admin_congress->save();
         return $congress;
+    }
+
+    public function editConfigCongress($congress,$eventLocation,$congressId) {
+
+        $config_congress = ConfigCongress::where("congress_id",'=',$congressId)->first();
+        $config_congress->logo = $congress['logo'];
+        $config_congress->banner =$congress['banner'];
+        $config_congress->free = $congress['free'];
+        $config_congress->has_payment = $congress['has_payment'];
+        $config_congress->program_link = $congress['program_link'];
+        $config_congress->voting_token = $congress['voting_token'];
+        $config_congress->prise_charge_option = $congress['prise_charge_option'];
+        $config_congress->feedback_start = $congress['feedback_start'];
+        $this->editCongressLocation($eventLocation,$congressId);
+        $config_congress->update();
+        return $config_congress;
+    }
+    public function editCongressLocation($eventLocation, $congressId){
+        // update congress Location
+        // add city in DB
+        $congress = $this->getCongressById($congressId);
+        $country = $this->geoServices->getCountryByCode($eventLocation['countryCode']);
+        $city = $this->geoServices->getCityByNameAndCountryCode(
+            $eventLocation['cityName'],
+            $eventLocation['countryCode']
+        );
+        if(!$city) {
+            $city = new City();
+            $city->name = $eventLocation['cityName'];
+            $city->country_code = $eventLocation['countryCode'];
+            $city->save();
+            // add city to db
+        }
+        if(!$congress->location_id) {
+            // create -- insert
+            $location = new Location();
+            $location->lng = $eventLocation['lng'];
+            $location->lat = $eventLocation['lat'];
+            $location->address = $eventLocation['address'];
+            $location->city_id = $city->city_id;
+            $location->save();
+            $congress->location_id = $location->location_id;
+            $congress->save();
+        } else {
+            // update
+            Location::where('location_id','=',$congress->location_id)
+                ->update( [  'lng'=> $eventLocation['lng'],
+                             'lat' => $eventLocation['lat'],
+                             'address' => $eventLocation['address']  ]);
+        }
+        //the end :D
     }
 
     public function getCongressAllAccess($adminId)
@@ -212,6 +273,7 @@ class CongressServices
         $congressConfig->save();
 
         return $congressConfig;
+
     }
 
     public function uploadBanner($file, $congressConfig)
@@ -221,6 +283,7 @@ class CongressServices
 
         $congressConfig->banner = $path;
         $congressConfig->save();
+
 
         return $congressConfig;
     }

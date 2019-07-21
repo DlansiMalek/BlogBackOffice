@@ -15,6 +15,11 @@ class MailType extends Model
     public $timestamps = true;
     protected $table = 'Mail_Type';
     protected $primaryKey = 'mail_type_id';
-    protected $fillable = ['name','display_name'];
+    protected $fillable = ['name', 'display_name'];
+
+    public function mails()
+    {
+        return $this->hasMany(Mail::class, 'mail_type_id', 'mail_type_id');
+    }
 
 }

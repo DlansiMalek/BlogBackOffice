@@ -332,9 +332,10 @@ class UserServices
 
     public function getAllPresencesByCongress($congressId)
     {
-        return User::where("congress_id", "=", $congressId)
-            ->where("isPresent", "=", 1)
-            ->get();
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId)
+                ->where("isPresent", "=", 1);
+        })->get();
     }
 
 

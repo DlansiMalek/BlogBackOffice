@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateAdminTable extends Migration
 {
@@ -21,6 +21,10 @@ class CreateAdminTable extends Migration
             $table->string('password');
             $table->string('passwordDecrypt');
             $table->string("rfid")->nullable()->default(null);
+
+
+            $table->unsignedInteger('privilege_id')->nullable()->default(null);
+            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege');
 
             $table->softDeletes();
             $table->timestamps();

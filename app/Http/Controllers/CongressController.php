@@ -11,11 +11,14 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\GeoServices;
 use App\Services\PackServices;
 use App\Services\PrivilegeServices;
+use App\Services\ResourcesServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -31,6 +34,8 @@ class CongressController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packService;
+    protected $resourceService;
+    protected $geoServices;
     public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
 
 //    public $baseUrl = "https://congress-api.vayetek.com/api/";
@@ -41,9 +46,12 @@ class CongressController extends Controller
                          UserServices $userServices,
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
-                         PackServices $packService)
+                         PackServices $packService,
+                         GeoServices $geoServices,
+                         ResourcesServices $resourceService)
     {
         $this->congressServices = $congressServices;
+        $this->geoServices = $geoServices;
         $this->adminServices = $adminServices;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
@@ -51,6 +59,7 @@ class CongressController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->packService = $packService;
+        $this->resourceService = $resourceService;
     }
 
 
@@ -69,6 +78,17 @@ class CongressController extends Controller
             $request->input('config')['prise_charge_option'],
             $request->input('description'),
             $admin->admin_id);
+    }
+
+    public function editConfigCongress(Request $request, $congressId) {
+
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+
+        $congress = $this->congressServices->editConfigCongress($request->input('congress'),$request->input('eventLocation'),$congressId);
+        return response()->json($congress);
+
     }
 
     public function editCongress(Request $request, $congressId)
@@ -92,6 +112,15 @@ class CongressController extends Controller
             return response()->json(["error" => "congress not found"], 404);
         }
         return response()->json($congress);
+    }
+
+    public function getCongressConfigById($congress_id)
+    {
+        if (!$configCongress = $this->congressServices->getCongressConfigById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
+        return response()->json([$configCongress,$location]);
     }
 
 
@@ -160,7 +189,9 @@ class CongressController extends Controller
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, true,
+                        $this->userServices->sendMail($this->congressServices
+                            ->renderMail($mail->template, $congress, $user, null, null),
+                            $user, $congress, $mail->object, true,
                             null);
                     }
                 }
@@ -249,9 +280,11 @@ class CongressController extends Controller
         return response()->json(['message' => 'send mail successs']);
     }
 
-    public function uploadLogo($congressId, Request $request)
+    public function uploadLogo($congress_id, Request $request)
     {
+
         if (!$congressConfig = $this->congressServices->getCongressConfig($congressId)) {
+
             return response()->json(['error' => 'congress not found'], 404);
         }
         $this->congressServices->uploadLogo($request->file('file_data'), $congressConfig);
@@ -261,58 +294,12 @@ class CongressController extends Controller
 
     public function uploadBanner($congressId, Request $request)
     {
-        if (!$congressConfig = $this->congressServices->getCongressConfig($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
+        if (!$congress = $this->congressServices->getCongressConfigById($congressId)) {
+            return response()->json(['error' => 'congress not found '], 404);
         }
         $this->congressServices->uploadBanner($request->file('file_data'), $congressConfig);
 
         return response()->json($this->congressServices->getCongressById($congressId));
-    }
-
-    public function saveMail(Request $request, $congress_id, $mode)
-    {
-        if (!$request->has(['object', 'template']))
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-
-        if (!$type = $this->congressServices->getMailType($mode))
-            return response()->json(['resposne' => 'bad url', 'error' => 'mail type not found'], 400);
-
-        if ($type->name != 'custom') {
-            $mail = $this->congressServices->getMail($congress_id, $type->mail_type_id);
-            if (!$mail) $mail = new Mail();
-        } else {
-            $mail = new Mail();
-        }
-        $mail->congress_id = $congress_id;
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->mail_type_id = $type->mail_type_id;
-        $mail->save();
-        return $mail;
-    }
-
-    public function editCustomMail(Request $request, $congress_id, $id)
-    {
-        if (!$request->has(['object', 'template']))
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-
-        if (!$mail = $this->congressServices->getMailById($id)) {
-            return response()->json(['resposne' => 'bad request', 'error' => ['email not found']], 400);
-        }
-
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->save();
-        return $mail;
-    }
-
-    public function uploadMailImage(Request $request)
-    {
-        $file = $request->file('image');
-        $chemin = config('media.mail-images');
-        $path = $file->store('mail-images' . $chemin);
-//        return $path."+++".substr($path,12);
-        return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
     }
 
     public function getAllCongresses()
