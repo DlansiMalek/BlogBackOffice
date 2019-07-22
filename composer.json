@@ -23,19 +23,13 @@
     "phpoffice/phpspreadsheet": "^1.2",
     "ramsey/uuid": "^3.7",
     "simplesoftwareio/simple-qrcode": "^1.5",
-<<<<<<< HEAD
-    "tymon/jwt-auth": "1.0.0-rc.2",
-    "wpb/string-blade-compiler": "3.6",
-    "zircote/swagger-php": "^3.0"
-=======
+    "zircote/swagger-php": "2.0.9",
     "tymon/jwt-auth": "1.0.0-rc.4",
-    "wpb/string-blade-compiler": "3.8.1",
-    "zircote/swagger-php": "2.0.9"
->>>>>>> ac738f4b586146caacffaa8b6221cb2c8841a0ba
+    "wpb/string-blade-compiler": "3.8.1"
   },
   "require-dev": {
     "filp/whoops": "~2.0",
-    "nunomaduro/collision": "~1.1",
+    "nunomaduro/collision": "~3.0.1",
     "fzaninotto/faker": "~1.4",
     "mockery/mockery": "~1.0",
     "phpunit/phpunit": "~7.0",
