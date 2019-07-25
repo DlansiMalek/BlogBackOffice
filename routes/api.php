@@ -108,6 +108,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
 
+        Route::get('program_pdf','PDFController@generateProgramPDF');
+
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
                 ->where('accessId', '[0-9]+');

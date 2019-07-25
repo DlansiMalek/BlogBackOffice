@@ -23,6 +23,9 @@ class Utils
 
     //public static $baseUrlRT = 'http://137.74.165.25:3002/api';
 
+    public static $baseUrl = 'http://localhost/congress-backend-modules/public/api/';
+//    public static $baseUrl = 'https://congress.vayetek.com/api/';
+
     public static function diffMinutes($enter_time, $endCongress)
     {
         return round(abs(strtotime($enter_time) - strtotime($endCongress)) / 60, 2);
@@ -59,8 +62,8 @@ class Utils
 
     public static function objArraySearch($array, $index, $value)
     {
-        foreach($array as $arrayInf) {
-            if($arrayInf->{$index} == $value) {
+        foreach ($array as $arrayInf) {
+            if ($arrayInf->{$index} == $value) {
                 return $arrayInf;
             }
         }

@@ -15,6 +15,7 @@
     "barryvdh/laravel-dompdf": "^0.8.3",
     "chumper/zipper": "1.0.x",
     "darkaonline/l5-swagger": "5.8.*",
+    "dompdf/dompdf": "^0.8.3",
     "fideloper/proxy": "~4.0",
     "guzzlehttp/guzzle": "^6.3",
     "laravel/framework": "5.8.*",
@@ -23,9 +24,9 @@
     "phpoffice/phpspreadsheet": "^1.2",
     "ramsey/uuid": "^3.7",
     "simplesoftwareio/simple-qrcode": "^1.5",
-    "zircote/swagger-php": "2.0.9",
     "tymon/jwt-auth": "1.0.0-rc.4",
-    "wpb/string-blade-compiler": "3.8.1"
+    "wpb/string-blade-compiler": "3.8.1",
+    "zircote/swagger-php": "2.0.9"
   },
   "require-dev": {
     "filp/whoops": "~2.0",
