@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCongressTable extends Migration
+class CreateModulesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,9 @@ class CreateCongressTable extends Migration
      */
     public function up()
     {
-        Schema::create('Congress', function (Blueprint $table) {
-            $table->increments('congress_id');
-            $table->string('name');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->double('price');
+        Schema::create('module', function (Blueprint $table) {
+            $table->increments('module_id');
+            $table->set('type', ['Participants', 'E-mailing','Badge','Organization ','Vote','Sondage','All']);
             $table->text('description')->nullable()->default(null);
             $table->softDeletes();
             $table->timestamps();
@@ -32,6 +29,6 @@ class CreateCongressTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('congress');
+        Schema::dropIfExists('modules');
     }
 }

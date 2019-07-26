@@ -131,6 +131,16 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
     });
 });
+
+//PackAdmin API
+/*@todo finish pack admin api */
+Route::group(['prefix' => 'packadmin'], function () {
+Route::get('list','PackAdminController@index');
+Route::get('{pack_id}', 'PackAdminController@getPackById');
+Route::delete('{pack_id}/delete', 'PackAdminController@delete');
+Route::put('add', 'PackAdminController@store');
+});
+
 //User API
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
