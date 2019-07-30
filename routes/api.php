@@ -326,6 +326,8 @@ Route::group(['prefix' => 'access'], function () {
 Route::group(["prefix" => "user-app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
     Route::get('/congress', 'CongressController@getAllCongresses');
+    Route::get('/congress/{congress_id}', 'CongressController@getCongressById');
+    Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
     Route::post('/presence', 'UserController@getAllPresenceStatus');
     Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
@@ -333,7 +335,7 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 //    Route::get("quiz", "VotingController@getListPolls");
     Route::get('/quiz/{congress_id}', 'VotingController@getQuiz');
-    Route::post('/quiz', 'VotingController@getQuiz');
+    //Route::post('/quiz', 'VotingController@getQuiz');
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
     Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
     Route::post('/participant-count', 'CongressController@getParticipantsCounts');

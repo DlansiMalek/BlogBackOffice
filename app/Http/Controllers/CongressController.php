@@ -80,13 +80,14 @@ class CongressController extends Controller
             $admin->admin_id);
     }
 
-    public function editConfigCongress(Request $request, $congressId) {
+    public function editConfigCongress(Request $request, $congressId)
+    {
 
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        $congress = $this->congressServices->editConfigCongress($request->input('congress'),$request->input('eventLocation'),$congressId);
+        $congress = $this->congressServices->editConfigCongress($request->input('congress'), $request->input('eventLocation'), $congressId);
         return response()->json($congress);
 
     }
@@ -120,7 +121,7 @@ class CongressController extends Controller
             return response()->json(["error" => "congress not found"], 404);
         }
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
-        return response()->json([$configCongress,$location]);
+        return response()->json([$configCongress, $location]);
     }
 
 
@@ -307,6 +308,7 @@ class CongressController extends Controller
         return $this->congressServices->getAllCongresses();
     }
 
+
     public function sendCustomMailToAllUsers($mail_id)
     {
         if (!$mail = $this->congressServices->getEmailById($mail_id))
@@ -350,31 +352,35 @@ class CongressController extends Controller
         return $congress;
     }
 
-    public function getAll(){
+    public function getAll()
+    {
 
 
     }
 
-    function getParticipantsCounts(Request $request){
+    function getParticipantsCounts(Request $request)
+    {
         $result = [];
-        foreach ($request->all() as $congress_id){
+        foreach ($request->all() as $congress_id) {
             if (!$this->congressServices->getCongressById($congress_id))
-                return response()->json(['message'=>'congresses not found'],404);
-            array_push($result,(object) [
-                'congress_id'=>$congress_id,
-                'count'=> $this->congressServices->getParticipantsCount($congress_id)
+                return response()->json(['message' => 'congresses not found'], 404);
+            array_push($result, (object)[
+                'congress_id' => $congress_id,
+                'count' => $this->congressServices->getParticipantsCount($congress_id)
             ]);
         }
         return $result;
     }
 
-    function getLogo($congress_id){
+    function getLogo($congress_id)
+    {
         if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
         if (!$config->logo) return response()->json(['response' => 'no logo'], 400);
         return Storage::download($config->logo);
     }
 
-    function getBanner($congress_id){
+    function getBanner($congress_id)
+    {
         if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
         if (!$config->banner) return response()->json(['response' => 'no logo'], 400);
         return Storage::download($config->banner);

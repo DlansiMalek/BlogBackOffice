@@ -132,16 +132,16 @@ class VotingController extends Controller
         return response()->json(["message" => "adding successs"], 200);
     }
 
-    public function getQuiz(Request $request)
+    public function getQuiz($congressId)
     {
         $tokens = [];
         $associations = [];
-        foreach ($request->all() as $congress_id) {
-            $token = $this->congressServices->getCongressConfig($congress_id)->voting_token;
-            if ($token && !in_array($token, $tokens)) array_push($tokens, $token);
-            $a = $this->votingService->getAssociations($congress_id);
-            $associations = array_merge($associations, $a->toArray());
-        }
+
+        $token = $this->congressServices->getCongressConfig($congressId)->voting_token;
+        if ($token && !in_array($token, $tokens)) array_push($tokens, $token);
+        $a = $this->votingService->getAssociations($congressId);
+        $associations = array_merge($associations, $a->toArray());
+
 
         $polls = [];
         foreach ($tokens as $token) {
