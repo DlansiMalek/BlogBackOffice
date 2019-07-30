@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
 use App\Models\Payment;
+use App\Models\Resource;
 use App\Models\ResponseValue;
 use App\Models\User;
 use App\Models\UserAccess;
@@ -19,6 +20,8 @@ use PDF;
 
 class UserServices
 {
+
+    private $path = 'profile-pic/';
 
     public function getAllUsers()
     {
@@ -988,6 +991,17 @@ class UserServices
     public function getAttestationRequestsByUserId($user_id)
     {
         return AttestationRequest::where("user_id", '=', $user_id)->get()->toArray();
+    }
+
+    public function uploadProfilePic($file, $user)
+    {
+        $timestamp = microtime(true) * 10000;
+        $path = $file->storeAs($this->path . $timestamp, $file->getClientOriginalName());
+
+        $user->profile_pic = $path;
+        $user->save();
+
+        return $user;
     }
 
 }

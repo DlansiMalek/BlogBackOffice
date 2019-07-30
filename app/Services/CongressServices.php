@@ -12,6 +12,7 @@ use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\Organization;
 use App\Models\Pack;
+use App\Models\Resource;
 use App\Models\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
@@ -70,7 +71,7 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $has_payment, $free, $prise_charge_option,$description, $admin_id)
+    public function addCongress($name, $start_date, $end_date, $price, $has_payment, $free, $prise_charge_option, $description, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
@@ -263,28 +264,28 @@ class CongressServices
         return null;
     }
 
-    public function uploadLogo($congress, Request $request)
+    public function uploadLogo($file, $congressConfig)
     {
-        $file = $request->file('logo-file');
-        $chemin = config('media.congress-logo');
-        $path = $file->store($chemin);
+        $timestamp = microtime(true) * 10000;
+        $path = $file->storeAs('/logo/' . $timestamp, $file->getClientOriginalName());
 
-        $congress->logo = $path;
-        $congress->update();
+        $congressConfig->logo = $path;
+        $congressConfig->save();
 
-        return $path ;
+        return $congressConfig;
+
     }
 
-    public function uploadBanner($congress, Request $request)
+    public function uploadBanner($file, $congressConfig)
     {
-        $file = $request->file('banner-file');
-        $chemin = config('media.congress-banner');
-        $path = $file->store('congress-banner' . $chemin);
+        $timestamp = microtime(true) * 10000;
+        $path = $file->storeAs('/banner/' . $timestamp, $file->getClientOriginalName());
 
-        $congress->banner = $path;
-        $congress->update();
+        $congressConfig->banner = $path;
+        $congressConfig->save();
 
-        return $path ;
+
+        return $congressConfig;
     }
 
     public function getEmailById($id)

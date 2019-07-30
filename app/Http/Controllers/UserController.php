@@ -18,6 +18,7 @@ use App\Services\Utils;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -873,6 +874,18 @@ class UserController extends Controller
         $user->country_id = $request->input('country_id');
         $user->update();
         return $user;
+    }
 
+    public function uploadProfilePic(Request $request, $user_id)
+    {
+        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
+        return $this->userServices->uploadProfilePic($request->file('file_data'), $user);
+    }
+
+    public function getProfilePic($user_id)
+    {
+        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
+        if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
+        return Storage::download($user->profile_pic);
     }
 }

@@ -102,9 +102,13 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
         Route::post('/upload-logo', 'CongressController@uploadLogo');
         Route::post('/upload-banner', 'CongressController@uploadBanner');
+        Route::get('/logo', 'CongressController@getLogo');
+        Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
+
+        Route::get('program_pdf','PDFController@generateProgramPDF');
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
@@ -333,4 +337,6 @@ Route::group(["prefix" => "user-app"], function () {
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
     Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
     Route::post('/participant-count', 'CongressController@getParticipantsCounts');
+    Route::post('/profile-pic/{user_id}', 'UserController@uploadProfilePic');
+    Route::get('/profile-pic/{user_id}', 'UserController@getProfilePic');
 });

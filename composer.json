@@ -15,6 +15,7 @@
     "barryvdh/laravel-dompdf": "^0.8.3",
     "chumper/zipper": "1.0.x",
     "darkaonline/l5-swagger": "5.8.*",
+    "dompdf/dompdf": "^0.8.3",
     "fideloper/proxy": "~4.0",
     "guzzlehttp/guzzle": "^6.3",
     "laravel/framework": "5.8.*",
@@ -29,7 +30,7 @@
   },
   "require-dev": {
     "filp/whoops": "~2.0",
-    "nunomaduro/collision": "^3.0",
+    "nunomaduro/collision": "~3.0.1",
     "fzaninotto/faker": "~1.4",
     "mockery/mockery": "~1.0",
     "phpunit/phpunit": "~7.0",

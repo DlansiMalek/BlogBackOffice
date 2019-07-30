@@ -20,6 +20,7 @@ use App\Services\UserServices;
 use App\Services\Utils;
 use http\Env\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 class CongressController extends Controller
@@ -281,12 +282,14 @@ class CongressController extends Controller
 
     public function uploadLogo($congress_id, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressConfigById($congress_id)) {
+
+        if (!$congressConfig = $this->congressServices->getCongressConfig($congressId)) {
+
             return response()->json(['error' => 'congress not found'], 404);
         }
-        $congress = $this->congressServices->uploadLogo($congress, $request);
+        $this->congressServices->uploadLogo($request->file('file_data'), $congressConfig);
 
-        return response()->json($congress);
+        return response()->json($this->congressServices->getCongressById($congressId));
     }
 
     public function uploadBanner($congressId, Request $request)
@@ -294,9 +297,9 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressConfigById($congressId)) {
             return response()->json(['error' => 'congress not found '], 404);
         }
-        $congress = $this->congressServices->uploadBanner($congress, $request);
+        $this->congressServices->uploadBanner($request->file('file_data'), $congressConfig);
 
-        return response()->json($congress);
+        return response()->json($this->congressServices->getCongressById($congressId));
     }
 
     public function getAllCongresses()
@@ -364,5 +367,16 @@ class CongressController extends Controller
         }
         return $result;
     }
-}
 
+    function getLogo($congress_id){
+        if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
+        if (!$config->logo) return response()->json(['response' => 'no logo'], 400);
+        return Storage::download($config->logo);
+    }
+
+    function getBanner($congress_id){
+        if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
+        if (!$config->banner) return response()->json(['response' => 'no logo'], 400);
+        return Storage::download($config->banner);
+    }
+}
