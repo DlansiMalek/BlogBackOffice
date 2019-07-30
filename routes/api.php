@@ -87,7 +87,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::group(["prefix" => 'form'], function () {
         Route::get('input-types', 'RegistrationFormController@getInputTypes');
         Route::get('{congress_id}', 'RegistrationFormController@getForm');
-        Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('super-admin');
+        Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
     });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
