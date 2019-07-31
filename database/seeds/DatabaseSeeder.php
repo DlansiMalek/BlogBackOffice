@@ -18,5 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PaymentTypeSeeder::class);
         $this->call(AccessTypeSeeder::class);
         $this->call(AttestationTypeSeeder::class);
+        $this->call(PackAdminTableSeeder::class);
+        $this->call(ModuleTableSeeder::class);
+        
     }
 }

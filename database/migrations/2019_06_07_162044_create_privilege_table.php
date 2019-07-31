@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCongressTable extends Migration
+class CreatePrivilegeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,10 @@ class CreateCongressTable extends Migration
      */
     public function up()
     {
-        Schema::create('Congress', function (Blueprint $table) {
-            $table->increments('congress_id');
+        Schema::create('Privilege', function (Blueprint $table) {
+            $table->increments('privilege_id');
             $table->string('name');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->double('price');
-            $table->text('description')->nullable()->default(null);
+
             $table->softDeletes();
             $table->timestamps();
         });
@@ -32,6 +29,6 @@ class CreateCongressTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('congress');
+        Schema::dropIfExists('privilege');
     }
 }
