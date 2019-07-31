@@ -20,6 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call(AttestationTypeSeeder::class);
         $this->call(PackAdminTableSeeder::class);
         $this->call(ModuleTableSeeder::class);
-        
+        $this->call(UsersTableSeeder::class);
+        $this->call(AdminTableSeeder::class);
+        $this->call(CongressTableSeeder::class);
+        $this->call(AdminCongressTableSeeder::class);
+
     }
 }
