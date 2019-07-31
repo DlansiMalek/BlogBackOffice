@@ -344,8 +344,8 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 //    Route::get("quiz", "VotingController@getListPolls");
-    Route::get('/quiz/{congress_id}', 'VotingController@getQuiz');
-    //Route::post('/quiz', 'VotingController@getQuiz');
+    // Route::get('/quiz/{congress_id}', 'VotingController@getQuiz');
+    Route::post('/quiz', 'VotingController@getQuiz');
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
     Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
     Route::post('/participant-count', 'CongressController@getParticipantsCounts');
