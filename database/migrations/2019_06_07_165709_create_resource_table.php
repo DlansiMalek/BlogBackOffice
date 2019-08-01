@@ -19,6 +19,8 @@ class CreateResourceTable extends Migration
 
             $table->unsignedInteger('access_id')->nullable()->default(null);
             $table->foreign('access_id')->references('access_id')->on('Access');
+
+
             $table->softDeletes();
             $table->timestamps();
         });

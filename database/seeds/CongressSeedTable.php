@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class CongressTableSeeder extends Seeder
+class CongressSeedTable extends Seeder
 {
     /**
      * Run the database seeds.
@@ -13,7 +13,7 @@ class CongressTableSeeder extends Seeder
     public function run()
     {
         DB::table('Congress')->insert([
-            'name' => 'Congress Test',
+            'name' => 'Congress Test 1',
             'start_date' => date("Y-m-d"),
             'end_date' => date("Y-m-d"),
             'price' => '200'

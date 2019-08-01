@@ -16,7 +16,7 @@ class AccessVote extends Model
     protected $table = 'Access_Vote';
     protected $primaryKey = 'access_vote_id';
     protected $fillable = ['access_id', 'vote_id', 'congress_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function access(){
         return $this->hasOne('App\Models\Access',"access_id","access_id");

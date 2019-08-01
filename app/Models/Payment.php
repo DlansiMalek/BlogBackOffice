@@ -18,6 +18,8 @@ class Payment extends Model
     protected $fillable = ['isPaid','path','reference','authorization','free','price',
         'payment_type_id','user_id','congress_id','admin_id'];
 
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
+
     public function type(){
         return $this->hasOne('App\Models\PaymentType','payment_type_id','payment_type_id');
     }

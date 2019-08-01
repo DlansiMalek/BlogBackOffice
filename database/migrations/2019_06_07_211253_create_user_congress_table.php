@@ -33,6 +33,7 @@ class CreateUserCongressTable extends Migration
             $table->unsignedInteger('pack_id')->nullable()->default(null);
             $table->foreign('pack_id')->references('pack_id')->on('Pack');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

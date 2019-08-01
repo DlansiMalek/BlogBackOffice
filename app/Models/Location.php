@@ -11,7 +11,7 @@ class Location extends Model
     protected $primaryKey = 'location_id';
     protected $fillable = ['lng', 'lat', 'address', 'congress_id'];
 
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
     public $timestamps = true;
 
     public function congress()

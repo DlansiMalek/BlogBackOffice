@@ -15,7 +15,8 @@ class CreateFeedbackResponseTable extends Migration
     {
         Schema::create('Feedback_Response', function (Blueprint $table) {
             $table->increments('feedback_response_id');
-            $table->string('value');
+            $table->string('value')
+                ->nullable();
 
             $table->unsignedInteger('feedback_value_id')->nullable()->default(null);
             $table->foreign('feedback_value_id')->references('feedback_value_id')->on('Feedback_Value')->onDelete('cascade');

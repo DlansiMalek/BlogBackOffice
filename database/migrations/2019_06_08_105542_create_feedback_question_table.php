@@ -22,7 +22,7 @@ class CreateFeedbackQuestionTable extends Migration
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
 
             $table->unsignedInteger('access_id')->nullable()->default(null);
-            $table->foreign('access_id')->references('access_id')->on('Access')->nullable()->onDelete('cascade');
+            $table->foreign('access_id')->references('access_id')->on('Access')->onDelete('cascade');
 
             $table->softDeletes();
             $table->timestamps();

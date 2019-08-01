@@ -16,7 +16,7 @@ class AttestationDivers extends Model
     protected $table = 'Attestation_Divers';
     protected $primaryKey = 'attestation_divers_id';
     protected $fillable = ['attestation_generator_id', 'attestation_type_id', 'congress_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
 
     public function type()

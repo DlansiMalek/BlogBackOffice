@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class AdminCongressTableSeeder extends Seeder
+class AccessSpeakerSeedTable extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,10 +12,9 @@ class AdminCongressTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('Admin_Congress')->insert([
-            'admin_id' => 1,
-            'congress_id' => 1,
-            'privilege_id' => 1
+        DB::table('Access_Speaker')->insert([
+            'user_id' => 3,
+            'access_id' => 1
         ]);
     }
 }

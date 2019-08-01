@@ -13,12 +13,14 @@ class CreatePackModuleTable extends Migration
      */
     public function up()
     {
-        Schema::create('packadmin_module', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('pack_id');
+        Schema::create('Pack_Admin_Module', function (Blueprint $table) {
+            $table->increments('pack_admin_module_id');
+            $table->unsignedInteger('pack_admin_id');
             $table->unsignedInteger('module_id');
-            $table->foreign('pack_id')->references('pack_id')->on('pack_admin') ->onDelete('cascade');
-            $table->foreign('module_id')->references('module_id')->on('module') ->onDelete('cascade');
+            $table->foreign('pack_admin_id')->references('pack_admin_id')->on('Pack_Addmin')->onDelete('cascade');
+            $table->foreign('module_id')->references('module_id')->on('Module')->onDelete('cascade');
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -30,6 +32,6 @@ class CreatePackModuleTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pack_module');
+        Schema::dropIfExists('Pack_Admin_Module');
     }
 }

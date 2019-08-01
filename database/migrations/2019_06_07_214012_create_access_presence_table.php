@@ -24,6 +24,7 @@ class CreateAccessPresenceTable extends Migration
             $table->unsignedInteger('access_id');
             $table->foreign('access_id')->references('access_id')->on('Access')->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

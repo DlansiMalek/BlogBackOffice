@@ -29,6 +29,6 @@ class CreatePrivilegeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('privilege');
+        Schema::dropIfExists('Privilege');
     }
 }

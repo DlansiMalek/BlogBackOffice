@@ -18,7 +18,7 @@ class AccessPresence extends Model
     protected $fillable = ['entered_at', 'left_at', 'user_id', 'access_id'];
 
     public $timestamps = true;
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function user()
     {

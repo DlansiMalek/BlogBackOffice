@@ -17,5 +17,5 @@ class AttestationAccess extends Model
     protected $primaryKey = 'attestation_access_id';
     protected $fillable = ['attestation_generator_id', 'access_id'];
     public $timestamps = true;
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 }

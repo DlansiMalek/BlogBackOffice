@@ -10,6 +10,6 @@ class Topic extends Model
     protected $table = 'Topic';
     protected $primaryKey = 'topic_id';
     protected $fillable = ['name'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 }
 

@@ -16,6 +16,6 @@ class FeedbackResponse extends Model
     protected $table = 'Feedback_Response';
     protected $primaryKey = 'feedback_response_id';
     protected $fillable = ['text','feedback_value_id','user_id', 'feedback_question_id','user_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
 }

@@ -10,9 +10,9 @@ class User extends Authenticatable
     use Notifiable;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'email_verified', 'verification_code', 'rfid','profile_pic'];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'email_verified', 'verification_code', 'rfid', 'profile_pic'];
     public $timestamps = true;
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     function accesses()
     {
@@ -32,13 +32,14 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Models\Access', 'Access_Chair', 'user_id', 'access_id');
     }
 
-    public function payments(){
-        return $this->hasMany('App\Models\Payment','user_id','user_id');
+    public function payments()
+    {
+        return $this->hasMany('App\Models\Payment', 'user_id', 'user_id');
     }
 
     function organization()
     {
-        return $this->belongsToMany('App\Models\Organization', 'User_Congress', 'user_id','organization_id');
+        return $this->belongsToMany('App\Models\Organization', 'User_Congress', 'user_id', 'organization_id');
     }
 
     function congresses()
@@ -46,8 +47,9 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
     }
 
-    function user_congresses(){
-        return $this->hasMany('App\Models\UserCongress','user_id','user_id');
+    function user_congresses()
+    {
+        return $this->hasMany('App\Models\UserCongress', 'user_id', 'user_id');
     }
 
     function country()
@@ -70,8 +72,9 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\FeedbackResponse', 'user_id', 'user_id');
     }
 
-    function likes(){
-        return $this->hasMany('App\Models\Like','user_id','user_id');
+    function likes()
+    {
+        return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
     }
 
 }

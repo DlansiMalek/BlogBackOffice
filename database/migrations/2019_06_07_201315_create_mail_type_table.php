@@ -17,6 +17,9 @@ class CreateMailTypeTable extends Migration
             $table->increments("mail_type_id");
             $table->string("name");
             $table->string("display_name");
+
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

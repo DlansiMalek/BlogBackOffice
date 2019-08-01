@@ -15,17 +15,14 @@ class CreateFormInputResponseTable extends Migration
     {
         Schema::create('Form_Input_Response', function (Blueprint $table) {
             $table->increments('form_input_response_id');
-            $table->string('response');
+            $table->string('response')
+                ->nullable()->default(null);
 
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on("User")->onDelete('cascade');
 
             $table->unsignedInteger('form_input_id');
             $table->foreign('form_input_id')->references('form_input_id')->on("Form_Input")->onDelete('cascade');
-
-            $table->unsignedInteger('form_input_value_id');
-            $table->foreign('form_input_value_id')->references('form_input_value_id')->on("Form_Input_Value")->onDelete('cascade');
-
 
 
             $table->softDeletes();

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 
@@ -7,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Country extends Model
 {
     protected $table = 'Country';
-    protected $primaryKey = 'code';
-    protected $fillable = ['label', 'nationality', 'nationality_arabe'];
+    protected $primaryKey = 'alpha3code';
+    protected $fillable = ['code', 'name'];
     public $timestamps = false;
 
     public function cities()

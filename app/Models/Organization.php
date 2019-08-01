@@ -15,8 +15,8 @@ class Organization extends Model
     public $timestamps = true;
     protected $table = 'Organization';
     protected $primaryKey = 'organization_id';
-    protected $fillable = ['name', 'description','email','mobile','admin_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $fillable = ['name', 'description', 'email', 'mobile', 'admin_id'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
     function users()
