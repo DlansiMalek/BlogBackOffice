@@ -7,12 +7,6 @@
 -- Version du serveur :  5.7.23-0ubuntu0.16.04.1
 -- Version de PHP :  7.2.8
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -4126,38 +4120,6 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (4099, 'Manouba', 'TUN', 'منوبة'),
 (4100, 'Gafsa', 'TUN', 'قفصة'),
 (4101, 'tataouine', 'TUN', 'تطاوين');
-
---
--- Index pour les tables déchargées
---
-
---
--- Index pour la table `City`
---
-ALTER TABLE `City`
-  ADD PRIMARY KEY (`id_City`),
-  ADD KEY `CountryCode` (`CountryCode`);
-
---
--- AUTO_INCREMENT pour les tables déchargées
---
-
---
--- AUTO_INCREMENT pour la table `City`
---
-ALTER TABLE `City`
-  MODIFY `id_City` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4102;
-
---
--- Contraintes pour les tables déchargées
---
-
---
--- Contraintes pour la table `City`
---
-ALTER TABLE `City`
-  ADD CONSTRAINT `city_ibfk_1` FOREIGN KEY (`CountryCode`) REFERENCES `Country` (`Code`);
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -18,7 +18,7 @@ class CreateCityTable extends Migration
 
             $table->string('name');
             $table->string('country_code');
-            $table->string('name_arabe');
+            $table->string('name_arabe')->nullable();
 
             $table->foreign('country_code')
                 ->references('alpha3code')->on('Country');

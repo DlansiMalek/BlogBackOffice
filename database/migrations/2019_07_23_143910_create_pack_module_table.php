@@ -17,7 +17,7 @@ class CreatePackModuleTable extends Migration
             $table->increments('pack_admin_module_id');
             $table->unsignedInteger('pack_admin_id');
             $table->unsignedInteger('module_id');
-            $table->foreign('pack_admin_id')->references('pack_admin_id')->on('Pack_Addmin')->onDelete('cascade');
+            $table->foreign('pack_admin_id')->references('pack_admin_id')->on('Pack_Admin')->onDelete('cascade');
             $table->foreign('module_id')->references('module_id')->on('Module')->onDelete('cascade');
 
             $table->softDeletes();

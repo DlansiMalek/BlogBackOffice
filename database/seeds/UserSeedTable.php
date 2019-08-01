@@ -21,7 +21,7 @@ class UserSeedTable extends Seeder
             'email' => 'user@vayetek.com',
             'email_verified' => 1,
             'qr_code' => '7sqafkqm1',
-            'country_id' => 'TN'
+            'country_id' => 'TUN'
         ]);
 
 
@@ -34,7 +34,7 @@ class UserSeedTable extends Seeder
             'email' => 'moderateur@vayetek.com',
             'email_verified' => 1,
             'qr_code' => '8sqafkqms2',
-            'country_id' => 'TN'
+            'country_id' => 'TUN'
         ]);
 
         DB::table('User')->insert([
@@ -46,7 +46,7 @@ class UserSeedTable extends Seeder
             'email' => 'orateur@vayetek.com',
             'email_verified' => 1,
             'qr_code' => '8sqafmsd3',
-            'country_id' => 'TN'
+            'country_id' => 'TUN'
         ]);
     }
 }

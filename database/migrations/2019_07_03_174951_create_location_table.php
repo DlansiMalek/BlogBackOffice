@@ -25,7 +25,7 @@ class CreateLocationTable extends Migration
                 ->on('Congress')->onDelete('cascade');
 
 
-            $table->integer('city_id')->unsigned()->nullable();
+            $table->unsignedBigInteger('city_id')->nullable();
             $table->foreign('city_id')->references('city_id')
                 ->on('City')->onDelete('set null');
 

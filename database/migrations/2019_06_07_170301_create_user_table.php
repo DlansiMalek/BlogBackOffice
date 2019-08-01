@@ -31,7 +31,7 @@ class CreateUserTable extends Migration
             $table->string('profile_pic')->nullable()->default(null);
 
             $table->string('country_id')->nullable()->default(null);
-            $table->foreign('country_id')->references('code')->on('Country')->onDelete('set null');
+            $table->foreign('country_id')->references('alpha3code')->on('Country')->onDelete('set null');
 
             $table->softDeletes();
             $table->timestamps();
