@@ -37,6 +37,10 @@ class CreateFormInputResponseTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('form_input_response');
+        Schema::table('Form_Input_Response', function (Blueprint $table) {
+            $table->dropForeign(['form_input_id']);
+            $table->dropForeign(['user_id']);
+        });
+        Schema::dropIfExists('Form_Input_Response');
     }
 }

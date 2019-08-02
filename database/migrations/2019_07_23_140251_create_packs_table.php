@@ -16,11 +16,11 @@ class CreatePacksTable extends Migration
         Schema::create('Pack_Admin', function (Blueprint $table) {
             $table->increments('pack_admin_id');
             $table->string('name');
-            $table->set('type', ['Demo', 'Event','Durée']);
+            $table->set('type', ['Demo', 'Event', 'Durée']);
             $table->smallInteger('capacity');           //-1 for unlimitted
             $table->double('price')->default(0);        // 0 if demo
             $table->tinyInteger('nbr_days')->default(0);
-            $table->tinyInteger('nbr_events')->default(0);	
+            $table->tinyInteger('nbr_events')->default(0);
 
             $table->softDeletes();
             $table->timestamps();

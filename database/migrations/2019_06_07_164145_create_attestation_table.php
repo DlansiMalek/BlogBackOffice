@@ -34,6 +34,9 @@ class CreateAttestationTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attestation');
+        Schema::table('Attestation', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Attestation');
     }
 }

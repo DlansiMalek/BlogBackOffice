@@ -36,6 +36,10 @@ class CreateFeedbackQuestionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('feedback_question');
+        Schema::table('Feedback_Question', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['access_id']);
+        });
+        Schema::dropIfExists('Feedback_Question');
     }
 }

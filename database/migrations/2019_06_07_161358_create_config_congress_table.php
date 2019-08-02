@@ -45,6 +45,9 @@ class CreateConfigCongressTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('config_congress');
+        Schema::table('Config_Congress', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Config_Congress');
     }
 }

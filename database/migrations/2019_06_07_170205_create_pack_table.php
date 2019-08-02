@@ -24,7 +24,6 @@ class CreatePackTable extends Migration
                 ->onDelete('cascade');
 
 
-
             $table->softDeletes();
             $table->timestamps();
         });
@@ -37,6 +36,9 @@ class CreatePackTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pack');
+        Schema::table('Pack', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Pack');
     }
 }

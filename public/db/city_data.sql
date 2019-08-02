@@ -3,9 +3,15 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 137.74.165.25:3306
--- Généré le :  jeu. 01 août 2019 à 06:30
+-- Généré le :  ven. 02 août 2019 à 08:18
 -- Version du serveur :  5.7.23-0ubuntu0.16.04.1
 -- Version de PHP :  7.2.8
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+SET time_zone = "+00:00";
+
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -13,10 +19,9 @@
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données :  `plateforme_medecine`
+-- Base de données :  `congress`
 --
 
--- --------------------------------------------------------
 --
 -- Déchargement des données de la table `City`
 --
@@ -1543,7 +1548,6 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (1519, 'Alessandria', 'ITA', NULL),
 (1520, 'Cesena', 'ITA', NULL),
 (1521, 'Pesaro', 'ITA', NULL),
-(1522, 'Dili', 'TMP', NULL),
 (1523, 'Wien', 'AUT', NULL),
 (1524, 'Graz', 'AUT', NULL),
 (1525, 'Linz', 'AUT', NULL),
@@ -1610,9 +1614,9 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (1586, 'Takamatsu', 'JPN', NULL),
 (1587, 'Koriyama', 'JPN', NULL),
 (1588, 'Okazaki', 'JPN', NULL),
-(1589, 'Kawagoe', 'JPN', NULL);
+(1589, 'Kawagoe', 'JPN', NULL),
+(1590, 'Tokorozawa', 'JPN', NULL);
 INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
-(1590, 'Tokorozawa', 'JPN', NULL),
 (1591, 'Toyama', 'JPN', NULL),
 (1592, 'Kochi', 'JPN', NULL),
 (1593, 'Kashiwa', 'JPN', NULL),
@@ -1814,14 +1818,6 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (1789, 'al-Rusayfa', 'JOR', NULL),
 (1790, 'Wadi al-Sir', 'JOR', NULL),
 (1791, 'Flying Fish Cove', 'CXR', NULL),
-(1792, 'Beograd', 'YUG', NULL),
-(1793, 'Novi Sad', 'YUG', NULL),
-(1794, 'Niš', 'YUG', NULL),
-(1795, 'Priština', 'YUG', NULL),
-(1796, 'Kragujevac', 'YUG', NULL),
-(1797, 'Podgorica', 'YUG', NULL),
-(1798, 'Subotica', 'YUG', NULL),
-(1799, 'Prizren', 'YUG', NULL),
 (1800, 'Phnom Penh', 'KHM', NULL),
 (1801, 'Battambang', 'KHM', NULL),
 (1802, 'Siem Reap', 'KHM', NULL),
@@ -3040,35 +3036,6 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (3015, 'Faaa', 'PYF', NULL),
 (3016, 'Papeete', 'PYF', NULL),
 (3017, 'Saint-Denis', 'REU', NULL),
-(3018, 'Bucuresti', 'ROM', 'بوخارست'),
-(3019, 'Iasi', 'ROM', NULL),
-(3020, 'Constanta', 'ROM', NULL),
-(3021, 'Cluj-Napoca', 'ROM', NULL),
-(3022, 'Galati', 'ROM', NULL),
-(3023, 'Timisoara', 'ROM', NULL),
-(3024, 'Brasov', 'ROM', NULL),
-(3025, 'Craiova', 'ROM', NULL),
-(3026, 'Ploiesti', 'ROM', NULL),
-(3027, 'Braila', 'ROM', NULL),
-(3028, 'Oradea', 'ROM', NULL),
-(3029, 'Bacau', 'ROM', NULL),
-(3030, 'Pitesti', 'ROM', NULL),
-(3031, 'Arad', 'ROM', NULL),
-(3032, 'Sibiu', 'ROM', NULL),
-(3033, 'Târgu Mures', 'ROM', NULL),
-(3034, 'Baia Mare', 'ROM', NULL),
-(3035, 'Buzau', 'ROM', NULL),
-(3036, 'Satu Mare', 'ROM', NULL),
-(3037, 'Botosani', 'ROM', NULL),
-(3038, 'Piatra Neamt', 'ROM', NULL),
-(3039, 'Râmnicu Vâlcea', 'ROM', NULL),
-(3040, 'Suceava', 'ROM', NULL),
-(3041, 'Drobeta-Turnu Severin', 'ROM', NULL),
-(3042, 'Târgoviste', 'ROM', NULL),
-(3043, 'Focsani', 'ROM', NULL),
-(3044, 'Târgu Jiu', 'ROM', NULL),
-(3045, 'Tulcea', 'ROM', NULL),
-(3046, 'Resita', 'ROM', NULL),
 (3047, 'Kigali', 'RWA', NULL),
 (3048, 'Stockholm', 'SWE', NULL),
 (3049, 'Gothenburg [Göteborg]', 'SWE', NULL),
@@ -3218,8 +3185,7 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (3193, 'al-Qatif', 'SAU', NULL),
 (3194, 'al-Hawiya', 'SAU', NULL),
 (3195, 'Unayza', 'SAU', NULL),
-(3196, 'Najran', 'SAU', NULL);
-INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
+(3196, 'Najran', 'SAU', NULL),
 (3197, 'Pikine', 'SEN', NULL),
 (3198, 'Dakar', 'SEN', NULL),
 (3199, 'Thiès', 'SEN', NULL),
@@ -3257,7 +3223,8 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (3231, 'Wad Madani', 'SDN', NULL),
 (3232, 'al-Qadarif', 'SDN', NULL),
 (3233, 'Kusti', 'SDN', NULL),
-(3234, 'al-Fashir', 'SDN', NULL),
+(3234, 'al-Fashir', 'SDN', NULL);
+INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (3235, 'Juba', 'SDN', NULL),
 (3236, 'Helsinki [Helsingfors]', 'FIN', NULL),
 (3237, 'Espoo', 'FIN', NULL),
@@ -4120,6 +4087,7 @@ INSERT INTO `City` (`city_id`, `name`, `country_code`, `name_arabe`) VALUES
 (4099, 'Manouba', 'TUN', 'منوبة'),
 (4100, 'Gafsa', 'TUN', 'قفصة'),
 (4101, 'tataouine', 'TUN', 'تطاوين');
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

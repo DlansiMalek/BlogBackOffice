@@ -45,6 +45,13 @@ class CreateUserCongressTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_congress');
+        Schema::table('User_Congress', function (Blueprint $table) {
+            $table->dropForeign(['pack_id']);
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['organization_id']);
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['privilege_id']);
+        });
+        Schema::dropIfExists('User_Congress');
     }
 }

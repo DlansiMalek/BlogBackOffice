@@ -30,6 +30,7 @@ class CreateMailTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mail_type');
+
+        Schema::dropIfExists('Mail_Type');
     }
 }

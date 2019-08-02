@@ -42,6 +42,10 @@ class CreateLocationTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('location');
+        Schema::table('Location', function (Blueprint $table) {
+            $table->dropForeign(['city_id']);
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Location');
     }
 }

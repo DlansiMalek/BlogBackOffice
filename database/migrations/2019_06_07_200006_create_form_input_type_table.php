@@ -30,6 +30,6 @@ class CreateFormInputTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('form_input_type');
+        Schema::dropIfExists('Form_Input_Type');
     }
 }

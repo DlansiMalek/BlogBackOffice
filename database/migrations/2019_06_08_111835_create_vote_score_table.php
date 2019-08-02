@@ -36,6 +36,10 @@ class CreateVoteScoreTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('vote_score');
+        Schema::table('Vote_Score', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['access_vote_id']);
+        });
+        Schema::dropIfExists('Vote_Score');
     }
 }

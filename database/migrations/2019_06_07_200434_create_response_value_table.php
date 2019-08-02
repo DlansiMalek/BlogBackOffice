@@ -35,6 +35,10 @@ class CreateResponseValueTable extends Migration
      */
     public function down()
     {
+        Schema::table('Response_Value', function (Blueprint $table) {
+            $table->dropForeign(['form_input_response_id']);
+            $table->dropForeign(['form_input_value_id']);
+        });
         Schema::dropIfExists('Response_Value');
     }
 }

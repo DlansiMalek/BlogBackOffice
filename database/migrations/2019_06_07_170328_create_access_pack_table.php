@@ -34,6 +34,10 @@ class CreateAccessPackTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_pack');
+        Schema::table('Access_Pack', function (Blueprint $table) {
+            $table->dropForeign(['access_id']);
+            $table->dropForeign(['pack_id']);
+        });
+        Schema::dropIfExists('Access_Pack');
     }
 }

@@ -39,6 +39,10 @@ class CreateMailTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mail');
+        Schema::table('Mail', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['mail_type_id']);
+        });
+        Schema::dropIfExists('Mail');
     }
 }

@@ -38,6 +38,9 @@ class CreateConfigMailTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('config_mail');
+        Schema::table('Config_Mail', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Config_Mail');
     }
 }

@@ -32,6 +32,10 @@ class CreatePackModuleTable extends Migration
      */
     public function down()
     {
+        Schema::table('Pack_Admin_Module', function (Blueprint $table) {
+            $table->dropForeign(['pack_admin_id']);
+            $table->dropForeign(['module_id']);
+        });
         Schema::dropIfExists('Pack_Admin_Module');
     }
 }

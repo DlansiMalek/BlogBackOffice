@@ -33,6 +33,9 @@ class CreateResourceTable extends Migration
      */
     public function down()
     {
+        Schema::table('Resource', function (Blueprint $table) {
+            $table->dropForeign(['access_id']);
+        });
         Schema::dropIfExists('Resource');
     }
 }

@@ -36,6 +36,10 @@ class CreateAccessVoteTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_vote');
+        Schema::table('Access_Vote', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['access_id']);
+        });
+        Schema::dropIfExists('Access_Vote');
     }
 }

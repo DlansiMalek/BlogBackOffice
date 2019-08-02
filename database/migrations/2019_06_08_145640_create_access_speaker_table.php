@@ -34,6 +34,10 @@ class CreateAccessSpeakerTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_speaker');
+        Schema::table('Access_Speaker', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['access_id']);
+        });
+        Schema::dropIfExists('Access_Speaker');
     }
 }

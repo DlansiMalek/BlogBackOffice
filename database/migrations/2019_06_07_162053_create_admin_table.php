@@ -38,6 +38,9 @@ class CreateAdminTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('admin');
+        Schema::table('Admin', function (Blueprint $table) {
+            $table->dropForeign(['privilege_id']);
+        });
+        Schema::dropIfExists('Admin');
     }
 }

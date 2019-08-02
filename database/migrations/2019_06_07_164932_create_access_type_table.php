@@ -29,6 +29,6 @@ class CreateAccessTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_type');
+        Schema::dropIfExists('Access_Type');
     }
 }

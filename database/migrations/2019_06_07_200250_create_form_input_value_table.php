@@ -31,6 +31,9 @@ class CreateFormInputValueTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('form_input_value');
+        Schema::table('Form_Input_Value', function (Blueprint $table) {
+            $table->dropForeign(['form_input_id']);
+        });
+        Schema::dropIfExists('Form_Input_Value');
     }
 }
