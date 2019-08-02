@@ -138,7 +138,12 @@ Route::group(['prefix' => 'packadmin'], function () {
 Route::get('list','PackAdminController@index');
 Route::get('{pack_id}', 'PackAdminController@getPackById');
 Route::delete('{pack_id}/delete', 'PackAdminController@delete');
-Route::put('add', 'PackAdminController@store');
+Route::post('add', 'PackAdminController@store');
+Route::put('{pack_id}/update', 'PackAdminController@update');
+Route::get('{pack_id}/modules', 'PackAdminController@getpackmodules');
+Route::get('modules/list','PackAdminController@getmodules');
+Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
+
 });
 
 //User API

@@ -12,9 +12,9 @@ class Module extends Model
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
 
-    public function Adminpacks()
+    public function adminpacks()
     {
-        return $this->belongsToMany('App\Models\PackAdmin', 'packadmin_module', 'pack_id','module_id');
+        return $this->belongsToMany('App\Models\PackAdmin', 'packadmin_module', 'module_id', 'pack_id');
     }
     
 }

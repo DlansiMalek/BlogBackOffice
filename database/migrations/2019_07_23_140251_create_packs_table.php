@@ -16,7 +16,7 @@ class CreatePacksTable extends Migration
         Schema::create('pack_admin', function (Blueprint $table) {
             $table->increments('pack_id');
             $table->string('name');
-            $table->set('type', ['Demo', 'Event','Durée']);
+            $table->set('type', ['Demo', 'Event','Duree']);
             $table->smallInteger('capacity');           //-1 for unlimitted
             $table->double('price')->default(0);        // 0 if demo
             $table->tinyInteger('nbr_days')->default(0);

@@ -13,7 +13,11 @@ class PackAdminServices
         return PackAdmin::where('module_id', '=', $moduleId)
             ->get();
     }
-
+    public function getModulesFromPack($packid){
+        return PackAdmin::with(['modules'])
+            ->where('pack_id', '=', $packid)
+            ->first();
+    }
     public function getPackById($packId)
     {
     return PackAdmin::where('pack_id', '=', $packId)
@@ -35,19 +39,19 @@ class PackAdminServices
         $updatePack->price = 0;
     if ($request->input('type') == "Event")
         $updatePack->nbr_events = $request->input('nbr_events');
-    if ($request->input('type') ==  "Durée")
+    if ($request->input('type') ==  "Duree")
         $updatePack->nbr_days = $request->input('nbr_days');
     $updatePack->update();
     return $updatePack;
 }
 
-    public function addModuleToPack($request ,$pack){
+    public function addModuleToPack($module_id ,$pack){
     if (!$pack) {
         return null;
     }
     $pm = new PackModule();
     $pm->pack_id = $pack->pack_id;
-    $pm->module_id = $request->input('module_id');
+    $pm->module_id = $module_id;
     $pm->save();
 }
     public function AddPack($request ,$pack){
@@ -59,7 +63,7 @@ class PackAdminServices
             $pack->price = 0;
         if ($request->input('type') == "Event")
             $pack->nbr_events = $request->input('nbr_events');
-        if ($request->input('type') ==  "Durée")
+        if ($request->input('type') ==  "Duree")
             $pack->nbr_days = $request->input('nbr_days');
         $pack->save();
         return $pack;
