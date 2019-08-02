@@ -9,6 +9,7 @@ class Country extends Model
 {
     protected $table = 'Country';
     protected $primaryKey = 'alpha3code';
+    public $incrementing = false;
     protected $fillable = ['code', 'name'];
     public $timestamps = false;
 
