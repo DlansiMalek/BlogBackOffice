@@ -12,6 +12,7 @@ use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\OrganizationServices;
 use App\Services\PackServices;
+use App\Services\PaymentServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -31,6 +32,7 @@ class UserController extends Controller
     protected $accessServices;
     protected $packServices;
     protected $organizationServices;
+    protected $paymentServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -38,7 +40,8 @@ class UserController extends Controller
                          BadgeServices $badgeServices,
                          AccessServices $accessServices,
                          PackServices $packServices,
-                         OrganizationServices $organizationServices)
+                         OrganizationServices $organizationServices,
+                         PaymentServices $paymentServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -48,6 +51,7 @@ class UserController extends Controller
         $this->accessServices = $accessServices;
         $this->packServices = $packServices;
         $this->organizationServices = $organizationServices;
+        $this->paymentServices = $paymentServices;
     }
 
     public function getUserByTypeAndCongressId($congress_id, $privilege_id)
@@ -218,43 +222,111 @@ class UserController extends Controller
         return response()->json(['add success'], 200);
     }
 
-    public function saveUser(Request $request, $congress_id, $strict_mode)
+    public function saveUser(Request $request, $congress_id)
     {
-        if (!$request->has('email'))
-            return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
-        $user = $this->userServices->getUserById($request->input('email'));
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
-        if ($user && !$request->has(['accesses', 'privilege_id']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['accesses', 'privilege_id']], 400);
-        if (!$user && $strict_mode && !$request->has(['first_name', 'last_name', 'gender', 'mobile', 'country_id', 'accesses', 'privilege_id']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['first_name', 'last_name', 'gender', 'mobile', 'country_id', 'accesses', 'privilege_id']], 400);
-        if (!$user && !$strict_mode && !$request->has(['first_name', 'last_name', 'accesses', 'privilege_id']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['first_name', 'last_name', 'accesses', 'privilege_id']], 400);
+        /*if (!$request->has(['gender', 'mobile', 'country_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['gender', 'mobile', 'country_id']], 400);
+        */
 
-        if (!$congress = $this->congressServices->getCongressById($congress_id))
-            return response()->json(['response' => 'congress not found'], 404);
-
-        if (!$user) $user = new User();
-        $user = $this->userServices->saveUser($request, $user);
-
-        if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id))
-            $user_congress = new UserCongress();
-        $user_congress = $this->userServices->saveUserCongress($user_congress, $congress, $user, $request);
-        $user->user_congress = $user_congress;
-        $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
-        $this->userServices->deleteUserAccesses($user->user_id, $congress_id);
-        if ($user->privilege_id == 3) {
-            if ($user_congress->pack_id) {
-                $pack = $this->packServices->getPackById($user->pack_id);
-                $this->userServices->affectAccess($user->user_id, $request->input('accesses'), $pack->accesses);
-            } else $this->userServices->affectAccess($user->user_id, $request->input('accesses'), []);
-        } else {
-            $accesss = $this->accessServices->getAllAccessByCongress($congress_id);
-            $this->userServices->affectAllAccess($user->user_id, $accesss);
+        $privilegeId = $request->input('privilege_id');
+        if ($privilegeId == 3 && !$request->has('price')) {
+            return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
+
+        // Get User per mail
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+            $user = $this->userServices->saveUser($request);
+        }
+
+        // Check if User already registed to congress
+        if ($user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
+            return response()->json(['error' => 'user registred congress'], 405);
+        }
+
+        // Affect User to Congress
+        $this->userServices->saveUserCongress($congress_id, $user->user_id, $request);
+
+
+        //Adding Responses User To Form (Additional Information)
+        if ($request->has('responses')) {
+            $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
+        }
+
+        // Affect All Access Free (To All Users)
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, false);
+
+        $this->userServices->affectAccess($user->user_id, $accessNotInRegister, []);
+
+
+        //TODO Manage Organization Acceptation
+
+
+        //Save Access Premium
+        if ($privilegeId == 3) {
+            $this->userServices->affectAccess($user->user_id, $request->input('accesses'), []);
+        } else {
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, true);
+            $this->userServices->affectAccess($user->user_id, $accessInRegister, []);
+        }
+
+
+        //Free Inscription (By Chance)
+        $congress = $this->congressServices->getCongressById($congress_id);
+        $isFree = false;
+        if ($privilegeId == 3) {
+            $nbParticipants = $this->congressServices->getParticipantsCount($congress_id);
+            $freeNb = $this->paymentServices->getFreeUserByCongressId($congress_id);
+            if ($freeNb < $congress->config->free && !($nbParticipants % 10)) {
+                $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), true);
+                $isFree = true;
+            }
+        }
+        // Sending Mail
+        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
+        $user = $this->userServices->getUserById($user->user_id);
+        if ($privilegeId != 3 || !$congress->has_payment || $isFree) {
+            //Free Mail
+            if ($isFree) {
+                if ($mailtype = $this->congressServices->getMailType('free')) {
+                    if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
+                            null);
+                    }
+                }
+            }
+            //Confirm Direct
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
+                    $user->qr_code);
+                $fileAttached = true;
+            }
+            if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
+                        null);
+                }
+            }
+        } else {
+            //PreInscription First (Payment Required)
+            //Add Payement Ligne
+            $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), false);
+
+            $user->price = $request->input("price");
+            if ($mailtype = $this->congressServices->getMailType('inscription')) {
+                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
+                        $link);
+                }
+            }
+        }
+
         return $user;
-        //TODO Mail sending is to be redone depending on the new design
-        //TODO Manage organization cases (accepted...)
     }
 
     public function registerUserToCongress(Request $request, $congressId)

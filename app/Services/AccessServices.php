@@ -299,8 +299,16 @@ class AccessServices
 
     public function getMainByCongressId($congress_id)
     {
-        return Access::where('congress_id','=',$congress_id)
+        return Access::where('congress_id', '=', $congress_id)
             ->whereNull('parent_id')
+            ->get();
+    }
+
+    public function getAllAccessByRegisterParams($congress_id,$showInRegister)
+    {
+        return Access::where('show_in_register', '=', false)
+            ->whereNull('parent_id')
+            ->where('congress_id', '=', $congress_id)
             ->get();
     }
 

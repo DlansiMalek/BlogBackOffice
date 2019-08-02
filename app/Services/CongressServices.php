@@ -14,6 +14,7 @@ use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\Resource;
 use App\Models\User;
+use App\Models\UserCongress;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -330,7 +331,7 @@ class CongressServices
         $template = str_replace('{{$organization-&gt;mobile}}', '{{$organization->mobile}}', $template);
 
         if ($participant != null)
-            $participant->gender = $participant->gender == 1 ? 'Mr.' : 'Mme';
+            $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
         return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization]);
     }
 
@@ -376,11 +377,10 @@ class CongressServices
 
     public function getParticipantsCount($congress_id)
     {
-        return User::whereHas('user_congresses', function ($q) use ($congress_id) {
-            $q->where('congress_id', '=', $congress_id);
-        })->whereHas('payments', function ($q) use ($congress_id) {
-            $q->where('congress_id', '=', $congress_id);
-        })->count();
+        //participant (privilege= 3)
+        return UserCongress::where('congress_id', '=', $congress_id)
+            ->where('privilege_id', '=', 3)
+            ->count();
     }
 
 }

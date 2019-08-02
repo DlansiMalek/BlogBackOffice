@@ -108,7 +108,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
 
-        Route::get('program_pdf','PDFController@generateProgramPDF');
+        Route::get('program_pdf', 'PDFController@generateProgramPDF');
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
@@ -140,10 +140,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 //PackAdmin API
 /*@todo finish pack admin api */
 Route::group(['prefix' => 'packadmin'], function () {
-Route::get('list','PackAdminController@index');
-Route::get('{pack_id}', 'PackAdminController@getPackById');
-Route::delete('{pack_id}/delete', 'PackAdminController@delete');
-Route::put('add', 'PackAdminController@store');
+    Route::get('list', 'PackAdminController@index');
+    Route::get('{pack_id}', 'PackAdminController@getPackById');
+    Route::delete('{pack_id}/delete', 'PackAdminController@delete');
+    Route::put('add', 'PackAdminController@store');
 });
 
 //User API
@@ -159,7 +159,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::get('list', 'UserController@getUsersByCongress');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
-            Route::post('register/{strict_mode}', 'UserController@saveUser');
+            Route::post('register', 'UserController@saveUser');
             Route::put('edit', 'UserController@editerUserToCongress');
             Route::post('add-fast-user', 'UserController@addingFastUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
@@ -319,7 +319,7 @@ Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('or
 Route::get('encrypt/{password}', 'SharedController@encrypt');
 
 Route::group(['prefix' => 'resource'], function () {
-    Route::post('', 'ResourcesController@uploadResource')->middleware('super-admin');
+    Route::post('', 'ResourcesController@uploadResource')->middleware('admin');
 });
 
 Route::group(['prefix' => 'access'], function () {
