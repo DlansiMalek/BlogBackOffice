@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <link href="{{asset('/css/bootstrap.min.css')}}" rel="stylesheet">
     <style>
-        .table-div {
-
+        .body {
+            font-size: 0.75em;
         }
     </style>
 </head>
@@ -36,50 +36,41 @@
 
 {{--<table class="table table-bordered" style="table-layout: auto">--}}
 {{--    <div style="border-bottom:  1px gray solid;"></div>--}}
-<?php $oldkey = null?>
-@foreach(array_keys($accesses) as $start_date)
-    @if(!$oldkey || $accesses[$start_date][0]['day'] != $accesses[$oldkey][0]['day'])
-        <div style="width: 94.2%; border: 1px gray solid;padding: 10px;margin-bottom: 8px">
-            {{$accesses[$start_date][0]['day']}}
-        </div>
-    @endif
-    <div style="width: 100%;">
-        <nobr>
-            <div style="width: 10%; display: inline-block;border: 1px gray solid;padding: 10px;" class="table-div">
-                {{$accesses[$start_date][0]['time']}}
+<div class="body">
+    <?php $oldkey = null?>
+    @foreach(array_keys($accesses) as $start_date)
+        @if(!$oldkey || $accesses[$start_date][0]['day'] != $accesses[$oldkey][0]['day'])
+            <div style="width: 93.9%; border: 1px gray solid;padding: 10px;margin-bottom: 8px">
+                {{$accesses[$start_date][0]['day']}}
             </div>
-            @foreach($accesses[$start_date] as $access)
-                <div class="table-div"
-                     style="width:<?= (string)((84 - sizeof($accesses[$start_date]) * 2) / sizeof($accesses[$start_date])) . '%'?>; display: inline-block;border: 1px gray solid;padding: 10px; margin-left: -5px">{{$access['name']}}</div>
-            @endforeach
-        </nobr>
-    </div>
-
-    {{--        {{ (string)(80/sizeof($accesses[$start_date])).'%'}}--}}
-    <?php $oldkey = $start_date?>
-@endforeach
-@foreach(array_keys($accesses) as $start_date)
-    @if(!$oldkey || $accesses[$start_date][0]['day'] != $accesses[$oldkey][0]['day'])
-        <div style="width: 94.2%; border: 1px gray solid;padding: 10px;margin-bottom: 8px">
-            {{$accesses[$start_date][0]['day']}}
+        @endif
+        <div style="width: 100%;">
+            <nobr>
+                <div style="width: 10%; display: inline-block;border: 1px gray solid;padding: 10px;">
+                    {{$accesses[$start_date][0]['time']}}
+                </div>
+                @foreach($accesses[$start_date] as $access)
+                    <div style="width:<?= (string)((84 - sizeof($accesses[$start_date]) * 2) / sizeof($accesses[$start_date])) . '%'?>;
+                                 display: inline-block;border: 1px gray solid;padding: 10px; margin-left: -5px">
+                        <b>{{$access['name']}}</b>
+                        <br>
+{{--                        @foreach(array_keys($access['chairs']) as $index)--}}
+{{--                            {{$access['chairs'][$index]['first_name']}} {{$access['chairs'][$index]['last_name']}}--}}
+{{--                            @if ($index!=sizeof($access['chairs'])-1)--}}
+{{--                                ,--}}
+{{--                            @endif--}}
+{{--                        @endforeach--}}
+                    </div>
+                @endforeach
+            </nobr>
         </div>
-    @endif
-    <div style="width: 100%;">
-        <nobr>
-            <div style="width: 10%; display: inline-block;border: 1px gray solid;padding: 10px;" class="table-div">
-                {{$accesses[$start_date][0]['time']}}
-            </div>
-            @foreach($accesses[$start_date] as $access)
-                <div class="table-div"
-                     style="width:<?= (string)((84 - sizeof($accesses[$start_date]) * 2) / sizeof($accesses[$start_date])) . '%'?>; display: inline-block;border: 1px gray solid;padding: 10px; margin-left: -5px">{{$access['name']}}</div>
-            @endforeach
-        </nobr>
-    </div>
-    <?php $oldkey = $start_date?>
-@endforeach
 
-<script src="{{asset('js/jquery-3.4.1.min.js')}}"></script>
-<script src="{{asset('js/bootstrap.min.js')}}"></script>
+        {{--        {{ (string)(80/sizeof($accesses[$start_date])).'%'}}--}}
+        <?php $oldkey = $start_date?>
+    @endforeach
 
+    <script src="{{asset('js/jquery-3.4.1.min.js')}}"></script>
+    <script src="{{asset('js/bootstrap.min.js')}}"></script>
+</div>
 </body>
 </html>
