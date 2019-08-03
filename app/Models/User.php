@@ -54,7 +54,7 @@ class User extends Authenticatable
 
     function country()
     {
-        return $this->hasOne('App\Models\Country', 'country_id', 'country_id');
+        return $this->hasOne('App\Models\Country', 'alpha3code', 'country_id');
     }
 
     function responses()

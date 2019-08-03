@@ -13,7 +13,7 @@ class AccessVoteSeedTable extends Seeder
     public function run()
     {
         DB::table('Access_Vote')->insert([
-            'vote_id' => '5cc345391aa309001282a83c',
+            'vote_id' => '5b9bfcee33b1591300638b4d',
             'access_id' => 1,
             'congress_id' => 1
         ]);

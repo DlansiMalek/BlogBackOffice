@@ -14,7 +14,7 @@ class ConfigCongressSeedTable extends Seeder
     {
         DB::table('Config_Congress')->insert([
             'has_payment' => 1,
-            'voting_token' => "44dcda18-31d3-4b79-bcfe-aa2003e36a39",
+            'voting_token' => "feb1de9a-0e87-4606-bb18-7a44ef9d175c",
             'congress_id' => 1
         ]);
     }
