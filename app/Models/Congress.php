@@ -57,7 +57,7 @@ class Congress extends Model
 
     public function accesss()
     {
-        return $this->hasMany('App\Models\Access', "congress_id", "congress_id");
+        return $this->hasMany('App\Models\Access', "congress_id", "congress_id")->whereNull('parent_id')->orderBy('start_date');
     }
 
     public function packs()

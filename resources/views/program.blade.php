@@ -3,24 +3,27 @@
 <head>
     <meta charset="utf-8">
     <link href="{{asset('/css/bootstrap.min.css')}}" rel="stylesheet">
+    <style>
+        .table-div {
+
+        }
+    </style>
 </head>
-<body style="margin:5%">
-<div class="row">
-    <div style="border: 2px solid darkgray; border-radius:5px; padding: 1% 5%;" id="logo-title-container"
-         class="col-sm-6 offset-sm-3">
-        <div style="text-align:center; width: 100%;">
-            <b>{{$congress->name}}</b>
-            <br>
-            Tunis, Tunisie
-            {{-- TODO Add real location here--}}
-            <br>
-            @if($congress->start_date)
-                {{date('d/m/Y',strtotime($congress->start_date))}}
-                @if($congress->end_date)
-                    - {{date('d/m/Y',strtotime($congress->end_date))}}
-                @endif
+<body style="padding: 0px; margin: 0px;">
+<div style="border: 2px solid darkgray; border-radius:5px; padding: 1% 5%; width: 50%; margin:0% 25%"
+     id="title-container">
+    <div style="text-align:center; width: 100%;">
+        <b>{{$congress->name}}</b>
+        <br>
+        Tunis, Tunisie
+        {{-- TODO Add real location here--}}
+        <br>
+        @if($congress->start_date)
+            {{date('d/m/Y',strtotime($congress->start_date))}}
+            @if($congress->end_date)
+                - {{date('d/m/Y',strtotime($congress->end_date))}}
             @endif
-        </div>
+        @endif
     </div>
 </div>
 
@@ -30,6 +33,50 @@
              style="margin: 10px 0px"/>
     </div>
 @endif
+
+{{--<table class="table table-bordered" style="table-layout: auto">--}}
+{{--    <div style="border-bottom:  1px gray solid;"></div>--}}
+<?php $oldkey = null?>
+@foreach(array_keys($accesses) as $start_date)
+    @if(!$oldkey || $accesses[$start_date][0]['day'] != $accesses[$oldkey][0]['day'])
+        <div style="width: 94.2%; border: 1px gray solid;padding: 10px;margin-bottom: 8px">
+            {{$accesses[$start_date][0]['day']}}
+        </div>
+    @endif
+    <div style="width: 100%;">
+        <nobr>
+            <div style="width: 10%; display: inline-block;border: 1px gray solid;padding: 10px;" class="table-div">
+                {{$accesses[$start_date][0]['time']}}
+            </div>
+            @foreach($accesses[$start_date] as $access)
+                <div class="table-div"
+                     style="width:<?= (string)((84 - sizeof($accesses[$start_date]) * 2) / sizeof($accesses[$start_date])) . '%'?>; display: inline-block;border: 1px gray solid;padding: 10px; margin-left: -5px">{{$access['name']}}</div>
+            @endforeach
+        </nobr>
+    </div>
+
+    {{--        {{ (string)(80/sizeof($accesses[$start_date])).'%'}}--}}
+    <?php $oldkey = $start_date?>
+@endforeach
+@foreach(array_keys($accesses) as $start_date)
+    @if(!$oldkey || $accesses[$start_date][0]['day'] != $accesses[$oldkey][0]['day'])
+        <div style="width: 94.2%; border: 1px gray solid;padding: 10px;margin-bottom: 8px">
+            {{$accesses[$start_date][0]['day']}}
+        </div>
+    @endif
+    <div style="width: 100%;">
+        <nobr>
+            <div style="width: 10%; display: inline-block;border: 1px gray solid;padding: 10px;" class="table-div">
+                {{$accesses[$start_date][0]['time']}}
+            </div>
+            @foreach($accesses[$start_date] as $access)
+                <div class="table-div"
+                     style="width:<?= (string)((84 - sizeof($accesses[$start_date]) * 2) / sizeof($accesses[$start_date])) . '%'?>; display: inline-block;border: 1px gray solid;padding: 10px; margin-left: -5px">{{$access['name']}}</div>
+            @endforeach
+        </nobr>
+    </div>
+    <?php $oldkey = $start_date?>
+@endforeach
 
 <script src="{{asset('js/jquery-3.4.1.min.js')}}"></script>
 <script src="{{asset('js/bootstrap.min.js')}}"></script>
