@@ -144,6 +144,9 @@ Route::get('{pack_id}/modules', 'PackAdminController@getpackmodules');
 Route::get('modules/list','PackAdminController@getmodules');
 Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
 
+Route::get('clients/all','AdminController@getClients');
+Route::delete('admins/{adminId}/delete', 'AdminController@delete');
+Route::post('admins/add/{pack_id}', 'AdminController@store');
 });
 
 //User API

@@ -16,4 +16,10 @@ class PackAdmin extends Model
     {
         return $this->belongsToMany('App\Models\Module', 'packadmin_module', 'pack_id','module_id');
     }
+    public function PackPayments(){
+        return $this->hasMany('App\Models\PaymentAdmin','pack_id','pack_id');
+    }
+    public function PackHistories(){
+        return $this->hasMany('App\Models\HistoryPack','pack_id','pack_id');
+    }
 }

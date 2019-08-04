@@ -49,8 +49,37 @@ class AdminServices
             ->with(['admin_congresses.congress', 'admin_congresses.privilege'])
             ->first();
     }
+    public function getClients()
+    {
+        return Admin::where("privilege_id", "=", 1)
+            ->get();
+    }
+    public function AddAdmin($request ,$admin){
+        $admin->name = $request->input('name');
+        $admin->mobile = $request->input('mobile');
+        $admin->email = $request->input('email');
+        $admin->privilege_id = 1 ;
+        $admin->passwordDecrypt = $request->input('passwordDecrypt');
+        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        $admin->save();
+        return $admin;
+    }
+    public function addHistory($history,$admin,$pack){
+        $history->admin_id = $admin->admin_id;
+        $history->pack_id = $pack->pack_id;
+        $history->status = "en cours";
+        $history->save();}
+    public function addPayment($payment,$admin,$pack){
+        $payment->admin_id = $admin->admin_id;
+        $payment->pack_id = $pack->pack_id;
+        $payment->isPaid = false;
+        $payment->reference = "";
+        $payment->authorization = "";
+        $payment->path = "";
+        $payment->save();
+    }
 
-    public function getAdminCongresses(Admin $admin)
+        public function getAdminCongresses(Admin $admin)
     {
         return Congress::whereHas('admin_congresses', function ($query) use ($admin) {
             $query->where('admin_id', '=', $admin->admin_id);

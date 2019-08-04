@@ -23,7 +23,7 @@ class Admin extends Authenticatable implements JWTSubject
 {
     protected $table = 'Admin';
     protected $primaryKey = 'admin_id';
-    protected $fillable = ['email', 'mobile', 'name', "passwordDecrypt", 'voting_token'];
+    protected $fillable = ['email', 'mobile', 'name', "passwordDecrypt","privilege_id", 'voting_token'];
 
     protected $hidden = ["passwordDecrypt", "password"];
     protected $dates = ['created_at', 'updated_at'];
@@ -40,6 +40,12 @@ class Admin extends Authenticatable implements JWTSubject
     }
     public function payments(){
         return $this->hasMany('App\Models\Payment','admin_id','admin_id');
+    }
+    public function AdminPayments(){
+        return $this->hasMany('App\Models\PaymentAdmin','admin_id','admin_id');
+    }
+    public function AdminHistories(){
+        return $this->hasMany('App\Models\HistoryPack','admin_id','admin_id');
     }
 
     public function getJWTIdentifier()
