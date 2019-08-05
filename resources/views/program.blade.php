@@ -84,6 +84,12 @@
                             @endforeach
                         </ul>
                     @endif
+                    @if($access['room'])
+                        <b>Salle: {{$access['room']}}</b>
+                    <br>
+                        <b>Se termine à: {{date('H:i', strtotime($access['end_date']))}}
+                        </b>
+                    @endif
                 </div>
             @endforeach
         </div>
