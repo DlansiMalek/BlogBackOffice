@@ -7,6 +7,11 @@
         .body {
             font-size: 0.75em;
         }
+
+        ul, li {
+            margin: 0px 5px;
+            padding: 0;
+        }
     </style>
 </head>
 <body style="padding: 0px; margin: 0px;">
@@ -40,32 +45,49 @@
     <?php $oldkey = null?>
     @foreach(array_keys($accesses) as $start_date)
         @if(!$oldkey || $accesses[$start_date][0]['day'] != $accesses[$oldkey][0]['day'])
-            <div style="width: 93.9%; border: 1px gray solid;padding: 10px;margin-bottom: 8px">
+            <br>
+            <div style="width: 100%; border: 1px gray solid;padding: 10px;">
                 {{$accesses[$start_date][0]['day']}}
             </div>
         @endif
-        <div style="width: 100%;">
-            <nobr>
-                <div style="width: 10%; display: inline-block;border: 1px gray solid;padding: 10px;">
-                    {{$accesses[$start_date][0]['time']}}
-                </div>
-                @foreach($accesses[$start_date] as $access)
-                    <div style="width:<?= (string)((84 - sizeof($accesses[$start_date]) * 2) / sizeof($accesses[$start_date])) . '%'?>;
-                                 display: inline-block;border: 1px gray solid;padding: 10px; margin-left: -5px">
-                        <b>{{$access['name']}}</b>
+        <div style="width: 100%; display: table;">
+            <div style="width: 10%; display: table-cell;border: 1px gray solid;padding: 10px;">
+                {{$accesses[$start_date][0]['time']}}
+            </div>
+            @foreach($accesses[$start_date] as $access)
+                <div style="display: table-cell;border: 1px gray solid;padding: 10px; margin-left: -5px">
+                    <b>{{$access['name']}}</b>
+                    @if(sizeof($access['chairs']))
+                        :
+                    @endif
+                    @foreach(array_keys($access['chairs']) as $index)
+                        {{$access['chairs'][$index]['first_name']}} {{$access['chairs'][$index]['last_name']}}
+                        @if ($index!=sizeof($access['chairs'])-1)
+                            ,
+                        @endif
+                    @endforeach
+                    @if(sizeof($access['sub_accesses']))
                         <br>
-{{--                        @foreach(array_keys($access['chairs']) as $index)--}}
-{{--                            {{$access['chairs'][$index]['first_name']}} {{$access['chairs'][$index]['last_name']}}--}}
-{{--                            @if ($index!=sizeof($access['chairs'])-1)--}}
-{{--                                ,--}}
-{{--                            @endif--}}
-{{--                        @endforeach--}}
-                    </div>
-                @endforeach
-            </nobr>
+                        <ul>
+                            @foreach($access['sub_accesses'] as $sub)
+                                <li>{{$sub['name']}}
+                                    @if(sizeof($sub['chairs']))
+                                        :
+                                    @endif
+                                    @foreach(array_keys($sub['chairs']) as $index)
+                                        {{$sub['chairs'][$index]['first_name']}} {{$sub['chairs'][$index]['last_name']}}
+                                        @if ($index!=sizeof($sub['chairs'])-1)
+                                            ,
+                                        @endif
+                                    @endforeach
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            @endforeach
         </div>
 
-        {{--        {{ (string)(80/sizeof($accesses[$start_date])).'%'}}--}}
         <?php $oldkey = $start_date?>
     @endforeach
 
