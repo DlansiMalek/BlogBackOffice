@@ -19,5 +19,21 @@ class PackAdminSeedTable extends Seeder
             'price' => 30.000,
             'nbr_events' => 5
         ]);
+        DB::table('Pack_Admin')->insert([
+            'name' => 'Pack Admin test',
+            'type' => 'Duree',
+            'capacity' => 50,
+            'price' => 20.000,
+            'nbr_days' => 5
+        ]);
+        DB::table('Pack_Admin')->insert([
+            'name' => 'Pack Admin test',
+            'type' => 'Demo',
+            'capacity' => -1,
+            'price' => 0,
+            'nbr_events' => 5
+        ]);
+
     }
+
 }

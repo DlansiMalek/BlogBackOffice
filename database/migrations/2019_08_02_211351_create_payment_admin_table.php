@@ -13,7 +13,7 @@ class CreatePaymentAdminTable extends Migration
      */
     public function up()
     {
-        Schema::create('payment_admin', function (Blueprint $table) {
+        Schema::create('Payment_admin', function (Blueprint $table) {
             $table->bigIncrements('payment_id');
             $table->boolean('isPaid');
             $table->string('reference');
@@ -35,6 +35,10 @@ class CreatePaymentAdminTable extends Migration
      */
     public function down()
     {
+        Schema::table('payment_admin', function (Blueprint $table) {
+            $table->dropForeign(['pack_id']);
+            $table->dropForeign(['admin_id']);
+        });
         Schema::dropIfExists('payement_admin');
     }
 }

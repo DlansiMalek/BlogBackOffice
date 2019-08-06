@@ -59,7 +59,7 @@ class AdminServices
         $admin->mobile = $request->input('mobile');
         $admin->email = $request->input('email');
         $admin->privilege_id = 1 ;
-        $admin->passwordDecrypt = $request->input('passwordDecrypt');
+        $admin->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
         $admin->save();
         return $admin;

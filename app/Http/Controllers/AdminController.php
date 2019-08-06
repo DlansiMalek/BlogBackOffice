@@ -654,10 +654,9 @@ class AdminController extends Controller
 
     public function store(Request $request,$pack_id)
     {
-        if (!$request->has(['name', 'mobile','email','passwordDecrypt'])) {
+        if (!$request->has(['name', 'mobile','email'])) {
             return response()->json(['response' => 'invalid request',
-                'content' => ['name', 'mobile', 'email',
-                    'passwordDecrypt']], 400);
+                'content' => ['name', 'mobile', 'email']], 400);
         }
         $admin =  new Admin();
         $pack = $this->packAdminServices->getPackById($pack_id);
