@@ -32,6 +32,9 @@ class CreateFeedbackValueTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('feedback_value');
+        Schema::table('Feedback_Value', function (Blueprint $table) {
+            $table->dropForeign(['feedback_question_id']);
+        });
+        Schema::dropIfExists('Feedback_Value');
     }
 }

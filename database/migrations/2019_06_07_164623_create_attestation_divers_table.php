@@ -37,6 +37,10 @@ class CreateAttestationDiversTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attestation_divers');
+        Schema::table('Attestation_Divers', function (Blueprint $table) {
+            $table->dropForeign(['attestation_type_id']);
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Attestation_Divers');
     }
 }

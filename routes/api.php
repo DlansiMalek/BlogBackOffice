@@ -43,6 +43,7 @@ Route::group(['prefix' => 'mobile'], function () {
 
 
 Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
+Route::post('auth/forgetPassword', 'Auth\LoginController@forgetPassword');
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
@@ -86,7 +87,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::group(["prefix" => 'form'], function () {
         Route::get('input-types', 'RegistrationFormController@getInputTypes');
         Route::get('{congress_id}', 'RegistrationFormController@getForm');
-        Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('super-admin');
+        Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
     });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
@@ -101,9 +102,13 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
         Route::post('/upload-logo', 'CongressController@uploadLogo');
         Route::post('/upload-banner', 'CongressController@uploadBanner');
+        Route::get('/logo', 'CongressController@getLogo');
+        Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
+
+        Route::get('program_pdf','PDFController@generateProgramPDF');
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
@@ -339,15 +344,19 @@ Route::group(['prefix' => 'access'], function () {
 Route::group(["prefix" => "user-app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
     Route::get('/congress', 'CongressController@getAllCongresses');
+    Route::get('/congress/{congress_id}', 'CongressController@getCongressById');
+    Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');
     Route::post('/presence', 'UserController@getAllPresenceStatus');
     Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
 //    Route::get("quiz", "VotingController@getListPolls");
-    Route::get('/quiz/{congress_id}', 'VotingController@getQuiz');
+    // Route::get('/quiz/{congress_id}', 'VotingController@getQuiz');
     Route::post('/quiz', 'VotingController@getQuiz');
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');
     Route::get('/like/{user_id}/{access_id}', 'LikeController@like');
     Route::post('/participant-count', 'CongressController@getParticipantsCounts');
+    Route::post('/profile-pic/{user_id}', 'UserController@uploadProfilePic');
+    Route::get('/profile-pic/{user_id}', 'UserController@getProfilePic');
 });

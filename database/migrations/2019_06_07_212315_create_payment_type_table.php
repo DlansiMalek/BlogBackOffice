@@ -17,6 +17,9 @@ class CreatePaymentTypeTable extends Migration
             $table->increments('payment_type_id');
             $table->string('name');
             $table->string('display_name');
+
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -27,6 +30,6 @@ class CreatePaymentTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payment_type');
+        Schema::dropIfExists('Payment_Type');
     }
 }

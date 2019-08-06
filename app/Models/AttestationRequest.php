@@ -17,7 +17,7 @@ class AttestationRequest extends Model
     protected $table = 'Attestation_Request';
     protected $primaryKey = 'attestation_request_id';
     protected $fillable = ['done','access_id','user_id','congress_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function access(){
         return $this->hasOne("App\Models\Access",'access_id','access_id');

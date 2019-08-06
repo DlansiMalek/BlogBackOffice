@@ -13,15 +13,16 @@ class CreatePacksTable extends Migration
      */
     public function up()
     {
-        Schema::create('pack_admin', function (Blueprint $table) {
-            $table->increments('pack_id');
+        Schema::create('Pack_Admin', function (Blueprint $table) {
+            $table->increments('pack_admin_id');
             $table->string('name');
             $table->set('type', ['Demo', 'Event','Duree']);
             $table->smallInteger('capacity');           //-1 for unlimitted
             $table->double('price')->default(0);        // 0 if demo
             $table->tinyInteger('nbr_days')->default(0);
-            $table->tinyInteger('nbr_events')->default(0);	
-            $table->softDeletes();	
+            $table->tinyInteger('nbr_events')->default(0);
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -33,6 +34,6 @@ class CreatePacksTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('packs');
+        Schema::dropIfExists('Pack_Admin');
     }
 }

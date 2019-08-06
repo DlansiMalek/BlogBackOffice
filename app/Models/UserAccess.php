@@ -17,7 +17,7 @@ class UserAccess extends Model
     protected $table = 'User_Access';
     protected $primaryKey = 'user_access_id';
     protected $fillable = ['user_id', 'access_id', 'isPresent'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     public function user()
     {

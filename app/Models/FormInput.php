@@ -16,7 +16,7 @@ class FormInput extends Model
     protected $table = 'Form_Input';
     protected $primaryKey = 'form_input_id';
     protected $fillable = ['label','congress_id','form_input_type_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function type(){
         return $this->hasOne("App\Models\FormInputType","form_input_type_id","form_input_type_id");

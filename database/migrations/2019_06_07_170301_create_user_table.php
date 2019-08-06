@@ -28,8 +28,10 @@ class CreateUserTable extends Migration
             $table->string('qr_code')->nullable()->default(null);
             $table->string("rfid")->nullable()->default(null);
 
-            $table->integer('country_id')->unsigned()->nullable()->default(null);
-            $table->foreign('country_id')->references('country_id')->on('Country')->onDelete('cascade');
+            $table->string('profile_pic')->nullable()->default(null);
+
+            $table->string('country_id')->nullable()->default(null);
+            $table->foreign('country_id')->references('alpha3code')->on('Country')->onDelete('set null');
 
             $table->softDeletes();
             $table->timestamps();
@@ -43,6 +45,9 @@ class CreateUserTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user');
+        Schema::table('User', function (Blueprint $table) {
+            $table->dropForeign(['country_id']);
+        });
+        Schema::dropIfExists('User');
     }
 }

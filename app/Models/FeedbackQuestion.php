@@ -16,7 +16,7 @@ class FeedbackQuestion extends Model
     protected $table = 'Feedback_Question';
     protected $primaryKey = 'feedback_question_id';
     protected $fillable = ['question','congress_id','access_id', 'isText'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function values(){
         return $this->hasMany("App\Models\FeedbackValue","feedback_question_id","feedback_question_id")->orderBy('order');

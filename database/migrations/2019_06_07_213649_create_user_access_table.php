@@ -23,6 +23,7 @@ class CreateUserAccessTable extends Migration
             $table->unsignedInteger('access_id');
             $table->foreign('access_id')->references('access_id')->on('Access')->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -34,6 +35,10 @@ class CreateUserAccessTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_access');
+        Schema::table('User_Access', function (Blueprint $table) {
+            $table->dropForeign(['access_id']);
+            $table->dropForeign(['user_id']);
+        });
+        Schema::dropIfExists('User_Access');
     }
 }

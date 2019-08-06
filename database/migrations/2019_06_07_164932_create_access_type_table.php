@@ -16,6 +16,9 @@ class CreateAccessTypeTable extends Migration
         Schema::create('Access_Type', function (Blueprint $table) {
             $table->increments('access_type_id');
             $table->string('label');
+
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -26,6 +29,6 @@ class CreateAccessTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_type');
+        Schema::dropIfExists('Access_Type');
     }
 }

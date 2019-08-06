@@ -18,7 +18,7 @@ class RegistrationFormServices
 
     public function getInputTypes()
     {
-        return FormInputType::get();
+        return FormInputType::all();
     }
 
     public function setForm($newInputs, $congressId)

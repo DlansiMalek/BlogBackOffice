@@ -18,12 +18,13 @@ class CreateAccessVoteTable extends Migration
             $table->string('vote_id');
 
             $table->unsignedInteger('access_id');
-            $table->foreign('access_id')->references('access_id')->on('Access')->nullable()->onDelete('cascade');
+            $table->foreign('access_id')->references('access_id')->on('Access')->onDelete('cascade');
 
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
 
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -35,6 +36,10 @@ class CreateAccessVoteTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_vote');
+        Schema::table('Access_Vote', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['access_id']);
+        });
+        Schema::dropIfExists('Access_Vote');
     }
 }

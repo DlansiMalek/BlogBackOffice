@@ -40,6 +40,12 @@ class CreateAdminCongressTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('admin_congress');
+        Schema::table('Admin_Congress', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['admin_id']);
+            $table->dropForeign(['organization_id']);
+            $table->dropForeign(['privilege_id']);
+        });
+        Schema::dropIfExists('Admin_Congress');
     }
 }

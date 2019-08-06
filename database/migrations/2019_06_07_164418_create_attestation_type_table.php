@@ -29,6 +29,6 @@ class CreateAttestationTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attestation_type');
+        Schema::dropIfExists('Attestation_Type');
     }
 }

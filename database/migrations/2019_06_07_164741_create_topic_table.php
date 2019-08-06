@@ -16,6 +16,9 @@ class CreateTopicTable extends Migration
         Schema::create('Topic', function (Blueprint $table) {
             $table->increments('topic_id');
             $table->string('label');
+
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -26,6 +29,6 @@ class CreateTopicTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('topic');
+        Schema::dropIfExists('Topic');
     }
 }

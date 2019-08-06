@@ -13,28 +13,40 @@ class PrivilegeTableSeeder extends Seeder
     public function run()
     {
         DB::table('Privilege')->insert([
-            'name' => 'Super Admin'
+            'privilege_id' => 1,
+            'name' => 'Admin'
         ]);
         DB::table('Privilege')->insert([
+            'privilege_id' => 2,
             'name' => 'Organisateur'
         ]);
         DB::table('Privilege')->insert([
+            'privilege_id' => 3,
             'name' => 'Participant'
         ]);
         DB::table('Privilege')->insert([
-            'name' => 'Conférencier'
-        ]);
-        DB::table('Privilege')->insert([
+            'privilege_id' => 5,
             'name' => 'Modérateur'
         ]);
         DB::table('Privilege')->insert([
+            'privilege_id' => 6,
             'name' => 'Invité'
         ]);
         DB::table('Privilege')->insert([
-            'name' => 'Organisme (laboratoire, société, etc...)'
+            'privilege_id' => 7,
+            'name' => 'Organisme (laboratoire, société, etc)'
         ]);
         DB::table('Privilege')->insert([
-            'name' => 'Orateur'
+            'privilege_id' => 8,
+            'name' => 'Conférencier/Orateur'
+        ]);
+        DB::table('Privilege')->insert([
+            'privilege_id' => 9,
+            'name' => 'Super Admin'
+        ]);
+        DB::table('Privilege')->insert([
+            'privilege_id' => 10,
+            'name' => 'Marketing'
         ]);
     }
 }

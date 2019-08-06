@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateFormInputTypeTable extends Migration
 {
@@ -17,6 +17,9 @@ class CreateFormInputTypeTable extends Migration
             $table->increments("form_input_type_id");
             $table->string("name");
             $table->string("display_name");
+
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -27,6 +30,6 @@ class CreateFormInputTypeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('form_input_type');
+        Schema::dropIfExists('Form_Input_Type');
     }
 }

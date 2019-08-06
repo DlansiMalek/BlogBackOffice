@@ -34,6 +34,10 @@ class CreateAccessChairTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access_chair');
+        Schema::table('Access_Chair', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['access_id']);
+        });
+        Schema::dropIfExists('Access_Chair');
     }
 }

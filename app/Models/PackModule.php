@@ -10,5 +10,5 @@ class PackModule extends Model
     protected $fillable = ['pack_id', 'module_id'];
 
     public $timestamps = true;
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 }

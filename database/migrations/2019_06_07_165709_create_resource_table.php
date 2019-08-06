@@ -19,6 +19,8 @@ class CreateResourceTable extends Migration
 
             $table->unsignedInteger('access_id')->nullable()->default(null);
             $table->foreign('access_id')->references('access_id')->on('Access');
+
+
             $table->softDeletes();
             $table->timestamps();
         });
@@ -31,6 +33,9 @@ class CreateResourceTable extends Migration
      */
     public function down()
     {
+        Schema::table('Resource', function (Blueprint $table) {
+            $table->dropForeign(['access_id']);
+        });
         Schema::dropIfExists('Resource');
     }
 }

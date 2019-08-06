@@ -16,7 +16,12 @@ class CreateAttestationRequestTable extends Migration
         Schema::create('Attestation_Request', function (Blueprint $table) {
             $table->increments('attestation_request_id');
 
-            $table->unsignedTinyInteger('done');
+            $table->tinyInteger('done')
+                ->default(0);
+
+
+            $table->unsignedInteger('user_id')->nullable()->default(null);
+            $table->foreign('user_id')->references('user_id')->on('User');
 
             $table->unsignedInteger('congress_id')->nullable()->default(null);
             $table->foreign('congress_id')->references('congress_id')->on('Congress');
@@ -25,6 +30,7 @@ class CreateAttestationRequestTable extends Migration
             $table->foreign('access_id')->references('access_id')->on('Access');
 
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -36,6 +42,11 @@ class CreateAttestationRequestTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attestation_request');
+        Schema::table('Attestation_Request', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['access_id']);
+        });
+        Schema::dropIfExists('Attestation_Request');
     }
 }

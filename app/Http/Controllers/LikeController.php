@@ -23,7 +23,7 @@ class LikeController extends Controller
         }
         else {
             $this->likeServices->like($user_id, $access_id);
-            return response()->json(['response' => 'liked'], 200);
+            return response()->json(['resp  onse' => 'liked'], 200);
         }
     }
 

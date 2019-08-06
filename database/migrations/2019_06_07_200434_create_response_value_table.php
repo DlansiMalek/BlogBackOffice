@@ -15,8 +15,6 @@ class CreateResponseValueTable extends Migration
     {
         Schema::create('Response_Value', function (Blueprint $table) {
             $table->increments('response_value_id');
-            $table->string('response');
-
 
             $table->unsignedInteger('form_input_response_id');
             $table->foreign('form_input_response_id')->references('form_input_response_id')->on("Form_Input_Response")->onDelete('cascade');
@@ -37,6 +35,10 @@ class CreateResponseValueTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('form_input_response');
+        Schema::table('Response_Value', function (Blueprint $table) {
+            $table->dropForeign(['form_input_response_id']);
+            $table->dropForeign(['form_input_value_id']);
+        });
+        Schema::dropIfExists('Response_Value');
     }
 }

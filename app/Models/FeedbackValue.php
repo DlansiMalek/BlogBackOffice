@@ -16,7 +16,7 @@ class FeedbackValue extends Model
     protected $table = 'Feedback_Value';
     protected $primaryKey = 'feedback_value_id';
     protected $fillable = ['value','feedback_question_id','order'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function responses(){
         return $this->hasMany('App\Models\FeedbackResponse','feedback_question_value_id','feedback_question_value_id');

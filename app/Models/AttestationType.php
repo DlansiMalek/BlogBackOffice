@@ -16,7 +16,7 @@ class AttestationType extends Model
     protected $table = 'Attestation_Type';
     protected $primaryKey = 'attestation_type_id';
     protected $fillable = ['label'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
 
     public function attestations()

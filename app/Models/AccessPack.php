@@ -18,6 +18,6 @@ class AccessPack extends Model
     protected $fillable = ['access_pack_id', 'access_id', 'pack_id'];
 
     public $timestamps = true;
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
 }

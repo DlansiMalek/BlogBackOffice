@@ -15,6 +15,8 @@ class PaymentType extends Model
     public $timestamps = true;
     protected $table = 'Payment_Type';
     protected $primaryKey = 'payment_type_id';
-    protected $fillable = ['name','display_name'];
+    protected $fillable = ['name', 'display_name'];
+
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 }

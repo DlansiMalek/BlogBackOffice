@@ -13,10 +13,11 @@ class CreateModulesTable extends Migration
      */
     public function up()
     {
-        Schema::create('module', function (Blueprint $table) {
+        Schema::create('Module', function (Blueprint $table) {
             $table->increments('module_id');
             $table->set('type', ['Participants', 'E-mailing','Badge','Organization ','Vote','Sondage','All']);
             $table->text('description')->nullable()->default(null);
+
             $table->softDeletes();
             $table->timestamps();
         });
@@ -29,6 +30,6 @@ class CreateModulesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('modules');
+        Schema::dropIfExists('Module');
     }
 }

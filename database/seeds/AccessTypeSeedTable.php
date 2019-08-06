@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class AccessTypeSeeder extends Seeder
+class AccessTypeSeedTable extends Seeder
 {
     /**
      * Run the database seeds.
@@ -13,11 +13,11 @@ class AccessTypeSeeder extends Seeder
     public function run()
     {
         DB::table('Access_Type')->insert([
-            'label' => 'Session (accessible par tous les participants)',
+            'label' => 'Session',
         ]);
 
         DB::table('Access_Type')->insert([
-            'label' => 'Privé (accessible par les participants séléctionnés)',
+            'label' => 'Atelier',
         ]);
     }
 }

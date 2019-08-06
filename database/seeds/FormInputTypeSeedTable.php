@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class FormInputTypeSeeder extends Seeder
+class FormInputTypeSeedTable extends Seeder
 {
     /**
      * Run the database seeds.
@@ -49,6 +49,8 @@ class FormInputTypeSeeder extends Seeder
             'display_name' => 'Liste déroulante',
         ]);
 
+
+        //Id 8
         DB::table('Form_Input_Type')->insert([
             'name' => 'select',
             'display_name' => 'Liste déroulante avec choix multiple',
@@ -58,15 +60,5 @@ class FormInputTypeSeeder extends Seeder
             'name' => 'Radio',
             'display_name' => 'radio',
         ]);
-//
-//        DB::table('Form_Input_Type')->insert([
-//            'name' => 'file',
-//            'display_name' => 'Fichier',
-//
-//        ]);
-//
-//        DB::table('Form_Input_Type')->insert([
-//            'name' => 'Fichiers multiples',
-//        ]);
     }
 }

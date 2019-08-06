@@ -10,7 +10,7 @@ class AccessSpeaker extends Model
     protected $table = 'Access_Speaker';
     protected $primaryKey = 'speaker_access_id';
     protected $fillable = ['user_id', 'access_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function user()
     {

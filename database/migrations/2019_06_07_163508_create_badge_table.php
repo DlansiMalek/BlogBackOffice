@@ -36,6 +36,11 @@ class CreateBadgeTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('badge');
+
+        Schema::table('Badge', function (Blueprint $table) {
+            $table->dropForeign(['privilege_id']);
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Badge');
     }
 }

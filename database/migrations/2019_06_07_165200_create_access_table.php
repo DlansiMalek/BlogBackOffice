@@ -60,6 +60,12 @@ class CreateAccessTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('access');
+        Schema::table('Access', function (Blueprint $table) {
+            $table->dropForeign(['access_type_id']);
+            $table->dropForeign(['topic_id']);
+            $table->dropForeign(['parent_id']);
+            $table->dropForeign(['congress_id']);
+        });
+        Schema::dropIfExists('Access');
     }
 }

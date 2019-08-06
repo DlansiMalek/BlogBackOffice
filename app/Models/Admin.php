@@ -26,7 +26,7 @@ class Admin extends Authenticatable implements JWTSubject
     protected $fillable = ['email', 'mobile', 'name', "passwordDecrypt","privilege_id", 'voting_token'];
 
     protected $hidden = ["passwordDecrypt", "password"];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
     public $timestamps = true;
 
     public function congresses()

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateUserMailTable extends Migration
 {
@@ -36,6 +36,10 @@ class CreateUserMailTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_mail');
+        Schema::table('User_Mail', function (Blueprint $table) {
+            $table->dropForeign(['mail_id']);
+            $table->dropForeign(['user_id']);
+        });
+        Schema::dropIfExists('User_Mail');
     }
 }

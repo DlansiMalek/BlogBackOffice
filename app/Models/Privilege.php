@@ -17,6 +17,8 @@ class Privilege extends Model
     protected $primaryKey = 'privilege_id';
     protected $fillable = ['name'];
 
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
+
     public $timestamps = true;
 
     public function badges()

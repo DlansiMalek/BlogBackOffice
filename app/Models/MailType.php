@@ -17,6 +17,8 @@ class MailType extends Model
     protected $primaryKey = 'mail_type_id';
     protected $fillable = ['name', 'display_name'];
 
+    protected $dates = ['created_at', 'updated_at','deleted_at'];
+
     public function mails()
     {
         return $this->hasMany(Mail::class, 'mail_type_id', 'mail_type_id');

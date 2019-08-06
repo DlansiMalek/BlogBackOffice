@@ -16,7 +16,7 @@ class Pack extends Model
     protected $table = 'Pack';
     protected $primaryKey = 'pack_id';
     protected $fillable = ['label', 'description', 'price', 'congress_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     function participants()
     {

@@ -33,6 +33,6 @@ class CreateAttestationAccessTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attestation_access');
+        Schema::dropIfExists('Attestation_Access');
     }
 }

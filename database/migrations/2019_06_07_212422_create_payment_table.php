@@ -16,14 +16,16 @@ class CreatePaymentTable extends Migration
         Schema::create('Payment', function (Blueprint $table) {
             $table->increments('payment_id');
             $table->unsignedTinyInteger('isPaid')->default(0);
-            $table->string('path');
-            $table->string('reference');
-            $table->string('authorization');
+            $table->string('path')->nullable()->default(null);
+            $table->string('reference')
+                ->nullable()->default(null);
+            $table->string('authorization')
+                ->nullable()->default(null);
             $table->unsignedTinyInteger('free')->default(0);
             $table->double('price');
 
-            $table->unsignedInteger('payment_type_id');
-            $table->foreign('payment_type_id')->references('payment_type_id')->on('Payment_Type');
+            $table->unsignedInteger('payment_type_id')->nullable()->default(null);
+            $table->foreign('payment_type_id')->references('payment_type_id')->on('Payment_Type')->onDelete('set null');
 
 
             $table->unsignedInteger('user_id')->nullable()->default(null);
@@ -32,8 +34,6 @@ class CreatePaymentTable extends Migration
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
 
-            $table->unsignedInteger('admin_id')->nullable()->default(null);
-            $table->foreign('admin_id')->references('admin_id')->on('Admin')->onDelete('cascade');
 
             $table->softDeletes();
             $table->timestamps();
@@ -47,6 +47,11 @@ class CreatePaymentTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payment');
+        Schema::table('Payment', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['payment_type_id']);
+        });
+        Schema::dropIfExists('Payment');
     }
 }
