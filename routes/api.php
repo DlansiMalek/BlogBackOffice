@@ -152,6 +152,8 @@ Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoP
 Route::get('clients/all','AdminController@getClients');
 Route::delete('admins/{adminId}/delete', 'AdminController@delete');
 Route::post('admins/add/{pack_id}', 'AdminController@store');
+Route::put('admins/{admin_id}/update', 'AdminController@update');
+
 });
 
 //User API

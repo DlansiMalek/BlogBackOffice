@@ -667,4 +667,12 @@ class AdminController extends Controller
         $this->adminServices->addHistory($history,$admin,$pack);
         return response()->json(['response' => 'admin added with payment and history'], 202);
     }
+    public function update(Request $request , $admin_id)
+    {
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if (!$admin) {
+            return response()->json(['response' => 'Admin not found'], 404);
+        }
+        return response()->json($this->adminServices->updateAdmin($request, $admin), 202);
+    }
 }

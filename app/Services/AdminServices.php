@@ -189,5 +189,17 @@ class AdminServices
         if (!$admin = $this->getAdminById($request->user()['admin_id'])) return null;
         return $admin;
     }
+    public function updateAdmin(Request $request, $updateAdmin) {
+        if (!$updateAdmin) {
+            return null;
+        }
+        $updateAdmin->name = $request->input('name');
+        $updateAdmin->email = $request->input('email');
+        $updateAdmin->mobile = $request->input('mobile');
+        $updateAdmin->name = $request->input('name');
+
+        $updateAdmin->update();
+        return $updateAdmin;
+    }
 
 }
