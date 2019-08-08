@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PackAdmin extends Model
 {
-    protected $table = 'pack_admin';
+    protected $table = 'Pack_Admin';
     protected $primaryKey = 'pack_id';
     protected $fillable = ['name','type','capacity','price','nbr_days','nbr_events'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

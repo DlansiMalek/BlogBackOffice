@@ -14,19 +14,19 @@ class PaymentAdminSeedTable extends Seeder
         //
         DB::table('Payment_admin')->insert([
             'isPaid' => 0,
-            'reference' => '',
-            'authorization' => '',
+            'reference' => 'testReference',
+            'authorization' => 'testauth ',
             'price' => 50,
-            'path' => '' ,
+            'path' => '/path/to/file ' ,
             'pack_id' => 1 ,
             'admin_id' => 3
         ]);
         DB::table('Payment_admin')->insert([
             'isPaid' => 0,
-            'reference' => '',
-            'authorization' => '',
+            'reference' => 'testReference2',
+            'authorization' => 'testauth 2',
             'price' => 60,
-            'path' => '' ,
+            'path' => '/path/to/file2 ' ,
             'pack_id' => 2 ,
             'admin_id' => 3
         ]);
