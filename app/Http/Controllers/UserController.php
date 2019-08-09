@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 
 use App\Models\AttestationRequest;
-use App\Models\User;
-use App\Models\UserCongress;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -853,7 +851,7 @@ class UserController extends Controller
 
     }
 
-    function userConnect($qrCode)
+        function userConnect($qrCode)
     {
         $user = $this->userServices->getUserByQrCode($qrCode);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
