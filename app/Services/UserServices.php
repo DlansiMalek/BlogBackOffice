@@ -313,6 +313,16 @@ class UserServices
         }
     }
 
+    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)
+    {
+        return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('show_in_register', '=', $showInRegister);
+        }])
+            ->where("user_id", "=", $userId)
+            ->first();
+    }
+
     public function getUserById($user_id)
     {
         return User::with(["accesses"])
@@ -599,6 +609,9 @@ class UserServices
 
     public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $link = null, $userMail = null)
     {
+        unset($user->price);
+
+        //TODO detect email sended user
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
 
@@ -708,14 +721,14 @@ class UserServices
 
                 $reponse->user_id = $userId;
                 $reponse->form_input_id = $req['form_input_id'];
-                $reponse->reponse = null;
+                $reponse->response = null;
                 $reponse->save();
 
                 continue;
             } else {
                 if (in_array($req['type']['name'], ['checklist', 'radio', 'select', 'multiselect']))
-                    $reponse->reponse = "";
-                else $reponse->reponse = $req['response'];
+                    $reponse->response = "";
+                else $reponse->response = $req['response'];
             }
 
             $reponse->user_id = $userId;
@@ -724,7 +737,7 @@ class UserServices
             if (in_array($req['type']['name'], ['checklist', 'multiselect']))
                 foreach ($req['response'] as $val) {
                     $repVal = new ResponseValue();
-                    $repVal->form = $reponse->form_input_reponse_id;
+                    $repVal->form = $reponse->form_input_response_id;
                     $repVal->form_input_value_id = $val;
                     if (!$val)
                         continue;

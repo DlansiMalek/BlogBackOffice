@@ -300,17 +300,17 @@ class CongressServices
     function renderMail($template, $congress, $participant, $link, $organization)
     {
         $accesses = "";
-        if ($participant && sizeof($participant->accesss) > 0) {
+        if ($participant && sizeof($participant->accesses) > 0) {
             $accesses = "";
-            foreach ($participant->accesss as $access) {
+            foreach ($participant->accesses as $access) {
                 $accesses = $accesses
                     . "<li>" . $access->name
                     . "<span class=\"bold\"> qui se déroulera le "
-                    . \App\Services\Utils::convertDateFrench($access->theoric_start_data)
+                    . \App\Services\Utils::convertDateFrench($access->start_date)
                     . " de "
-                    . \App\Services\Utils::getTimeFromDateTime($access->theoric_start_data)
+                    . \App\Services\Utils::getTimeFromDateTime($access->start_date)
                     . " à "
-                    . \App\Services\Utils::getTimeFromDateTime($access->theoric_end_data)
+                    . \App\Services\Utils::getTimeFromDateTime($access->end_date)
                     . " </span></li>";
             }
             $accesses = $accesses . "</ul>";

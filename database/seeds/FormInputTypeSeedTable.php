@@ -45,14 +45,14 @@ class FormInputTypeSeedTable extends Seeder
         ]);
 
         DB::table('Form_Input_Type')->insert([
-            'name' => 'multiselect',
+            'name' => 'select',
             'display_name' => 'Liste déroulante',
         ]);
 
 
         //Id 8
         DB::table('Form_Input_Type')->insert([
-            'name' => 'select',
+            'name' => 'multiselect',
             'display_name' => 'Liste déroulante avec choix multiple',
         ]);
 

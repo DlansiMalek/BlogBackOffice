@@ -264,7 +264,7 @@ class UserController extends Controller
 
         //Save Access Premium
         if ($privilegeId == 3) {
-            $this->userServices->affectAccess($user->user_id, $request->input('accesses'), []);
+            $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
         } else {
             $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, true);
             $this->userServices->affectAccess($user->user_id, $accessInRegister, []);
@@ -284,8 +284,8 @@ class UserController extends Controller
         }
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
-        $user = $this->userServices->getUserById($user->user_id);
-        if ($privilegeId != 3 || !$congress->has_payment || $isFree) {
+        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
+        if ($privilegeId != 3 || !$congress->config->has_payment || $isFree) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -851,7 +851,7 @@ class UserController extends Controller
 
     }
 
-        function userConnect($qrCode)
+    function userConnect($qrCode)
     {
         $user = $this->userServices->getUserByQrCode($qrCode);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
