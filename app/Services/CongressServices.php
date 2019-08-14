@@ -49,6 +49,12 @@ class CongressServices
         return $congress;
     }
 
+    public function getDemoCongress($name)
+    {
+        $congress = Congress::where("name", "=", $name)
+            ->first();
+        return $congress;
+    }
     public function getCongressConfigById($id_Congress)
     {
         $congress = ConfigCongress::where("congress_id", "=", $id_Congress)
@@ -382,5 +388,4 @@ class CongressServices
             $q->where('congress_id', '=', $congress_id);
         })->count();
     }
-
 }
