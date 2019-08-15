@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Access;
+use App\Models\Badge;
 use App\Models\ConfigCongress;
-use App\Models\Mail;
 use App\Models\User;
 use App\Models\UserMail;
 use App\Services\AccessServices;
@@ -12,13 +13,13 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\GeoServices;
+use App\Services\MailServices;
 use App\Services\PackServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
-use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +37,7 @@ class CongressController extends Controller
     protected $packService;
     protected $resourceService;
     protected $geoServices;
+    protected $mailServices;
     public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
 
 //    public $baseUrl = "https://congress-api.vayetek.com/api/";
@@ -48,6 +50,7 @@ class CongressController extends Controller
                          BadgeServices $badgeServices,
                          PackServices $packService,
                          GeoServices $geoServices,
+                         MailServices $mailServices,
                          ResourcesServices $resourceService)
     {
         $this->congressServices = $congressServices;
@@ -60,6 +63,7 @@ class CongressController extends Controller
         $this->badgeServices = $badgeServices;
         $this->packService = $packService;
         $this->resourceService = $resourceService;
+        $this->mailServices = $mailServices;
     }
 
 
@@ -284,13 +288,13 @@ class CongressController extends Controller
     public function uploadLogo($congress_id, Request $request)
     {
 
-        if (!$congressConfig = $this->congressServices->getCongressConfig($congressId)) {
+        if (!$congressConfig = $this->congressServices->getCongressConfig($congress_id)) {
 
             return response()->json(['error' => 'congress not found'], 404);
         }
         $this->congressServices->uploadLogo($request->file('file_data'), $congressConfig);
 
-        return response()->json($this->congressServices->getCongressById($congressId));
+        return response()->json($this->congressServices->getCongressById($congress_id));
     }
 
     public function uploadBanner($congressId, Request $request)
@@ -298,7 +302,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressConfigById($congressId)) {
             return response()->json(['error' => 'congress not found '], 404);
         }
-        $this->congressServices->uploadBanner($request->file('file_data'), $congressConfig);
+        $this->congressServices->uploadBanner($request->file('file_data'), $congress);
 
         return response()->json($this->congressServices->getCongressById($congressId));
     }
@@ -354,7 +358,7 @@ class CongressController extends Controller
 
     public function getAll()
     {
-
+        return $this->congressServices->getAll();
 
     }
 
@@ -384,5 +388,57 @@ class CongressController extends Controller
         if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
         if (!$config->banner) return response()->json(['response' => 'no logo'], 400);
         return Storage::download($config->banner);
+    }
+
+    function addDemo()
+    {
+        // add congrees , congress_config , Admin_Congress
+        $this->congressServices->addCongress("DemoCongress", date('Y-m-d'), date('Y-m-d'), 99,
+            true, false, true, "this is the Demo descrtiption", 3);
+        $congress = $this->congressServices->getDemoCongress("DemoCongress");
+        // add users
+        //$this->userServices->saveUserCongress()
+        /*   $user = $this->userServices->getParticipatorById(1); //user exemple 'UserVayetek'
+           $userCongress = new UserCongress();
+           $userCongress->congress_id = $congress->congress_id;
+           $userCongress->user_id = $user->user_id;
+           $userCongress->privilege_id = 3;    //privilege particiapant
+           $userCongress->save();*/
+        //add badges
+        $badge = new Badge();
+        $badge->badge_id_generator = "5c6dbd67d2cb3900015d7a65";
+        $badge->privilege_id = 3;
+        $badge->congress_id = $congress->congress_id;
+        $badge->save();
+        //add access
+        $access = new Access();
+        $access->name = "AccesDemo";
+        $access->start_date = date('Y-m-d');
+        $access->end_date = date('Y-m-d');
+        $access->access_type_id = 1; // type session
+        $access->price = 99;
+        $access->packless = 1;
+        $access->description = " description de l'access demo";
+        $access->seuil = 99;
+        $access->max_places = 100;
+        $access->congress_id = $congress->congress_id;
+        $access->save();
+        //ad mail
+        $this->mailServices->saveMail($congress->congress_id, 1, "inscription", '<p>Veuillez cliquer sur ce lien afin de valider votre paiement.</p><p><a href="{{%24link}}">Lien</a></p>');
+        $this->mailServices->saveMail($congress->congress_id, 2, "Paiement", "Veuillez cliquer sur ce lien afin de valider votre paiement");
+        $this->mailServices->saveMail($congress->congress_id, 5, "Confirmation", "Voullez vous vraiment confirmer Cette action");
+
+        return response()->json(["status" => "success added demo congress"], 200);
+    }
+
+    public function delete($congressId)
+    {
+        $congress = $this->congressServices->getCongressById($congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'conrgess not found'], 404);
+        } elseif ($congress) {
+            $congress->delete();
+        }
+        return response()->json(['response' => 'congress deleted'], 202);
     }
 }

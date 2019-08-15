@@ -59,6 +59,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PackAdminSeedTable::class);
         $this->call(ModuleSeedTable::class);
         $this->call(PackAdminModuleSeedTable::class);
+        $this->call(HistoryTableSeeder::class);
+        $this->call(PaymentAdminSeedTable::class);
 
 
     }

@@ -14,15 +14,15 @@ class CreatePaymentTable extends Migration
     public function up()
     {
         Schema::create('Payment', function (Blueprint $table) {
-            $table->increments('payment_id');
-            $table->unsignedTinyInteger('isPaid')->default(0);
-            $table->string('path')->nullable()->default(null);
-            $table->string('reference')
-                ->nullable()->default(null);
-            $table->string('authorization')
-                ->nullable()->default(null);
-            $table->unsignedTinyInteger('free')->default(0);
-            $table->double('price');
+                $table->increments('payment_id');
+                $table->unsignedTinyInteger('isPaid')->default(0);
+                $table->string('path')->nullable()->default(null);
+                $table->string('reference')
+                    ->nullable()->default(null);
+                $table->string('authorization')
+                    ->nullable()->default(null);
+                $table->unsignedTinyInteger('free')->default(0);
+                $table->double('price');
 
             $table->unsignedInteger('payment_type_id')->nullable()->default(null);
             $table->foreign('payment_type_id')->references('payment_type_id')->on('Payment_Type')->onDelete('set null');

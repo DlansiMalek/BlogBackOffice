@@ -42,6 +42,8 @@ class CongressServices
         return Congress::find($congressId);
     }
 
+    public function getAll (){ return Congress::all();}
+
     public function getCongressById($id_Congress)
     {
         $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation', 'accesss.participants'])
@@ -50,6 +52,12 @@ class CongressServices
         return $congress;
     }
 
+    public function getDemoCongress($name)
+    {
+        $congress = Congress::where("name", "=", $name)
+            ->first();
+        return $congress;
+    }
     public function getCongressConfigById($id_Congress)
     {
         $congress = ConfigCongress::where("congress_id", "=", $id_Congress)
@@ -382,5 +390,4 @@ class CongressServices
             ->where('privilege_id', '=', 3)
             ->count();
     }
-
 }

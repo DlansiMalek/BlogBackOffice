@@ -143,7 +143,20 @@ Route::group(['prefix' => 'packadmin'], function () {
     Route::get('list', 'PackAdminController@index');
     Route::get('{pack_id}', 'PackAdminController@getPackById');
     Route::delete('{pack_id}/delete', 'PackAdminController@delete');
-    Route::put('add', 'PackAdminController@store');
+    Route::post('add', 'PackAdminController@store');
+    Route::put('{pack_id}/update', 'PackAdminController@update');
+    Route::get('{pack_id}/modules', 'PackAdminController@getpackmodules');
+    Route::get('modules/list', 'PackAdminController@getmodules');
+    Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
+
+    Route::get('clients/all', 'AdminController@getClients');
+    Route::delete('admins/{adminId}/delete', 'AdminController@delete');
+    Route::post('admins/add/{pack_id}', 'AdminController@store');
+    Route::put('admins/{admin_id}/update', 'AdminController@update');
+    Route::post('Demo', 'CongressController@addDemo');
+    Route::get('congress/all', 'CongressController@getAll');
+    Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
+
 });
 
 //User API

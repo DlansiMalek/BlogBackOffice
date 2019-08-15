@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 
 use App\Models\User;
+use App\Models\Admin;
+use App\Models\HistoryPack;
+use App\Models\PaymentAdmin;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
+use App\Services\PackServices;
+use App\Services\PackAdminServices;
 use App\Services\Utils;
 use GuzzleHttp\Client;
 use Illuminate\Filesystem\Filesystem;
@@ -27,6 +32,8 @@ class AdminController extends Controller
     protected $privilegeServices;
     protected $sharedServices;
     protected $badgeServices;
+    protected $packAdminServices;
+
     protected $client;
 
     public function __construct(UserServices $userServices,
@@ -34,6 +41,7 @@ class AdminController extends Controller
                                 CongressServices $congressService,
                                 PrivilegeServices $privilegeServices,
                                 SharedServices $sharedServices,
+                                PackAdminServices $packAdminServices,
                                 BadgeServices $badgeServices)
     {
         $this->userServices = $userServices;
@@ -42,6 +50,7 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->packAdminServices = $packAdminServices;
         $this->client = new Client();
     }
 
@@ -626,5 +635,44 @@ class AdminController extends Controller
 
         return response()->json(["reference" => $user->ref_payment]);
     }
+    // getting only admins with privilege = 1
+    public function getClients(){
+      return  $this->adminServices->getClients();
+    }
 
+    public function delete($adminId)
+    {
+        $admin = $this->adminServices->getAdminById($adminId);
+        if (!$admin) {
+            return response()->json(['response' => 'admin not found'], 404);
+        }
+        elseif ($admin) {
+            $admin->delete();
+        }
+        return response()->json(['response' => 'admin deleted'], 202);
+    }
+
+    public function store(Request $request,$pack_id)
+    {
+        if (!$request->has(['name', 'mobile','email'])) {
+            return response()->json(['response' => 'invalid request',
+                'content' => ['name', 'mobile', 'email']], 400);
+        }
+        $admin =  new Admin();
+        $pack = $this->packAdminServices->getPackById($pack_id);
+        $history = new HistoryPack();
+        $payment = new PaymentAdmin();
+        $admin =$this->adminServices->AddAdmin($request, $admin);
+        $this->adminServices->addPayment($payment,$admin,$pack);
+        $this->adminServices->addHistory($history,$admin,$pack);
+        return response()->json(['response' => 'admin added with payment and history'], 202);
+    }
+    public function update(Request $request , $admin_id)
+    {
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if (!$admin) {
+            return response()->json(['response' => 'Admin not found'], 404);
+        }
+        return response()->json($this->adminServices->updateAdmin($request, $admin), 202);
+    }
 }
