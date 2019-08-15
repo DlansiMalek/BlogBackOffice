@@ -792,12 +792,14 @@ class UserServices
     {
         $user = new User();
 
-        $user->email = $user['email'];
-        $user->first_name = $user['first_name'];
-        $user->last_name = $user['last_name'];
-        $user->gender = $user['gender'];
-        $user->mobile = $user['mobile'];
-        $user->country_id = $user['country_id'];
+        $user->email = $userData['email'];
+        $user->first_name = $userData['first_name'];
+        $user->last_name = $userData['last_name'];
+        $user->gender = $userData['gender'];
+        $user->mobile = $userData['mobile'];
+        $user->country_id = $userData['country_id'];
+
+        $user->save();
 
         if (!$user->qr_code) {
             $user->qr_code = Utils::generateCode($user->user_id);
