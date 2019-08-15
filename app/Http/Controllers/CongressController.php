@@ -362,7 +362,7 @@ class CongressController extends Controller
 
     public function getAll()
     {
-
+        return $this->congressServices->getAll();
 
     }
 
@@ -431,5 +431,16 @@ class CongressController extends Controller
         $this->mailServices->saveMail($congress->congress_id,5,"Confirmation","Voullez vous vraiment confirmer Cette action");
 
         return response()->json(["status" => "success added demo congress"], 200);
+    }
+    public function delete($congressId)
+    {
+        $congress = $this->congressServices->getCongressById( $congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'conrgess not found'], 404);
+        }
+        elseif ($congress) {
+            $congress->delete();
+        }
+        return response()->json(['response' => 'congress deleted'], 202);
     }
 }

@@ -24,8 +24,8 @@ class CreateAttestationRequestTable extends Migration
             $table->foreign('user_id')->references('user_id')->on('User');
 
             $table->unsignedInteger('congress_id')->nullable()->default(null);
-            $table->foreign('congress_id')->references('congress_id')->on('Congress');
-
+            $table->foreign('congress_id')->references('congress_id')->on('Congress')
+            ->onDelete('cascade');
             $table->unsignedInteger('access_id')->nullable()->default(null);
             $table->foreign('access_id')->references('access_id')->on('Access');
 

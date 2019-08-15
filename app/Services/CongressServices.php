@@ -41,6 +41,8 @@ class CongressServices
         return Congress::find($congressId);
     }
 
+    public function getAll (){ return Congress::all();}
+
     public function getCongressById($id_Congress)
     {
         $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation'])

@@ -24,8 +24,8 @@ class CreateConfigMailTable extends Migration
             $table->unsignedInteger('port');
             $table->string('encryption');
             $table->unsignedInteger('congress_id');
-            $table->foreign('congress_id')->references('congress_id')->on('Congress');
-
+            $table->foreign('congress_id')->references('congress_id')->on('Congress')
+            ->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });

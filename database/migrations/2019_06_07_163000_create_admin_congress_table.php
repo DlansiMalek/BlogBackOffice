@@ -20,8 +20,8 @@ class CreateAdminCongressTable extends Migration
             $table->foreign('admin_id')->references('admin_id')->on('Admin');
 
             $table->unsignedInteger('congress_id');
-            $table->foreign('congress_id')->references('congress_id')->on('Congress');
-
+            $table->foreign('congress_id')->references('congress_id')->on('Congress')
+            ->onDelete('cascade');
             $table->unsignedInteger('organization_id')->nullable()->default(null);
             $table->foreign('organization_id')->references('organization_id')->on('Organization');
 

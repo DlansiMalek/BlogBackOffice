@@ -154,6 +154,8 @@ Route::delete('admins/{adminId}/delete', 'AdminController@delete');
 Route::post('admins/add/{pack_id}', 'AdminController@store');
 Route::put('admins/{admin_id}/update', 'AdminController@update');
 Route::post('Demo', 'CongressController@addDemo');
+Route::get('congress/all','CongressController@getAll');
+    Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
 
 });
 
