@@ -788,6 +788,25 @@ class UserServices
             })->get();
     }
 
+    public function addUser($userData)
+    {
+        $user = new User();
+
+        $user->email = $user['email'];
+        $user->first_name = $user['first_name'];
+        $user->last_name = $user['last_name'];
+        $user->gender = $user['gender'];
+        $user->mobile = $user['mobile'];
+        $user->country_id = $user['country_id'];
+
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
+
+        return $user;
+    }
+
     public function saveUser(Request $request, User $user)
     {
         $user->email = $request->email;

@@ -400,6 +400,7 @@ class CongressController extends Controller
             true,false,true,"this is the Demo descrtiption",3);
         $congress = $this->congressServices->getDemoCongress("DemoCongress");
         // add users
+        //$this->userServices->saveUserCongress()
      /*   $user = $this->userServices->getParticipatorById(1); //user exemple 'UserVayetek'
         $userCongress = new UserCongress();
         $userCongress->congress_id = $congress->congress_id;
