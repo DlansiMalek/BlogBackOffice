@@ -5,19 +5,17 @@ namespace App\Services;
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\City;
-use App\Models\Location;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
+use App\Models\Location;
 use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\Organization;
 use App\Models\Pack;
-use App\Models\Resource;
 use App\Models\User;
 use App\Models\UserCongress;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use JWTAuth;
@@ -42,11 +40,31 @@ class CongressServices
         return Congress::find($congressId);
     }
 
-    public function getAll (){ return Congress::all();}
+    public function getAll()
+    {
+        return Congress::all();
+    }
 
     public function getCongressById($id_Congress)
     {
-        $congress = Congress::with(['config', "badges", "attestation", "packs.accesses", "form_inputs.type", "form_inputs.values", "mails.type", 'accesss.attestation', 'accesss.participants'])
+        $congress = Congress::with([
+            'config',
+            "badges",
+            "attestation",
+            "packs.accesses",
+            "form_inputs.type",
+            "form_inputs.values",
+            "mails.type",
+            'accesss.attestation',
+            'accesss.participants',
+            'location.city.country',
+            'accesss.speakers',
+            'accesss.chairs',
+            'accesss.sub_accesses',
+            'accesss.topic',
+            'accesss.type',
+            'accesss.votes'
+        ])
             ->where("congress_id", "=", $id_Congress)
             ->first();
         return $congress;
@@ -58,11 +76,11 @@ class CongressServices
             ->first();
         return $congress;
     }
+
     public function getCongressConfigById($id_Congress)
     {
-        $congress = ConfigCongress::where("congress_id", "=", $id_Congress)
+        return ConfigCongress::where("congress_id", "=", $id_Congress)
             ->first();
-        return $congress;
     }
 
     function retrieveCongressFromToken()
@@ -105,58 +123,44 @@ class CongressServices
         return $congress;
     }
 
-    public function editConfigCongress($congress, $eventLocation, $congressId)
+    public function editConfigCongress($configCongress, $configCongressRequest, $congressId)
     {
 
-        $config_congress = ConfigCongress::where("congress_id", '=', $congressId)->first();
-        $config_congress->logo = $congress['logo'];
-        $config_congress->banner = $congress['banner'];
-        $config_congress->free = $congress['free'];
-        $config_congress->has_payment = $congress['has_payment'];
-        $config_congress->program_link = $congress['program_link'];
-        $config_congress->voting_token = $congress['voting_token'];
-        $config_congress->prise_charge_option = $congress['prise_charge_option'];
-        $config_congress->feedback_start = $congress['feedback_start'];
-        $this->editCongressLocation($eventLocation, $congressId);
-        $config_congress->update();
-        return $config_congress;
+        //$config_congress = ConfigCongress::where("congress_id", '=', $congressId)->first();
+
+        if (!$configCongress) {
+            $configCongress = new ConfigCongress();
+        }
+
+        $configCongress->logo = $configCongressRequest['logo'];
+        $configCongress->banner = $configCongressRequest['banner'];
+        $configCongress->free = $configCongressRequest['free'];
+        $configCongress->has_payment = $configCongressRequest['has_payment'];
+        $configCongress->program_link = $configCongressRequest['program_link'];
+        $configCongress->voting_token = $configCongressRequest['voting_token'];
+        $configCongress->prise_charge_option = $configCongressRequest['prise_charge_option'];
+        $configCongress->feedback_start = $configCongressRequest['feedback_start'];
+        $configCongress->congress_id = $congressId;
+        $configCongress->update();
+        //$this->editCongressLocation($eventLocation, $congressId);
+
+        return $configCongress;
     }
 
-    public function editCongressLocation($eventLocation, $congressId)
+    public function editCongressLocation($configLocation, $configLocationData, $cityId, $congressId)
     {
         // update congress Location
-        // add city in DB
-        $congress = $this->getCongressById($congressId);
-        $country = $this->geoServices->getCountryByCode($eventLocation['countryCode']);
-        $city = $this->geoServices->getCityByNameAndCountryCode(
-            $eventLocation['cityName'],
-            $eventLocation['countryCode']
-        );
-        if (!$city) {
-            $city = new City();
-            $city->name = $eventLocation['cityName'];
-            $city->country_code = $eventLocation['countryCode'];
-            $city->save();
-            // add city to db
+        if (!$configLocation) {
+            $configLocation = new Location();
         }
-        if (!$congress->location_id) {
-            // create -- insert
-            $location = new Location();
-            $location->lng = $eventLocation['lng'];
-            $location->lat = $eventLocation['lat'];
-            $location->address = $eventLocation['address'];
-            $location->city_id = $city->city_id;
-            $location->save();
-            $congress->location_id = $location->location_id;
-            $congress->save();
-        } else {
-            // update
-            Location::where('location_id', '=', $congress->location_id)
-                ->update(['lng' => $eventLocation['lng'],
-                    'lat' => $eventLocation['lat'],
-                    'address' => $eventLocation['address']]);
-        }
-        //the end :D
+        $configLocation->lng = $configLocationData['lng'];
+        $configLocation->lat = $configLocationData['lat'];
+        $configLocation->address = $configLocationData['address'];
+        $configLocation->city_id = $cityId;
+        $configLocation->congress_id = $congressId;
+        $configLocation->save();
+
+        return $configLocation;
     }
 
     public function getCongressAllAccess($adminId)
@@ -368,6 +372,7 @@ class CongressServices
     public function getAllCongresses()
     {
         return Congress::with([
+            'location.city.country',
             'config',
             'accesss.speakers',
             'accesss.chairs',
@@ -389,5 +394,11 @@ class CongressServices
         return UserCongress::where('congress_id', '=', $congress_id)
             ->where('privilege_id', '=', 3)
             ->count();
+    }
+
+    public function getConfigLocationByCongressId($congressId)
+    {
+        return Location::where("congress_id", '=', $congressId)
+            ->first();
     }
 }

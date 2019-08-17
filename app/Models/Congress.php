@@ -69,7 +69,7 @@ class Congress extends Model
         return $this->hasMany("App\Models\FormInput", "congress_id", "congress_id");
     }
     public function location(){
-        return $this->belongsTo('App\Models\Location','location_id','location_id');
+        return $this->hasOne('App\Models\Location','congress_id','congress_id');
     }
 
 

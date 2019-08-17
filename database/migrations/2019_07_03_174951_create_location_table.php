@@ -18,7 +18,7 @@ class CreateLocationTable extends Migration
 
             $table->double('lng');
             $table->double('lat');
-            $table->string('adress');
+            $table->string('address');
 
             $table->integer('congress_id')->unsigned();
             $table->foreign('congress_id')->references('congress_id')

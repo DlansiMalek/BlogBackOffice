@@ -13,11 +13,11 @@ class LocationSeedTable extends Seeder
     public function run()
     {
         DB::table('Location')->insert([
-            'lng' => 98,
-            'lat' => 58,
-            'adress'=> 'adresse test',
-            'congress_id'=>1,
-            'city_id'=> 3350
+            'lng' => 10.26136550000001,
+            'lat' => 36.8501833,
+            'adress' => 'adresse test',
+            'congress_id' => 1,
+            'city_id' => 3350
         ]);
     }
 }

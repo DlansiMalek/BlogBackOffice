@@ -44,4 +44,45 @@ class GeoServices
         return Country::find($country_id);
     }
 
+    public function getCity($countryCode, $cityName)
+    {
+        $country = $this->getCountryByCode($countryCode);
+
+        if (!$country) {
+            $country = $this->addCountry($countryCode);
+        }
+
+        $city = $this->getCityByNameAndCountryCode($cityName, $country->alpha3code);
+
+        if (!$city) {
+            $city = $this->addCity($cityName, $country->alpha3code);
+        }
+
+        return $city;
+
+    }
+
+    private function addCountry($countryCode)
+    {
+        $country = new Country();
+
+        $country->alpha3code = $countryCode;
+        $country->code = $countryCode;
+        $country->name = $countryCode;
+        $country->save();
+
+        return $country;
+    }
+
+    private function addCity($cityName, $alpha3code)
+    {
+        $city = new City();
+
+        $city->name = $cityName;
+        $city->country_code = $alpha3code;
+        $city->save();
+
+        return $city;
+    }
+
 }

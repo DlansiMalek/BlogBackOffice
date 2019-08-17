@@ -91,8 +91,23 @@ class CongressController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        $congress = $this->congressServices->editConfigCongress($request->input('congress'), $request->input('eventLocation'), $congressId);
-        return response()->json($congress);
+        $configCongress = $this->congressServices->getCongressConfigById($congressId);
+
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
+
+        $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId);
+
+
+        $eventLocation = $request->input("eventLocation");
+
+        if ($eventLocation['countryCode'] && $eventLocation['cityName']) {
+
+            $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);
+
+            $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
+        }
+
+        return response()->json(['message' => 'edit configs success']);
 
     }
 
