@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
-use App\Models\City;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
 use App\Models\Location;
