@@ -26,17 +26,6 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getPrivilegesWithBadges());
     }
 
-    public function getLogoCongress($path)
-    {
-        $chemin = config('media.congress-logo');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
-    public function getBannerCongress($path)
-    {
-        $chemin = config('media.congress-banner');
-        return response()->download(storage_path('app/congress-banner/' . $chemin . "/" . $path));
-    }
 
     public function getRecuPaiement($path)
     {
@@ -63,7 +52,9 @@ class SharedController extends Controller
     {
         return bcrypt($password);
     }
-    function randomPassword() {
+
+    function randomPassword()
+    {
         $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
         $pass = array(); //remember to declare $pass as an array
         $alphaLength = strlen($alphabet) - 1; //put the length -1 in cache

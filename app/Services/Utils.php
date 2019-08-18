@@ -24,6 +24,7 @@ class Utils
     //public static $baseUrlRT = 'http://137.74.165.25:3002/api';
 
     public static $baseUrl = 'http://localhost/congress-backend-modules/public/api/';
+
 //    public static $baseUrl = 'https://congress.vayetek.com/api/';
 
     public static function diffMinutes($enter_time, $endCongress)
@@ -68,6 +69,11 @@ class Utils
             }
         }
         return null;
+    }
+
+    public static function verifyImg(string $extension)
+    {
+        return $extension == 'jpeg' || $extension == 'png' || $extension == 'jpg' || $extension == 'svg' || $extension == 'gif';
     }
 
     function base64_to_jpeg($base64_string, $output_file)

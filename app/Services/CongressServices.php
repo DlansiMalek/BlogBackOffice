@@ -280,28 +280,21 @@ class CongressServices
         return null;
     }
 
-    public function uploadLogo($file, $congressConfig)
+    public function uploadLogo($file)
     {
         $timestamp = microtime(true) * 10000;
         $path = $file->storeAs('/logo/' . $timestamp, $file->getClientOriginalName());
 
-        $congressConfig->logo = $path;
-        $congressConfig->save();
-
-        return $congressConfig;
+        return $path;
 
     }
 
-    public function uploadBanner($file, $congressConfig)
+    public function uploadBanner($file)
     {
         $timestamp = microtime(true) * 10000;
         $path = $file->storeAs('/banner/' . $timestamp, $file->getClientOriginalName());
 
-        $congressConfig->banner = $path;
-        $congressConfig->save();
-
-
-        return $congressConfig;
+        return $path;
     }
 
     public function getEmailById($id)

@@ -20,10 +20,20 @@ Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
-Route::get('/congress-logo/{path}', 'SharedController@getLogoCongress');
-Route::get('/congress-banner/{path}', 'SharedController@getBannerCongress');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
+
+
+/* Files API */
+Route::group(['prefix' => 'congress-logo/{path}'], function () {
+    Route::get('', 'FileController@getLogoCongress');
+    Route::post('delete', 'FileController@deleteLogoCongress');
+});
+
+Route::group(['prefix' => 'congress-banner/{path}'], function () {
+    Route::get('', 'FileController@getBannerCongress');
+    Route::post('delete', 'FileController@deleteBannerCongress');
+});
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
@@ -100,8 +110,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
 
-        Route::post('/upload-logo', 'CongressController@uploadLogo');
-        Route::post('/upload-banner', 'CongressController@uploadBanner');
+        Route::post('/upload-logo', 'FileController@uploadLogo');
+        Route::post('/upload-banner', 'FileController@uploadBanner');
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
