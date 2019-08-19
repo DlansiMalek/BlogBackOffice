@@ -324,7 +324,7 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
 });
 
 
-Route::group(['prefix' => 'voting', 'middleware' => 'super-admin'], function () {
+Route::group(['prefix' => 'voting', 'middleware' => 'admin'], function () {
     Route::put('{congress_id}/token', 'VotingController@setToken');
     Route::get('{congress_id}/token', 'VotingController@getToken');
     Route::get('{congress_id}', 'VotingController@getAssociation');

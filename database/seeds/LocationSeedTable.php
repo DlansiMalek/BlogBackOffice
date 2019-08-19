@@ -15,7 +15,7 @@ class LocationSeedTable extends Seeder
         DB::table('Location')->insert([
             'lng' => 10.26136550000001,
             'lat' => 36.8501833,
-            'adress' => 'adresse test',
+            'address' => 'adresse test',
             'congress_id' => 1,
             'city_id' => 3350
         ]);
