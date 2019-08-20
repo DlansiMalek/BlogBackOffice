@@ -52,6 +52,7 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
+            ->with(['AdminHistories'])
             ->get();
     }
     public function AddAdmin($request ,$admin){
@@ -66,12 +67,12 @@ class AdminServices
     }
     public function addHistory($history,$admin,$pack){
         $history->admin_id = $admin->admin_id;
-        $history->pack_id = $pack->pack_id;
+        $history->pack_admin_id = $pack->pack_admin_id;
         $history->status = "en cours";
         $history->save();}
     public function addPayment($payment,$admin,$pack){
         $payment->admin_id = $admin->admin_id;
-        $payment->pack_id = $pack->pack_id;
+        $payment->pack_admin_id = $pack->pack_admin_id;
         $payment->isPaid = false;
         $payment->reference = "";
         $payment->authorization = "";

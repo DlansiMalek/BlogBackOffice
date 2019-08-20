@@ -153,7 +153,7 @@ Route::get('clients/all','AdminController@getClients');
 Route::delete('admins/{adminId}/delete', 'AdminController@delete');
 Route::post('admins/add/{pack_id}', 'AdminController@store');
 Route::put('admins/{admin_id}/update', 'AdminController@update');
-Route::post('Demo', 'CongressController@addDemo');
+Route::post('Demo/{admin_id}', 'CongressController@addDemo');
 Route::get('congress/all','CongressController@getAll');
     Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
 

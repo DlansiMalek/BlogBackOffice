@@ -7,7 +7,7 @@ class PaymentAdmin extends Model
 {
     protected $table = 'Payment_admin';
     protected $primaryKey = 'payment_id';
-    protected $fillable = ['isPaid','reference','authorization','price','path','pack_id', 'admin_id'];
+    protected $fillable = ['isPaid','reference','authorization','price','path','pack_admin_id', 'admin_id'];
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 

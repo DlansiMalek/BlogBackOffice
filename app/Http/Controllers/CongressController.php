@@ -394,25 +394,30 @@ class CongressController extends Controller
         return Storage::download($config->banner);
     }
 
-    function addDemo(){
+    function addDemo($admin_id){
         // add congrees , congress_config , Admin_Congress
-        $this->congressServices->addCongress("DemoCongress",date('Y-m-d'),date('Y-m-d'),99,
-            true,false,true,"this is the Demo descrtiption",3);
-        $congress = $this->congressServices->getDemoCongress("DemoCongress");
+        $congress = $this->congressServices->addCongress("DemoCongress",date('Y-m-d'),date('Y-m-d'),99,
+            true,false,true,"this is the Demo descrtiption",$admin_id);
+
         // add users
-        //$this->userServices->saveUserCongress()
-     /*   $user = $this->userServices->getParticipatorById(1); //user exemple 'UserVayetek'
-        $userCongress = new UserCongress();
-        $userCongress->congress_id = $congress->congress_id;
-        $userCongress->user_id = $user->user_id;
-        $userCongress->privilege_id = 3;    //privilege particiapant
-        $userCongress->save();*/
+        for ($x = 0; $x <= 10; $x++) {
+            $arr = array('email' => 'DemoMail'.$x.'@gmail.com', 'first_name' => 'FirstnameFrmo'.$x, 'last_name' => 'LastnameDemo'.$x,
+                'gender' => 1, 'mobile' => 89456123, 'country_id' => 'TUN');
+            $user = $this->userServices->addUser($arr);
+            $userCongress = new UserCongress();
+            $userCongress->congress_id = $congress->congress_id;
+            $userCongress->user_id = $user->user_id;
+            $userCongress->privilege_id = 3;    //privilege particiapant
+            $userCongress->save();
+        }
+
         //add badges
         $badge =  new Badge();
         $badge->badge_id_generator = "5c6dbd67d2cb3900015d7a65";
         $badge->privilege_id = 3;
         $badge->congress_id = $congress->congress_id;
         $badge->save();
+
         //add access
         $access = new Access();
         $access->name = "AccesDemo" ;
@@ -426,7 +431,8 @@ class CongressController extends Controller
          $access->max_places = 100 ;
         $access->congress_id = $congress->congress_id;
         $access->save();
-        //ad mail
+
+        //add mail
         $this->mailServices->saveMail($congress->congress_id,1,"inscription",'<p>Veuillez cliquer sur ce lien afin de valider votre paiement.</p><p><a href="{{%24link}}">Lien</a></p>');
         $this->mailServices->saveMail($congress->congress_id,2,"Paiement","Veuillez cliquer sur ce lien afin de valider votre paiement");
         $this->mailServices->saveMail($congress->congress_id,5,"Confirmation","Voullez vous vraiment confirmer Cette action");

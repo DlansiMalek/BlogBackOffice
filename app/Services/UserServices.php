@@ -810,7 +810,7 @@ class UserServices
     }
 
     public function saveUser(Request $request, User $user)
-    {
+    {;
         $user->email = $request->email;
         if ($request->has('first_name')) $user->first_name = $request->input('first_name');
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
