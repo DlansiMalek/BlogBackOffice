@@ -639,6 +639,9 @@ class AdminController extends Controller
     public function getClients(){
       return  $this->adminServices->getClients();
     }
+    public function getCongresses(){
+        return  $this->adminServices->getcongresses();
+    }
 
     public function delete($adminId)
     {

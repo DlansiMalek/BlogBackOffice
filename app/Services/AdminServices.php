@@ -55,6 +55,13 @@ class AdminServices
             ->with(['AdminHistories'])
             ->get();
     }
+    public function getcongresses()
+    {
+        return Admin::where("privilege_id", "=", 1)
+            ->with(['congresses'])
+            ->get();
+    }
+
     public function AddAdmin($request ,$admin){
         $admin->name = $request->input('name');
         $admin->mobile = $request->input('mobile');

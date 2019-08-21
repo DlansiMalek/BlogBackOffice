@@ -150,6 +150,7 @@ Route::get('modules/list','PackAdminController@getmodules');
 Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
 
 Route::get('clients/all','AdminController@getClients');
+Route::get('clients/congresses/all','AdminController@getCongresses');
 Route::delete('admins/{adminId}/delete', 'AdminController@delete');
 Route::post('admins/add/{pack_id}', 'AdminController@store');
 Route::put('admins/{admin_id}/update', 'AdminController@update');
