@@ -4,9 +4,6 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Congress;
-use App\Models\Feedback_Question;
-use App\Models\Feedback_Question_Type;
-use App\Models\Feedback_Question_Value;
 use App\Models\Form_Input;
 use App\Models\Form_Input_Value;
 use App\Models\Mail;
@@ -218,6 +215,7 @@ class CongressServices
         }
         $old->delete();
         foreach ($inputs as $inputRequest) {
+
             $input = new Form_Input();
             $input->form_input_type_id = $inputRequest["type"]["form_input_type_id"];
             $input->congress_id = $congress_id;

@@ -46,7 +46,8 @@ class Congress extends Model
     }
 
     public function form_inputs(){
-        return $this->hasMany("App\Models\Form_Input", "congress_id","congress_id");
+        return $this->hasMany("App\Models\Form_Input", "congress_id","congress_id")
+            ->orderBy('form_input_id');
     }
 
     public function mails(){
