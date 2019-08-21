@@ -1,0 +1,31 @@
+version: '2'
+services:
+    web:
+        build:
+            context: ./
+            dockerfile: web.docker
+        volumes:
+            - ./:/var/www
+        ports:
+            - "8083:80"
+        links:
+            - app
+        environment:
+            VIRTUAL_HOST: eventizer-conf-api.vayetek.com
+            LETSENCRYPT_HOST: eventizer-conf-api.vayetek.com
+            LETSENCRYPT_EMAIL: vayetek@gmail.com
+    app:
+        build:
+            context: ./
+            dockerfile: app.docker
+        volumes:
+            - ./:/var/www
+            - ../../data/eventizer_data:/var/www/storage/app
+            - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+        env_file: .env
+
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
