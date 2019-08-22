@@ -50,6 +50,7 @@ class LoginController extends Controller
     public function loginAdmin(Request $request)
     {
         $credentials = request(['email', 'password']);
+
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
 
 

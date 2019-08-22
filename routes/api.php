@@ -46,6 +46,7 @@ Route::group(['prefix' => 'mobile'], function () {
         });
         Route::group(['prefix' => 'presence/{id_Participator}'], function () {
             Route::post('statgetListPersonelsByAdminus/update', 'AdminController@makeUserPresentCongress');
+            Route::post('status/update', 'AdminController@makeUserPresent');
             Route::post('status/update/access', 'AdminController@makeUserPresentAccess');
         });
     });
@@ -199,8 +200,6 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::get('list', 'UserController@getUsersByAccess');
             Route::get('presence/list', 'UserController@getPresencesByAccess');
         });
-
-
     });
 });
 //Admin API

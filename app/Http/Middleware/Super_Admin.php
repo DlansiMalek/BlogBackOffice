@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Admin;
-use App\Models\Admin_Privilege;
 use Closure;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -18,8 +16,6 @@ class Super_Admin
      */
     public function handle($request, Closure $next)
     {
-
-
         Try {
             if (JWTAuth::parseToken()->toUser()->privilege_id == 9)
                 return $next($request);

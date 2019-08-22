@@ -12,7 +12,6 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
-use App\Models\Privilege;
 use Illuminate\Http\Request;
 use JWTAuth;
 
@@ -179,7 +178,7 @@ class AdminServices
         //TODO Fixing with the new Design
         $admin = Admin::where("passwordDecrypt", "=", $QrCode)
             ->first();
-        $admin->admin = count(Admin_Privilege::where('admin_id', '=', $admin['admin_id'])->where('privilege_id', '=', 1)->get()) > 0;
+        $admin->admin = $admin->privilege_id==1;
         return $admin;
     }
 

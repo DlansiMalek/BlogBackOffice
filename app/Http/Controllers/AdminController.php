@@ -3,18 +3,17 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\User;
 use App\Models\Admin;
 use App\Models\HistoryPack;
 use App\Models\PaymentAdmin;
+use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
-use App\Services\PackServices;
-use App\Services\PackAdminServices;
 use App\Services\Utils;
 use GuzzleHttp\Client;
 use Illuminate\Filesystem\Filesystem;
@@ -80,16 +79,20 @@ class AdminController extends Controller
     public function scanParticipatorQrCode(Request $request)
     {
         if (!$request->has(['qrcode'])) {
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode']], 400);
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode', 'congressId']], 400);
         }
 
         $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
-
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
-
-        foreach ($participator->accesss as $accesss) {
+        if ($request->has(['congressId'])) {
+            $userCongress = $this->userServices->getUserCongress($request->input('congressId'), $participator->user_id);
+            $participator->isPresent = $userCongress->isPresent;
+        } else {
+            $participator->isPresent = 0;
+        }
+        foreach ($participator->accesses as $accesss) {
             if ($accesss->pivot->isPresent == 1) {
                 $infoPresence = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
                 $accesss->attestation_status = $infoPresence['enabled'];
@@ -196,21 +199,22 @@ class AdminController extends Controller
      * )
      *
      */
-    public
-    function makeUserPresentAccess(Request $request, $userId)
+    public function makeUserPresentAccess(Request $request, $userId)
     {
         //type : 1 : Enter Or 0 : Leave
-        if (!$request->has(['isPresent', 'accessId', 'type'])) {
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
+        if (!$request->has(['isPresent', 'accessId', 'type', 'congressId'])) {
+            return response()->json(['resposne' => 'bad request',
+                'required fields' => ['isPresent', 'accessId', 'type', 'congressId']], 400);
         }
         $participator = $this->userServices->getUserById($userId);
+        $userCongress = $this->userServices->getUserCongress($request->input('congressId'), $userId);
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
         /* Make it present in congress */
-        $participator->isPresent = 1;
-        $participator->update();
+        $userCongress->isPresent = 1;
+        $userCongress->update();
         /*if ($participator->isPresent == 0) {
             return response()->json(['response' => 'participator not present in congress'], 404);
         }*/
@@ -225,7 +229,28 @@ class AdminController extends Controller
         $this->userServices->makePresentToAccess($user_access, $participator,
             $request->input('accessId'), $request->input('isPresent'), $request->input('type'));
 
-        return response()->json(["message" => "success sending and scaning"], 200);
+        return response()->json(["message" => "success sending and scanning"], 200);
+    }
+
+    public function makeUserPresent(Request $request, $userId)
+    {
+        //type : 1 : Enter Or 0 : Leave
+        if (!$request->has(['isPresent', 'congressId'])) {
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
+        }
+        $participator = $this->userServices->getUserById($userId);
+        if (!$participator) {
+            return response()->json(['resposne' => 'participator not found'], 404);
+        }
+        $congress = $this->congressService->getCongressById($request->input('congressId'));
+        if (!$congress) {
+            return response()->json(['resposne' => 'congress not found'], 404);
+        }
+        $userCongress = $this->userServices->getUserCongress($request->input('congressId'), $userId);
+        /* Make it present in congress */
+        $userCongress->isPresent = 1;
+        $userCongress->update();
+        return response()->json(["message" => "success sending and scanning"], 200);
     }
 
     public function getAuhenticatedAdmin()
@@ -426,7 +451,7 @@ class AdminController extends Controller
 
     }
 
-    public function addPersonnel(Request $request,$congress_id)
+    public function addPersonnel(Request $request, $congress_id)
     {
 
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
@@ -436,7 +461,7 @@ class AdminController extends Controller
         $admin = $request->input('admin');
 
         // if exists then update or create admin in DB
-        if ( !($fetched = $this->adminServices->getAdminByLogin($admin['email'])) ) {
+        if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
             $admin = $this->adminServices->addPersonnel($admin);
             $admin_id = $admin->admin_id;
         } else {
@@ -463,14 +488,15 @@ class AdminController extends Controller
         return response()->json($admin_congress);
     }
 
-    public function editPersonels (Request $request,$congress_id,$admin_id) {
+    public function editPersonels(Request $request, $congress_id, $admin_id)
+    {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $request->input('admin');
         $this->adminServices->editPersonnel($admin);
         $this->privilegeServices->editPrivilege(
-            (int) $request->input('privilege_id'),
+            (int)$request->input('privilege_id'),
             $admin_id,
             $congress_id);
         //message d'erreur à revoir
@@ -478,22 +504,24 @@ class AdminController extends Controller
     }
 
     public
-    function deletePersonnel($congress_id,$admin_id)
+    function deletePersonnel($congress_id, $admin_id)
     {
-        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,$congress_id)) {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id)) {
             return response()->json(["message" => "admin not found"], 404);
         }
         $this->privilegeServices->deleteAdminCongressByIds($admincongress);
         return response()->json(["message" => "deleted success"]);
     }
 
-    public function getPersonelByIdAndCongressId($congress_id,$admin_id) {
-        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,$congress_id)) {
+    public function getPersonelByIdAndCongressId($congress_id, $admin_id)
+    {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id)) {
             return response()->json(["message" => "admin not found"], 404);
         }
-        $result = $this->adminServices->getPersonelsByIdAndCongressId($congress_id,$admin_id);
+        $result = $this->adminServices->getPersonelsByIdAndCongressId($congress_id, $admin_id);
         return response()->json($result);
     }
+
     public
     function downloadQrCode($adminId)
     {
@@ -635,9 +663,11 @@ class AdminController extends Controller
 
         return response()->json(["reference" => $user->ref_payment]);
     }
+
     // getting only admins with privilege = 1
-    public function getClients(){
-      return  $this->adminServices->getClients();
+    public function getClients()
+    {
+        return $this->adminServices->getClients();
     }
 
     public function delete($adminId)
@@ -645,29 +675,29 @@ class AdminController extends Controller
         $admin = $this->adminServices->getAdminById($adminId);
         if (!$admin) {
             return response()->json(['response' => 'admin not found'], 404);
-        }
-        elseif ($admin) {
+        } elseif ($admin) {
             $admin->delete();
         }
         return response()->json(['response' => 'admin deleted'], 202);
     }
 
-    public function store(Request $request,$pack_id)
+    public function store(Request $request, $pack_id)
     {
-        if (!$request->has(['name', 'mobile','email'])) {
+        if (!$request->has(['name', 'mobile', 'email'])) {
             return response()->json(['response' => 'invalid request',
                 'content' => ['name', 'mobile', 'email']], 400);
         }
-        $admin =  new Admin();
+        $admin = new Admin();
         $pack = $this->packAdminServices->getPackById($pack_id);
         $history = new HistoryPack();
         $payment = new PaymentAdmin();
-        $admin =$this->adminServices->AddAdmin($request, $admin);
-        $this->adminServices->addPayment($payment,$admin,$pack);
-        $this->adminServices->addHistory($history,$admin,$pack);
+        $admin = $this->adminServices->AddAdmin($request, $admin);
+        $this->adminServices->addPayment($payment, $admin, $pack);
+        $this->adminServices->addHistory($history, $admin, $pack);
         return response()->json(['response' => 'admin added with payment and history'], 202);
     }
-    public function update(Request $request , $admin_id)
+
+    public function update(Request $request, $admin_id)
     {
         $admin = $this->adminServices->getAdminById($admin_id);
         if (!$admin) {

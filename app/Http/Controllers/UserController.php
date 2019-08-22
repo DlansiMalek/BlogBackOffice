@@ -925,7 +925,6 @@ class UserController extends Controller
             return response()->json(['error' => 'user not found'], 400);
         if ($this->userServices->usedQrCode($request->qrCode))
             return response()->json(['error' => 'used-qr-code'], 400);
-        $user->isPresent = 1;
         $user->qr_code = $request->get('qrcode');
         $user->save();
         return $user;

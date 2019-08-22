@@ -209,7 +209,7 @@ class UserServices
 
     public function getParticipatorByQrCode($qr_code)
     {
-        return User::where('qr_code', '=', $qr_code)
+        return User::where('qr_code', '=', $qr_code)->with(['accesses'])
             ->first();
     }
 
@@ -370,7 +370,7 @@ class UserServices
 
     public function getUsersByAccess($accessId)
     {
-        return User::with(['privilege', 'country'])
+        return User::with(['country'])
             ->join('User_Access', 'User.user_id', '=', 'User_Access.user_id')
             ->where("access_id", '=', $accessId)
             ->get();

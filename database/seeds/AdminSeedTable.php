@@ -50,7 +50,8 @@ class AdminSeedTable extends Seeder
             'email' => 'organisateur@vayetek.com',
             'mobile' => '77777777',
             'passwordDecrypt' => 'OrganisateurVayetek',
-            'password' => bcrypt('ModerateurVayetek')
+            'privilege_id' => 2,
+            'password' => bcrypt('OrganisateurVayetek')
         ]);
 
         DB::table('Admin')->insert([
@@ -58,6 +59,7 @@ class AdminSeedTable extends Seeder
             'name' => 'Organisme Vayetek',
             'email' => 'organisme@vayetek.com',
             'mobile' => '77777777',
+            'privilege_id' => 7,
             'passwordDecrypt' => 'OrganismeVayetek',
             'password' => bcrypt('OrganismeVayetek')
         ]);

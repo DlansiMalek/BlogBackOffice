@@ -52,7 +52,7 @@ class Congress extends Model
     }
     public function users()
     {
-        return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
+        return $this->belongsToMany('App\Models\User', 'User_Congress', 'user_id', 'congress_id');
     }
 
     public function accesss()

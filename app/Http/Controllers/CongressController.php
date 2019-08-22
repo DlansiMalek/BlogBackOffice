@@ -162,15 +162,7 @@ class CongressController extends Controller
     public function getCongressByAdmin()
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
-        if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(1, $admin->admin_id)) {
-            return response()->json($this->congressServices->getCongressAllAccess($admin->admin_id));
-        }
-
-        if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(2, $admin->admin_id)) {
-            return response()->json($this->congressServices->getCongressAllAccess($admin->responsible));
-        }
-
-        return response()->json(["message" => "bizzare"]);
+        return response()->json($this->congressServices->getCongressAllAccess($admin->admin_id));
     }
 
     public function getBadgesByCongress($congressId)
@@ -299,7 +291,6 @@ class CongressController extends Controller
         }
         return response()->json(['message' => 'send mail successs']);
     }
-
 
 
     public function getAllCongresses()
