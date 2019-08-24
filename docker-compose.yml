@@ -1,20 +1,22 @@
 version: '2'
 services:
     web:
+        container_name: eventizer-api-web
         build:
             context: ./
             dockerfile: web.docker
         volumes:
             - ./:/var/www
         ports:
-            - "8083:80"
+            - 127.0.0.1:8085:80
         links:
             - app
         environment:
-            VIRTUAL_HOST: congress-api.vayetek.com
-            LETSENCRYPT_HOST: congress-api.vayetek.com
+            VIRTUAL_HOST: eventizer-api.vayetek.com
+            LETSENCRYPT_HOST: eventizer-api.vayetek.com
             LETSENCRYPT_EMAIL: vayetek@gmail.com
     app:
+        container_name: eventizer-api-app
         build:
             context: ./
             dockerfile: app.docker
