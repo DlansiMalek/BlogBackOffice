@@ -23,7 +23,7 @@ class User extends Authenticatable
     //Speaker Access
     function speaker_access()
     {
-        return $this->belongsToMany('App\Models\Access', 'Access_speaker', 'user_id', 'access_id');
+        return $this->belongsToMany('App\Models\Access', 'Access_Speaker', 'user_id', 'access_id');
     }
 
     //ChairPerson Access
