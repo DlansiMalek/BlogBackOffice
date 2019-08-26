@@ -323,12 +323,6 @@ class UserServices
             ->first();
     }
 
-    public function getUserById($user_id)
-    {
-        return User::with(["accesses"])
-            ->find($user_id);
-
-    }
 
     public function isAllowedAccess($participator, $accessId)
     {
@@ -886,6 +880,22 @@ class UserServices
             ->first();
     }
 
+    public function getUserById($userId){
+        return User::with(['user_congresses.congress.accesss.speakers',
+            'user_congresses.congress.accesss.chairs',
+            'user_congresses.congress.accesss.sub_accesses',
+            'user_congresses.congress.accesss.topic',
+            'user_congresses.congress.accesss.type',
+            'user_congresses.privilege',
+            'user_congresses.pack',
+            'accesses',
+            'speaker_access',
+            'chair_access',
+            'country',
+            'likes'])
+            ->where('user_id', '=', $userId)
+            ->first();
+    }
 
     public function getUserCongressLocal($userCongresss, $congressId)
     {
