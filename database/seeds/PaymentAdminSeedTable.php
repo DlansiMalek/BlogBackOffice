@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class PaymentAdminSeedTable extends Seeder
 {
@@ -12,7 +13,7 @@ class PaymentAdminSeedTable extends Seeder
     public function run()
     {
         //
-        DB::table('Payment_admin')->insert([
+        DB::table('Payment_Admin')->insert([
             'isPaid' => 0,
             'reference' => 'testReference',
             'authorization' => 'testauth ',
@@ -21,7 +22,7 @@ class PaymentAdminSeedTable extends Seeder
             'pack_admin_id' => 1 ,
             'admin_id' => 3
         ]);
-        DB::table('Payment_admin')->insert([
+        DB::table('Payment_Admin')->insert([
             'isPaid' => 0,
             'reference' => 'testReference2',
             'authorization' => 'testauth 2',

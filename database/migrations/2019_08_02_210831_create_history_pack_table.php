@@ -13,7 +13,7 @@ class CreateHistoryPackTable extends Migration
      */
     public function up()
     {
-        Schema::create('History_pack', function (Blueprint $table) {
+        Schema::create('History_Pack', function (Blueprint $table) {
             $table->increments('history_id');
             $table->tinyInteger('status');
             $table->date('start_date')->nullable();
@@ -34,10 +34,10 @@ class CreateHistoryPackTable extends Migration
      * @return void
      */
     public function down()
-    { Schema::table('history_pack', function (Blueprint $table) {
-        $table->dropForeign(['pack_id']);
+    { Schema::table('History_Pack', function (Blueprint $table) {
+        $table->dropForeign(['pack_admin_id']);
         $table->dropForeign(['admin_id']);
     });
-        Schema::dropIfExists('history_pack');
+        Schema::dropIfExists('History_Pack');
     }
 }

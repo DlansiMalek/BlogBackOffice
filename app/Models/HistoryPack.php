@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class HistoryPack extends Model
 {
-    protected $table = 'History_pack';
+    protected $table = 'History_Pack';
     protected $primaryKey = 'history_id';
     protected $fillable = ['status','start_date','end_date','nbr_events','pack_admin_id', 'admin_id'];
 
