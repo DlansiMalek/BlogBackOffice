@@ -66,8 +66,8 @@ Route::group(['prefix' => 'users'], function () {
         Route::get('', 'UserController@getUserById');
         Route::put('', 'UserController@update');
         Route::delete('congress/{congressId}/delete', 'UserController@delete');
-        Route::post('upload-payement', 'UserController@uploadPayement');
-        Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
+        Route::post('congress/{congressId}/upload-payement', 'UserController@uploadPayement');
+        Route::get('congress/{congressId}/validate/{validation_code}', 'UserController@validateUserAccount');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');

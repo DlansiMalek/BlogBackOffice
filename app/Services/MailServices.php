@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Mail;
 use App\Models\MailType;
+use App\Models\UserMail;
 
 class MailServices
 {
@@ -61,5 +62,15 @@ class MailServices
             ->where('mail_id', '=', $mailId)
             ->
             first();
+    }
+
+    public function addingMailUser($mailId, $userId)
+    {
+        $mailUser = new UserMail();
+        $mailUser->user_id = $userId;
+        $mailUser->mail_id = $mailId;
+        $mailUser->save();
+
+        return $mailUser;
     }
 }

@@ -8,6 +8,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\MailServices;
 use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
@@ -31,6 +32,7 @@ class UserController extends Controller
     protected $packServices;
     protected $organizationServices;
     protected $paymentServices;
+    protected $mailServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -39,7 +41,8 @@ class UserController extends Controller
                          AccessServices $accessServices,
                          PackServices $packServices,
                          OrganizationServices $organizationServices,
-                         PaymentServices $paymentServices)
+                         PaymentServices $paymentServices,
+                         MailServices $mailServices)
     {
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -50,6 +53,7 @@ class UserController extends Controller
         $this->packServices = $packServices;
         $this->organizationServices = $organizationServices;
         $this->paymentServices = $paymentServices;
+        $this->mailServices = $mailServices;
     }
 
     public function getUserByTypeAndCongressId($congress_id, $privilege_id)
@@ -150,18 +154,6 @@ class UserController extends Controller
         return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
-    public function sendingMailWithAttachement($userId)
-    {
-        if (!$user = $this->userServices->getParticipatorById($userId)) {
-            return response()->json(["error" => "User not found"], 404);
-        }
-
-        $this->userServices->impressionBadge($user);
-
-        $this->userServices->sendMail($user);
-
-        return response()->json(["message" => "email sending success"], 200);
-    }
 
     public function getUsersByCongress($congressId)
     {
@@ -225,9 +217,6 @@ class UserController extends Controller
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
-        /*if (!$request->has(['gender', 'mobile', 'country_id']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['gender', 'mobile', 'country_id']], 400);
-        */
 
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
@@ -283,15 +272,15 @@ class UserController extends Controller
             }
         }
         // Sending Mail
-        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
+        $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
         if ($privilegeId != 3 || !$congress->config->has_payment || $isFree) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
                     if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                            null);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false, $userMail);
                     }
                 }
             }
@@ -306,8 +295,8 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                        null);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
         } else {
@@ -318,174 +307,13 @@ class UserController extends Controller
             $user->price = $request->input("price");
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
-                        $link);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false, $userMail);
                 }
             }
         }
 
         return $user;
-    }
-
-    public function registerUserToCongress(Request $request, $congressId)
-    {
-
-        if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
-            if (!$request->has(['first_name', 'last_name', 'gender'])
-            ) {
-                return response()->json(['response' => 'invalid request',
-                    'content' => ['first_name', 'last_name', 'mobile', 'email',
-                        'price', 'gender', 'country_id', 'organization_id']], 400);
-            }
-        } else
-            if (!$request->has(['first_name', 'last_name', 'mobile', 'email',
-                'price', 'gender', 'country_id'])) {
-                return response()->json(['response' => 'invalid request',
-                    'content' => ['first_name', 'last_name', 'mobile', 'email',
-                        'price', 'gender', 'country_id', 'organization_id']], 400);
-            }
-
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
-        }
-
-        //TODO Fixing Register User with new Design
-        if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
-
-//            ||$user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'),$request->input('last_name'))
-        ) {
-            return response()->json(['error' => 'user exist'], 400);
-        }
-
-        if ($request->has("organization_id") && $request->input("organization_id") &&
-            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
-            return response()->json(['error' => 'organization not found'], 404);
-        }
-
-        if ((!$request->has('organization_accepted') || !$request->get('organization_accepted')) && $user = $this->userServices->getUserByEmail($congressId, $request->input('email'))) {
-            return response()->json(['error' => 'user exist'], 400);
-        }
-
-        if ($user = $this->userServices->getUserByEmail($congressId, $request->input('email'))
-            || $user = $this->userServices->getUserByNameAndFName($congressId, $request->input('first_name'), $request->input('last_name'))) {
-            return response()->json(['error' => 'user exist'], 400);
-        }
-
-        $accessIds = $request->input("accessIds");
-
-        $request->merge(["congressId" => $congressId]);
-        $freeUsersCount = $this->userServices->getFreeCountByCongressId($congressId);
-        $totalUsersCount = $this->userServices->getUsersCountByCongressId($congressId);
-        if ((!$request->input('privilege_id') || $request->input('privilege_id') == 3) && $freeUsersCount < $congress->free && !($totalUsersCount % 10))
-            $request->merge(["free" => 1]);
-        $user = $this->userServices->registerUser($request);
-
-
-        $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
-
-        $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
-
-        $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
-
-        if ($user->privilege_id == 3) {
-            if ($user->pack)
-                $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
-            else $this->userServices->affectAccess($user->user_id, $accessIds, []);
-        } else {
-            $accesss = $this->accessServices->getAllAccessByCongress($congressId);
-            $this->userServices->affectAllAccess($user->user_id, $accesss);
-        }
-
-        if (!$user) {
-            return response()->json(['response' => 'user exist'], 400);
-        }
-        $user = $this->userServices->getUserById($user->user_id);
-
-        $link = $request->root() . "/api/users/" . $user->user_id . '/validate/' . $user->verification_code;
-        if ($user->privilege_id == 3) {
-            if ($request->has('organization_accepted') && $request->get('organization_accepted')) {
-                $organization = $this->organizationServices->getOrganizationById($user->organization_id);
-                $organization->congress_organization->montant += $user->price;
-                $organization->congress_organization->update();
-                if ($user->email) {
-                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-                    $fileAttached = false;
-                    if ($badgeIdGenerator != null) {
-                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                            $user->qr_code);
-                        $fileAttached = true;
-                    }
-
-                    $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-                    if ($mailtype = $this->congressServices->getMailType('subvention')) {
-                        if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
-                                $link);
-                        }
-                    }
-
-                    if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                        if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                                $link);
-                        }
-                    }
-
-                }
-            } else if ($congress->has_paiement) {
-
-                if ($user->organization_accepted) {
-                    if ($mailtype = $this->congressServices->getMailType('free')) {
-                        if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                                null);
-                        }
-                    }
-
-                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-                    $fileAttached = false;
-                    if ($badgeIdGenerator != null) {
-                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                            $user->qr_code);
-                        $fileAttached = true;
-                    }
-
-                    if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                        if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                                null);
-                        }
-                    }
-                } else {
-                    if ($mailtype = $this->congressServices->getMailType('inscription')) {
-                        if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, false,
-                                $link);
-                        }
-                    }
-                }
-            } else {
-                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
-                $fileAttached = false;
-                if ($badgeIdGenerator != null) {
-                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                        $user->qr_code);
-                    $fileAttached = true;
-                }
-                if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                    if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                            null);
-                    }
-                }
-            }
-        }
-
-
-        return response()->json($this->userServices->getParticipatorById($user->user_id), 201);
     }
 
     public function editerUserToCongress(Request $request, $congressId)
@@ -528,9 +356,10 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    function validateUserAccount($student_id = null, $token = null)
+    function validateUserAccount($userId = null, $congressId = null, $token = null)
     {
-        $user = $this->userServices->getUserById($student_id);
+        Log::info($token);
+        $user = $this->userServices->getUserById($userId);
         if (!$user) {
             return response()->json(['response' => 'Votre compte à été supprimé'], 404);
         }
@@ -538,7 +367,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token);
+            return response()->redirectTo(Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -653,8 +482,7 @@ class UserController extends Controller
                 if ($congress->has_paiement) {
                     if ($mailtype = $this->congressServices->getMailType('paiement')) {
                         if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                                null);
+                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false);
                         }
                     }
                 } else {
@@ -668,8 +496,7 @@ class UserController extends Controller
                     }
                     if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                         if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                                null);
+                            $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached);
                         }
                     }
                 }
@@ -709,17 +536,22 @@ class UserController extends Controller
         }
     }
 
-    public function changePaiement($userId, Request $request)
+    public function changePaiement($paymentId, Request $request)
     {
-        $isPaied = $request->input('status');
+        $isPaid = $request->input('status');
 
-        if (!$user = $this->userServices->getUserById($userId)) {
+        if (!$userPayement = $this->userServices->getPaymentById($paymentId)) {
+            return response()->json(['error' => 'payment not found'], 404);
+        }
+        if (!$user = $this->userServices->getUserById($userPayement->user_id)) {
             return response()->json(['error' => 'user not found'], 404);
         }
-        $congress = $this->congressServices->getCongressById($user->congress_id);
+        $congress = $this->congressServices->getCongressById($userPayement->congress_id);
 
-        if ($user->isPaied == 2 && $isPaied == 1) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
+
+        if ($userPayement->isPaid == 2 && $isPaid == 1) {
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
@@ -728,24 +560,24 @@ class UserController extends Controller
                 $fileAttached = true;
             }
 
-            $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+            // $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
             if ($mailtype = $this->congressServices->getMailType('paiement')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
-                        $link);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null, $userMail);
                 }
             }
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                        $link);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
 
         }
-        $user->isPaied = $isPaied;
-        $user->update();
+        $userPayement->isPaid = $isPaid;
+        $userPayement->update();
 
         return response()->json(['message' => 'user updated success']);
     }
@@ -804,19 +636,19 @@ class UserController extends Controller
         return response()->json(['message' => 'email sended success']);
     }
 
-    public function uploadPayement($userId, Request $request)
+    public function uploadPayement($userId, $congressId, Request $request)
     {
-        if (!$user = $this->userServices->getUserById($userId)) {
+        if (!$paymentUser = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $user = $this->userServices->uploadPayement($user, $request);
+        $user = $this->userServices->uploadPayement($paymentUser, $request);
 
         if ($mailtype = $this->congressServices->getMailType('upload')) {
-            if ($mail = $this->congressServices->getMail($user->congress_id, $mailtype->mail_type_id)) {
-                $congress = $this->congressServices->getCongressById($user->congress_id);
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                    null);
+            if ($mail = $this->congressServices->getMail($paymentUser->congress_id, $mailtype->mail_type_id)) {
+                $congress = $this->congressServices->getCongressById($paymentUser->congress_id);
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $paymentUser->user_id);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false, $userMail);
             }
         }
 
@@ -845,8 +677,7 @@ class UserController extends Controller
         if (!$mail = $this->congressServices->getEmailById($mail_id))
             return response()->json(['response' => 'mail not found'], 404);
         $congress = $this->congressServices->getCongressById($user->congress_id);
-        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-            null);
+        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
 
     }

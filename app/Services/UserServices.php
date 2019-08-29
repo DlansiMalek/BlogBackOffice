@@ -86,7 +86,7 @@ class UserServices
 
         if ($request->has('organization_accepted') && $request->get('organization_accepted') == true) {
             $newUser->organization_accepted = $request->input('organization_accepted');
-            $newUser->isPaied = true;
+            $newUser->isPaid = true;
         }
 
         if ($request->has('privilege_id')) {
@@ -122,7 +122,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        $user = User::with(['accesss', 'pack.accesses', 'responses.values', 'responses.form_input.values',
+        $user = User::with(['accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
 //        $response = array_map(function ($response) {
@@ -601,7 +601,7 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $link = null, $userMail = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null)
     {
         unset($user->price);
 
@@ -621,8 +621,6 @@ class UserServices
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
-            Log::info($exception);
-            $user->email_sended = -1;
             if ($userMail) {
                 $userMail->status = -1;
                 $userMail->update();
@@ -632,8 +630,10 @@ class UserServices
             Storage::delete('app/badge.png');
             return 1;
         }
-
-        $user->email_sended = 1;
+        if ($userMail) {
+            $userMail->status = 1;
+            $userMail->update();
+        }
         $user->gender = $user->gender == 'Mr.' ? 1 : 2;
         $user->update();
         Storage::delete('app/badge.png');
@@ -676,7 +676,7 @@ class UserServices
             ->get();
     }
 
-    public function uploadPayement($user, Request $request)
+    public function uploadPayement($userPayment, Request $request)
     {
         ini_set('post_max_size', '15M');
         ini_set('upload_max_filesize', '15M');
@@ -685,12 +685,12 @@ class UserServices
         $chemin = config('media.payement-user-recu');
         $path = $file->store($chemin);
 
-        $user->path_payement = $path;
-        $user->isPaied = 2;
+        $userPayment->path = $path;
+        $userPayment->isPaid = 2;
 
-        $user->update();
+        $userPayment->update();
 
-        return $user;
+        return $userPayment;
     }
 
     public function getUserByRef($ref)
@@ -816,7 +816,7 @@ class UserServices
         return $user;
     }
 
-    public function saveUser(Request $request, User $user)
+    public function saveUser(Request $request)
     {
         $user = new User();
         $user->email = $request->email;
@@ -825,6 +825,7 @@ class UserServices
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
+        $user->verification_code = str_random(40);
         $user->save();
         if (!$user->qr_code) {
             $user->qr_code = Utils::generateCode($user->user_id);
@@ -908,6 +909,19 @@ class UserServices
     {
         return Payment::where('congress_id', '=', $congressId)
             ->where('user_id', '=', $userId)
+            ->first();
+    }
+
+    public function getPaymentByUserId($congressId, $userId)
+    {
+        return Payment::where('congress_id', '=', $congressId)
+            ->where('user_id', '=', $userId)
+            ->first();
+    }
+
+    public function getPaymentById($paymentId)
+    {
+        return Payment::where('payment_id', '=', $paymentId)
             ->first();
     }
 
@@ -998,7 +1012,7 @@ class UserServices
         }
 
         if (array_key_exists('paid', $user)) {
-            $userData->isPaied = $user['paid'];
+            $userData->isPaid = $user['paid'];
         }
 
         $userData->save();

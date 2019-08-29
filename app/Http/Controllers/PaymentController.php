@@ -57,7 +57,7 @@ class PaymentController extends Controller
                 }
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=" . $price;
             case "ACCORD" :
-                $user->isPaied = 1;
+                $user->isPaid = 1;
                 $user->authorization = $param;
                 $user->update();
 
@@ -82,8 +82,7 @@ class PaymentController extends Controller
                 }
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                            null);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached);
                     }
                 }
 
@@ -91,19 +90,19 @@ class PaymentController extends Controller
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "REFUS":
-                $user->isPaied = 0;
+                $user->isPaid = 0;
                 $user->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ERREUR":
-                $user->isPaied = 0;
+                $user->isPaid = 0;
                 $user->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ANNULATION":
-                $user->isPaied = 0;
+                $user->isPaid = 0;
                 $user->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";

@@ -203,8 +203,7 @@ class CongressController extends Controller
                             $user->qr_code);
                         $this->userServices->sendMail($this->congressServices
                             ->renderMail($mail->template, $congress, $user, null, null),
-                            $user, $congress, $mail->object, true,
-                            null);
+                            $user, $congress, $mail->object, true);
                     }
                 }
             }
@@ -322,8 +321,7 @@ class CongressController extends Controller
             }
 
             if ($userMail) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                    null, $userMail);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false, $userMail);
             }
 
 

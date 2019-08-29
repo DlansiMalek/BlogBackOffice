@@ -16,7 +16,7 @@ class CreateUserMailTable extends Migration
         Schema::create('User_Mail', function (Blueprint $table) {
             $table->increments('user_mail_id');
 
-            $table->unsignedTinyInteger('status');
+            $table->tinyInteger('status')->default(0);
 
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');

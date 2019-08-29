@@ -105,9 +105,9 @@ class OrganizationController extends Controller
         $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
         foreach ($organization->users as $user) {
             $organization->congress_organization->montant += $user->price;
-            if (!$user->organization_accepted || !$user->isPaied) {
+            if (!$user->organization_accepted || !$user->isPaid) {
                 $user->organization_accepted = true;
-                $user->isPaied = 1;
+                $user->isPaid = 1;
                 $user->update();
                 $this->sendMail($congress, $user);
             }
@@ -129,7 +129,7 @@ class OrganizationController extends Controller
 
         $organization->congress_organization->montant += $user->price;
         $user->organization_accepted = true;
-        $user->isPaied = 1;
+        $user->isPaid = 1;
         $user->update();
         $organization->congress_organization->update();
         $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
@@ -152,15 +152,13 @@ class OrganizationController extends Controller
         $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, $organization), $user, $congress, $mail->object, null,
-                    $link);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, $organization), $user, $congress, $mail->object, null);
             }
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached,
-                    $link);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }
