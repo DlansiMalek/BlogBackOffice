@@ -12,6 +12,9 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
+use App\Models\HistoryPack;
+use DateInterval;
+use DateTime;
 use Illuminate\Http\Request;
 use JWTAuth;
 
@@ -48,29 +51,65 @@ class AdminServices
             ->with(['admin_congresses.congress', 'admin_congresses.privilege'])
             ->first();
     }
+
+    public function getAdminByMail($admin_mail)
+    {
+        return Admin::where("email", "=", $admin_mail)
+            ->first();
+    }
+
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
+            ->with(['AdminHistories.pack'])
             ->get();
     }
-    public function AddAdmin($request ,$admin){
+
+    public function getClienthistoriesbyId($id)
+    {
+        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=', $id)
+            ->with(['AdminHistories.pack'])
+            ->get();
+    }
+
+    public function gethistorybyId($id)
+    {
+        return HistoryPack::where("history_id", "=", $id)
+            ->first();
+    }
+
+    public function getClientcongressesbyId($id)
+    {
+        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=', $id)
+            ->with(['congresses'])
+            ->get();
+    }
+
+    public function AddAdmin($request, $admin)
+    {
         $admin->name = $request->input('name');
         $admin->mobile = $request->input('mobile');
         $admin->email = $request->input('email');
-        $admin->privilege_id = 1 ;
+        $admin->privilege_id = 1;
         $admin->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
         $admin->save();
         return $admin;
     }
-    public function addHistory($history,$admin,$pack){
+
+    public function addHistory($history, $admin, $pack)
+    {
         $history->admin_id = $admin->admin_id;
-        $history->pack_id = $pack->pack_id;
-        $history->status = "en cours";
-        $history->save();}
-    public function addPayment($payment,$admin,$pack){
+        $history->pack_admin_id = $pack->pack_admin_id;
+        $history->status = 0;
+        $history->nbr_events = $pack->nbr_events;
+        $history->save();
+    }
+
+    public function addPayment($payment, $admin, $pack)
+    {
         $payment->admin_id = $admin->admin_id;
-        $payment->pack_id = $pack->pack_id;
+        $payment->pack_admin_id = $pack->pack_admin_id;
         $payment->isPaid = false;
         $payment->reference = "";
         $payment->authorization = "";
@@ -78,7 +117,30 @@ class AdminServices
         $payment->save();
     }
 
-        public function getAdminCongresses(Admin $admin)
+    public function addValidatedHistory($history, $admin, $pack, $lasthistory)
+    {
+        $history->admin_id = $admin->admin_id;
+        $history->pack_admin_id = $pack->pack_admin_id;
+        $history->status = 1;
+        if ($pack->type == 'Event') {
+            $history->nbr_events = $lasthistory->nbr_events - 1;
+        } else {
+            $history->nbr_events = $pack->nbr_events;
+        }
+        if ($pack->type == 'Duree') {
+            $date = new DateTime();
+            $history->start_date = $date->format('Y-m-d H:i:s');
+            $date->add(new DateInterval('P' . $pack->nbr_days . 'D'));
+            $history->end_date = $date->format('Y-m-d H:i:s');
+        } else {
+            $date = new DateTime();
+            $history->start_date = $date->format('Y-m-d H:i:s');
+            $history->end_date = $date->format('Y-m-d H:i:s');
+        }
+        $history->save();
+    }
+
+    public function getAdminCongresses(Admin $admin)
     {
         return Congress::whereHas('admin_congresses', function ($query) use ($admin) {
             $query->where('admin_id', '=', $admin->admin_id);
@@ -97,15 +159,15 @@ class AdminServices
             ->get();
     }
 
-    public function getPersonelsByIdAndCongressId($congress_id,$admin_id)
+    public function getPersonelsByIdAndCongressId($congress_id, $admin_id)
     {
-        return Admin::where('admin_id','=',$admin_id)
+        return Admin::where('admin_id', '=', $admin_id)
 //        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
 //            $query->where('congress_id', '=', $congress_id);
 //        })
-            ->with(['admin_congresses' => function ($query) use ($congress_id,$admin_id) {
+            ->with(['admin_congresses' => function ($query) use ($congress_id, $admin_id) {
                 $query->where('congress_id', '=', $congress_id)
-                    ->where('admin_id','=',$admin_id)
+                    ->where('admin_id', '=', $admin_id)
                     ->first();
             }])
             ->first();
@@ -121,7 +183,8 @@ class AdminServices
         }
     }
 
-    function generateRandomString($length = 10) {
+    function generateRandomString($length = 10)
+    {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
@@ -131,15 +194,17 @@ class AdminServices
         return $randomString;
     }
 
-    public function generateNewPassword(Admin $admin) {
-        $newPassword =  $this->generateRandomString(20);
-        Admin::where('admin_id','=',$admin->admin_id)
+    public function generateNewPassword(Admin $admin)
+    {
+        $newPassword = $this->generateRandomString(20);
+        Admin::where('admin_id', '=', $admin->admin_id)
             ->update(['passwordDecrypt' => $newPassword,
                 'password' => bcrypt($newPassword)]);
         return $newPassword;
     }
 
-    public function sendForgetPasswordEmail(Admin $admin) {
+    public function sendForgetPasswordEmail(Admin $admin)
+    {
 
 
     }
@@ -159,12 +224,13 @@ class AdminServices
 
         return $personnel;
     }
+
     public function editPersonnel($admin)
     {
         return Admin::where("admin_id", "=", $admin['admin_id'])
             ->update(['name' => $admin["name"],
-                    'email' => $admin["email"],
-                    'mobile' => $admin["mobile"]]);
+                'email' => $admin["email"],
+                'mobile' => $admin["mobile"]]);
 
     }
 
@@ -178,7 +244,7 @@ class AdminServices
         //TODO Fixing with the new Design
         $admin = Admin::where("passwordDecrypt", "=", $QrCode)
             ->first();
-        $admin->admin = $admin->privilege_id==1;
+        $admin->admin = $admin->privilege_id == 1;
         return $admin;
     }
 
@@ -188,7 +254,9 @@ class AdminServices
         if (!$admin = $this->getAdminById($request->user()['admin_id'])) return null;
         return $admin;
     }
-    public function updateAdmin(Request $request, $updateAdmin) {
+
+    public function updateAdmin(Request $request, $updateAdmin)
+    {
         if (!$updateAdmin) {
             return null;
         }

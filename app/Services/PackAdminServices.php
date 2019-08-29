@@ -15,12 +15,12 @@ class PackAdminServices
     }
     public function getModulesFromPack($packid){
         return PackAdmin::with(['modules'])
-            ->where('pack_id', '=', $packid)
+            ->where('pack_admin_id', '=', $packid)
             ->first();
     }
     public function getPackById($packId)
     {
-    return PackAdmin::where('pack_id', '=', $packId)
+    return PackAdmin::where('pack_admin_id', '=', $packId)
         ->first();
     }
 
@@ -50,7 +50,7 @@ class PackAdminServices
         return null;
     }
     $pm = new PackModule();
-    $pm->pack_id = $pack->pack_id;
+    $pm->pack_admin_id = $pack->pack_admin_id;
     $pm->module_id = $module_id;
     $pm->save();
 }

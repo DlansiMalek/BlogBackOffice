@@ -161,12 +161,20 @@ Route::group(['prefix' => 'packadmin'], function () {
     Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
 
     Route::get('clients/all', 'AdminController@getClients');
+    Route::get('clients/{adminId}/histories', 'AdminController@getClienthistoriesbyId');
+    Route::get('clients/{adminId}/congresses', 'AdminController@getClientcongressesbyId');
     Route::delete('admins/{adminId}/delete', 'AdminController@delete');
+
+    Route::post('admins/{admin_id}/{pack_id}/validate/{history_id}', 'AdminController@ActivatePackForAdmin');
+
     Route::post('admins/add/{pack_id}', 'AdminController@store');
+    Route::get('admins/{adminId}', 'AdminController@getAdminById');
+    Route::get('packs/{packId}', 'PackAdminController@getPackById');
     Route::put('admins/{admin_id}/update', 'AdminController@update');
-    Route::post('Demo', 'CongressController@addDemo');
+    Route::post('Demo/{admin_id}', 'CongressController@addDemo');
     Route::get('congress/all', 'CongressController@getAll');
     Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
+    Route::delete('admins/{admin_id}/{congressId}', 'CongressController@RemoveCongressFromAdmin');
 
 });
 

@@ -7,7 +7,7 @@ class PackModule extends Model
 {
     protected $table = 'packadmin_module';
     protected $primaryKey = 'id';
-    protected $fillable = ['pack_id', 'module_id'];
+    protected $fillable = ['pack_admin_id', 'module_id'];
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at','deleted_at'];

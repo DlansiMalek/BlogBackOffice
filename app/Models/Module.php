@@ -14,7 +14,7 @@ class Module extends Model
 
     public function adminpacks()
     {
-        return $this->belongsToMany('App\Models\PackAdmin', 'packadmin_module', 'module_id', 'pack_id');
+        return $this->belongsToMany('App\Models\PackAdmin', 'Pack_Admin_Module', 'module_id', 'pack_admin_id');
     }
     
 }

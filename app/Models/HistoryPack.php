@@ -7,8 +7,12 @@ class HistoryPack extends Model
 {
     protected $table = 'History_pack';
     protected $primaryKey = 'history_id';
-    protected $fillable = ['status','pack_id', 'admin_id'];
+    protected $fillable = ['status','start_date','end_date','nbr_events','pack_admin_id', 'admin_id'];
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
+    public function pack()
+    {
+        return $this->hasOne('App\Models\PackAdmin', 'pack_admin_id','pack_admin_id');
+    }
 }
