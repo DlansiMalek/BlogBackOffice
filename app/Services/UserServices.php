@@ -356,9 +356,10 @@ class UserServices
             $query->where('congress_id', '=', $congressId);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
-                return $query->where('congress_id', '=', $congressId)
-                    ->first();
-            }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments'])
+                $query->where('congress_id', '=', $congressId);
+            }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
             ->get();
     }
 
@@ -880,7 +881,8 @@ class UserServices
             ->first();
     }
 
-    public function getUserById($userId){
+    public function getUserById($userId)
+    {
         return User::with(['user_congresses.congress.accesss.speakers',
             'user_congresses.congress.accesss.chairs',
             'user_congresses.congress.accesss.sub_accesses',
