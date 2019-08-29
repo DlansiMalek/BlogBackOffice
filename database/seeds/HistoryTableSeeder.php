@@ -13,17 +13,20 @@ class HistoryTableSeeder extends Seeder
     {
         //
         DB::table('History_pack')->insert([
-            'status' => 'Reserved',
+            'status' => 0,
+            'nbr_events' => 0,
             'pack_admin_id' => 1,
             'admin_id' => 3 // il faut d'abord créer un admin avec cet ID
         ]);
         DB::table('History_pack')->insert([
-            'status' => 'Reserved',
+            'status' => 0,
+            'nbr_events' => 3,
             'pack_admin_id' => 2,
             'admin_id' => 3 // il faut d'abord créer un admin avec cet ID
         ]);
         DB::table('History_pack')->insert([
-            'status' => 'paid',
+            'status' => 1,
+            'nbr_events' => 0,
             'pack_admin_id' => 1,
             'admin_id' => 3 // il faut d'abord créer un admin avec cet ID
         ]);

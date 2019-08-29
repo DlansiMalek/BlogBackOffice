@@ -637,10 +637,22 @@ class AdminController extends Controller
     }
     // getting only admins with privilege = 1
     public function getClients(){
-      return  $this->adminServices->getClients();
+    return  $this->adminServices->getClients();
+}
+    public function getAdminById($adminId){
+        $admin = $this->adminServices->getAdminById($adminId);
+        if (!$admin) {
+            return response()->json(['response' => 'admin not found'], 404);
+        }
+        else{
+            return $admin ;
+        }
     }
-    public function getCongresses(){
-        return  $this->adminServices->getcongresses();
+    public function getClienthistoriesbyId($adminId){
+        return  $this->adminServices->getClienthistoriesbyId($adminId);
+    }
+    public function getClientcongressesbyId($adminId){
+        return  $this->adminServices->getClientcongressesbyId($adminId);
     }
 
     public function delete($adminId)
@@ -661,6 +673,12 @@ class AdminController extends Controller
             return response()->json(['response' => 'invalid request',
                 'content' => ['name', 'mobile', 'email']], 400);
         }
+
+        $admin =$this->adminServices->getAdminByMail($request->input('email'));
+        if ($admin) {
+            return response()->json(['response' => 'admin with same mail found'], 404);
+        }
+        else{
         $admin =  new Admin();
         $pack = $this->packAdminServices->getPackById($pack_id);
         $history = new HistoryPack();
@@ -669,7 +687,7 @@ class AdminController extends Controller
         $this->adminServices->addPayment($payment,$admin,$pack);
         $this->adminServices->addHistory($history,$admin,$pack);
         return response()->json(['response' => 'admin added with payment and history'], 202);
-    }
+    }}
     public function update(Request $request , $admin_id)
     {
         $admin = $this->adminServices->getAdminById($admin_id);
@@ -677,5 +695,14 @@ class AdminController extends Controller
             return response()->json(['response' => 'Admin not found'], 404);
         }
         return response()->json($this->adminServices->updateAdmin($request, $admin), 202);
+    }
+
+    public function ActivatePackForAdmin($admin_id,$pack_id,$history_id){
+        $newhistory = new HistoryPack();
+        $previoushistory = $this->adminServices->gethistorybyId($history_id);
+        $pack = $this->packAdminServices->getPackById($pack_id);
+        $admin = $this->adminServices->getAdminById($admin_id);
+        $this->adminServices->addValidatedHistory($newhistory,$admin,$pack,$previoushistory);
+        return response()->json(['response' => 'pack Activated , new  history entry created'], 202);
     }
 }

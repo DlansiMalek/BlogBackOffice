@@ -418,20 +418,21 @@ class CongressController extends Controller
         $badge->congress_id = $congress->congress_id;
         $badge->save();
 
-        //add access
-        $access = new Access();
-        $access->name = "AccesDemo" ;
-        $access->start_date = date('Y-m-d') ;
-        $access->end_date = date('Y-m-d');
-        $access->access_type_id = 1 ; // type session
-        $access->price = 99;
-        $access->packless = 1 ;
-        $access->description = " description de l'access demo";
-        $access->seuil = 99;
-         $access->max_places = 100 ;
-        $access->congress_id = $congress->congress_id;
-        $access->save();
-
+        //add access (add multiple access)
+        for ($x = 0; $x <= 10; $x++) {
+            $access = new Access();
+            $access->name = "AccesDemo ".$x;
+            $access->start_date = date('Y-m-d');
+            $access->end_date = date('Y-m-d');
+            $access->access_type_id = 1; // type session
+            $access->price = 99;
+            $access->packless = 1;
+            $access->description = " description de l'access demo num " .$x;
+            $access->seuil = 99;
+            $access->max_places = 100;
+            $access->congress_id = $congress->congress_id;
+            $access->save();
+        }
         //add mail
         $this->mailServices->saveMail($congress->congress_id,1,"inscription",'<p>Veuillez cliquer sur ce lien afin de valider votre paiement.</p><p><a href="{{%24link}}">Lien</a></p>');
         $this->mailServices->saveMail($congress->congress_id,2,"Paiement","Veuillez cliquer sur ce lien afin de valider votre paiement");
@@ -449,5 +450,18 @@ class CongressController extends Controller
             $congress->delete();
         }
         return response()->json(['response' => 'congress deleted'], 202);
+    }
+    public function RemoveCongressFromAdmin($admin_id,$congressId)
+    {
+        $congress = $this->congressServices->getCongressById( $congressId);
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if (!($congress && $admin)) {
+            return response()->json(['response' => 'congress or admin not found'], 404);
+        }
+        else {
+        $this->congressServices->RemoveCongressFromAdmin($congressId,$admin_id);
+            return response()->json(['response' => 'congress Removed from Admin'], 202);
+        }
+
     }
 }

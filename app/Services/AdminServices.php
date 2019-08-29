@@ -12,7 +12,10 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
+use App\Models\HistoryPack;
 use App\Models\Privilege;
+use DateInterval;
+use DateTime;
 use Illuminate\Http\Request;
 use JWTAuth;
 
@@ -49,15 +52,31 @@ class AdminServices
             ->with(['admin_congresses.congress', 'admin_congresses.privilege'])
             ->first();
     }
+    public function getAdminByMail($admin_mail)
+    {
+        return Admin::where("email", "=", $admin_mail)
+            ->first();
+    }
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
-            ->with(['AdminHistories'])
+            ->with(['AdminHistories.pack'])
             ->get();
     }
-    public function getcongresses()
+    public function getClienthistoriesbyId($id)
     {
-        return Admin::where("privilege_id", "=", 1)
+        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=',$id)
+            ->with(['AdminHistories.pack'])
+            ->get();
+    }
+    public function gethistorybyId($id)
+    {
+        return HistoryPack::where("history_id", "=", $id)
+        ->first();
+    }
+    public function getClientcongressesbyId($id)
+    {
+        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=',$id)
             ->with(['congresses'])
             ->get();
     }
@@ -75,7 +94,8 @@ class AdminServices
     public function addHistory($history,$admin,$pack){
         $history->admin_id = $admin->admin_id;
         $history->pack_admin_id = $pack->pack_admin_id;
-        $history->status = "en cours";
+        $history->status = 0;
+        $history->nbr_events = $pack->nbr_events;
         $history->save();}
     public function addPayment($payment,$admin,$pack){
         $payment->admin_id = $admin->admin_id;
@@ -86,6 +106,28 @@ class AdminServices
         $payment->path = "";
         $payment->save();
     }
+    public function addValidatedHistory($history,$admin,$pack,$lasthistory){
+        $history->admin_id = $admin->admin_id;
+        $history->pack_admin_id = $pack->pack_admin_id;
+        $history->status = 1;
+        if($pack->type == 'Event'){
+            $history->nbr_events = $lasthistory->nbr_events -1 ;
+        }
+        else{
+        $history->nbr_events = $pack->nbr_events;
+        }
+        if($pack->type == 'Duree'){
+        $date = new DateTime();
+        $history->start_date = $date->format('Y-m-d H:i:s');
+        $date->add(new DateInterval('P'.$pack->nbr_days.'D'));
+        $history->end_date = $date->format('Y-m-d H:i:s');
+        }
+        else{
+            $date = new DateTime();
+            $history->start_date = $date->format('Y-m-d H:i:s');
+            $history->end_date = $date->format('Y-m-d H:i:s');
+        }
+        $history->save();}
 
         public function getAdminCongresses(Admin $admin)
     {

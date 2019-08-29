@@ -63,6 +63,11 @@ class CongressServices
             ->first();
         return $congress;
     }
+    function RemoveCongressFromAdmin($congress_id,$admin_id){
+        $CongressAdmin = AdminCongress::where("congress_id", "=", $congress_id)->where('admin_id', '=', $admin_id)
+        ->first();
+        $CongressAdmin->delete();
+    }
 
     function retrieveCongressFromToken()
     {
