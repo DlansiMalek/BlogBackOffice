@@ -27,7 +27,7 @@ class CreateAccessTable extends Migration
             $table->dateTime("real_start_date")->nullable()->default(null);
             $table->dateTime("start_date");
             $table->dateTime("end_date");
-            $table->unsignedTinyInteger('packless')->default(1);
+            $table->unsignedTinyInteger('packless')->default(0);
             $table->unsignedTinyInteger('show_in_program')->nullable()->default(null);
             $table->unsignedTinyInteger('show_in_register')->default(0);
             $table->unsignedTinyInteger('with_attestation')->default(0);
