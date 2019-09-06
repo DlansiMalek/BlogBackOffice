@@ -149,7 +149,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 });
 
 //PackAdmin API
-/*@todo finish pack admin api */
 Route::group(['prefix' => 'packadmin'], function () {
     Route::get('list', 'PackAdminController@index');
     Route::get('{pack_id}', 'PackAdminController@getPackById');
@@ -159,6 +158,7 @@ Route::group(['prefix' => 'packadmin'], function () {
     Route::get('{pack_id}/modules', 'PackAdminController@getpackmodules');
     Route::get('modules/list', 'PackAdminController@getmodules');
     Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
+    Route::get('mails/admin/{mail_id}', 'MailController@getMailAdminById');
 
     Route::get('clients/all', 'AdminController@getClients');
     Route::get('clients/{adminId}/histories', 'AdminController@getClienthistoriesbyId');
@@ -166,6 +166,7 @@ Route::group(['prefix' => 'packadmin'], function () {
     Route::delete('admins/{adminId}/delete', 'AdminController@delete');
 
     Route::post('admins/{admin_id}/{pack_id}/validate/{history_id}', 'AdminController@ActivatePackForAdmin');
+    Route::post('histories/add', 'AdminController@addHistoryToAdmin');
 
     Route::post('admins/add/{pack_id}', 'AdminController@store');
     Route::get('admins/{adminId}', 'AdminController@getAdminById');
@@ -175,7 +176,9 @@ Route::group(['prefix' => 'packadmin'], function () {
     Route::get('congress/all', 'CongressController@getAll');
     Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
     Route::delete('admins/{admin_id}/{congressId}', 'CongressController@RemoveCongressFromAdmin');
-
+    Route::get('mailtypes/all', 'MailController@getAllMailTypesAdmin');
+    Route::put('mails/{mail_id}/update', 'MailController@updateMailAdmin');
+    Route::post('mails/add', 'MailController@storeMailAdmin');
 });
 
 //User API

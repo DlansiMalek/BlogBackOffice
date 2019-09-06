@@ -4,6 +4,8 @@
 namespace App\Services;
 
 
+use App\MailAdmin;
+use App\MailTypeAdmin;
 use App\Models\Mail;
 use App\Models\MailType;
 
@@ -17,6 +19,12 @@ class MailServices
             if ($congressId)
                 $query->where('congress_id', '=', $congressId);
         }])
+            ->get();
+    }
+    public function getAllMailTypesAdmin()
+    {
+        return MailTypeAdmin::
+        with(['mails'])
             ->get();
     }
 
@@ -61,5 +69,35 @@ class MailServices
             ->where('mail_id', '=', $mailId)
             ->
             first();
+    }
+    public function getMailAdminById($mailId)
+    {
+        return MailAdmin::with(['type'])
+            ->where('mail_id', '=', $mailId)
+            ->
+            first();
+    }
+
+    public function updateMailAdmin($request, $mail)
+    {
+        if (!$mail) {
+            return null;
+        }
+        $mail->mail_id = $request->input('mail_id');
+        $mail->object = $request->input('object');
+        $mail->template = $request->input('template');
+        $mail->mail_type_id = $request->input('mail_type_id');
+        $mail->update();
+        return $mail;
+    }
+
+    public function AddMailAdmin($request, $mail)
+    {
+        $mail->mail_id = $request->input('mail_id');
+        $mail->object = $request->input('object');
+        $mail->template = $request->input('template');
+        $mail->mail_type_id = $request->input('mail_type_id');
+        $mail->save();
+        return $mail;
     }
 }

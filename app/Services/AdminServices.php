@@ -123,7 +123,7 @@ class AdminServices
         $history->pack_admin_id = $pack->pack_admin_id;
         $history->status = 1;
         if ($pack->type == 'Event') {
-            $history->nbr_events = $lasthistory->nbr_events - 1;
+            $history->nbr_events = $pack->nbr_events; //$lasthistory->nbr_events - 1;
         } else {
             $history->nbr_events = $pack->nbr_events;
         }
@@ -268,5 +268,18 @@ class AdminServices
         $updateAdmin->update();
         return $updateAdmin;
     }
-
+public  function addPackToAdmin(Request $request , HistoryPack $history){
+    $history->admin_id = $request->admin_id;
+    $history->pack_admin_id = $request->pack_admin_id;
+    $history->status = $request->status;
+    $history->start_date = $request->start_date;
+    $history->end_date = $request->end_date;
+    $history->nbr_events = $request->nbr_events;
+    if($request->nbr_events){
+        $date = new DateTime();
+        $history->start_date = $date->format('Y-m-d H:i:s');
+        $history->end_date = $date->format('Y-m-d H:i:s');
+    }
+    $history->save();
+}
 }
