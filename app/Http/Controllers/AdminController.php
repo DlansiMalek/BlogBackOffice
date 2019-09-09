@@ -741,4 +741,10 @@ class AdminController extends Controller
         $this->adminServices->addValidatedHistory($newhistory, $admin, $pack, $previoushistory);
         return response()->json(['response' => 'pack Activated , new  history entry created'], 202);
     }
+public function addHistoryToAdmin(Request $request){
+    $newhistory = new HistoryPack();
+    $this->adminServices->addPackToAdmin($request,$newhistory);
+    return response()->json(['response' => 'pack Added , new  history entry created'], 202);
+
+}
 }

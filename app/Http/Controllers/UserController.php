@@ -451,6 +451,11 @@ class UserController extends Controller
 
     }
 
+    public function getAllPayementTypes()
+    {
+        return response()->json($this->paymentServices->getAllPaymentTypes());
+    }
+
     public function addingFastUserToCongress($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {

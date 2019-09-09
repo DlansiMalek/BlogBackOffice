@@ -16,7 +16,7 @@ class CreateAccessPresenceTable extends Migration
         Schema::create('Access_Presence', function (Blueprint $table) {
             $table->increments('access_presence_id');
             $table->dateTime('entered_at');
-            $table->dateTime('left_at');
+            $table->dateTime('left_at')->nullable()->default(null);
 
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');

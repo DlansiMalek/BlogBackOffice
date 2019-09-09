@@ -10,6 +10,7 @@ namespace App\Services;
 
 
 use App\Models\Payment;
+use App\Models\PaymentType;
 
 class PaymentServices
 {
@@ -32,5 +33,10 @@ class PaymentServices
         return Payment::where('free', '=', true)
             ->where('congress_id', '=', $congress_id)
             ->count();
+    }
+
+    public function getAllPaymentTypes()
+    {
+        return PaymentType::all();
     }
 }

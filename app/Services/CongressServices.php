@@ -82,9 +82,11 @@ class CongressServices
         return ConfigCongress::where("congress_id", "=", $id_Congress)
             ->first();
     }
-    function RemoveCongressFromAdmin($congress_id,$admin_id){
+
+    function RemoveCongressFromAdmin($congress_id, $admin_id)
+    {
         $CongressAdmin = AdminCongress::where("congress_id", "=", $congress_id)->where('admin_id', '=', $admin_id)
-        ->first();
+            ->first();
         $CongressAdmin->delete();
     }
 
@@ -145,6 +147,7 @@ class CongressServices
         $configCongress->voting_token = $configCongressRequest['voting_token'];
         $configCongress->prise_charge_option = $configCongressRequest['prise_charge_option'];
         $configCongress->feedback_start = $configCongressRequest['feedback_start'];
+        $configCongress->nb_ob_access = $configCongressRequest['nb_ob_access'];
         $configCongress->congress_id = $congressId;
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
