@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(CongressSeedTable::class);
         // $this->call(ConfigCongressSeedTable::class);
         $this->call(PrivilegeTableSeeder::class);
-        // $this->call(AdminSeedTable::class);
+        $this->call(AdminSeedTable::class);
         // $this->call(OrganizationSeedTable::class);
         // $this->call(AdminCongressSeedTable::class);
         // $this->call(BadgeSeedTable::class);

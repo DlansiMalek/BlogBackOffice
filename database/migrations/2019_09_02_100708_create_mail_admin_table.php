@@ -22,7 +22,7 @@ class CreateMailAdminTable extends Migration
 
 
             $table->unsignedInteger("mail_type_id");
-            $table->foreign("mail_type_id")->references('mail_type_id')->on('Mail_Type');
+            $table->foreign("mail_type_id")->references('mail_type_id')->on('Mail_Type_Admin');
 
             $table->timestamps();
             $table->softDeletes();

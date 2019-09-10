@@ -245,7 +245,7 @@ class UserController extends Controller
         // Affect All Access Free (To All Users)
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, false);
 
-        $this->userServices->affectAccess($user->user_id, $accessNotInRegister, []);
+        $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
 
         //TODO Manage Organization Acceptation
@@ -256,7 +256,7 @@ class UserController extends Controller
             $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
         } else {
             $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, true);
-            $this->userServices->affectAccess($user->user_id, $accessInRegister, []);
+            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
         }
 
 

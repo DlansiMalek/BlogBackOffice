@@ -19,5 +19,8 @@ class AccessTypeSeedTable extends Seeder
         DB::table('Access_Type')->insert([
             'label' => 'Atelier',
         ]);
+        DB::table('Access_Type')->insert([
+            'label' => 'Pause',
+        ]);
     }
 }

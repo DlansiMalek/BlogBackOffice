@@ -85,7 +85,7 @@ class AdminServices
             ->get();
     }
 
-    public function AddAdmin($request, $admin)
+    public function AddAdmin(Request $request, $admin)
     {
         $admin->name = $request->input('name');
         $admin->mobile = $request->input('mobile');
@@ -268,18 +268,20 @@ class AdminServices
         $updateAdmin->update();
         return $updateAdmin;
     }
-public  function addPackToAdmin(Request $request , HistoryPack $history){
-    $history->admin_id = $request->admin_id;
-    $history->pack_admin_id = $request->pack_admin_id;
-    $history->status = $request->status;
-    $history->start_date = $request->start_date;
-    $history->end_date = $request->end_date;
-    $history->nbr_events = $request->nbr_events;
-    if($request->nbr_events){
-        $date = new DateTime();
-        $history->start_date = $date->format('Y-m-d H:i:s');
-        $history->end_date = $date->format('Y-m-d H:i:s');
+
+    public function addPackToAdmin(Request $request, HistoryPack $history)
+    {
+        $history->admin_id = $request->admin_id;
+        $history->pack_admin_id = $request->pack_admin_id;
+        $history->status = $request->status;
+        $history->start_date = $request->start_date;
+        $history->end_date = $request->end_date;
+        $history->nbr_events = $request->nbr_events;
+        if ($request->nbr_events) {
+            $date = new DateTime();
+            $history->start_date = $date->format('Y-m-d H:i:s');
+            $history->end_date = $date->format('Y-m-d H:i:s');
+        }
+        $history->save();
     }
-    $history->save();
-}
 }

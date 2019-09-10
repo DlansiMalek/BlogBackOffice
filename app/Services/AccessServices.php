@@ -308,7 +308,11 @@ class AccessServices
 
     public function getAllAccessByRegisterParams($congress_id, $showInRegister)
     {
-        return Access::where('show_in_register', '=', false)
+        return Access::where(function ($query) use ($showInRegister) {
+            if ($showInRegister != null) {
+                $query->where('show_in_register', $showInRegister);
+            }
+        })
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
@@ -348,8 +352,8 @@ class AccessServices
         if (array_key_exists('chair_ids', $sub) && count($sub['chair_ids']))
             $this->editChairs($sub_access->access_id, $sub['chair_ids']);
 
-        if (array_key_exists('speaker_ids', $sub) && count($sub['speaker_ids']))
-            $this->editSpeakers($sub_access->access_id, $sub['speaker_ids']);
+        if (array_key_exists('speakers', $sub) && count($sub['speakers']))
+            $this->editSpeakers($sub_access->access_id, $sub['speakers']);
 
         if (array_key_exists('resource_ids', $sub) && count($sub['resource_ids']))
             $this->resourcesServices->editAccessResources($sub_access->access_id, $sub['resource_ids']);
@@ -373,7 +377,7 @@ class AccessServices
         if (array_key_exists('chair_ids', $new) && count($new['chair_ids'])) {
             $this->editChairs($old->access_id, $new['chair_ids']);
         } else $this->removeAllChairs($old->access_id);
-        if (array_key_exists('speaker_ids', $new) && count($new['speaker_ids'])) {
+        if (array_key_exists('speakers', $new) && count($new['speakers'])) {
             $this->editSpeakers($old->access_id, $new['speaker_ids']);
         } else $this->removeAllSpeakers($old->access_id);
 

@@ -925,6 +925,13 @@ class UserServices
             ->first();
     }
 
+    public function affectAccessElement($user_id, $accesses)
+    {
+        foreach ($accesses as $access) {
+            $this->affectAccessById($user_id, $access->access_id);
+        }
+    }
+
     private function isExistCongress($user, $congressId)
     {
         return Congress_User::where("id_User", "=", $user->id_User)
