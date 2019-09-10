@@ -37,6 +37,7 @@ class OrganizationController extends Controller
 
     public function addOrganization($congress_id, Request $request)
     {
+        $privilegeId = 7; //Privilegg Organisme;
         if (!$request->has(['email', 'name'])) {
             return response()->json(["message" => "invalid request", "required inputs" => ['email', 'nom']], 404);
         }
@@ -45,18 +46,32 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
-        if ($this->organizationServices->exist($congress_id, $request->input('email'))) {
-            return response()->json(["message" => "organization already exists"], 401);
+        $admin = $this->adminServices->getAdminByMail($request->input("email"));
+        if (!$admin) {
+            $admin = $this->adminServices->addPersonnel($request);
+        } else {
+            if ($this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id)) {
+                return response()->json(['error' => 'admin alerady has a privilege in this congress'],500);
+            }
         }
 
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
-            return response()->json(['error' => 'admin_not_found'], 404);
+        $organization = $this->organizationServices->getOrganizationByName($request->input("name"));
+        if (!$organization) {
+            $organization = $this->organizationServices->addOrganization($request, $admin->admin_id);
+        } else {
+            if ($this->organizationServices->exist($congress_id, $organization->organization_id)) {
+                return response()->json(["message" => "organization already exists in this congress"], 401);
+            }
+            $organization->admin_id = $admin->admin_id;
+            $organization->update();
         }
 
-        if (!$organization = $this->organizationServices->addOrganization($request, $congress_id, $admin->admin_id)) {
-            return response()->json(["message" => "error adding organization"], 404);
-        }
+        // PrivilegeID = 7 : Organisme
+        $this->adminServices->addAdminCongress($admin->admin_id, $congress_id, $privilegeId);
 
+
+
+        $this->organizationServices->affectOrganizationToCongress($congress_id, $organization->organization_id);
 
         if ($mailtype = $this->congressServices->getMailType('organization')) {
             if (!$mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
@@ -65,21 +80,31 @@ class OrganizationController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme VayeCongress";
             }
 
-            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://congress.vayetek.com'>VayeCongress</a>: " . $organization["admin"]->email;
-            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://congress.vayetek.com'>VayeCongress</a>: " . $organization["admin"]->passwordDecrypt;
-            $this->organizationServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization['organization']), $congress, $mail->object, $organization["organization"]->email);
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    strtoupper($organization->name),
+                    $admin->passwordDecrypt);
+                $fileAttached = true;
+            }
+            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://congress.vayetek.com'>Eventizer</a>: " . $admin->email;
+            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://congress.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
+
+            $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization), $congress, $mail->object, $admin, $fileAttached);
         }
 
-        return $organization["organization"];
-
-
+        return response()->json($organization);
     }
 
     public function getCongressOrganizations($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id))
             return response()->json(["message" => "congress not found"], 404);
-        return $congress->organizations ? $congress->organizations : [];
+
+        $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id);
+
+        return response()->json($organizations);
     }
 
     public function getCongress($admin_id)

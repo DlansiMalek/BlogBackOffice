@@ -17,8 +17,11 @@ class CreateOrganizationTable extends Migration
             $table->increments('organization_id');
             $table->string('name');
             $table->string('description');
-            $table->string('email')->nullable()->default(null);
             $table->string('mobile');
+
+            $table->integer('admin_id')->unsigned()->nullable()->default(null);
+            $table->foreign('admin_id')->references('admin_id')
+                ->on('Admin');
 
             $table->softDeletes();
             $table->timestamps();

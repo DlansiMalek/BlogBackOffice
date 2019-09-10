@@ -17,6 +17,7 @@ use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use JWTAuth;
 use PDF;
 
@@ -43,6 +44,7 @@ class CongressServices
     {
         return Congress::all();
     }
+
 
     public function getCongressById($id_Congress)
     {
@@ -129,6 +131,7 @@ class CongressServices
         $admin_congress->save();
         return $congress;
     }
+
 
     public function editConfigCongress($configCongress, $configCongressRequest, $congressId)
     {
@@ -314,8 +317,9 @@ class CongressServices
 
     function renderMail($template, $congress, $participant, $link, $organization)
     {
+
         $accesses = "";
-        if ($participant && sizeof($participant->accesses) > 0) {
+        if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "";
             foreach ($participant->accesses as $access) {
                 $accesses = $accesses
@@ -329,7 +333,10 @@ class CongressServices
                     . " </span></li>";
             }
             $accesses = $accesses . "</ul>";
+
+            Log::info($accesses);
         }
+
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;date}}', '{{$congress->date}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
@@ -350,29 +357,34 @@ class CongressServices
         return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization]);
     }
 
-    public function getMailType($name)
+    public
+    function getMailType($name)
     {
         return MailType::where("name", "=", $name)->first();
     }
 
-    public function getMail($congressId, $mail_type_id)
+    public
+    function getMail($congressId, $mail_type_id)
     {
         return Mail::where("congress_id", '=', $congressId)->where('mail_type_id', '=', $mail_type_id)->first();
     }
 
-    public function getMailById($id)
+    public
+    function getMailById($id)
     {
         return Mail::find($id);
     }
 
-    public function getAccesssByCongressId($congress_id)
+    public
+    function getAccesssByCongressId($congress_id)
     {
         return Access::with(['participants', 'attestation'])
             ->where('congress_id', '=', $congress_id)
             ->get();
     }
 
-    public function getAllCongresses()
+    public
+    function getAllCongresses()
     {
         return Congress::with([
             'location.city.country',
@@ -386,12 +398,14 @@ class CongressServices
 
     }
 
-    public function getCongressConfig($congress_id)
+    public
+    function getCongressConfig($congress_id)
     {
         return ConfigCongress::where('congress_id', '=', $congress_id)->first();
     }
 
-    public function getParticipantsCount($congress_id)
+    public
+    function getParticipantsCount($congress_id)
     {
         //participant (privilege= 3)
         return UserCongress::where('congress_id', '=', $congress_id)
@@ -399,7 +413,8 @@ class CongressServices
             ->count();
     }
 
-    public function getConfigLocationByCongressId($congressId)
+    public
+    function getConfigLocationByCongressId($congressId)
     {
         return Location::where("congress_id", '=', $congressId)
             ->first();

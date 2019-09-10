@@ -23,7 +23,7 @@ class CreateAccessTable extends Migration
             $table->integer("total_present_in_congress")->default(0);
             $table->integer('seuil')->nullable()->default(null);
             $table->string('room')->nullable()->default(null);
-            $table->string('description')->nullable()->default(null);
+            $table->text('description')->nullable()->default(null);
             $table->dateTime("real_start_date")->nullable()->default(null);
             $table->dateTime("start_date")->nullable();
             $table->dateTime("end_date")->nullable();

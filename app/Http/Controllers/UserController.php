@@ -243,7 +243,7 @@ class UserController extends Controller
         }
 
         // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, false);
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0);
 
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
@@ -255,7 +255,7 @@ class UserController extends Controller
         if ($privilegeId == 3) {
             $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
         } else {
-            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, true);
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 1);
             $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
         }
 
@@ -548,9 +548,15 @@ class UserController extends Controller
         if (!$userPayement = $this->userServices->getPaymentById($paymentId)) {
             return response()->json(['error' => 'payment not found'], 404);
         }
-        if (!$user = $this->userServices->getUserById($userPayement->user_id)) {
+
+        $congressId = $userPayement->congress_id;
+        if (!$user = $this->userServices->getUserByIdWithRelations($userPayement->user_id, ['accesses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('show_in_register', '=', 1);
+        }])) {
             return response()->json(['error' => 'user not found'], 404);
         }
+
         $congress = $this->congressServices->getCongressById($userPayement->congress_id);
 
         $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
@@ -647,13 +653,19 @@ class UserController extends Controller
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $user = $this->userServices->uploadPayement($paymentUser, $request);
+        $paymentUser = $this->userServices->uploadPayement($paymentUser, $request);
+
+        $user = $this->userServices->getUserById($userId);
 
         if ($mailtype = $this->congressServices->getMailType('upload')) {
             if ($mail = $this->congressServices->getMail($paymentUser->congress_id, $mailtype->mail_type_id)) {
                 $congress = $this->congressServices->getCongressById($paymentUser->congress_id);
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $paymentUser->user_id);
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false, $userMail);
+                $this->userServices->sendMail($this->congressServices
+                    ->renderMail($mail->template, $congress, $user, null, null),
+                    $user, $congress, $mail->object, false, $userMail);
+
+
             }
         }
 

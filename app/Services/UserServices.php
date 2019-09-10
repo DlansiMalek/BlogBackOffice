@@ -625,8 +625,6 @@ class UserServices
                 $userMail->status = -1;
                 $userMail->update();
             }
-            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
-            $user->update();
             Storage::delete('app/badge.png');
             return 1;
         }
@@ -634,8 +632,6 @@ class UserServices
             $userMail->status = 1;
             $userMail->update();
         }
-        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
-        $user->update();
         Storage::delete('app/badge.png');
         return 1;
     }
@@ -731,7 +727,7 @@ class UserServices
             if (in_array($req['type']['name'], ['checklist', 'multiselect']))
                 foreach ($req['response'] as $val) {
                     $repVal = new ResponseValue();
-                    $repVal->form = $reponse->form_input_response_id;
+                    $repVal->form_input_response_id = $reponse->form_input_response_id;
                     $repVal->form_input_value_id = $val;
                     if (!$val)
                         continue;
@@ -878,6 +874,14 @@ class UserServices
             'country',
             'likes'])
             ->where('qr_code', '=', $qrCode)
+            ->first();
+    }
+
+
+    public function getUserByIdWithRelations($userId, $relations)
+    {
+        return User::with($relations)
+            ->where('user_id', '=', $userId)
             ->first();
     }
 

@@ -16,6 +16,8 @@ use App\Models\HistoryPack;
 use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use JWTAuth;
 
 class AdminServices
@@ -283,5 +285,43 @@ class AdminServices
             $history->end_date = $date->format('Y-m-d H:i:s');
         }
         $history->save();
+    }
+
+    public function checkHasPrivilegeByCongress($admin_id, $congress_id)
+    {
+        return AdminCongress::where('admin_id', '=', $admin_id)
+            ->where('congress_id', '=', $congress_id)
+            ->first();
+    }
+
+    public function addAdminCongress($adminId, $congressId, $privilegeId)
+    {
+        $adminCongress = new AdminCongress();
+        $adminCongress->admin_id = $adminId;
+        $adminCongress->congress_id = $congressId;
+        $adminCongress->privilege_id = $privilegeId;
+        $adminCongress->save();
+    }
+
+    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached)
+    {
+
+        $email = $admin->email;
+        $pathToFile = storage_path() . "/app/badge.png";
+
+        try {
+            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $message->subject($objectMail);
+                $message->setBody($view, 'text/html');
+                if ($fileAttached)
+                    $message->attach($pathToFile);
+                $message->to($email)->subject($objectMail);
+            });
+        } catch (\Exception $exception) {
+            Storage::delete('app/badge.png');
+            return 1;
+        }
+        Storage::delete('app/badge.png');
+        return 1;
     }
 }

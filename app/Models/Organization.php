@@ -24,4 +24,13 @@ class Organization extends Model
         return $this->hasMany('App\Models\User', 'organization_id', 'organization_id');
     }
 
+    function congressOrganization()
+    {
+        return $this->hasMany(CongressOrganization::class, 'organization_id', 'organization_id');
+    }
+
+    function admin()
+    {
+        return $this->hasOne(Admin::class, 'admin_id', 'admin_id');
+    }
 }

@@ -308,11 +308,7 @@ class AccessServices
 
     public function getAllAccessByRegisterParams($congress_id, $showInRegister)
     {
-        return Access::where(function ($query) use ($showInRegister) {
-            if ($showInRegister != null) {
-                $query->where('show_in_register', $showInRegister);
-            }
-        })
+        return Access::where('show_in_register', '=', $showInRegister)
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
