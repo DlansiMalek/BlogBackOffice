@@ -122,7 +122,7 @@ class UserServices
 
     public function getParticipatorById($user_id)
     {
-        $user = User::with(['accesses', 'responses.values', 'responses.form_input.values',
+        $user = User::with(['payments', 'accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
 //        $response = array_map(function ($response) {
@@ -603,7 +603,6 @@ class UserServices
 
     public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null)
     {
-        unset($user->price);
 
         //TODO detect email sended user
         $email = $user->email;
@@ -935,6 +934,7 @@ class UserServices
             $this->affectAccessById($user_id, $access->access_id);
         }
     }
+
 
     private function isExistCongress($user, $congressId)
     {

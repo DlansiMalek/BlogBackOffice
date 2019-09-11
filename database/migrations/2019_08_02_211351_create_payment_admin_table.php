@@ -22,8 +22,8 @@ class CreatePaymentAdminTable extends Migration
             $table->string('path');
             $table->unsignedInteger('pack_admin_id');
             $table->unsignedInteger('admin_id');
-            $table->foreign('pack_admin_id')->references('pack_admin_id')->on('Pack_Admin') ->onDelete('cascade');
-            $table->foreign('admin_id')->references('admin_id')->on('Admin') ->onDelete('cascade');
+            $table->foreign('pack_admin_id')->references('pack_admin_id')->on('Pack_Admin')->onDelete('cascade');
+            $table->foreign('admin_id')->references('admin_id')->on('Admin')->onDelete('cascade');
             $table->timestamps();
         });
     }

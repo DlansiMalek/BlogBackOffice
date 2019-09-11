@@ -36,6 +36,9 @@ class CreateMailAdminTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mail_admin');
+        Schema::table('Mail_Admin', function (Blueprint $table) {
+            $table->dropForeign(['mail_type_id']);
+        });
+        Schema::dropIfExists('Mail_Admin');
     }
 }

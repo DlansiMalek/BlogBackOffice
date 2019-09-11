@@ -315,26 +315,26 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment)
     {
 
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "";
             foreach ($participant->accesses as $access) {
-                $accesses = $accesses
-                    . "<li>" . $access->name
-                    . "<span class=\"bold\"> qui se déroulera le "
-                    . \App\Services\Utils::convertDateFrench($access->start_date)
-                    . " de "
-                    . \App\Services\Utils::getTimeFromDateTime($access->start_date)
-                    . " à "
-                    . \App\Services\Utils::getTimeFromDateTime($access->end_date)
-                    . " </span></li>";
+                if ($access->show_in_register == 1) {
+                    $accesses = $accesses
+                        . "<li>" . $access->name
+                        . "<span class=\"bold\"> qui se déroulera le "
+                        . \App\Services\Utils::convertDateFrench($access->start_date)
+                        . " de "
+                        . \App\Services\Utils::getTimeFromDateTime($access->start_date)
+                        . " à "
+                        . \App\Services\Utils::getTimeFromDateTime($access->end_date)
+                        . " </span></li>";
+                }
             }
             $accesses = $accesses . "</ul>";
-
-            Log::info($accesses);
         }
 
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
@@ -343,7 +343,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
-        $template = str_replace('{{$participant-&gt;price}}', '{{$participant->price}}', $template);
+        $template = str_replace('{{$userPayment-&gt;price}}', '{{$userPayment->price}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
@@ -354,7 +354,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment]);
     }
 
     public

@@ -23,7 +23,7 @@ class CreateHistoryPackTable extends Migration
             $table->unsignedInteger('admin_id');
             $table->foreign('pack_admin_id')->references('pack_admin_id')->on('Pack_Admin')
                 ->onDelete('cascade');
-            $table->foreign('admin_id')->references('admin_id')->on('Admin') ->onDelete('cascade');
+            $table->foreign('admin_id')->references('admin_id')->on('Admin')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -34,10 +34,11 @@ class CreateHistoryPackTable extends Migration
      * @return void
      */
     public function down()
-    { Schema::table('History_Pack', function (Blueprint $table) {
-        $table->dropForeign(['pack_admin_id']);
-        $table->dropForeign(['admin_id']);
-    });
+    {
+        Schema::table('History_Pack', function (Blueprint $table) {
+            $table->dropForeign(['pack_admin_id']);
+            $table->dropForeign(['admin_id']);
+        });
         Schema::dropIfExists('History_Pack');
     }
 }

@@ -44,6 +44,10 @@ class CreateCongressOrganization extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('congress_organization');
+        Schema::table('Congress_Organization', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+            $table->dropForeign(['organization_id']);
+        });
+        Schema::dropIfExists('Congress_Organization');
     }
 }

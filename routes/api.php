@@ -196,7 +196,6 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');
             Route::put('edit', 'UserController@editerUserToCongress');
-            Route::post('add-fast-user', 'UserController@addingFastUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');

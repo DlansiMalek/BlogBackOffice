@@ -51,7 +51,7 @@ class OrganizationController extends Controller
             $admin = $this->adminServices->addPersonnel($request);
         } else {
             if ($this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id)) {
-                return response()->json(['error' => 'admin alerady has a privilege in this congress'],500);
+                return response()->json(['error' => 'admin alerady has a privilege in this congress'], 500);
             }
         }
 
@@ -68,7 +68,6 @@ class OrganizationController extends Controller
 
         // PrivilegeID = 7 : Organisme
         $this->adminServices->addAdminCongress($admin->admin_id, $congress_id, $privilegeId);
-
 
 
         $this->organizationServices->affectOrganizationToCongress($congress_id, $organization->organization_id);
@@ -91,7 +90,7 @@ class OrganizationController extends Controller
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://congress.vayetek.com'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://congress.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
 
-            $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization), $congress, $mail->object, $admin, $fileAttached);
+            $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization, null), $congress, $mail->object, $admin, $fileAttached);
         }
 
         return response()->json($organization);
@@ -177,13 +176,13 @@ class OrganizationController extends Controller
         $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, $organization), $user, $congress, $mail->object, null);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, $organization, null), $user, $congress, $mail->object, null);
             }
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null), $user, $congress, $mail->object, $fileAttached);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }

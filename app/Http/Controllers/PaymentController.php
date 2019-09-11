@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 
 use App\Services\CongressServices;
+use App\Services\MailServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -17,16 +19,19 @@ class PaymentController extends Controller
     protected $userServices;
     protected $congressServices;
     protected $sharedServices;
+    protected $mailServices;
 
     function __construct(PaymentServices $paymentServices,
                          UserServices $userServices,
                          CongressServices $congressServices,
-                         SharedServices $sharedServices)
+                         SharedServices $sharedServices,
+                         MailServices $mailServices)
     {
         $this->paymentServices = $paymentServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->sharedServices = $sharedServices;
+        $this->mailServices = $mailServices;
     }
 
     function echecPayment()
@@ -41,30 +46,33 @@ class PaymentController extends Controller
 
     function notification(Request $request)
     {
-        //TODO A changer
+
         $action = $request->input("Action");
         $ref = $request->input("Reference");
         $param = $request->input("Param");
 
-        $user = $this->userServices->getUserByRef($ref);
+        $userPayment = $this->paymentServices->getPaymentByReference($ref);
+
+        $user = $userPayment->user;
+        $congress = $userPayment->congress;
 
         switch ($action) {
             case "DETAIL" :
                 if (!$user) {
                     $price = -1;
                 } else {
-                    $price = $user->price;
+                    $price = $userPayment->price;
                 }
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=" . $price;
             case "ACCORD" :
-                $user->isPaid = 1;
-                $user->authorization = $param;
-                $user->update();
+                $userPayment->isPaid = 1;
+                $userPayment->authorization = $param;
+                $userPayment->update();
 
-                $congress = $this->congressServices->getCongressById($user->congress_id);
+                $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
 
                 $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
-                    $user->privilege_id);
+                    $userCongress->privilege_id);
                 $fileAttached = false;
                 if ($badgeIdGenerator != null) {
                     $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
@@ -73,16 +81,18 @@ class PaymentController extends Controller
                     $fileAttached = true;
                 }
 
-                $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+
                 if ($mailtype = $this->congressServices->getMailType('paiement')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, null,
-                            $link);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, false,
+                            $userMail);
                     }
                 }
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, $fileAttached);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }
 
@@ -90,20 +100,20 @@ class PaymentController extends Controller
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "REFUS":
-                $user->isPaid = 0;
-                $user->update();
+                $userPayment->isPaid = 0;
+                $userPayment->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ERREUR":
-                $user->isPaid = 0;
-                $user->update();
+                $userPayment->isPaid = 0;
+                $userPayment->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "ANNULATION":
-                $user->isPaid = 0;
-                $user->update();
+                $userPayment->isPaid = 0;
+                $userPayment->update();
 
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
         }

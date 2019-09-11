@@ -39,4 +39,10 @@ class PaymentServices
     {
         return PaymentType::all();
     }
+
+    public function getPaymentByReference($ref)
+    {
+        return Payment::where('reference', '=', $ref)
+            ->first();
+    }
 }

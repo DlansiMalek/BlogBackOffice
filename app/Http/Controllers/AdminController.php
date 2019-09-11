@@ -637,13 +637,16 @@ class AdminController extends Controller
     function setRefPayment($userId, Request $request)
     {
         $reference = $request->input('reference');
+        $congressId = $request->input('congressId');
 
-        if (!$user = $this->userServices->getUserById($userId)) {
+        if (!$userPayment = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found']);
         }
 
-        $user->ref_payment = $reference;
-        $user->update();
+        $userPayment->reference = $reference;
+        $userPayment->update();
+
+        $user = $userPayment->user;
 
         if ($user->email && $user->mobile && $user->first_name && $user->last_name) {
             $client = new Client();
@@ -654,14 +657,14 @@ class AdminController extends Controller
                         'mobile' => $user->mobile,
                         'name' => $user->first_name . " " . $user->last_name
                     ],
-                    'price' => $user->price,
-                    'reference' => $user->ref_payment,
-                    'url' => 'http://congress-backend-modules_web_1'
+                    'price' => $userPayment->price,
+                    'reference' => $userPayment->reference,
+                    'url' => 'http://eventizer-api-web'
                 ]
             ]);
         }
 
-        return response()->json(["reference" => $user->ref_payment]);
+        return response()->json(["reference" => $userPayment->reference]);
     }
 
     // getting only admins with privilege = 1
@@ -741,10 +744,12 @@ class AdminController extends Controller
         $this->adminServices->addValidatedHistory($newhistory, $admin, $pack, $previoushistory);
         return response()->json(['response' => 'pack Activated , new  history entry created'], 202);
     }
-public function addHistoryToAdmin(Request $request){
-    $newhistory = new HistoryPack();
-    $this->adminServices->addPackToAdmin($request,$newhistory);
-    return response()->json(['response' => 'pack Added , new  history entry created'], 202);
 
-}
+    public function addHistoryToAdmin(Request $request)
+    {
+        $newhistory = new HistoryPack();
+        $this->adminServices->addPackToAdmin($request, $newhistory);
+        return response()->json(['response' => 'pack Added , new  history entry created'], 202);
+
+    }
 }

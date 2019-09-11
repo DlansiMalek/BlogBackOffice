@@ -200,3 +200,16 @@ DELETE FROM `Vote_Score` ;
 INSERT IGNORE INTO `congress_v3`.Vote_Score (vote_score_id , score , num_user_vote , access_vote_id , user_id , created_at , updated_at)
   SELECT VS.vote_score_id , VS.score , VS.num_user_vote , VS.access_vote_id , VS.user_id , VS.created_at , VS.updated_at
   FROM `congress_v2`.Vote_Score as VS;
+
+
+DELETE FROM `Organization` ;
+
+INSERT IGNORE INTO `congress_v3`.Organization (organization_id , name,description,mobile,admin_id)
+  SELECT O.organization_id , O.name , O.description  , O.mobile , O.admin_id
+  FROM `congress_v2`.Organization as O;
+
+DELETE FROM `Congress_Organization` ;
+
+INSERT IGNORE INTO `congress_v3`.Congress_Organization (organization_id , congress_id,montant)
+  SELECT CO.organization_id , CO.congress_id , CO.montant
+  FROM `congress_v2`.Congress_Organization as CO;

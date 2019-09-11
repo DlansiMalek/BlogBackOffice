@@ -30,6 +30,8 @@ class CreateMailTypeAdminTable extends Migration
      */
     public function down()
     {
+
+
         Schema::dropIfExists('Mail_Type_Admin');
     }
 }

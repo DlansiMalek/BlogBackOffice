@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <link href="{{asset('/css/bootstrap.min.css')}}" rel="stylesheet">
     <style>
         .body {
             font-size: 0.75em;
@@ -57,36 +56,29 @@
             @foreach($accesses[$start_date] as $access)
                 <div style="display: table-cell;border: 1px gray solid;padding: 10px; margin-left: -5px">
                     <b>{{$access['name']}}</b>
-                    @if(sizeof($access['chairs']))
+                    @if(array_key_exists('chairs',$access) && sizeof($access['chairs'])>0)
                         :
+
+                        @for($index=0;$index<sizeof($access['chairs']);$index++)
+                            {{$access['chairs'][$index]['first_name']}} {{$access['chairs'][$index]['last_name']}}
+                            @if ($index!=sizeof($access['chairs'])-1)
+                                ,
+                            @endif
+                        @endfor
                     @endif
-                    @foreach(array_keys($access['chairs']) as $index)
-                        {{$access['chairs'][$index]['first_name']}} {{$access['chairs'][$index]['last_name']}}
-                        @if ($index!=sizeof($access['chairs'])-1)
-                            ,
-                        @endif
-                    @endforeach
                     @if(sizeof($access['sub_accesses']))
                         <br>
                         <ul>
                             @foreach($access['sub_accesses'] as $sub)
                                 <li>{{$sub['name']}}
-                                    @if(sizeof($sub['chairs']))
-                                        :
-                                    @endif
-                                    @foreach(array_keys($sub['chairs']) as $index)
-                                        {{$sub['chairs'][$index]['first_name']}} {{$sub['chairs'][$index]['last_name']}}
-                                        @if ($index!=sizeof($sub['chairs'])-1)
-                                            ,
-                                        @endif
-                                    @endforeach
+
                                 </li>
                             @endforeach
                         </ul>
                     @endif
                     @if($access['room'])
                         <b>Salle: {{$access['room']}}</b>
-                    <br>
+                        <br>
                         <b>Se termine à: {{date('H:i', strtotime($access['end_date']))}}
                         </b>
                     @endif
@@ -97,8 +89,6 @@
         <?php $oldkey = $start_date?>
     @endforeach
 
-    <script src="{{asset('js/jquery-3.4.1.min.js')}}"></script>
-    <script src="{{asset('js/bootstrap.min.js')}}"></script>
 </div>
 </body>
 </html>

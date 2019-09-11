@@ -45,3 +45,7 @@ SELECT 0 , U.user_id , 14 FROM User as U
  *
  UPDATE User SET last_name = REPLACE(last_name,'è','e') //remove accent
  */
+
+/*
+ * php artisan migrate:refresh --seed
+ */

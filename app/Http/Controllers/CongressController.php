@@ -202,7 +202,7 @@ class CongressController extends Controller
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null),
+                            ->renderMail($mail->template, $congress, $user, null, null, null),
                             $user, $congress, $mail->object, true);
                     }
                 }
@@ -284,7 +284,7 @@ class CongressController extends Controller
                 if ($mail) {
                     $this->badgeServices->saveAttestationsInPublic($request);
                     $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object,
-                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
+                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
                 }
             }
         }
@@ -321,7 +321,7 @@ class CongressController extends Controller
             }
 
             if ($userMail) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false, $userMail);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
             }
 
 
