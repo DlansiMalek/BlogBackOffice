@@ -265,7 +265,7 @@ class UserController extends Controller
         $congress = $this->congressServices->getCongressById($congress_id);
         $isFree = false;
         if ($privilegeId == 3) {
-            $nbParticipants = $this->congressServices->getParticipantsCount($congress_id);
+            $nbParticipants = $this->congressServices->getParticipantsCount($congress_id, 3, null);
             $freeNb = $this->paymentServices->getFreeUserByCongressId($congress_id);
             if ($freeNb < $congress->config->free && ($nbParticipants % 10) == 0) {
                 $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), true);

@@ -15,6 +15,7 @@ use App\Services\CongressServices;
 use App\Services\GeoServices;
 use App\Services\MailServices;
 use App\Services\PackServices;
+use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
 use App\Services\SharedServices;
@@ -38,9 +39,8 @@ class CongressController extends Controller
     protected $resourceService;
     protected $geoServices;
     protected $mailServices;
-    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
+    protected $paymentServices;
 
-//    public $baseUrl = "https://congress-api.vayetek.com/api/";
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -51,7 +51,8 @@ class CongressController extends Controller
                          PackServices $packService,
                          GeoServices $geoServices,
                          MailServices $mailServices,
-                         ResourcesServices $resourceService)
+                         ResourcesServices $resourceService,
+                         PaymentServices $paymentServices)
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -64,6 +65,7 @@ class CongressController extends Controller
         $this->packService = $packService;
         $this->resourceService = $resourceService;
         $this->mailServices = $mailServices;
+        $this->paymentServices = $paymentServices;
     }
 
 
@@ -141,6 +143,27 @@ class CongressController extends Controller
         }
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
         return response()->json([$configCongress, $location]);
+    }
+
+    public function getStatsChartByCongressId($congressId)
+    {
+        $congress = $this->congressServices->getCongressByIdAndRelations($congressId, [
+            'accesss' => function ($query) use ($congressId) {
+                $query->where('show_in_register', '=', 1);
+            },
+            'users.responses.form_input',
+            "users" => function ($query) use ($congressId) {
+                $query->where('privilege_id', '=', 3);
+            },
+            "form_inputs.type",
+            "form_inputs.values",
+            "accesss.participants.user_congresses" => function ($query) {
+                $query->where('privilege_id', '=', 3);
+            }
+        ]);
+
+        return response()->json($congress);
+
     }
 
 
@@ -354,7 +377,7 @@ class CongressController extends Controller
                 return response()->json(['message' => 'congresses not found'], 404);
             array_push($result, (object)[
                 'congress_id' => $congress_id,
-                'count' => $this->congressServices->getParticipantsCount($congress_id)
+                'count' => $this->congressServices->getParticipantsCount($congress_id, 3, null)
             ]);
         }
         return $result;
@@ -443,6 +466,48 @@ class CongressController extends Controller
             $this->congressServices->RemoveCongressFromAdmin($congressId, $admin_id);
             return response()->json(['response' => 'congress Removed from Admin'], 202);
         }
+
+    }
+
+    public function getStatsByCongressId($congressId)
+    {
+
+        $totalUsers = $this->congressServices->getParticipantsCount($congressId, null, null);
+        $participantUsers = $this->congressServices->getParticipantsCount($congressId, 3, null);
+        $revenue = $this->congressServices->getRevenuCongress($congressId);
+        $gratuitNb = $this->paymentServices->getFreeUserByCongressId($congressId);
+        $totalPresenceUsers = $this->congressServices->getParticipantsCount($congressId, null, 1);
+        $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, 3, 1);
+
+
+        return response()->json([
+            'total_users' => $totalUsers,
+            'participant_users' => $participantUsers,
+            'revenues' => $revenue,
+            'total_free' => $gratuitNb,
+            'total_presence_users' => $totalPresenceUsers,
+            'total_presence_participants' => $totalParPresenceUsers
+        ]);
+
+
+    }
+
+    public function getStatsAccessByCongressId($congressId)
+    {
+        //Cette stats concerne les participants et les ateliers qui ont choisit.
+
+        $access = $this->accessServices->getAllAccessByCongress($congressId, 1,
+            [
+                'participants.user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                    $query->where('privilege_id', '=', 3);
+                },
+                'participants.payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }]);
+
+        return response()->json($access);
+
 
     }
 }

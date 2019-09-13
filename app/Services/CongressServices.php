@@ -11,6 +11,7 @@ use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\Organization;
 use App\Models\Pack;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\UserCongress;
 use Chumper\Zipper\Facades\Zipper;
@@ -50,6 +51,7 @@ class CongressServices
     {
         $congress = Congress::withCount('users')
             ->with([
+                'users.responses.form_input',
                 'config',
                 "badges",
                 "attestation",
@@ -58,7 +60,12 @@ class CongressServices
                 "form_inputs.values",
                 "mails.type",
                 'accesss.attestation',
-                'accesss.participants',
+                'accesss.participants.payments' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
+                },
+                'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
+                },
                 'location.city.country',
                 'accesss.speakers',
                 'accesss.chairs',
@@ -405,11 +412,21 @@ class CongressServices
     }
 
     public
-    function getParticipantsCount($congress_id)
+    function getParticipantsCount($congress_id, $privilegeId, $isPresent)
     {
         //participant (privilege= 3)
         return UserCongress::where('congress_id', '=', $congress_id)
-            ->where('privilege_id', '=', 3)
+            ->where(function ($query) use ($privilegeId) {
+                if ($privilegeId) {
+                    $query->where('privilege_id', '=', $privilegeId);
+                }
+                //
+            })
+            ->where(function ($query) use ($isPresent) {
+                if ($isPresent != null) {
+                    $query->where('isPresent', '=', $isPresent);
+                }
+            })
             ->count();
     }
 
@@ -417,6 +434,20 @@ class CongressServices
     function getConfigLocationByCongressId($congressId)
     {
         return Location::where("congress_id", '=', $congressId)
+            ->first();
+    }
+
+    public function getRevenuCongress($congressId)
+    {
+        return Payment::where('isPaid', '=', 1)
+            ->where('congress_id', '=', $congressId)
+            ->sum('price');
+    }
+
+    public function getCongressByIdAndRelations($congressId, $relations)
+    {
+        return Congress::with($relations)
+            ->where('congress_id', '=', $congressId)
             ->first();
     }
 }

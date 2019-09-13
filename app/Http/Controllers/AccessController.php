@@ -34,7 +34,7 @@ class AccessController extends Controller
     function getAllAccessByCongress($congressId)
     {
 
-        return response()->json($this->accessServices->getAllAccessByCongress($congressId));
+        return response()->json($this->accessServices->getAllAccessByCongress($congressId, null, ['participants']));
 
     }
 
@@ -70,7 +70,7 @@ class AccessController extends Controller
 
         $users = $this->userServices->getUsersByContry($congressId, $countryId);
 
-        $accesss = $this->accessServices->getAllAccessByCongress($congressId);
+        $accesss = $this->accessServices->getAllAccessByCongress($congressId, null, ['participants']);
         foreach ($users as $user) {
             UserAccess::where('user_id', '=', $user->user_id)
                 ->delete();
@@ -90,7 +90,7 @@ class AccessController extends Controller
 
         $users = $this->userServices->getUsersByParticipantTypeId($congressId, $participantTypeId);
 
-        $accesss = $this->accessServices->getAllAccessByCongress($congressId);
+        $accesss = $this->accessServices->getAllAccessByCongress($congressId, null, ['participants']);
         foreach ($users as $user) {
             UserAccess::where('user_id', '=', $user->user_id)
                 ->delete();
