@@ -155,9 +155,8 @@ class AdminServices
             $query->where('congress_id', '=', $congress_id);
         })
             ->with(['admin_congresses' => function ($query) use ($congress_id) {
-                $query->where('congress_id', '=', $congress_id)
-                    ->first();
-            }])
+                $query->where('congress_id', '=', $congress_id);
+            }, 'admin_congresses.privilege'])
             ->get();
     }
 

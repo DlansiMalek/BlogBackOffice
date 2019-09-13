@@ -33,7 +33,7 @@
 
 @if($congress->config->logo)
     <div style="text-align: center; width: 100%">
-        <img src="{{\App\Services\Utils::$baseUrl."congress/".$congress->congress_id."/logo"}}" height="96px"
+        <img src="{{  \App\Services\UrlUtils::getBaseUrl()."/".$congress->config->logo}}" height="96px"
              style="margin: 10px 0px"/>
     </div>
 @endif

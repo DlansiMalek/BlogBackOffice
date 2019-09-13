@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Admin;
 use App\Models\HistoryPack;
 use App\Models\PaymentAdmin;
@@ -13,6 +12,7 @@ use App\Services\CongressServices;
 use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use GuzzleHttp\Client;
@@ -650,7 +650,7 @@ class AdminController extends Controller
 
         if ($user->email && $user->mobile && $user->first_name && $user->last_name) {
             $client = new Client();
-            $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
+            $res = $client->request('POST', UrlUtils::getUrlPaiement() . '/api/payment/user/set-refpayement', [
                 'json' => [
                     'user' => [
                         'email' => $user->email,

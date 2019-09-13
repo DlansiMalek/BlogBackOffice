@@ -20,9 +20,7 @@ class VotingServices
     public function __construct()
     {
         $this->client = new Client([
-            // 'base_uri' => 'http://localhost:3000', // Testing Local VayeCongress Local VayeVoting
-            'base_uri' => 'http://137.74.165.25:3001/', // Testing Local VayeCongress Server VayeVoting
-            // 'base_uri' => 'http://appvoting-server:3000',
+            'base_uri' => UrlUtils::getVayeVotingUrl(),
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',

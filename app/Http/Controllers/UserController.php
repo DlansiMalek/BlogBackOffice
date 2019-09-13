@@ -13,6 +13,7 @@ use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Filesystem\Filesystem;
@@ -366,7 +367,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
+            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }

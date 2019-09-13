@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+
 use App\Models\AccessPresence;
 use App\Models\Attestation;
 use App\Models\AttestationAccess;
 use App\Models\AttestationDivers;
 use App\Models\Badge;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 
@@ -141,7 +141,7 @@ class BadgeServices
     {
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
-            Utils::$baseUrlBadge . '/badge/generateParticipantsAll', [
+            UrlUtils::getUrlBadge() . '/badge/generateParticipantsAll', [
                 'json' => [
                     'data' => $request
                 ]

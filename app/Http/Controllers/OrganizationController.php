@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Mail;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\OrganizationServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
-use App\Services\Utils;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -173,16 +171,16 @@ class OrganizationController extends Controller
             $fileAttached = true;
         }
 
-        $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
+
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, $organization, null), $user, $congress, $mail->object, null);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, $organization, null), $user, $congress, $mail->object, null);
             }
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, $fileAttached);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }

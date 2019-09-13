@@ -235,7 +235,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            Utils::$baseUrlRT . "/congress/users/send-present", [
+            UrlUtils::getUrlRT() . "/congress/users/send-present", [
                 'form_params' => [
                     'user' => json_decode(json_encode($participator))
                 ]
@@ -424,7 +424,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            Utils::$baseUrlRT . '/congress/users/send-present-access', [
+            UrlUtils::getUrlRT() . '/congress/users/send-present-access', [
                 'form_params' => [
                     'user' => json_decode(json_encode($user)),
                     'accessId' => $accessId
@@ -440,7 +440,7 @@ class UserServices
 
 
         $res = $client->request('POST',
-            Utils::$baseUrlRT . '/congress/users/send-all', [
+            UrlUtils::getUrlRT() . '/congress/users/send-all', [
                 'form_params' => [
                     'users' => json_decode(json_encode($allParticipants)),
                     'congressId' => $congressId
