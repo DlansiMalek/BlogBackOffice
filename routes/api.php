@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//Functional API
+Route::get('/synchroData','SharedController@synchroData');
+
 
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');

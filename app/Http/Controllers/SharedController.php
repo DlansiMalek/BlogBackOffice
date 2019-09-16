@@ -4,16 +4,21 @@ namespace App\Http\Controllers;
 
 
 use App\Services\SharedServices;
+use App\Services\UserServices;
+use App\Services\Utils;
 
 class SharedController extends Controller
 {
 
     protected $sharedServices;
+    protected $userServices;
 
 
-    function __construct(SharedServices $sharedServices)
+    function __construct(SharedServices $sharedServices,
+                         UserServices $userServices)
     {
         $this->sharedServices = $sharedServices;
+        $this->userServices = $userServices;
     }
 
     public function getAllPrivileges()
@@ -63,5 +68,24 @@ class SharedController extends Controller
             $pass[] = $alphabet[$n];
         }
         return implode($pass); //turn the array into a string
+    }
+
+    public function synchroData()
+    {
+
+
+        $users = $this->userServices->getAllUsers();
+        $groupedUser = Utils::groupBy('email', json_decode($users, true));
+
+        foreach ($groupedUser as $groupeUser) {
+            if (sizeof($groupeUser) > 1) {
+                $fixUser = $groupeUser[0];
+                for ($i = 1; $i < sizeof($groupeUser); $i++) {
+                    $this->userServices->updateUserIdUserCongress($groupeUser[$i]['user_id'], $fixUser['user_id']);
+                    $this->userServices->deleteById($groupeUser[$i]['user_id']);
+                }
+            }
+        }
+        return response()->json(['message' => 'synchro done']);
     }
 }

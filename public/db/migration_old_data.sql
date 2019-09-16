@@ -29,7 +29,7 @@ INSERT IGNORE INTO `congress_v3`.Location (lng,lat,address,congress_id,city_id)
 DELETE FROM `User` ;
 
 INSERT IGNORE INTO `congress_v3`.User (user_id,first_name,last_name,gender,mobile,email,email_verified,verification_code,qr_code,rfid,country_id,created_at,updated_at)
-  SELECT U.user_id , U.first_name, U.last_name, U.gender, U.mobile , U.email , U.email_verified,U.verification_code, U.qr_code, U.rfid , C.code , U.created_at , U.updated_at
+  SELECT U.user_id , U.first_name, U.last_name, U.gender, U.mobile , LOWER(U.email) , U.email_verified,U.verification_code, U.qr_code, U.rfid , C.code , U.created_at , U.updated_at
   FROM `congress_v2`.User as U
   LEFT OUTER JOIN `congress_v2`.Country as C on C.country_id = U.country_id;
 

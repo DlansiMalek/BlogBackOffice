@@ -11,6 +11,7 @@ use App\Models\ResponseValue;
 use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
+use App\Models\UserMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,7 +25,7 @@ class UserServices
 
     public function getAllUsers()
     {
-        return User::with(['city', 'city.country'])->get();
+        return User::all();
     }
 
     public function editerUser(Request $request, $newUser)
@@ -452,7 +453,8 @@ class UserServices
 
     public function getUserByEmail($email)
     {
-        return User::where('email', '=', $email)
+        $email = strtolower($email);
+        return User::whereRaw('lower(email) like (?)', ["{$email}"])
             ->first();
     }
 
@@ -835,6 +837,12 @@ class UserServices
         return UserCongress::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)->first();
     }
 
+    public function getUserCongressByUserId($userId)
+    {
+        return UserCongress::where('user_id', '=', $userId)
+            ->get();
+    }
+
     public function saveUserCongress($congress_id, $user_id, Request $request)
     {
         $user_congress = new UserCongress();
@@ -933,6 +941,29 @@ class UserServices
         foreach ($accesses as $access) {
             $this->affectAccessById($user_id, $access->access_id);
         }
+    }
+
+    public function updateUserIdUserCongress($oldUserId, $newUserId)
+    {
+        UserCongress::where('user_id', '=', $oldUserId)
+            ->update(['user_id' => $newUserId]);
+
+        Payment::where('user_id', '=', $oldUserId)
+            ->update(['user_id' => $newUserId]);
+
+        UserAccess::where('user_id', '=', $oldUserId)
+            ->update(['user_id' => $newUserId]);
+
+        UserMail::where('user_id', '=', $oldUserId)
+            ->update(['user_id' => $newUserId]);
+
+
+    }
+
+    public function deleteById($user_id)
+    {
+        return User::where('user_id', '=', $user_id)
+            ->delete();
     }
 
 

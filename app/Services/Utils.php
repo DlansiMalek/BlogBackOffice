@@ -92,4 +92,15 @@ class Utils
         return $randomString . $id;
     }
 
+    public static function groupBy($key, $data)
+    {
+        $result = array();
+        foreach ($data as $element) {
+            $result[$element[$key]][] = $element;
+        }
+
+        return $result;
+    }
+
+
 }

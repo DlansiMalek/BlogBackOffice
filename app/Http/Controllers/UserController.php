@@ -224,6 +224,7 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
 
+
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
