@@ -165,7 +165,7 @@ INSERT IGNORE INTO `congress_v3`.Access (access_id,name,price,duration,max_place
                                          description,real_start_date,start_date,end_date,show_in_program,show_in_register,with_attestation,congress_id,
                                          access_type_id
                                            ,created_at,updated_at)
-  SELECT  A.access_id , A.name , A.price, A.duration , A.max_places , A.total_present_in_congress , A.seuil , "-" , "-" , A.start_date , A.theoric_start_data , A.theoric_end_data , 1 , 1 , 1 , A.congress_id , IF(A.intuitive = 0 , 2 , 1 ) , A.created_at , A.updated_at
+  SELECT  A.access_id , A.name , A.price, A.duration , A.max_places , A.total_present_in_congress , A.seuil , "-" , "-" , A.start_date , A.theoric_start_data , A.theoric_end_data , 1 , IF(A.intuitive = 0 , 1 , 0 ) , 1 , A.congress_id , IF(A.intuitive = 0 , 2 , 1 ) , A.created_at , A.updated_at
   FROM `congress_v2`.Access as A;
 
 

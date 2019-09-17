@@ -45,7 +45,7 @@ class MailTypeSeedTable extends Seeder
         DB::table('Mail_Type')->insert([
             'mail_type_id' => 6,
             'name' => 'organization',
-            'display_name' => 'Organization',
+            'display_name' => "Création d'un organisme",
         ]);
 
         DB::table('Mail_Type')->insert([
@@ -63,6 +63,11 @@ class MailTypeSeedTable extends Seeder
             'mail_type_id' => 9,
             'name' => 'free',
             'display_name' => 'Inscription Gratuite',
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 9,
+            'name' => 'organizer_creation',
+            'display_name' => "Creation d'un organisateur",
         ]);
     }
 }

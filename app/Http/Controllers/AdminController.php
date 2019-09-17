@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use App\Models\HistoryPack;
+use App\Models\Mail;
 use App\Models\PaymentAdmin;
 use App\Models\User;
 use App\Services\AdminServices;
@@ -479,11 +480,35 @@ class AdminController extends Controller
             $this->adminServices->editPersonnel($admin);
         }
 
+        $privilegeId = (int)$request->input('privilege_id');
+        $congress = $this->congressService->getById($congress_id);
         //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
-            (int)$request->input('privilege_id'),
+            $privilegeId,
             $admin_id,
             $congress_id);
+
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
+            if (!$mail = $this->congressService->getMail($congress_id, $mailtype->mail_type_id)) {
+                $mail = new Mail();
+                $mail->template = "";
+                $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
+            }
+
+            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    $admin->name,
+                    $admin->passwordDecrypt);
+                $fileAttached = true;
+            }
+            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
+            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
+
+            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
+        }
 
         return response()->json($admin_congress);
     }
@@ -586,17 +611,31 @@ class AdminController extends Controller
         }
 
 
-        $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, 2);
-        if ($badgeIdGenerator != null) {
+        $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($adminId,
+            $congressId);
 
-            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                $admin->name,
-                $admin->passwordDecrypt);
+        if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
+            if (!$mail = $this->congressService->getMail($congressId, $mailtype->mail_type_id)) {
+                $mail = new Mail();
+                $mail->template = "";
+                $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
+            }
 
-            $this->userServices->sendCredentialsOrganizerMail($admin);
-        } else {
-            return response()->json(['error' => 'badge not affected'], 404);
+            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    $admin->name,
+                    $admin->passwordDecrypt);
+                $fileAttached = true;
+            }
+            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
+            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
+
+            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
         }
+        return response()->json(['message' => 'sending credentials mails']);
+
     }
 
     function updateUserRfid(request $request, $userId)
