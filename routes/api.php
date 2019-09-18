@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 //Functional API
-Route::get('/synchroData','SharedController@synchroData');
+Route::get('/synchroData', 'SharedController@synchroData');
 
 
 //Shared API
@@ -66,11 +66,15 @@ Route::group(['prefix' => 'users'], function () {
 
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::group(['prefix' => '{user_id}'], function () {
-        Route::get('', 'UserController@getUserById');
+
+        Route::group(['prefix' => 'congress/{congressId}'], function () {
+            Route::delete('delete', 'UserController@delete');
+            Route::post('upload-payement', 'UserController@uploadPayement');
+            Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
+            Route::get('', 'UserController@getUserByCongressIdAndUserId');
+        });
+
         Route::put('', 'UserController@update');
-        Route::delete('congress/{congressId}/delete', 'UserController@delete');
-        Route::post('congress/{congressId}/upload-payement', 'UserController@uploadPayement');
-        Route::get('congress/{congressId}/validate/{validation_code}', 'UserController@validateUserAccount');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');
@@ -202,7 +206,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');
-            Route::put('edit', 'UserController@editerUserToCongress');
+            Route::put('edit/{userId}', 'UserController@editerUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');

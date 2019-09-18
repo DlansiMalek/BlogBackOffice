@@ -15,16 +15,17 @@ class FormInputResponse extends Model
     public $timestamps = true;
     protected $table = 'Form_Input_Response';
     protected $primaryKey = 'form_input_response_id';
-    protected $fillable = ['response','user_id','form_input_id','form_input_value_id'];
-    protected $dates = ['created_at', 'updated_at','deleted_at'];
+    protected $fillable = ['response', 'user_id', 'form_input_id'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     function values()
     {
-        return $this->hasMany('App\Models\FormInputValue', 'form_input_value_id', 'form_input_value_id');
+        return $this->hasMany(ResponseValue::class, 'form_input_response_id', 'form_input_response_id');
     }
 
-    function form_input(){
-        return $this->hasOne('App\Models\FormInput', 'form_input_id','form_input_id');
+    function form_input()
+    {
+        return $this->hasOne('App\Models\FormInput', 'form_input_id', 'form_input_id');
     }
 
 }

@@ -39,9 +39,6 @@ class UserServices
         if ($request->has('country_id'))
             $newUser->country_id = $request->input('country_id');
 
-        if ($request->has('country_id'))
-            $newUser->country_id = $request->input('country_id');
-
         if ($request->has('pack_id'))
             $newUser->pack_id = $request->input('pack_id');
 
@@ -126,23 +123,6 @@ class UserServices
         $user = User::with(['payments', 'accesses', 'responses.values', 'responses.form_input.values',
             'responses.form_input.type'])->where('user_id', '=', $user_id)
             ->first();
-//        $response = array_map(function ($response) {
-//            $temp = $response->form_input;
-//            if (in_array($response->form_input->type->name, ['checklist', 'multiselect'])){
-//                $temp->response=array_map(function($value){return $value->form_input_value_id;},$response->values);
-//            }
-//            else if (in_array($response->form_input->type->name, ['radio', 'select'])){
-//                $temp->response=$response->values[0]->form_input_value_id;
-//            }
-//            else
-//            {
-//                $temp->response=$response->reponse;
-//            }
-//            $response->form_input->response=$temp;
-//            return $response->form_input;
-//
-//        }, $user->responses);
-//        $user->responses = $response;
         return $user;
     }
 
@@ -356,6 +336,8 @@ class UserServices
             $query->where('congress_id', '=', $congressId);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'accesses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -832,6 +814,20 @@ class UserServices
         return $user;
     }
 
+    public function editUser(Request $request, $user)
+    {
+        $user->email = $request->email;
+        if ($request->has('first_name')) $user->first_name = $request->input('first_name');
+        if ($request->has('last_name')) $user->last_name = $request->input('last_name');
+        if ($request->has('gender')) $user->gender = $request->input('gender');
+        if ($request->has('mobile')) $user->mobile = $request->input('mobile');
+        if ($request->has('country_id')) $user->country_id = $request->country_id;
+
+        $user->update();
+
+        return $user;
+    }
+
     public function getUserCongress($congress_id, $user_id)
     {
         return UserCongress::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)->first();
@@ -863,7 +859,9 @@ class UserServices
     {
         UserAccess::with('access')->whereHas('access', function ($query) use ($congress_id) {
             $query->where('congress_id', '=', $congress_id);
-        })->delete();
+        })
+            ->where('user_id', '=', $user_id)
+            ->delete();
     }
 
     public function getUserByQrCode($qrCode)
@@ -964,6 +962,26 @@ class UserServices
     {
         return User::where('user_id', '=', $user_id)
             ->delete();
+    }
+
+    public function deleteFormInputUser($userId, $congressId)
+    {
+        return FormInputResponse::whereHas('form_input', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->where("user_id", '=', $userId)
+            ->delete();
+    }
+
+    public function updateUserCongress($userCongress, Request $request)
+    {
+        $userCongress->privilege_id = $request->input("privilege_id");
+        if ($request->has('organization_id'))
+            $userCongress->organization_id = $request->input('organization_id');
+        if ($request->has('pack_id'))
+            $userCongress->pack_id = $request->input("pack_id");
+
+        $userCongress->update();
     }
 
 

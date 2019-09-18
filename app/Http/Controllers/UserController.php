@@ -78,26 +78,33 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    public function getUserByCongressIdAndUserId($userId, $congressId)
+    {
+
+        $user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('show_in_register', '=', 1);
+        }, 'payments' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        },
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type']);
+
+        return response()->json($user);
+
+    }
+
     public function getUserById($user_id)
     {
         $user = $this->userServices->getParticipatorById($user_id);
         if (!$user) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($user->pack) {
-            $accesses = [];
-            foreach ($user->accesss as $access) {
-                $inPack = false;
-                foreach ($user->pack->accesses as $packAccess) {
-                    if ($packAccess->access_id == $access->access_id) {
-                        $inPack = true;
-                        break;
-                    }
-                }
-                if (!$inPack) array_push($accesses, $access);
-            }
-            $user->packlessAccesses = $accesses;
-        }
+
         return response()->json($user, 200);
     }
 
@@ -118,6 +125,9 @@ class UserController extends Controller
 
     public function delete($userId, $congressId)
     {
+
+        $this->userServices->deleteUserAccesses($userId, $congressId);
+        $this->userServices->deleteFormInputUser($userId, $congressId);
         $userCongress = $this->userServices->getUserCongress($congressId, $userId);
         $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
         if ($userCongress) {
@@ -317,42 +327,79 @@ class UserController extends Controller
         return $user;
     }
 
-    public function editerUserToCongress(Request $request, $congressId)
+    public function editerUserToCongress(Request $request, $congressId, $userId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
+
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
+
+
+        $privilegeId = $request->input('privilege_id');
+        if ($privilegeId == 3 && !$request->has('price')) {
+            return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
 
-        if ($request->has("organization_id") && $request->input("organization_id") &&
-            !$this->organizationServices->getOrganizationById($request->input("organization_id"))) {
-            return response()->json(['error' => 'organization not found'], 404);
+
+        // Get User perId
+        $user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('show_in_register', '=', 1);
+        }, 'payments' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }, 'user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }, 'responses.form_input' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }, 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type']);
+
+
+        if (!$user) {
+            return response()->json(['error' => 'user not found'], 404);
+        } else {
+            $this->userServices->editUser($request, $user);
+        }
+        //Delete Data inutile
+        //$user->responses->delete();
+        $this->userServices->deleteFormInputUser($userId, $congressId);
+
+        if (sizeof($user->payments) > 0 && $request->has("price")) {
+            $user->payments[0]->price = $request->input("price");
+            $user->payments[0]->update();
+        } else {
+            if ($privilegeId == 3)
+                $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $request->input("price"), false);
         }
 
-        if (!$user = $this->userServices->getUserById($request->input('user_id'))) {
-            return response()->json(['error' => 'user not found'], 400);
+        if ($privilegeId != 3 && sizeof($user->payments) > 0) {
+            $user->payments[0]->delete();
         }
 
-        $accessIds = $request->input("accessIds");
-        $request->merge(["congressId" => $congressId]);
+        $this->userServices->updateUserCongress($user->user_congresses[0], $request);
 
-        $user->price = $this->calculPrice($congress, $request->input('pack_id'), $accessIds);
 
-        $user = $this->userServices->editerUser($request, $user);
+        //Adding Responses User To Form (Additional Information)
+        if ($request->has('responses')) {
+            $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
+        }
 
-        $this->userServices->deleteUserResponses($user->user_id);
+        $accessIds = $request->input('accessIds');
+        //Save Access Premium
+        $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesses);
 
-        $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
+        if($privilegeId!=3){
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
+            $accessIds = $this->accessServices->getAccessIdsByAccess($accessInRegister);
+        }
 
-        $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
-        $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesss);
         if ($accessIds && array_count_values($accessIds)) {
-            $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
+            //$accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
             $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
             $accessDiffAdded = array_diff($accessIds, $userAccessIds);
             $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
         } else if ($userAccessIds && array_count_values($userAccessIds)) $this->userServices->deleteAccess($user->user_id, $userAccessIds);
-        $user = $this->userServices->getParticipatorById($user->user_id);
+
 
         return response()->json($user, 200);
     }
@@ -412,45 +459,6 @@ class UserController extends Controller
         }
     }
 
-    public function editFastUserToCongress($congressId, $userId, Request $request)
-    {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
-        }
-        if (!$user = $this->userServices->getUserById($userId)) {
-            return response()->json(['error' => 'user not found'], 404);
-        }
-        if ($request->has('email') && $request->input('email') != "") {
-            $userMail = $this->userServices->getUserByEmail($congressId, $request->input('email'));
-            if ($userMail && $userMail->user_id != $userId) {
-                return response()->json(['error' => 'user exist'], 400);
-            }
-        }
-        $accessIds = $request->input("accessIds");
-        $request->merge(["congressId" => $congressId]);
-        $user = $this->userServices->editFastUser($user, $request);
-        $accessIdsIntutive = $this->accessServices->getIntuitiveAccessIds($congressId);
-        $accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
-        //DENTAIRE DE MERDE
-        if (in_array(8, $accessIds)) {
-            array_push($accessIds, 25);
-        }
-
-        $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesss);
-
-        Log::info($userAccessIds);
-        Log::info($accessIds);
-        $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
-        $accessDiffAdded = array_diff($accessIds, $userAccessIds);
-
-
-        $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
-        $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
-        $user = $this->userServices->getUserById($user->user_id);
-        return response()->json($user, 200);
-
-
-    }
 
     public function getAllPayementTypes()
     {
@@ -519,12 +527,12 @@ class UserController extends Controller
             }
 
             // $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
-            if ($mailtype = $this->congressServices->getMailType('paiement')) {
+            /*if ($mailtype = $this->congressServices->getMailType('paiement')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement), $user, $congress, $mail->object, null, $userMail);
                 }
-            }
+            }*/
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
