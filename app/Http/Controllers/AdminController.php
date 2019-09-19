@@ -216,9 +216,7 @@ class AdminController extends Controller
         /* Make it present in congress */
         $userCongress->isPresent = 1;
         $userCongress->update();
-        /*if ($participator->isPresent == 0) {
-            return response()->json(['response' => 'participator not present in congress'], 404);
-        }*/
+
 
         if (!$user_access = $this->userServices->getUserAccessByUser($participator->user_id, $request->input("accessId"))) {
             return response()->json(["message" => "user not allowed to this access"], 401);

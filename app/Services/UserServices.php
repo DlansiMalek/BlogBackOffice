@@ -196,7 +196,7 @@ class UserServices
     public function makePresentToCongress($user, $isPresent)
     {
         if ($user->isPresent != 1 && $isPresent == 1) {
-            $this->sendingToOrganisateur($user);
+            // $this->sendingToOrganisateur($user);
 
             $userAccesses = $user->accesss;
             foreach ($userAccesses as $userAccess) {
@@ -330,10 +330,13 @@ class UserServices
             ->get();
     }
 
-    public function getUsersByCongress($congressId)
+    public function getUsersByCongress($congressId, $privilegeIds = null)
     {
-        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+        return User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
+            if ($privilegeIds != null) {
+                $query->whereIn('privilege_id', $privilegeIds);
+            }
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -365,9 +368,9 @@ class UserServices
     public function makePresentToAccess($user_access, $user, $accessId, $isPresent, $type)
     {
 
-        if ($user_access->isPresent != 1 && $isPresent == 1) {
+        /*if ($user_access->isPresent != 1 && $isPresent == 1) {
             $this->sendingRTAccess($user, $accessId);
-        }
+        }*/
 
         if ($user_access->isPresent == 0) {
             if ($type == 1) {
@@ -982,6 +985,14 @@ class UserServices
             $userCongress->pack_id = $request->input("pack_id");
 
         $userCongress->update();
+    }
+
+    public function affectAccessToUsers($access, $users)
+    {
+        foreach ($users as $user) {
+            $this->affectAccessById($user->user_id, $access->access_id);
+        }
+
     }
 
 

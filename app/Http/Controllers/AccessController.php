@@ -130,8 +130,15 @@ class AccessController extends Controller
             $this->accessServices->addSubAccesses($access, $request->input('sub_accesses'));
         }
 
-        return $this->accessServices->getAccessById($access->access_id);
+        if ($access->show_in_register == 1) {
+            $users = $this->userServices->getUsersByCongress($congress_id, [5, 6, 7, 8]);
+        } else {
+            $users = $this->userServices->getUsersByCongress($congress_id);
+        }
 
+        $this->userServices->affectAccessToUsers($access, $users);
+
+        return $this->accessServices->getAccessById($access->access_id);
     }
 
     public function getAccessById($access_id)

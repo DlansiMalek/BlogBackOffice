@@ -44,7 +44,7 @@ class UrlUtils
         if (App::environment() == 'prod') {
             return "http://apprtcongress-server:3000/api";
         }
-        return "http://apprtcongress-server:3000/api";
+        return "http://137.74.165.25:3002/api";
     }
 
     public static function getUrlPaiement()
