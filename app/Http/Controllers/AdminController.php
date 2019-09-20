@@ -83,7 +83,7 @@ class AdminController extends Controller
             return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode', 'congressId']], 400);
         }
 
-        $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
+        $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'), $request->input('congressId'));
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }

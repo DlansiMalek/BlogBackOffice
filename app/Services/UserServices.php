@@ -187,9 +187,11 @@ class UserServices
             ->get();
     }
 
-    public function getParticipatorByQrCode($qr_code)
+    public function getParticipatorByQrCode($qr_code, $congressId)
     {
-        return User::where('qr_code', '=', $qr_code)->with(['accesses'])
+        return User::where('qr_code', '=', $qr_code)->with(['accesses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }])
             ->first();
     }
 
@@ -956,6 +958,9 @@ class UserServices
             ->update(['user_id' => $newUserId]);
 
         UserMail::where('user_id', '=', $oldUserId)
+            ->update(['user_id' => $newUserId]);
+
+        FormInputResponse::where('user_id', '=', $oldUserId)
             ->update(['user_id' => $newUserId]);
 
 

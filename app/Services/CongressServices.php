@@ -393,6 +393,7 @@ class CongressServices
     public
     function getAllCongresses()
     {
+        $day = date('Y-m-d', time() + (60 * 60));
         return Congress::with([
             'location.city.country',
             'config',
@@ -401,6 +402,7 @@ class CongressServices
             'accesss.sub_accesses',
             'accesss.topic',
             'accesss.type'])
+            ->where('end_date', ">=", $day)
             ->get();
 
     }

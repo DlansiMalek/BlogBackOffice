@@ -54,54 +54,11 @@ INSERT IGNORE INTO `congress_v3`.Payment (isPaid,path,reference,authorization,fr
 
 
 
-DELETE FROM `Mail` ;
-
-
-INSERT IGNORE INTO `congress_v3`.Mail (mail_id,object,template,congress_id , mail_type_id ,  created_at,updated_at)
-  SELECT M.mail_id , M.object , M.template , M.congress_id , M.mail_type_id , M.created_at , M.updated_at
-  FROM `congress_v2`.Mail as M;
-
-
-DELETE FROM `User_Mail` ;
 
 
 
-INSERT IGNORE INTO `congress_v3`.User_Mail (status,user_id,mail_id,created_at,updated_at)
-  SELECT U.email_sended , U.user_id, M.mail_id , U.created_at , U.updated_at
-  FROM `congress_v2`.User as U
-  LEFT OUTER JOIN `congress_v2`.Mail as M ON M.congress_id = U.congress_id
-  WHERE M.mail_type_id = 1;
 
 
-INSERT IGNORE INTO `congress_v3`.User_Mail (status,user_id,mail_id,created_at,updated_at)
-  SELECT U.email_attestation_sended , U.user_id, M.mail_id , U.created_at , U.updated_at
-  FROM `congress_v2`.User as U
-  LEFT OUTER JOIN `congress_v2`.Mail as M ON M.congress_id = U.congress_id
-  WHERE M.mail_type_id = 3;
-
-
-DELETE FROM `Admin` ;
-
-
-INSERT IGNORE INTO `congrezss_v3`.Admin (admin_id,name,email,mobile , password,passwordDecrypt,rfid,privilege_id,created_at,updated_at)
-  SELECT A.admin_id , A.name, A.email , A.mobile , A.password , A.passwordDecrypt, A.rfid ,IF(A.responsible is NULL, 1,NULL) ,  A.created_at, A.updated_at
-  FROM `congress_v2`.Admin as A;
-
-
-DELETE FROM `Admin_Congress` ;
-
-
-INSERT IGNORE INTO `congress_v3`.Admin_Congress (admin_id,congress_id,privilege_id,created_at,updated_at)
-  SELECT  C.admin_id , C.congress_id , 1,   C.created_at, C.updated_at
-  FROM `congress_v2`.Congress as C;
-
-
-DELETE FROM `Badge` ;
-
-
-INSERT IGNORE INTO `congress_v3`.Badge (badge_id,badge_id_generator,privilege_id,congress_id,created_at,updated_at)
-  SELECT  *
-  FROM `congress_v2`.Badge;
 
 
 DELETE FROM `Attestation_Access` ;
