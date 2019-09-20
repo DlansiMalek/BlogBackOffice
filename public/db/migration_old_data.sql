@@ -1,4 +1,4 @@
-
+/* Current User 3755 */
 /* Migration Congress Part */
 
 DELETE FROM `Congress` ;

@@ -57,9 +57,10 @@ class UserController extends Controller
         $this->mailServices = $mailServices;
     }
 
-    public function getUserByTypeAndCongressId($congress_id, $privilege_id)
+    public function getUserByTypeAndCongressId($congress_id, Request $request)
     {
-        return $this->userServices->getUserByTypeAndCongressId($congress_id, $privilege_id);
+        $privilegeIds = $request->all();
+        return $this->userServices->getUserByTypeAndCongressId($congress_id, $privilegeIds);
     }
 
     public function index()
@@ -387,7 +388,7 @@ class UserController extends Controller
         //Save Access Premium
         $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesses);
 
-        if($privilegeId!=3){
+        if ($privilegeId != 3) {
             $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
             $accessIds = $this->accessServices->getAccessIdsByAccess($accessInRegister);
         }
