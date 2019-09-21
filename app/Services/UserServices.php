@@ -25,7 +25,8 @@ class UserServices
 
     public function getAllUsers()
     {
-        return User::all();
+        return User::orderBy('updated_at', 'asc')
+            ->get();
     }
 
     public function editerUser(Request $request, $newUser)
@@ -404,6 +405,12 @@ class UserServices
         return UserAccess::where("user_id", "=", $userId)
             ->where("access_id", "=", $accessId)
             ->first();
+    }
+
+    public function updateQrCode($user_id, string $generateCode)
+    {
+        User::where('user_id', '=', $user_id)
+            ->update(['qr_code' => $generateCode]);
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -867,6 +874,12 @@ class UserServices
         })
             ->where('user_id', '=', $user_id)
             ->delete();
+    }
+
+    public function getMinUserByQrCode($qrCode)
+    {
+        return User::where("qr_code", "=", $qrCode)
+            ->get();
     }
 
     public function getUserByQrCode($qrCode)

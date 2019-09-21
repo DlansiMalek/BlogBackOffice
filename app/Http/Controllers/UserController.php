@@ -727,8 +727,19 @@ class UserController extends Controller
     {
         if (!$user = $this->userServices->getUserById($user_id))
             return response()->json(['error' => 'user not found'], 400);
-        if ($this->userServices->usedQrCode($request->qrCode))
-            return response()->json(['error' => 'used-qr-code'], 400);
+
+        $oldUsers = $this->userServices->getMinUserByQrCode($request->input("qrcode"));
+
+        foreach ($oldUsers as $oldUser
+        ) {
+            $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
+            $oldUser->update();
+        }
+
+        /*if ($this->userServices->usedQrCode($request->input('qrcode')))
+            return response()->json(['error' => 'used-qr-code'], 400);*/
+
+
         $user->qr_code = $request->get('qrcode');
         $user->save();
         return $user;

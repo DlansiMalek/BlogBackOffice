@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 //Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
+Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
 
 
 //Shared API

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use Illuminate\Support\Facades\Log;
 
 class SharedController extends Controller
 {
@@ -68,6 +69,25 @@ class SharedController extends Controller
             $pass[] = $alphabet[$n];
         }
         return implode($pass); //turn the array into a string
+    }
+
+
+    public function deleteOldQrCode()
+    {
+        $users = $this->userServices->getAllUsers();
+        $groupedUsers = Utils::groupBy('qr_code', json_decode($users, true));
+
+        foreach ($groupedUsers as $groupedUser){
+            if (sizeof($groupedUser) > 1) {
+                //Log::info($groupedUser);
+                for ($i = 0; $i < (sizeof($groupedUser)-1); $i++) {
+                    $this->userServices->updateQrCode($groupedUser[$i]['user_id'], Utils::generateCode($groupedUser[$i]['user_id']));
+                }
+            }
+        }
+
+
+
     }
 
     public function synchroData()
