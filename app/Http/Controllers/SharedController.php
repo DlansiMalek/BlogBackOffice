@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use http\Env\Request;
 use Illuminate\Support\Facades\Log;
 
 class SharedController extends Controller
@@ -72,20 +73,40 @@ class SharedController extends Controller
     }
 
 
+    public function scanAllPresence(\Illuminate\Http\Request $request)
+    {
+
+        $date = $request->input("date");
+
+        $users = $this->userServices->getUserModifiedDate($date);
+        Log::info(sizeof($users));
+        //Log::info(json_encode($users, true));
+
+        //return response()->json(['message'=> 'scan all presence']);
+
+        foreach ($users as $user) {
+            if (sizeof($user->user_congresses) > 0) {
+                foreach ($user->user_congresses as $user_congress) {
+                    $user_congress->isPresent = 1;
+                    $user_congress->update();
+                }
+            }
+        }
+    }
+
     public function deleteOldQrCode()
     {
         $users = $this->userServices->getAllUsers();
         $groupedUsers = Utils::groupBy('qr_code', json_decode($users, true));
 
-        foreach ($groupedUsers as $groupedUser){
+        foreach ($groupedUsers as $groupedUser) {
             if (sizeof($groupedUser) > 1) {
                 //Log::info($groupedUser);
-                for ($i = 0; $i < (sizeof($groupedUser)-1); $i++) {
+                for ($i = 0; $i < (sizeof($groupedUser) - 1); $i++) {
                     $this->userServices->updateQrCode($groupedUser[$i]['user_id'], Utils::generateCode($groupedUser[$i]['user_id']));
                 }
             }
         }
-
 
 
     }

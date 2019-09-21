@@ -413,6 +413,12 @@ class UserServices
             ->update(['qr_code' => $generateCode]);
     }
 
+    public function getUserModifiedDate($date)
+    {
+        return User::where("updated_at",">=",date('Y-m-d'))
+            ->get();
+    }
+
     private function sendingRTAccess($user, $accessId)
     {
         $client = new \GuzzleHttp\Client();
