@@ -130,6 +130,7 @@ class CongressController extends Controller
 
     public function getCongressById($congress_id)
     {
+        ini_set('memory_limit', '-1');
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["error" => "congress not found"], 404);
         }
