@@ -74,13 +74,13 @@ Route::group(['prefix' => 'users'], function () {
             Route::post('upload-payement', 'UserController@uploadPayement');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
+            Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
         });
 
         Route::put('', 'UserController@update');
         Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
         Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');
-        Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
         Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
     });

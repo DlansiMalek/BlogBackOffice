@@ -559,14 +559,18 @@ class UserController extends Controller
         return response()->json(['message' => 'add congress success']);
     }
 
-    public function sendMailAttesation($userId)
+    public function sendMailAttesation($userId, $congressId, $strict = 1)
     {
+        $strict = 0;
 
-        if (!$user = $this->userServices->getUserById($userId)) {
+        if (!$user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
+            $query->where("congress_id", "=", $congressId);
+            $query->where('with_attestation', "=", 1);
+        }])) {
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $congress = $this->congressServices->getCongressById($user->congress_id);
+        $congress = $this->congressServices->getCongressById($congressId);
         $request = array();
         if ($user->email != null && $user->email != "-" && $user->email != "") {
             if ($congress->attestation) {
@@ -577,8 +581,8 @@ class UserController extends Controller
                         'qrCode' => false
                     ));
             }
-            foreach ($user->accesss as $access) {
-                if ($access->pivot->isPresent == 1) {
+            foreach ($user->accesses as $access) {
+                if ($strict == 0 || $access->pivot->isPresent == 1) {
                     if ($access->attestation) {
                         array_push($request,
                             array(
@@ -590,12 +594,21 @@ class UserController extends Controller
 
                 }
             }
-            $this->badgeServices->saveAttestationsInPublic($request);
 
             $mailtype = $this->congressServices->getMailType('attestation');
-            if (!$mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id))
-                return response()->json(['error' => 'attestation mail not sent']);
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
+            if ($mail) {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                }
+
+                    $this->badgeServices->saveAttestationsInPublic($request);
+                    $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
+                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+
+            }
 
         } else {
             return response()->json(['error' => 'user not present or empty email'], 501);

@@ -415,7 +415,18 @@ class UserServices
 
     public function getUserModifiedDate($date)
     {
-        return User::where("updated_at",">=",date('Y-m-d'))
+        return User::where("updated_at", ">=", date('Y-m-d'))
+            ->get();
+    }
+
+    public function getUsersWithRelations($congressId, $relations, $isPresent)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent) {
+            $query->where('congress_id', '=', $congressId);
+            if ($isPresent != null)
+                $query->where('isPresent', '=', $isPresent);
+        })
+            ->with($relations)
             ->get();
     }
 
@@ -638,7 +649,7 @@ class UserServices
     }
 
 
-    public function sendMailAttesationToUser($user, $congress, $object, $view)
+    public function sendMailAttesationToUser($user, $congress, $userMail, $object, $view)
     {
         $email = $user->email;
 
@@ -652,17 +663,13 @@ class UserServices
                 $message->attach($pathToFile);
                 $message->to($email)->subject($object);
             });
+            $userMail->status = 1;
         } catch (\Exception $exception) {
-            Log::info($exception);
-            $user->email_attestation_sended = -1;
-            $user->gender = $user->gender == 'Mr.' ? 1 : 2;
-            $user->update();
             Storage::delete('app/badge.png');
+            $userMail->status = -1;
             return 1;
         }
-        $user->gender = $user->gender == 'Mr.' ? 1 : 2;
-        $user->email_attestation_sended = 1;
-        $user->update();
+        $userMail->update();
         return $user;
     }
 

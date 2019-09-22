@@ -270,16 +270,29 @@ class CongressController extends Controller
         return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congress);
     }
 
-    public function sendMailAllParticipantsAttestation($congressId)
+    public function sendMailAllParticipantsAttestation($congressId, $strict = 1)
     {
+
+        $strict = 0;
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
-
-        $users = $this->userServices->getUsersEmailAttestationNotSendedByCongress($congressId);
+        $mailtype = $this->congressServices->getMailType('attestation');
+        $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+        $mailId = $mail->mail_id;
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+                $query->where('with_attestation', "=", 1);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('isPresent', '=', 1);
+            },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }], 1);
         foreach ($users as $user) {
             $request = array();
-            if ($user->email != null && $user->email != "-" && $user->email != "" && $user->isPresent == 1) {
+            if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
                 if ($congress->attestation) {
                     array_push($request,
                         array(
@@ -288,8 +301,8 @@ class CongressController extends Controller
                             'qrCode' => false
                         ));
                 }
-                foreach ($user->accesss as $access) {
-                    if ($access->pivot->isPresent == 1 && $access->attestation) {
+                foreach ($user->accesses as $access) {
+                    if ($strict == 0 || ($access->pivot->isPresent == 1 && $access->attestation)) {
                         $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
                         if ($infoPresence['enabled'] == 1) {
                             array_push($request,
@@ -301,14 +314,18 @@ class CongressController extends Controller
                         }
                     }
                 }
-
-                $mailtype = $this->congressServices->getMailType('attestation');
-                $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
-
                 if ($mail) {
-                    $this->badgeServices->saveAttestationsInPublic($request);
-                    $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object,
-                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if ($userMail->status != 1) {
+                        $this->badgeServices->saveAttestationsInPublic($request);
+                        $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
+                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+                    }
                 }
             }
         }

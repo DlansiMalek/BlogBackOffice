@@ -72,7 +72,8 @@ class CongressServices
                 'accesss.sub_accesses',
                 'accesss.topic',
                 'accesss.type',
-                'accesss.votes'
+                'accesss.votes',
+                'attestation'
             ])
             ->where("congress_id", "=", $id_Congress)
             ->first();

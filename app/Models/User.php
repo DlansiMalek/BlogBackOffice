@@ -14,6 +14,11 @@ class User extends Authenticatable
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+    function user_mails()
+    {
+        return $this->hasMany(UserMail::class, "user_id", "user_id");
+    }
+
     function accesses()
     {
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')

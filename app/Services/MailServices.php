@@ -73,6 +73,13 @@ class MailServices
             first();
     }
 
+    public function getMailByUserIdAndMailId($mailId, $userId)
+    {
+        return UserMail::where('user_id', '=', $userId)
+            ->where('mail_id', '=', $mailId)
+            ->first();
+    }
+
     public function addingMailUser($mailId, $userId)
     {
         $mailUser = new UserMail();
