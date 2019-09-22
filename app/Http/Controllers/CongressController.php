@@ -301,10 +301,10 @@ class CongressController extends Controller
                             'qrCode' => false
                         ));
                 }
+
                 foreach ($user->accesses as $access) {
-                    if ($strict == 0 || ($access->pivot->isPresent == 1 && $access->attestation)) {
-                        $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                        if ($infoPresence['enabled'] == 1) {
+                    if ($strict == 0 || $access->pivot->isPresent == 1) {
+                        if ($access->attestation) {
                             array_push($request,
                                 array(
                                     'badgeIdGenerator' => $access->attestation->attestation_generator_id,
@@ -312,6 +312,7 @@ class CongressController extends Controller
                                     'qrCode' => false
                                 ));
                         }
+
                     }
                 }
                 if ($mail) {
