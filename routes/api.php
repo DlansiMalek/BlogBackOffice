@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 //Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
-Route::get('/scanAllPresence','SharedController@scanAllPresence');
+Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
 
 
 //Shared API
@@ -340,7 +340,10 @@ Route::group(['prefix' => 'payement'], function () {
 
 Route::group(["prefix" => "organization", 'middleware' => 'organization'], function () {
     Route::get('/admin/{admin_id}', "OrganizationController@getOrganizationByAdminId");
+    Route::get('/admin/{admin_id}/congress/{congressId}', "OrganizationController@getOrganizationByAdminIdAndCongressId");
     Route::get('/{organization_id}', "OrganizationController@getOrganizationById");
+
+    Route::post('{organization_id}/congress/{congressId}', 'OrganizationController@saveAllUsersOrganization');
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });

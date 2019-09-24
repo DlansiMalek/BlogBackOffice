@@ -667,7 +667,6 @@ class UserServices
         } catch (\Exception $exception) {
             Storage::delete('app/badge.png');
             $userMail->status = -1;
-            return 1;
         }
         $userMail->update();
         return $user;

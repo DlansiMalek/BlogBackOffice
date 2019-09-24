@@ -6,6 +6,7 @@ use App\Models\Mail;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\OrganizationServices;
+use App\Services\PaymentServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
@@ -18,19 +19,22 @@ class OrganizationController extends Controller
     protected $adminServices;
     protected $userServices;
     protected $sharedServices;
+    protected $paymentServices;
 
 
     function __construct(OrganizationServices $organizationServices,
                          CongressServices $congressServices,
                          AdminServices $adminServices,
                          UserServices $userServices,
-                         SharedServices $sharedServices)
+                         SharedServices $sharedServices,
+                         PaymentServices $paymentServices)
     {
         $this->organizationServices = $organizationServices;
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
+        $this->paymentServices = $paymentServices;
     }
 
     public function addOrganization($congress_id, Request $request)
@@ -57,7 +61,7 @@ class OrganizationController extends Controller
         if (!$organization) {
             $organization = $this->organizationServices->addOrganization($request, $admin->admin_id);
         } else {
-            if ($this->organizationServices->exist($congress_id, $organization->organization_id)) {
+            if ($this->organizationServices->getOrganizationByCongressIdAndOrgId($congress_id, $organization->organization_id)) {
                 return response()->json(["message" => "organization already exists in this congress"], 401);
             }
             $organization->admin_id = $admin->admin_id;
@@ -185,4 +189,65 @@ class OrganizationController extends Controller
         }
     }
 
+    function getOrganizationByAdminIdAndCongressId($adminId, $congressId)
+    {
+        $organizations = $this->organizationServices->getOrganizationsByCongressId($congressId);
+
+        $org = null;
+        for ($i = 0; $i < sizeof($organizations); $i++) {
+            if ($organizations[$i]->admin->admin_id == $adminId) {
+                $org = $organizations[$i];
+                break;
+            }
+        }
+        return response()->json(['users' => $this->organizationServices->getAllUserByOrganizationId($org->organization_id, $congressId), 'organization' => $org]);
+    }
+
+    function saveAllUsersOrganization($organizationId, $congressId, Request $request)
+    {
+        $congress = $this->congressServices->getById($congressId);
+        $users = $request->all();
+        //PrivilegeId = 3
+        $sum = 0;
+        foreach ($users as $userData) {
+            if ($userData['email'] && $userData['first_name'] && $userData['last_name']) {
+                $privilegeId = 3;
+                $request->merge(['privilege_id' => $privilegeId, 'first_name' => $userData['first_name'],
+                    'last_name' => $userData['last_name'],
+                    'email' => $userData['email']]);
+                // Get User per mail
+                if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
+                    $user = $this->userServices->saveUser($request);
+                }
+                // Check if User already registed to congress
+                if (!$user_congress = $this->userServices->getUserCongress($congressId, $user->user_id)) {
+                    $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
+                }
+                $user_congress->organization_id = $organizationId;
+                $user_congress->organization_accepted = true;
+                $user_congress->update();
+
+
+                if (!$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {
+                    $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $congress->price, false);
+                }
+
+                $sum += $userPayment->price;
+            }
+        }
+
+
+        $congressOrganization = $this->organizationServices->getOrganizationByCongressIdAndOrgId($congressId, $organizationId);
+        $congressOrganization->montant = $congressOrganization->montant + $sum;
+        $congressOrganization->update();
+
+        return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
+
+    }
+
+
+    function getAllUserByOrganizationId($organizationId, $congressId)
+    {
+        return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
+    }
 }

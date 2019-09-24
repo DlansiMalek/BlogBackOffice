@@ -18,7 +18,7 @@ class CreateCongressTable extends Migration
             $table->string('name');
             $table->date('start_date');
             $table->date('end_date');
-            $table->decimal('price', 10, 3);
+            $table->double('price');
             $table->text('description')->nullable()->default(null);
             $table->softDeletes();
             $table->timestamps();

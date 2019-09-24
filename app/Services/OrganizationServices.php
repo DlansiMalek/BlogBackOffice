@@ -14,6 +14,7 @@ use App\Models\Admin_Privilege;
 use App\Models\Congress_Organization;
 use App\Models\CongressOrganization;
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -49,7 +50,7 @@ class OrganizationServices
         return Organization::with(['congress_organization'])->where('admin_id', "=", $admin_id)->first();
     }
 
-    public function exist($congress_id, $organizationId)
+    public function getOrganizationByCongressIdAndOrgId($congress_id, $organizationId)
     {
         return CongressOrganization::where('congress_id', '=', $congress_id)
             ->where('organization_id', '=', $organizationId)
@@ -78,8 +79,23 @@ class OrganizationServices
         return Organization::whereHas('congressOrganization', function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
         })
-            ->with('admin')
+            ->with(['admin', 'congressOrganization' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
             ->get();
     }
+
+    public function getAllUserByOrganizationId($organizationId, $congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($organizationId, $congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('organization_id', '=', $organizationId);
+        })
+            ->with(['payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->get();
+    }
+
 
 }
