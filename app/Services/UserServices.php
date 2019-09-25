@@ -333,9 +333,9 @@ class UserServices
             ->get();
     }
 
-    public function getUsersByCongress($congressId, $privilegeIds = null)
+    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null)
     {
-        return User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
             if ($privilegeIds != null) {
                 $query->whereIn('privilege_id', $privilegeIds);
@@ -343,12 +343,23 @@ class UserServices
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'accesses' => function ($query) use ($congressId) {
+            }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                 $query->where('congress_id', '=', $congressId);
+                if ($withAttestation != null) {
+                    $query->where("with_attestation", "=", $withAttestation);
+                }
             }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }])
-            ->get();
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                }
+            });
+
+        return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
     public function getUsersByAccess($accessId)

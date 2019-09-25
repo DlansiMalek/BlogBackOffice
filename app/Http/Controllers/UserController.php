@@ -166,15 +166,26 @@ class UserController extends Controller
         return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
+    public function getUsersByCongressPagination($congressId, Request $request)
+    {
+
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search', '');
+        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search);
+
+
+        return response()->json($users);
+    }
+
 
     public function getUsersByCongress($congressId)
     {
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(["error" => "congress not found"], 404);
         }
-        $users = $this->userServices->getUsersByCongress($congressId);
+        $users = $this->userServices->getUsersByCongress($congressId, null, true);
 
-        foreach ($users as $user) {
+        /*foreach ($users as $user) {
             foreach ($user->accesses as $access) {
                 if ($access->pivot->isPresent == 1) {
                     $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
@@ -183,7 +194,7 @@ class UserController extends Controller
                 } else
                     $access->attestation_status = 0;
             }
-        }
+        }*/
         return response()->json($users);
     }
 
@@ -604,9 +615,9 @@ class UserController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
-                    $this->badgeServices->saveAttestationsInPublic($request);
-                    $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
-                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+                $this->badgeServices->saveAttestationsInPublic($request);
+                $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
 
             }
 

@@ -205,6 +205,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
     Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::get('list', 'UserController@getUsersByCongress');
+            Route::get('list-pagination', 'UserController@getUsersByCongressPagination');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mail;
+use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\OrganizationServices;
@@ -20,6 +21,7 @@ class OrganizationController extends Controller
     protected $userServices;
     protected $sharedServices;
     protected $paymentServices;
+    protected $accessServices;
 
 
     function __construct(OrganizationServices $organizationServices,
@@ -27,7 +29,8 @@ class OrganizationController extends Controller
                          AdminServices $adminServices,
                          UserServices $userServices,
                          SharedServices $sharedServices,
-                         PaymentServices $paymentServices)
+                         PaymentServices $paymentServices,
+                         AccessServices $accessServices)
     {
         $this->organizationServices = $organizationServices;
         $this->congressServices = $congressServices;
@@ -35,6 +38,7 @@ class OrganizationController extends Controller
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->paymentServices = $paymentServices;
+        $this->accessServices = $accessServices;
     }
 
     public function addOrganization($congress_id, Request $request)
@@ -209,6 +213,9 @@ class OrganizationController extends Controller
         $users = $request->all();
         //PrivilegeId = 3
         $sum = 0;
+
+        // Affect All Access Free (To All Users)
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
         foreach ($users as $userData) {
             if ($userData['email'] && $userData['first_name'] && $userData['last_name']) {
                 $privilegeId = 3;
@@ -227,6 +234,8 @@ class OrganizationController extends Controller
                 $user_congress->organization_accepted = true;
                 $user_congress->update();
 
+
+                $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
                 if (!$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {
                     $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $congress->price, false);
