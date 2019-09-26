@@ -128,6 +128,33 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function getMinimalCongressById($congressId)
+    {
+        if (!$congress = $this->congressServices->getMinimalCongressById($congressId)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+
+        $congress = $this->congressServices->updateWithParticipantsCount($congress);
+
+        return response()->json($congress);
+    }
+
+    public function getCongressByIdBadge($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressByIdAndRelations($congressId, [
+            'badges',
+            'accesss' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('with_attestation', '=', 1);
+            },
+            'accesss.attestation'
+        ])) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+
+        return response()->json($congress);
+    }
+
     public function getCongressById($congress_id)
     {
         ini_set('memory_limit', '-1');

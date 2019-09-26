@@ -749,7 +749,11 @@ class UserController extends Controller
 
     public function changeQrCode($user_id, Request $request)
     {
-        if (!$user = $this->userServices->getUserById($user_id))
+        $congressId = $request->input("congressId");
+
+        if (!$user = $this->userServices->getUserByIdWithRelations($user_id, ['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }]))
             return response()->json(['error' => 'user not found'], 400);
 
         $oldUsers = $this->userServices->getMinUserByQrCode($request->input("qrcode"));
@@ -760,8 +764,11 @@ class UserController extends Controller
             $oldUser->update();
         }
 
-        /*if ($this->userServices->usedQrCode($request->input('qrcode')))
-            return response()->json(['error' => 'used-qr-code'], 400);*/
+        if (sizeof($user->user_congresses) > 0) {
+            $user->user_congresses[0]->isPresent = 1;
+            $user->user_congresses[0]->update();
+        }
+
 
 
         $user->qr_code = $request->get('qrcode');

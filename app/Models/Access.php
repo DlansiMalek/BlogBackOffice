@@ -19,8 +19,14 @@ class Access extends Model
         'seuil', 'room', 'description', 'congress_id', 'packless',
         'start_date', 'real_start_date', 'end_date', 'parent_id', 'show_in_program',
         'show_in_register', 'with_attestation'];
-    protected $dates = ['created_at', 'updated_at','deleted_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+
+    public function user_accesses()
+    {
+        return $this->hasMany(UserAccess::class, 'access_id', 'access_id')
+            ->count();
+    }
 
     public function participants()
     {

@@ -47,6 +47,27 @@ class CongressServices
     }
 
 
+    public function getMinimalCongressById($congressId)
+    {
+
+        return Congress::with([
+            "accesss",
+            "form_inputs.type",
+            "form_inputs.values",
+            "config",
+            "accesss" => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('show_in_register', '=', 1);
+                $query->whereNull('parent_id');
+            },
+            'accesss.participants.user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('privilege_id', '=', 3);
+            }])
+            ->where("congress_id", "=", $congressId)
+            ->first();
+    }
+
     public function getCongressById($id_Congress)
     {
         $congress = Congress::withCount('users')
@@ -453,4 +474,15 @@ class CongressServices
             ->where('congress_id', '=', $congressId)
             ->first();
     }
+
+    public function updateWithParticipantsCount($congress)
+    {
+        foreach ($congress->accesss as $accesss) {
+            $accesss->participant_count = sizeof($accesss->participants);
+            $accesss->unsetRelation('participants');
+        }
+        return $congress;
+    }
+
+
 }
