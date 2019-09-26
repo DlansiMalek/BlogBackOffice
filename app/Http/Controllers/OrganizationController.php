@@ -209,6 +209,8 @@ class OrganizationController extends Controller
 
     function saveAllUsersOrganization($organizationId, $congressId, Request $request)
     {
+        ini_set('max_execution_time', 500); //3 minutes
+
         $congress = $this->congressServices->getById($congressId);
         $users = $request->all();
         //PrivilegeId = 3
@@ -216,6 +218,7 @@ class OrganizationController extends Controller
 
         // Affect All Access Free (To All Users)
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
+        $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
         foreach ($users as $userData) {
             if ($userData['email'] && $userData['first_name'] && $userData['last_name']) {
                 $privilegeId = 3;
@@ -235,6 +238,7 @@ class OrganizationController extends Controller
                 $user_congress->update();
 
 
+                $this->userServices->deleteAccess($user->user_id, $accessIds);
                 $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
                 if (!$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {

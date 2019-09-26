@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AdminCongress;
 use Closure;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -18,9 +19,12 @@ class Organization
     {
         Try {
             $user = JWTAuth::parseToken()->toUser();
-            if ($user->privilege_id == 1 || $user->privilege_id == 7)
+            $adminCongresses = AdminCongress::where('admin_id', '=', $user->admin_id)
+                ->whereIn('privilege_id', [1, 7])
+                ->get();
+            if (sizeof($adminCongresses) != 0) {
                 return $next($request);
-            else
+            } else
                 return response()->json(['error' => 'Permission denied'], 403);
 
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
