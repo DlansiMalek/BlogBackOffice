@@ -562,12 +562,64 @@ class UserController extends Controller
 
     public function saveUsersFromExcel($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
+        ini_set('max_execution_time', 500); //3 minutes
+
+        $congress = $this->congressServices->getById($congressId);
+        $users = $request->input("data");
+        //PrivilegeId = 3
+        $sum = 0;
+        $privilegeId = $request->input("privilegeId");
+        $organizationId = $request->input("organisationId");
+
+        // Affect All Access Free (To All Users)
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
+        $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
+        $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
+        foreach ($users as $userData) {
+            if ($userData['email'] && $userData['first_name'] && $userData['last_name']) {
+
+                $request->merge(['privilege_id' => $privilegeId, 'first_name' => $userData['first_name'],
+                    'last_name' => $userData['last_name'],
+                    'email' => $userData['email']]);
+                // Get User per mail
+                if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
+                    $user = $this->userServices->saveUser($request);
+                }
+                // Check if User already registed to congress
+                if (!$user_congress = $this->userServices->getUserCongress($congressId, $user->user_id)) {
+                    $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
+                }
+
+                if ($organizationId != null) {
+                    $user_congress->organization_id = $organizationId;
+                    $user_congress->organization_accepted = true;
+                    $user_congress->update();
+                }
+
+
+                $this->userServices->deleteAccess($user->user_id, $accessIds);
+                $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
+
+                if ($privilegeId != 3) {
+                    $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
+                }
+
+                if ($privilegeId == 3 && !$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {
+                    $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $congress->price, false);
+                }
+
+                $sum += $userPayment->price;
+            }
         }
-        $users = $request->all();
-        $this->userServices->saveUsersFromExcel($congress->congress_id, $users);
-        return response()->json(['message' => 'add congress success']);
+
+        if ($organizationId != null) {
+            $congressOrganization = $this->organizationServices->getOrganizationByCongressIdAndOrgId($congressId, $organizationId);
+            $congressOrganization->montant = $congressOrganization->montant + $sum;
+            $congressOrganization->update();
+
+            return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
+        } else
+            return response()->json(['message' => 'import success']);
     }
 
     public function sendMailAttesation($userId, $congressId, $strict = 1)
@@ -768,7 +820,6 @@ class UserController extends Controller
             $user->user_congresses[0]->isPresent = 1;
             $user->user_congresses[0]->update();
         }
-
 
 
         $user->qr_code = $request->get('qrcode');

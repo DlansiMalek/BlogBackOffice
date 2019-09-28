@@ -207,57 +207,6 @@ class OrganizationController extends Controller
         return response()->json(['users' => $this->organizationServices->getAllUserByOrganizationId($org->organization_id, $congressId), 'organization' => $org]);
     }
 
-    function saveAllUsersOrganization($organizationId, $congressId, Request $request)
-    {
-        ini_set('max_execution_time', 500); //3 minutes
-
-        $congress = $this->congressServices->getById($congressId);
-        $users = $request->all();
-        //PrivilegeId = 3
-        $sum = 0;
-
-        // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
-        $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
-        foreach ($users as $userData) {
-            if ($userData['email'] && $userData['first_name'] && $userData['last_name']) {
-                $privilegeId = 3;
-                $request->merge(['privilege_id' => $privilegeId, 'first_name' => $userData['first_name'],
-                    'last_name' => $userData['last_name'],
-                    'email' => $userData['email']]);
-                // Get User per mail
-                if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
-                    $user = $this->userServices->saveUser($request);
-                }
-                // Check if User already registed to congress
-                if (!$user_congress = $this->userServices->getUserCongress($congressId, $user->user_id)) {
-                    $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
-                }
-                $user_congress->organization_id = $organizationId;
-                $user_congress->organization_accepted = true;
-                $user_congress->update();
-
-
-                $this->userServices->deleteAccess($user->user_id, $accessIds);
-                $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
-
-                if (!$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {
-                    $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $congress->price, false);
-                }
-
-                $sum += $userPayment->price;
-            }
-        }
-
-
-        $congressOrganization = $this->organizationServices->getOrganizationByCongressIdAndOrgId($congressId, $organizationId);
-        $congressOrganization->montant = $congressOrganization->montant + $sum;
-        $congressOrganization->update();
-
-        return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
-
-    }
-
 
     function getAllUserByOrganizationId($organizationId, $congressId)
     {
