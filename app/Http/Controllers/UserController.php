@@ -624,7 +624,7 @@ class UserController extends Controller
 
     public function sendMailAttesation($userId, $congressId, $strict = 1)
     {
-        $strict = 0;
+        // $strict = 0;
 
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
             $query->where("congress_id", "=", $congressId);

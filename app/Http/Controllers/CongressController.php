@@ -300,7 +300,7 @@ class CongressController extends Controller
     public function sendMailAllParticipantsAttestation($congressId, $strict = 1)
     {
 
-        $strict = 0;
+        // $strict = 0;
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
