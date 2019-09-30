@@ -51,6 +51,7 @@ class CongressServices
     {
 
         return Congress::with([
+            "badges",
             "accesss",
             "form_inputs.type",
             "form_inputs.values",
