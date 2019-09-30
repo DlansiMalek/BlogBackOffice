@@ -217,15 +217,16 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('status-presence', 'UserController@getUserStatusPresences');
             Route::get('mailTest', 'CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
+
+            Route::group(['prefix' => 'access'], function () {
+                Route::group(['prefix' => '{access_id}'], function () {
+                    Route::get('list', 'UserController@getUsersByAccess');
+                    Route::get('presence/list', 'UserController@getPresencesByAccess');
+                });
+            });
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
 
-    });
-    Route::group(['prefix' => 'access'], function () {
-        Route::group(['prefix' => '{access_id}'], function () {
-            Route::get('list', 'UserController@getUsersByAccess');
-            Route::get('presence/list', 'UserController@getPresencesByAccess');
-        });
     });
 });
 //Admin API

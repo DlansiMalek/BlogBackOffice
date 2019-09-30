@@ -433,9 +433,9 @@ class UserController extends Controller
         }
     }
 
-    public function getUsersByAccess($accessId)
+    public function getUsersByAccess($congressId, $accessId)
     {
-        $users = $this->userServices->getUsersByAccess($accessId);
+        $users = $this->userServices->getUsersByAccess($congressId,$accessId);
 
         return response()->json($users);
     }
