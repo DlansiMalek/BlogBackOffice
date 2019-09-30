@@ -812,8 +812,10 @@ class UserController extends Controller
 
         foreach ($oldUsers as $oldUser
         ) {
-            $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
-            $oldUser->update();
+            if ($oldUser->user_id != $user->user_id) {
+                $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
+                $oldUser->update();
+            }
         }
 
         if (sizeof($user->user_congresses) > 0) {
@@ -821,9 +823,8 @@ class UserController extends Controller
             $user->user_congresses[0]->update();
         }
 
-
         $user->qr_code = $request->get('qrcode');
-        $user->save();
+        $user->update();
         return $user;
     }
 
