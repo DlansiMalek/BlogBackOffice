@@ -7,6 +7,7 @@ use App\Models\HistoryPack;
 use App\Models\Mail;
 use App\Models\PaymentAdmin;
 use App\Models\User;
+use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
@@ -33,6 +34,7 @@ class AdminController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packAdminServices;
+    protected $accessServices;
 
     protected $client;
 
@@ -42,7 +44,8 @@ class AdminController extends Controller
                                 PrivilegeServices $privilegeServices,
                                 SharedServices $sharedServices,
                                 PackAdminServices $packAdminServices,
-                                BadgeServices $badgeServices)
+                                BadgeServices $badgeServices,
+                                AccessServices $accessServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
@@ -51,6 +54,7 @@ class AdminController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->packAdminServices = $packAdminServices;
+        $this->accessServices = $accessServices;
         $this->client = new Client();
     }
 
@@ -207,20 +211,38 @@ class AdminController extends Controller
             return response()->json(['resposne' => 'bad request',
                 'required fields' => ['isPresent', 'accessId', 'type', 'congressId']], 400);
         }
-        $participator = $this->userServices->getUserById($userId);
-        $userCongress = $this->userServices->getUserCongress($request->input('congressId'), $userId);
+        $congressId = $request->input('congressId');
+        $accessId = $request->input("accessId");
+
+        $participator = $this->userServices->getUserByIdWithRelations($userId,
+            ['user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }]);
+
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
+
+        if (sizeof($participator->user_congresses) == 0 || !$participator->user_congresses[0]) {
+            return response()->json(['response' => 'participator not inscrit in congress']);
+        }
         /* Make it present in congress */
+        $userCongress = $participator->user_congresses[0];
         $userCongress->isPresent = 1;
         $userCongress->update();
 
+        $access = $this->accessServices->getAccessById($accessId);
 
-        if (!$user_access = $this->userServices->getUserAccessByUser($participator->user_id, $request->input("accessId"))) {
+        $user_access = $this->userServices->getUserAccessByUser($participator->user_id, $accessId);
+        if ($access->price && !$user_access) {
             return response()->json(["message" => "user not allowed to this access"], 401);
         }
+
+        if (!$user_access) {
+            $user_access = $this->userServices->affectAccessById($userId, $accessId);
+        }
+
         if ($user_access->isPresent == 0 && $request->input('type') == 0) {
             return response()->json(['message' => 'cannot leave , enter first'], 401);
         }
@@ -233,23 +255,29 @@ class AdminController extends Controller
 
     public function makeUserPresent(Request $request, $userId)
     {
-        //type : 1 : Enter Or 0 : Leave
         if (!$request->has(['isPresent', 'congressId'])) {
             return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
         }
-        $participator = $this->userServices->getUserById($userId);
+        $congressId = $request->input("congressId");
+
+        $participator = $this->userServices->getUserByIdWithRelations($userId,
+            ['user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }]);
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
-        $congress = $this->congressService->getCongressById($request->input('congressId'));
-        if (!$congress) {
-            return response()->json(['resposne' => 'congress not found'], 404);
-        }
-        $userCongress = $this->userServices->getUserCongress($request->input('congressId'), $userId);
+
         /* Make it present in congress */
+        if (sizeof($participator->user_congresses) == 0 || !$participator->user_congresses[0]) {
+            return response()->json(['response' => 'participator not inscrit in congress']);
+        }
+        /* Make it present in congress */
+        $userCongress = $participator->user_congresses[0];
         $userCongress->isPresent = 1;
         $userCongress->update();
-        return response()->json(["message" => "success sending and scanning"], 200);
+
+        return response()->json(["message" => "success scanning"], 200);
     }
 
     public function getAuhenticatedAdmin()

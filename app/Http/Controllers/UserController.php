@@ -174,6 +174,16 @@ class UserController extends Controller
         $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search);
 
 
+        foreach ($users as $user) {
+            foreach ($user->accesses as $access) {
+                if ($access->pivot->isPresent == 1) {
+                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
+                    $access->attestation_status = $infoPresence['enabled'];
+                    $access->time_in_access = $infoPresence['time'];
+                } else
+                    $access->attestation_status = 0;
+            }
+        }
         return response()->json($users);
     }
 
@@ -435,7 +445,7 @@ class UserController extends Controller
 
     public function getUsersByAccess($congressId, $accessId)
     {
-        $users = $this->userServices->getUsersByAccess($congressId,$accessId);
+        $users = $this->userServices->getUsersByAccess($congressId, $accessId);
 
         return response()->json($users);
     }
@@ -606,9 +616,10 @@ class UserController extends Controller
 
                 if ($privilegeId == 3 && !$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {
                     $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $congress->price, false);
+                    $sum += $userPayment->price;
                 }
 
-                $sum += $userPayment->price;
+
             }
         }
 

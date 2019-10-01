@@ -373,7 +373,7 @@ class UserServices
                 },
                 'user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                },'user_congresses.privilege'])
+                }, 'user_congresses.privilege'])
             ->get();
 
     }
@@ -1074,12 +1074,14 @@ class UserServices
             ->first();
     }
 
-    private function affectAccessById($user_id, $accessId)
+    public function affectAccessById($user_id, $accessId)
     {
         $user_access = new UserAccess();
         $user_access->access_id = $accessId;
         $user_access->user_id = $user_id;
         $user_access->save();
+
+        return $user_access;
     }
 
     private function deleteAccessById($user_id, $accessId)
