@@ -350,7 +350,7 @@ class CongressServices
 
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
-            $accesses = "";
+            $accesses = "<ul>";
             foreach ($participant->accesses as $access) {
                 if ($access->show_in_register == 1) {
                     $accesses = $accesses
@@ -375,8 +375,8 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
         $template = str_replace('{{$userPayment-&gt;price}}', '{{$userPayment->price}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
-        $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
+        $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
         $template = str_replace('{{$organization-&gt;description}}', '{{$organization->description}}', $template);
         $template = str_replace('{{$organization-&gt;email}}', '{{$organization->email}}', $template);
@@ -479,7 +479,9 @@ class CongressServices
     public function updateWithParticipantsCount($congress)
     {
         foreach ($congress->accesss as $accesss) {
-            $accesss->participant_count = sizeof($accesss->participants);
+            $accesss->participant_count = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                return sizeof($item['user_congresses']) > 0;
+            }));
             $accesss->unsetRelation('participants');
         }
         return $congress;

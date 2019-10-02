@@ -333,7 +333,7 @@ class UserServices
             ->get();
     }
 
-    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null)
+    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
@@ -348,8 +348,10 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
+            }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
+                if ($tri == 'isPaid')
+                    $query->orderBy($tri, $order);
             }])
             ->where(function ($query) use ($search) {
                 if ($search != "") {
@@ -358,6 +360,16 @@ class UserServices
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                 }
             });
+        //->orderBy($tri, $order);
+        if ($order && ($tri == 'user_id' || $tri == 'country_id')) {
+            $users = $users->orderBy($tri, $order);
+        }
+        if ($order && $tri == 'isPaid') {
+            $users = $users->join('Payment', 'Payment.user_id', '=', 'User.user_id')
+                ->where('Payment.congress_id', '=', $congressId)
+                ->orderBy($tri, $order)
+            ->orderBy('');
+        }
 
         return $perPage ? $users->paginate($perPage) : $users->get();
     }

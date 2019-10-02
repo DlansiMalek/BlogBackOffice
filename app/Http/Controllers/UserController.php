@@ -171,7 +171,9 @@ class UserController extends Controller
 
         $perPage = $request->query('perPage', 10);
         $search = $request->query('search', '');
-        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search);
+        $tri = $request->query('tri', '');
+        $order = $request->query('order', '');
+        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order);
 
 
         foreach ($users as $user) {

@@ -10,7 +10,7 @@ class User extends Authenticatable
     use Notifiable;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'email_verified', 'verification_code', 'rfid', 'profile_pic'];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'email_verified', 'verification_code', 'rfid', 'profile_pic', 'country_id'];
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
