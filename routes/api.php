@@ -122,7 +122,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
         Route::get('config', 'CongressController@getCongressConfigById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
-        Route::get('/sendMailAllParticipants', 'AdminController@sendMailAllParticipants');
         Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
 

@@ -638,10 +638,11 @@ class UserController extends Controller
     public function sendMailAttesation($userId, $congressId, $strict = 1)
     {
         // $strict = 0;
-
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
             $query->where("congress_id", "=", $congressId);
             $query->where('with_attestation', "=", 1);
+        }, 'user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
         }])) {
             return response()->json(['error' => 'user not found'], 404);
         }
@@ -649,7 +650,7 @@ class UserController extends Controller
         $congress = $this->congressServices->getCongressById($congressId);
         $request = array();
         if ($user->email != null && $user->email != "-" && $user->email != "") {
-            if ($congress->attestation) {
+            if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isPresent == 1 && $congress->attestation) {
                 array_push($request,
                     array(
                         'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
@@ -659,16 +660,40 @@ class UserController extends Controller
             }
             foreach ($user->accesses as $access) {
                 if ($strict == 0 || $access->pivot->isPresent == 1) {
-                    if ($access->attestation) {
-                        array_push($request,
-                            array(
-                                'badgeIdGenerator' => $access->attestation->attestation_generator_id,
-                                'name' => Utils::getFullName($user->first_name, $user->last_name),
-                                'qrCode' => false
-                            ));
+                    if (sizeof($access->attestations) > 0) {
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                        if ($attestationId) {
+                            array_push($request,
+                                array(
+                                    'badgeIdGenerator' => $attestationId,
+                                    'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                    'qrCode' => false
+                                ));
+                        }
                     }
 
                 }
+                $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $userId);
+                $privilegeId = null;
+                if ($chairPerson) {
+                    $privilegeId = 5;
+                }
+                $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $userId);
+                if ($speakerPerson) {
+                    $privilegeId = 8;
+                }
+                $attestationId = null;
+                if ($privilegeId)
+                    $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, $privilegeId);
+                if ($attestationId) {
+                    array_push($request,
+                        array(
+                            'badgeIdGenerator' => $attestationId,
+                            'name' => Utils::getFullName($user->first_name, $user->last_name),
+                            'qrCode' => false
+                        ));
+                }
+
             }
 
             $mailtype = $this->congressServices->getMailType('attestation');

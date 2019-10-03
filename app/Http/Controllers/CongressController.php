@@ -331,16 +331,41 @@ class CongressController extends Controller
 
                 foreach ($user->accesses as $access) {
                     if ($strict == 0 || $access->pivot->isPresent == 1) {
-                        if ($access->attestation) {
-                            array_push($request,
-                                array(
-                                    'badgeIdGenerator' => $access->attestation->attestation_generator_id,
-                                    'name' => Utils::getFullName($user->first_name, $user->last_name),
-                                    'qrCode' => false
-                                ));
+                        if (sizeof($access->attestations) > 0) {
+                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                            if ($attestationId) {
+                                array_push($request,
+                                    array(
+                                        'badgeIdGenerator' => $attestationId,
+                                        'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                        'qrCode' => false
+                                    ));
+                            }
                         }
 
                     }
+                    //TODO Change performance
+                    $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $user->user_id);
+                    $privilegeId = null;
+                    if ($chairPerson) {
+                        $privilegeId = 5;
+                    }
+                    $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $user->user_id);
+                    if ($speakerPerson) {
+                        $privilegeId = 8;
+                    }
+                    $attestationId = null;
+                    if ($privilegeId)
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, $privilegeId);
+                    if ($attestationId) {
+                        array_push($request,
+                            array(
+                                'badgeIdGenerator' => $attestationId,
+                                'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                'qrCode' => false
+                            ));
+                    }
+
                 }
                 if ($mail) {
                     $userMail = null;

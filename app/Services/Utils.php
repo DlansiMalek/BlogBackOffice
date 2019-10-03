@@ -63,6 +63,16 @@ class Utils
         return $extension == 'jpeg' || $extension == 'png' || $extension == 'jpg' || $extension == 'svg' || $extension == 'gif';
     }
 
+    public static function getAttestationByPrivilegeId($attestations, int $privilegeId)
+    {
+        for ($i = 0; $i < sizeof($attestations); $i++) {
+            if ($attestations[$i]->privilege_id == $privilegeId) {
+                return $attestations[$i]->attestation_generator_id;
+            }
+        }
+        return null;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
