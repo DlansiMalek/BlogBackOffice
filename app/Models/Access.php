@@ -46,9 +46,9 @@ class Access extends Model
         return $this->belongsToMany('App\Models\User', 'Access_Chair', 'access_id', 'user_id');
     }
 
-    public function attestation()
+    public function attestations()
     {
-        return $this->hasOne('App\Models\AttestationAccess', 'access_id', 'access_id');
+        return $this->hasMany('App\Models\AttestationAccess', 'access_id', 'access_id');
     }
 
     public function votes()

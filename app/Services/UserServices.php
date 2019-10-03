@@ -348,7 +348,7 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestation', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
@@ -368,7 +368,7 @@ class UserServices
             $users = $users->join('Payment', 'Payment.user_id', '=', 'User.user_id')
                 ->where('Payment.congress_id', '=', $congressId)
                 ->orderBy($tri, $order)
-            ->orderBy('');
+                ->orderBy('');
         }
 
         return $perPage ? $users->paginate($perPage) : $users->get();
@@ -626,7 +626,7 @@ class UserServices
     {
         return User::whereIn('privilege_id', $privileges)
             ->where("congress_id", "=", $congressId)
-            ->with(['accesss.attestation', 'organization', 'privilege'])
+            ->with(['accesss.attestations', 'organization', 'privilege'])
             ->get();
     }
 

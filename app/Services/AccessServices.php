@@ -314,6 +314,20 @@ class AccessServices
             ->get();
     }
 
+    public function getChairAccessByAccessAndUser($accessId, $userId)
+    {
+        return AccessChair::where('user_id', '=', $userId)
+            ->where('access_id', '=', $accessId)
+            ->first();
+    }
+
+    public function getSpeakerAccessByAccessAndUser($accessId, $userId)
+    {
+        return AccessSpeaker::where("user_id", '=', $userId)
+            ->where('access_id', '=', $accessId)
+            ->first();
+    }
+
 
     private function deleteAccessByCongress($congressId)
     {

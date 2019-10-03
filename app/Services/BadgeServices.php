@@ -85,16 +85,18 @@ class BadgeServices
             ->first();
     }
 
-    public function getAttestationByCongressAndAccess($accessId)
+    public function getAttestationByCongressAndAccess($accessId, $privilegeId)
     {
         return AttestationAccess::where('access_id', '=', $accessId)
+            ->where('privilege_id', '=', $privilegeId)
             ->first();
     }
 
-    public function validerAttestationAccess($accessId, $attesationIdGenerator)
+    public function validerAttestationAccess($accessId, $privilegeId, $attesationIdGenerator)
     {
         $attestationAccess = new AttestationAccess();
         $attestationAccess->access_id = $accessId;
+        $attestationAccess->privilege_id = $privilegeId;
         $attestationAccess->attestation_generator_id = $attesationIdGenerator;
         $attestationAccess->save();
         return $attestationAccess;

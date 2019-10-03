@@ -147,7 +147,7 @@ class CongressController extends Controller
                 $query->where('congress_id', '=', $congressId);
                 $query->where('with_attestation', '=', 1);
             },
-            'accesss.attestation'
+            'accesss.attestations'
         ])) {
             return response()->json(["error" => "congress not found"], 404);
         }

@@ -51,6 +51,7 @@ class CongressServices
     {
 
         return Congress::with([
+            "attestation",
             "badges",
             "accesss",
             "form_inputs.type",
@@ -81,7 +82,7 @@ class CongressServices
                 "form_inputs.type",
                 "form_inputs.values",
                 "mails.type",
-                'accesss.attestation',
+                'accesss.attestations',
                 'accesss.participants.payments' => function ($query) use ($id_Congress) {
                     $query->where('congress_id', '=', $id_Congress);
                 },

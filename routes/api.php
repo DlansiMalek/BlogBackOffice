@@ -114,8 +114,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("super-admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
-        Route::get('min','CongressController@getMinimalCongressById');
-        Route::get('badge','CongressController@getCongressByIdBadge');
+        Route::get('min', 'CongressController@getMinimalCongressById');
+        Route::get('badge', 'CongressController@getCongressByIdBadge');
 
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
@@ -283,6 +283,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
 });
 //Access API
 Route::group(['prefix' => 'access'], function () {
+    Route::get('{accessId}/user/{userId}/verify-privilege','AccessController@verifyPrivilegeByAccess');
     Route::post('/grant-access-country/{countryId}', 'AccessController@grantAccessByCountry');
     Route::post("/grant-access-participant/{participantTypeId}", 'AccessController@grantAccessByParticipantType');
     Route::group(['prefix' => 'congress'], function () {

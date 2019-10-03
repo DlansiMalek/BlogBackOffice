@@ -199,4 +199,21 @@ class AccessController extends Controller
         return $this->accessServices->getMainByCongressId($congress_id);
     }
 
+    public function verifyPrivilegeByAccess($accessId, $userId)
+    {
+
+        $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($accessId, $userId);
+
+        if ($chairPerson) {
+            return response()->json(['privilegeId' => 5]);
+        }
+
+        $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($accessId, $userId);
+        if ($speakerPerson) {
+            return response()->json(['privilegeId' => 8]);
+        }
+
+        return response()->json(['message' => 'not found'], 404);
+    }
+
 }

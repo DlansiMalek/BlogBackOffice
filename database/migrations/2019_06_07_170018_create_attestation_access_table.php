@@ -21,6 +21,10 @@ class CreateAttestationAccessTable extends Migration
             $table->foreign('access_id')->references('access_id')->on('Access')
                 ->onDelete('cascade');
 
+            $table->unsignedInteger('privilege_id');
+            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege')
+                ->onDelete('cascade');
+
             $table->softDeletes();
             $table->timestamps();
         });
