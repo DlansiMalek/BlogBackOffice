@@ -86,6 +86,21 @@ class CongressController extends Controller
             $admin->admin_id);
     }
 
+    public function editPresenceAuto($congressId, $status)
+    {
+
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+
+        $configCongress = $this->congressServices->getCongressConfigById($congressId);
+
+        $configCongress->auto_presence = $status;
+        $configCongress->update();
+
+        return response()->json(['message' => 'auto presence updating']);
+    }
+
     public function editConfigCongress(Request $request, $congressId)
     {
 
@@ -102,7 +117,7 @@ class CongressController extends Controller
 
         $eventLocation = $request->input("eventLocation");
 
-        if ($eventLocation['countryCode'] && $eventLocation['cityName']) {
+        if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
 
             $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);
 

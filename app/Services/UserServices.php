@@ -333,6 +333,16 @@ class UserServices
             ->get();
     }
 
+    public function getUsersMinByCongress($congressId, $privilegeId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
+            $query->where('congress_id', '=', $congressId);
+            if ($privilegeId != null) {
+                $query->where('privilege_id', '=', $privilegeId);
+            }
+        })->get();
+    }
+
     public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {

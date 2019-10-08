@@ -190,23 +190,13 @@ class UserController extends Controller
     }
 
 
-    public function getUsersByCongress($congressId)
+    public function getUsersByCongress($congressId, $privilegeId)
     {
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(["error" => "congress not found"], 404);
         }
-        $users = $this->userServices->getUsersByCongress($congressId, null, true);
+        $users = $this->userServices->getUsersMinByCongress($congressId, $privilegeId);
 
-        /*foreach ($users as $user) {
-            foreach ($user->accesses as $access) {
-                if ($access->pivot->isPresent == 1) {
-                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                    $access->attestation_status = $infoPresence['enabled'];
-                    $access->time_in_access = $infoPresence['time'];
-                } else
-                    $access->attestation_status = 0;
-            }
-        }*/
         return response()->json($users);
     }
 

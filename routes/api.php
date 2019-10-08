@@ -205,7 +205,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
-            Route::get('list', 'UserController@getUsersByCongress');
+            Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
@@ -235,6 +235,8 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
 
     });
+
+    Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhenticatedAdmin');
         Route::get('congress', 'AdminController@getAdminCongresses');
@@ -254,6 +256,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
+                Route::get('edit-presence-auto/{status}', 'CongressController@editPresenceAuto');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
             });
@@ -282,7 +285,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
 });
 //Access API
 Route::group(['prefix' => 'access'], function () {
-    Route::get('{accessId}/user/{userId}/verify-privilege','AccessController@verifyPrivilegeByAccess');
+    Route::get('{accessId}/user/{userId}/verify-privilege', 'AccessController@verifyPrivilegeByAccess');
     Route::post('/grant-access-country/{countryId}', 'AccessController@grantAccessByCountry');
     Route::post("/grant-access-participant/{participantTypeId}", 'AccessController@grantAccessByParticipantType');
     Route::group(['prefix' => 'congress'], function () {

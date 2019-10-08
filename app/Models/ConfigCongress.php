@@ -23,6 +23,7 @@ class ConfigCongress extends Model
         'feedback_start',
         'voting_token',
         'prise_charge_option',
+        'auto_presence',
         'congress_id'
     ];
 
