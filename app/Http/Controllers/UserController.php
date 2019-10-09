@@ -588,8 +588,12 @@ class UserController extends Controller
                     $user = $this->userServices->saveUser($request);
                 }
                 // Check if User already registed to congress
-                if (!$user_congress = $this->userServices->getUserCongress($congressId, $user->user_id)) {
+                $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
+                if (!$user_congress) {
                     $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
+                } else {
+                    $user_congress->privilege_id = $privilegeId;
+                    $user_congress->update();
                 }
 
                 if ($organizationId != null) {
@@ -597,7 +601,6 @@ class UserController extends Controller
                     $user_congress->organization_accepted = true;
                     $user_congress->update();
                 }
-
 
                 $this->userServices->deleteAccess($user->user_id, $accessIds);
                 $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
