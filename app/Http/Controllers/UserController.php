@@ -727,7 +727,7 @@ class UserController extends Controller
             $mailtype = $this->congressServices->getMailType('sondage');
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
-            $linkSondage = UrlUtils::getBaseUrl() . "/api/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
+            $linkSondage = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
             if ($mail) {
                 $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
                 if (!$userMail) {

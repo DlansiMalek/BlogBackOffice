@@ -342,7 +342,7 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
-                        $linkSondage = UrlUtils::getBaseUrl() . "/api/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
+                        $linkSondage = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
 
                         Log::info($linkSondage);
 

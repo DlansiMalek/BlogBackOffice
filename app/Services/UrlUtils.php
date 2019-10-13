@@ -72,7 +72,7 @@ class UrlUtils
     public static function getBaseUrl()
     {
         if (App::environment() == 'test') {
-            return "http://localhost:8888";
+            return "http://localhost:8888/api";
         }
         if (App::environment() == 'prod') {
             return "https://eventizer-api.vayetek.com/api";
