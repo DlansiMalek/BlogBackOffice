@@ -420,7 +420,6 @@ class UserController extends Controller
 
     function validateUserAccount($userId = null, $congressId = null, $token = null)
     {
-        Log::info($token);
         $user = $this->userServices->getUserById($userId);
         if (!$user) {
             return response()->json(['response' => 'Votre compte à été supprimé'], 404);
@@ -626,6 +625,125 @@ class UserController extends Controller
             return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
         } else
             return response()->json(['message' => 'import success']);
+    }
+
+
+    public function redirectToLinkFormSondage($userId, $congressId)
+    {
+        /* Meme Block Of Send Attestation */
+        if (!$user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
+            $query->where("congress_id", "=", $congressId);
+            $query->where('with_attestation', "=", 1);
+        }, 'user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }])) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+
+        $congress = $this->congressServices->getCongressById($congressId);
+        $request = array();
+        if ($user->email != null && $user->email != "-" && $user->email != "") {
+            if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isPresent == 1 && $congress->attestation) {
+                array_push($request,
+                    array(
+                        'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
+                        'name' => Utils::getFullName($user->first_name, $user->last_name),
+                        'qrCode' => false
+                    ));
+            }
+            foreach ($user->accesses as $access) {
+                if ($access->pivot->isPresent == 1) {
+                    if (sizeof($access->attestations) > 0) {
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                        if ($attestationId) {
+                            array_push($request,
+                                array(
+                                    'badgeIdGenerator' => $attestationId,
+                                    'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                    'qrCode' => false
+                                ));
+                        }
+                    }
+
+                }
+                $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $userId);
+                $privilegeId = null;
+                if ($chairPerson) {
+                    $privilegeId = 5;
+                }
+                $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $userId);
+                if ($speakerPerson) {
+                    $privilegeId = 8;
+                }
+                $attestationId = null;
+                if ($privilegeId)
+                    $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, $privilegeId);
+                if ($attestationId) {
+                    array_push($request,
+                        array(
+                            'badgeIdGenerator' => $attestationId,
+                            'name' => Utils::getFullName($user->first_name, $user->last_name),
+                            'qrCode' => false
+                        ));
+                }
+
+            }
+            $mailtype = $this->congressServices->getMailType('attestation');
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
+            if ($mail) {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                }
+
+                $this->badgeServices->saveAttestationsInPublic($request);
+                $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+
+            }
+
+        } else {
+            return response()->json(['error' => 'user not present or empty email'], 501);
+        }
+
+
+        /* Block Sending Sondage */
+        $linkForm = $congress->config->link_sondage;
+
+        return response()->redirectTo($linkForm);
+    }
+
+    public function sendSondage($userId, $congressId)
+    {
+
+        if (!$user = $this->userServices->getUserByIdWithRelations($userId, [])) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+        $congress = $this->congressServices->getCongressById($congressId);
+
+        if ($user->email != null && $user->email != "-" && $user->email != "") {
+
+            $mailtype = $this->congressServices->getMailType('sondage');
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
+            $linkSondage = UrlUtils::getBaseUrl() . "/api/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
+            if ($mail) {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                }
+
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
+                    $user, $congress, $mail->object,false, $userMail);
+
+            }
+
+        } else {
+            return response()->json(['error' => 'user not present or empty email'], 501);
+        }
+        return response()->json(['message' => 'email sended success']);
+
     }
 
     public function sendMailAttesation($userId, $congressId, $strict = 1)

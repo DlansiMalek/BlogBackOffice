@@ -19,9 +19,11 @@ use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
 use App\Services\SharedServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -310,6 +312,48 @@ class CongressController extends Controller
             return response()->json(['error' => 'congres not found'], 404);
         }
         return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congress);
+    }
+
+    public function sendMailAllParticipantsSondage($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $mailtype = $this->congressServices->getMailType('sondage');
+        $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+        $mailId = $mail->mail_id;
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+                $query->where('with_attestation', "=", 1);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('isPresent', '=', 1);
+            },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }], 1);
+        foreach ($users as $user) {
+            if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
+                if ($mail) {
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if ($userMail->status != 1) {
+                        $linkSondage = UrlUtils::getBaseUrl() . "/api/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
+
+                        Log::info($linkSondage);
+
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
+                            $user, $congress, $mail->object, false, $userMail);
+                    }
+                }
+            }
+        }
+        return response()->json(['message' => 'send mail successs']);
+
     }
 
     public function sendMailAllParticipantsAttestation($congressId, $strict = 1)

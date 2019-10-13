@@ -69,5 +69,10 @@ class MailTypeSeedTable extends Seeder
             'name' => 'organizer_creation',
             'display_name' => "Creation d'un organisateur",
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 11,
+            'name' => 'sondage',
+            'display_name' => "Mail de Sondage",
+        ]);
     }
 }

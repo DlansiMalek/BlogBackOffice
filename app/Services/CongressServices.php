@@ -183,6 +183,7 @@ class CongressServices
         $configCongress->feedback_start = $configCongressRequest['feedback_start'];
         $configCongress->nb_ob_access = $configCongressRequest['nb_ob_access'];
         $configCongress->congress_id = $congressId;
+        $configCongress->link_sondage = $configCongressRequest['link_sondage'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
@@ -346,7 +347,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null)
     {
 
         $accesses = "";
@@ -377,6 +378,7 @@ class CongressServices
         $template = str_replace('{{$userPayment-&gt;price}}', '{{$userPayment->price}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
+        $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
         $template = str_replace('{{$organization-&gt;description}}', '{{$organization->description}}', $template);
@@ -385,7 +387,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage]);
     }
 
     public

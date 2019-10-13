@@ -677,14 +677,14 @@ class UserServices
                 $userMail->status = -1;
                 $userMail->update();
             }
-            Storage::delete('app/badge.png');
+            Storage::delete('/app/badge.png');
             return 1;
         }
         if ($userMail) {
             $userMail->status = 1;
             $userMail->update();
         }
-        Storage::delete('app/badge.png');
+        Storage::delete('/app/badge.png');
         return 1;
     }
 
@@ -695,6 +695,7 @@ class UserServices
 
         $pathToFile = storage_path() . "/app/attestations.zip";
 
+        Log::info("test!!");
 
         try {
             Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
@@ -705,6 +706,7 @@ class UserServices
             });
             $userMail->status = 1;
         } catch (\Exception $exception) {
+            Log::info($exception);
             Storage::delete('app/badge.png');
             $userMail->status = -1;
         }

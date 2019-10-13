@@ -72,9 +72,11 @@ Route::group(['prefix' => 'users'], function () {
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::delete('delete', 'UserController@delete');
             Route::post('upload-payement', 'UserController@uploadPayement');
+            Route::get('sondage', 'UserController@redirectToLinkFormSondage');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
             Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
+            Route::get('send-sondage', 'UserController@sendSondage');
         });
 
         Route::put('', 'UserController@update');
@@ -254,6 +256,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                 Route::group(['prefix' => 'email'], function () {
                     Route::get('send-confirm-inscription', 'CongressController@sendMailAllParticipants');
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
+                    Route::get('send-mail-all-sondage', 'CongressController@sendMailAllParticipantsSondage');
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
                 Route::get('edit-presence-auto/{status}', 'CongressController@editPresenceAuto');
