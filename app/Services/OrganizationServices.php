@@ -93,7 +93,10 @@ class OrganizationServices
         })
             ->with(['payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }])
+            },
+                'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }])
             ->get();
     }
 
