@@ -311,7 +311,7 @@ class UserController extends Controller
                 }
             }
             //Confirm Direct
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
