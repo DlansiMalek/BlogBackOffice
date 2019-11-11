@@ -256,30 +256,52 @@ class CongressController extends Controller
 
     public function sendMailAllParticipants($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congres not found'], 404);
-        }
-        $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-            if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                foreach ($users as $user) {
-                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $mailtype = $this->congressServices->getMailType('confirmation');
+        if ($mailtype) {
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+            $mailId = $mail->mail_id;
+            $users = $this->userServices->getUsersWithRelations($congressId,
+                ['accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                    'user_mails' => function ($query) use ($mailId) {
+                        $query->where('mail_id', '=', $mailId);
+                    }], null);
+            foreach ($users as $user) {
+                if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
+                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                        $user->user_congresses[0]->privilege_id);
+                    $fileAttached = false;
                     if ($badgeIdGenerator != null) {
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
+                        $fileAttached = true;
+                    }
+
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if ($userMail->status != 1) {
                         $this->userServices->sendMail($this->congressServices
                             ->renderMail($mail->template, $congress, $user, null, null, null),
-                            $user, $congress, $mail->object, true);
+                            $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }
             }
-
+            return response()->json(['message' => 'send mail successs']);
+        } else {
+            return response()->json(['error' => 'vous devez configurer votre mail de confirmation'], 500);
         }
-
-
-        return response()->json(['message' => 'send mail successs']);
     }
 
     public function getAttestationDiversByCongress($congressId)

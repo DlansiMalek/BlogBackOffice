@@ -352,7 +352,7 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/admin/{admin_id}', "OrganizationController@getOrganizationByAdminId");
     Route::get('/admin/{admin_id}/congress/{congressId}', "OrganizationController@getOrganizationByAdminIdAndCongressId");
     Route::get('/{organization_id}', "OrganizationController@getOrganizationById");
-    Route::get('/{organization_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
+    Route::get('/{organizatiolist-paginationn_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
 });
