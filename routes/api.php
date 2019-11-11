@@ -113,7 +113,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
-    Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("super-admin");
+    Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('min', 'CongressController@getMinimalCongressById');
@@ -155,11 +155,11 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
         Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
-        Route::post('feedback-form', 'FeedbackController@setFeedbackForm')->middleware('super-admin');
-        Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('super-admin');
+        Route::post('feedback-form', 'FeedbackController@setFeedbackForm')->middleware('admin');
+        Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('admin');
         Route::get('feedback-start', 'FeedbackController@getFeedbackStart');
-        Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('super-admin');
-        Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('super-admin');
+        Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('admin');
+        Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
 
     });
 });
