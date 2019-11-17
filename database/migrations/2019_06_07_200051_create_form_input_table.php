@@ -20,7 +20,7 @@ class CreateFormInputTable extends Migration
             $table->unsignedInteger('form_input_type_id');
             $table->foreign('congress_id')->references("congress_id")->on("Congress");
             $table->foreign('form_input_type_id')->references("form_input_type_id")->on("Form_Input_Type");
-
+            $table->unsignedTinyInteger('required')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });
