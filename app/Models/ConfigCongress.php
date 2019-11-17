@@ -25,7 +25,10 @@ class ConfigCongress extends Model
         'prise_charge_option',
         'auto_presence',
         'link_sondage',
-        'congress_id'
+        'nb_ob_access',
+        'access_system',
+        'congress_id',
+        'status'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

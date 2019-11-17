@@ -264,6 +264,7 @@ class CongressServices
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
+        $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Ateliers';
         $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
         $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->update();

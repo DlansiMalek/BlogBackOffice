@@ -88,16 +88,19 @@ class CongressController extends Controller
             $admin->admin_id);
     }
 
-    public function editPresenceAuto($congressId, $status)
+    public function editStatus(Request $request, $congressId, $status)
     {
-
+        $presence = $request->query('presence');
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
         $configCongress = $this->congressServices->getCongressConfigById($congressId);
-
-        $configCongress->auto_presence = $status;
+        if ($presence) {
+            $configCongress->auto_presence = $status;
+        } else {
+            $configCongress->status = $status;
+        }
         $configCongress->update();
 
         return response()->json(['message' => 'auto presence updating']);

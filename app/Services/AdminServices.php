@@ -50,7 +50,7 @@ class AdminServices
     public function getAdminById($admin_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(['admin_congresses.congress.badges', 'admin_congresses.privilege'])
+            ->with(['admin_congresses.congress.badges', 'admin_congresses.congress.config', 'admin_congresses.privilege'])
             ->first();
     }
 

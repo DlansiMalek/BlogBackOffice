@@ -259,7 +259,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                     Route::get('send-mail-all-sondage', 'CongressController@sendMailAllParticipantsSondage');
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
-                Route::get('edit-presence-auto/{status}', 'CongressController@editPresenceAuto');
+                Route::get('edit-status/{status}', 'CongressController@editStatus');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
             });
