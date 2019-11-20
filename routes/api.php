@@ -27,6 +27,7 @@ Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
+Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 
 /* Files API */

@@ -51,7 +51,7 @@ return [
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'strict' => true,
-            'engine' => null,
+            'engine' => env('DB_ENGINE','InnoDB'),
             'options'   => [PDO::MYSQL_ATTR_LOCAL_INFILE => true],
         ],
 

@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\AttestationType;
+use App\Models\CongressType;
 use App\Models\Country;
 use App\Models\Privilege;
-use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -51,6 +51,10 @@ class SharedServices
         return Country::all();
     }
 
+    public function getAllCongressTypes()
+    {
+        return CongressType::all();
+    }
 
 
 }

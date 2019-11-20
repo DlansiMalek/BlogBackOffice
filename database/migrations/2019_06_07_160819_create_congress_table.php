@@ -20,6 +20,7 @@ class CreateCongressTable extends Migration
             $table->date('end_date');
             $table->double('price');
             $table->text('description')->nullable()->default(null);
+
             $table->softDeletes();
             $table->timestamps();
         });
@@ -33,5 +34,9 @@ class CreateCongressTable extends Migration
     public function down()
     {
         Schema::dropIfExists('Congress');
+
+        Schema::table('Congress', function (Blueprint $table) {
+            $table->dropForeign(['congress_type_id']);
+        });
     }
 }

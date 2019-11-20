@@ -33,6 +33,12 @@ class CreateConfigCongressTable extends Migration
             $table->unsignedTinyInteger('prise_charge_option')->nullable()->default(0);
             $table->unsignedTinyInteger('auto_presence')->default(0);
 
+            $table->string('link_sondage')->nullable()->default(null);
+            $table->string('access_system')->default('Ateliers');
+
+            $table->tinyInteger('status')->default(1);
+
+
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');

@@ -81,6 +81,7 @@ class CongressController extends Controller
             $request->input("start_date"),
             $request->input("end_date"),
             $request->input('price'),
+            $request->input('congress_type_id'),
             $request->input('config')['has_payment'],
             $request->input('config')['free'],
             $request->input('config')['prise_charge_option'],
@@ -555,7 +556,7 @@ class CongressController extends Controller
     function addDemo($admin_id)
     {
         // add congrees , congress_config , Admin_Congress
-        $congress = $this->congressServices->addCongress("DemoCongress", date('Y-m-d'), date('Y-m-d'), 99,
+        $congress = $this->congressServices->addCongress("DemoCongress", date('Y-m-d'), date('Y-m-d'), 99, 1,
             true, false, true, "this is the Demo descrtiption", $admin_id);
 
         // add users

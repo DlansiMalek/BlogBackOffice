@@ -129,4 +129,11 @@ class SharedController extends Controller
         }
         return response()->json(['message' => 'synchro done']);
     }
+
+    public function getAllCongressTypes()
+    {
+        return response()->json($this->sharedServices->getAllCongressTypes());
+
+
+    }
 }

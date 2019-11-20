@@ -16,7 +16,8 @@ class CongressSeedTable extends Seeder
             'name' => 'Congress Test 1',
             'start_date' => date("Y-m-d"),
             'end_date' => date("Y-m-d"),
-            'price' => '200'
+            'price' => '200',
+            'congress_type_id' => 1
         ]);
     }
 }
