@@ -22,7 +22,7 @@ class PaymentServices
         $payment->user_id = $user_id;
         $payment->congress_id = $congress_id;
         $payment->free = $free;
-        $payment->price = $price;
+        $payment->price = $price ? $price : 0;
         $payment->save();
 
         return $payment;

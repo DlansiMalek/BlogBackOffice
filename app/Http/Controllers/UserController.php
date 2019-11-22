@@ -248,7 +248,6 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
 
-
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
@@ -262,7 +261,6 @@ class UserController extends Controller
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $request);
 
-
         //Adding Responses User To Form (Additional Information)
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
@@ -273,10 +271,6 @@ class UserController extends Controller
 
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
-
-        //TODO Manage Organization Acceptation
-
-
         //Save Access Premium
         if ($privilegeId == 3) {
             $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
@@ -285,13 +279,12 @@ class UserController extends Controller
             $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
         }
 
-
-        //Free Inscription (By Chance)
         $congress = $this->congressServices->getCongressById($congress_id);
         $isFree = false;
         if ($privilegeId == 3) {
             $nbParticipants = $this->congressServices->getParticipantsCount($congress_id, 3, null);
             $freeNb = $this->paymentServices->getFreeUserByCongressId($congress_id);
+            //Free Inscription (By Chance)
             if ($freeNb < $congress->config->free && ($nbParticipants % 10) == 0) {
                 $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), true);
                 $isFree = true;
@@ -300,7 +293,7 @@ class UserController extends Controller
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
-        if ($privilegeId != 3 || !$congress->config->has_payment || $isFree) {
+        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && !$congress->config->has_payment) || $isFree) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -529,7 +522,7 @@ class UserController extends Controller
 
         $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
 
-        if ($userPayement->isPaid == 2 && $isPaid == 1) {
+        if ($userPayement->isPaid != 1 && $isPaid == 1) {
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
@@ -735,7 +728,7 @@ class UserController extends Controller
                 }
 
                 $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
-                    $user, $congress, $mail->object,false, $userMail);
+                    $user, $congress, $mail->object, false, $userMail);
 
             }
 
