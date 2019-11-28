@@ -18,17 +18,4 @@ class GeoController extends Controller
         return response()->json($this->geoServices->getAllCountries(), 200);
     }
 
-    function getAllCities()
-    {
-        return response()->json($this->geoServices->getAllCities(), 200);
-    }
-
-    function getCitiesByCountry($country_id)
-    {
-        $country = $this->geoServices->getCountryById($country_id);
-        if (!$country) {
-            return response()->json(['response' => 'country not found'], 404);
-        }
-        return $this->geoServices->getCitiesByCountry($country_id);
-    }
 }

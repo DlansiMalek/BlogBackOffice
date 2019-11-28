@@ -8,7 +8,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Congress;
 use App\Services\AdminServices;
+use App\Services\CongressServices;
 use App\Services\UserServices;
 use App\Services\VotingServices;
 use Illuminate\Http\Request;
@@ -19,35 +21,31 @@ class VotingController extends Controller
 
     protected $votingService;
     protected $adminService;
+    protected $congressServices;
     protected $userService;
 
-    function __construct(VotingServices $votingService, AdminServices $adminServices, UserServices $userServices)
+    function __construct(VotingServices $votingService, AdminServices $adminServices, UserServices $userServices, CongressServices $congressServices)
     {
         $this->votingService = $votingService;
         $this->adminService = $adminServices;
         $this->userService = $userServices;
+        $this->congressServices = $congressServices;
     }
 
 
-    public function setToken(Request $request)
+    public function setToken(Request $request, $congress_id)
     {
         if (!$request->has('token')) return response()->json(['error' => 'no token in request'], 400);
-        if (!$admin = $this->adminService->getConnectedAdmin($request)) return response()->json(['error' => 'Unauthorized'], 403);
-        $admin->voting_token = $request->get('token');
-        $admin->update();
-        $personnel = $this->adminService->getListPersonelsByAdmin($admin->admin_id);
-        if ($personnel)
-            foreach ($personnel as $p) {
-                $p->voting_token = $request->get('token');
-                $p->update();
-            }
-        return $admin->voting_token;
+        if (!$congressConfig = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['error' => 'Congress not found'], 404);
+        $congressConfig->voting_token = $request->get('token');
+        $congressConfig->update();
+        return $congressConfig->voting_token;
     }
 
-    public function getToken(Request $request)
+    public function getToken(Request $request, $congress_id)
     {
-        if (!$admin = $this->adminService->getConnectedAdmin($request)) return response()->json(['error' => 'Unauthorized'], 403);
-        return $admin->voting_token;
+        if (!$congress = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['error' => 'Congress Not Found'], 404);
+        return $congress->voting_token;
     }
 
     public function setAssociation(Request $request, $congress_id)
@@ -109,11 +107,11 @@ class VotingController extends Controller
     public function getMultipleListPolls(Request $request)
     {
         $res = [];
-        foreach ($request->all() as $token){
+        foreach ($request->all() as $token) {
             $userResponse = $this->votingService->signinUser($token);
 
             $temp = $this->votingService->getListPolls($userResponse['token']);
-            if ($temp && count($temp)){
+            if ($temp && count($temp)) {
                 $res = array_merge($res, $temp);
             }
         }
@@ -132,5 +130,26 @@ class VotingController extends Controller
             }
         }
         return response()->json(["message" => "adding successs"], 200);
+    }
+
+    public function getQuiz(Request $request)
+    {
+        $tokens = [];
+        $associations = [];
+        foreach ($request->all() as $congress_id) {
+            $token = $this->congressServices->getCongressConfig($congress_id)->voting_token;
+            if ($token && !in_array($token, $tokens)) array_push($tokens, $token);
+            $a = $this->votingService->getAssociations($congress_id);
+            $associations = array_merge($associations, $a->toArray());
+        }
+
+        $polls = [];
+        foreach ($tokens as $token) {
+            $userResponse = $this->votingService->signinUser($token);
+            $p = $this->votingService->getListPolls($userResponse['token']);
+            $polls = array_merge($polls, $p);
+        }
+
+        return response()->json(['quiz' => $polls, 'associations' => $associations], 200);
     }
 }

@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\Admin;
+use App\Models\HistoryPack;
+use App\Models\Mail;
+use App\Models\PaymentAdmin;
 use App\Models\User;
+use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use GuzzleHttp\Client;
@@ -27,6 +33,9 @@ class AdminController extends Controller
     protected $privilegeServices;
     protected $sharedServices;
     protected $badgeServices;
+    protected $packAdminServices;
+    protected $accessServices;
+
     protected $client;
 
     public function __construct(UserServices $userServices,
@@ -34,7 +43,9 @@ class AdminController extends Controller
                                 CongressServices $congressService,
                                 PrivilegeServices $privilegeServices,
                                 SharedServices $sharedServices,
-                                BadgeServices $badgeServices)
+                                PackAdminServices $packAdminServices,
+                                BadgeServices $badgeServices,
+                                AccessServices $accessServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
@@ -42,6 +53,8 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->packAdminServices = $packAdminServices;
+        $this->accessServices = $accessServices;
         $this->client = new Client();
     }
 
@@ -71,16 +84,20 @@ class AdminController extends Controller
     public function scanParticipatorQrCode(Request $request)
     {
         if (!$request->has(['qrcode'])) {
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode']], 400);
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['qrcode', 'congressId']], 400);
         }
 
-        $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'));
-
+        $participator = $this->userServices->getParticipatorByQrCode($request->input('qrcode'), $request->input('congressId'));
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
-
-        foreach ($participator->accesss as $accesss) {
+        if ($request->has(['congressId'])) {
+            $userCongress = $this->userServices->getUserCongress($request->input('congressId'), $participator->user_id);
+            $participator->isPresent = $userCongress->isPresent;
+        } else {
+            $participator->isPresent = 0;
+        }
+        foreach ($participator->accesses as $accesss) {
             if ($accesss->pivot->isPresent == 1) {
                 $infoPresence = $this->badgeServices->getAttestationEnabled($participator->user_id, $accesss);
                 $accesss->attestation_status = $infoPresence['enabled'];
@@ -187,28 +204,45 @@ class AdminController extends Controller
      * )
      *
      */
-    public
-    function makeUserPresentAccess(Request $request, $userId)
+    public function makeUserPresentAccess(Request $request, $userId)
     {
         //type : 1 : Enter Or 0 : Leave
-        if (!$request->has(['isPresent', 'accessId', 'type'])) {
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
+        if (!$request->has(['isPresent', 'accessId', 'type', 'congressId'])) {
+            return response()->json(['resposne' => 'bad request',
+                'required fields' => ['isPresent', 'accessId', 'type', 'congressId']], 400);
         }
-        $participator = $this->userServices->getUserById($userId);
+        $congressId = $request->input('congressId');
+        $accessId = $request->input("accessId");
+
+        $participator = $this->userServices->getUserByIdWithRelations($userId,
+            ['user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }]);
+
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
-        /* Make it present in congress */
-        $participator->isPresent = 1;
-        $participator->update();
-        /*if ($participator->isPresent == 0) {
-            return response()->json(['response' => 'participator not present in congress'], 404);
-        }*/
 
-        if (!$user_access = $this->userServices->getUserAccessByUser($participator->user_id, $request->input("accessId"))) {
+        if (sizeof($participator->user_congresses) == 0 || !$participator->user_congresses[0]) {
+            return response()->json(['response' => 'participator not inscrit in congress']);
+        }
+        /* Make it present in congress */
+        $userCongress = $participator->user_congresses[0];
+        $userCongress->isPresent = 1;
+        $userCongress->update();
+
+        $access = $this->accessServices->getAccessById($accessId);
+
+        $user_access = $this->userServices->getUserAccessByUser($participator->user_id, $accessId);
+        if ($access->price && !$user_access) {
             return response()->json(["message" => "user not allowed to this access"], 401);
         }
+
+        if (!$user_access) {
+            $user_access = $this->userServices->affectAccessById($userId, $accessId);
+        }
+
         if ($user_access->isPresent == 0 && $request->input('type') == 0) {
             return response()->json(['message' => 'cannot leave , enter first'], 401);
         }
@@ -216,53 +250,47 @@ class AdminController extends Controller
         $this->userServices->makePresentToAccess($user_access, $participator,
             $request->input('accessId'), $request->input('isPresent'), $request->input('type'));
 
-        return response()->json(["message" => "success sending and scaning"], 200);
+        return response()->json(["message" => "success sending and scanning"], 200);
     }
 
+    public function makeUserPresent(Request $request, $userId)
+    {
+        if (!$request->has(['isPresent', 'congressId'])) {
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['isPresent', 'accessId']], 400);
+        }
+        $congressId = $request->input("congressId");
 
-    /**
-     * @SWG\Get(
-     *   path="/admin/me",
-     *   summary="Get Admin By Token",
-     *   operationId="getAuhentificatedAdmin",
-     *   security={
-     *     {"Bearer": {}}
-     *   },
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error")
-     * )
-     *
-     */
-    public
-    function getAuhentificatedAdmin()
+        $participator = $this->userServices->getUserByIdWithRelations($userId,
+            ['user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }]);
+        if (!$participator) {
+            return response()->json(['resposne' => 'participator not found'], 404);
+        }
+
+        /* Make it present in congress */
+        if (sizeof($participator->user_congresses) == 0 || !$participator->user_congresses[0]) {
+            return response()->json(['response' => 'participator not inscrit in congress']);
+        }
+        /* Make it present in congress */
+        $userCongress = $participator->user_congresses[0];
+        $userCongress->isPresent = 1;
+        $userCongress->update();
+
+        return response()->json(["message" => "success scanning"], 200);
+    }
+
+    public function getAuhenticatedAdmin()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $this->adminServices->getAdminById($admin->admin_id);
 
-        // the token is valid and we have found the user via the sub claim
         return response()->json(compact('admin'));
     }
 
-
-    /**
-     * @SWG\Get(
-     *   path="/admin/me/congress",
-     *   summary="Get Congress By Admin",
-     *   operationId="getAdminCongresses",
-     *   security={
-     *     {"Bearer": {}}
-     *   },
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error")
-     * )
-     *
-     */
-    public
-    function getAdminCongresses()
+    public function getAdminCongresses()
     {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
@@ -439,42 +467,110 @@ class AdminController extends Controller
      *
      */
     public
-    function getListPersonels()
+    function getListPersonels($congress_id)
     {
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->getListPersonelsByAdmin($admin->admin_id);
+        $personels = $this->adminServices->getListPersonelsByAdmin($congress_id);
 
         return response()->json($personels);
 
     }
 
-    public function addPersonnel(Request $request)
+    public function addPersonnel(Request $request, $congress_id)
     {
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
 
-        if (!$this->adminServices->getAdminByLogin($request->input("email"))) {
-            $personels = $this->adminServices->addPersonnel($request, $admin->admin_id);
-            $this->privilegeServices->affectPrivilegeToAdmin(2, $personels->admin_id);
-            return response()->json($personels);
+        $admin = $request->input('admin');
+
+        // if exists then update or create admin in DB
+        if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
+            $admin = $this->adminServices->addPersonnel($admin);
+            $admin_id = $admin->admin_id;
         } else {
-            return response()->json(['message' => 'email existe'], 402);
+            $admin_id = $fetched->admin_id;
+            // check if he has already privilege to congress
+            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,
+                $congress_id);
+
+            if ($admin_congress) {
+                return response()->json(['error' => 'Organisateur existant'], 505);
+            }
+            // else edit changed infos while creating
+
+            $admin['admin_id'] = $admin_id;
+            $this->adminServices->editPersonnel($admin);
         }
 
+        $privilegeId = (int)$request->input('privilege_id');
+        $congress = $this->congressService->getById($congress_id);
+        //create admin congress bind privilege admin and congress
+        $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
+            $privilegeId,
+            $admin_id,
+            $congress_id);
+
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
+            if (!$mail = $this->congressService->getMail($congress_id, $mailtype->mail_type_id)) {
+                $mail = new Mail();
+                $mail->template = "";
+                $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
+            }
+
+            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    $admin->name,
+                    $admin->passwordDecrypt);
+                $fileAttached = true;
+            }
+            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
+            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
+
+            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
+        }
+
+        return response()->json($admin_congress);
+    }
+
+    public function editPersonels(Request $request, $congress_id, $admin_id)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $admin = $request->input('admin');
+        $this->adminServices->editPersonnel($admin);
+        $this->privilegeServices->editPrivilege(
+            (int)$request->input('privilege_id'),
+            $admin_id,
+            $congress_id);
+        //message d'erreur à revoir
+        return response()->json(['message' => 'working'], 200);
     }
 
     public
-    function deletePersonnel($personnelId)
+    function deletePersonnel($congress_id, $admin_id)
     {
-        if (!$admin = $this->adminServices->getAdminById($personnelId)) {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id)) {
             return response()->json(["message" => "admin not found"], 404);
         }
-        $this->adminServices->deleteAdminById($admin);
+        $this->privilegeServices->deleteAdminCongressByIds($admincongress);
         return response()->json(["message" => "deleted success"]);
+    }
 
+    public function getPersonelByIdAndCongressId($congress_id, $admin_id)
+    {
+        if (!$admincongress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id)) {
+            return response()->json(["message" => "admin not found"], 404);
+        }
+        $result = $this->adminServices->getPersonelsByIdAndCongressId($congress_id, $admin_id);
+        return response()->json($result);
     }
 
     public
@@ -541,17 +637,31 @@ class AdminController extends Controller
         }
 
 
-        $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, 2);
-        if ($badgeIdGenerator != null) {
+        $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($adminId,
+            $congressId);
 
-            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                $admin->name,
-                $admin->passwordDecrypt);
+        if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
+            if (!$mail = $this->congressService->getMail($congressId, $mailtype->mail_type_id)) {
+                $mail = new Mail();
+                $mail->template = "";
+                $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
+            }
 
-            $this->userServices->sendCredentialsOrganizerMail($admin);
-        } else {
-            return response()->json(['error' => 'badge not affected'], 404);
+            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    $admin->name,
+                    $admin->passwordDecrypt);
+                $fileAttached = true;
+            }
+            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
+            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
+
+            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
         }
+        return response()->json(['message' => 'sending credentials mails']);
+
     }
 
     function updateUserRfid(request $request, $userId)
@@ -592,31 +702,119 @@ class AdminController extends Controller
     function setRefPayment($userId, Request $request)
     {
         $reference = $request->input('reference');
+        $congressId = $request->input('congressId');
 
-        if (!$user = $this->userServices->getUserById($userId)) {
+        if (!$userPayment = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found']);
         }
 
-        $user->ref_payment = $reference;
-        $user->update();
+        $userPayment->reference = $reference;
+        $userPayment->update();
+
+        $user = $userPayment->user;
 
         if ($user->email && $user->mobile && $user->first_name && $user->last_name) {
             $client = new Client();
-            $res = $client->request('POST', Utils::$baseUrlPaiement . '/api/payment/user/set-refpayement', [
+            $res = $client->request('POST', UrlUtils::getUrlPaiement() . '/api/payment/user/set-refpayement', [
                 'json' => [
                     'user' => [
                         'email' => $user->email,
                         'mobile' => $user->mobile,
                         'name' => $user->first_name . " " . $user->last_name
                     ],
-                    'price' => $user->price,
-                    'reference' => $user->ref_payment,
-                    'url' => 'http://congress-backend-modules_web_1'
+                    'price' => $userPayment->price,
+                    'reference' => $userPayment->reference,
+                    'url' => 'http://eventizer-api-web'
                 ]
             ]);
         }
 
-        return response()->json(["reference" => $user->ref_payment]);
+        return response()->json(["reference" => $userPayment->reference]);
     }
 
+    // getting only admins with privilege = 1
+    public function getClients()
+    {
+        return $this->adminServices->getClients();
+    }
+
+    public function getAdminById($adminId)
+    {
+        $admin = $this->adminServices->getAdminById($adminId);
+        if (!$admin) {
+            return response()->json(['response' => 'admin not found'], 404);
+        } else {
+            return $admin;
+        }
+    }
+
+    public function getClienthistoriesbyId($adminId)
+    {
+        return $this->adminServices->getClienthistoriesbyId($adminId);
+    }
+
+    public function getClientcongressesbyId($adminId)
+    {
+        return $this->adminServices->getClientcongressesbyId($adminId);
+    }
+
+    public function delete($adminId)
+    {
+        $admin = $this->adminServices->getAdminById($adminId);
+        if (!$admin) {
+            return response()->json(['response' => 'admin not found'], 404);
+        } elseif ($admin) {
+            $admin->delete();
+        }
+        return response()->json(['response' => 'admin deleted'], 202);
+    }
+
+    public function store(Request $request, $pack_id)
+    {
+        if (!$request->has(['name', 'mobile', 'email'])) {
+            return response()->json(['response' => 'invalid request',
+                'content' => ['name', 'mobile', 'email']], 400);
+        }
+
+        $admin = $this->adminServices->getAdminByMail($request->input('email'));
+        if ($admin) {
+            return response()->json(['response' => 'admin with same mail found'], 404);
+        } else {
+            $admin = new Admin();
+            $pack = $this->packAdminServices->getPackById($pack_id);
+            $history = new HistoryPack();
+            $payment = new PaymentAdmin();
+            $admin = $this->adminServices->AddAdmin($request, $admin);
+            $this->adminServices->addPayment($payment, $admin, $pack);
+            $this->adminServices->addHistory($history, $admin, $pack);
+            return response()->json(['response' => 'admin added with payment and history'], 202);
+        }
+    }
+
+    public function update(Request $request, $admin_id)
+    {
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if (!$admin) {
+            return response()->json(['response' => 'Admin not found'], 404);
+        }
+        return response()->json($this->adminServices->updateAdmin($request, $admin), 202);
+    }
+
+    public function ActivatePackForAdmin($admin_id, $pack_id, $history_id)
+    {
+        $newhistory = new HistoryPack();
+        $previoushistory = $this->adminServices->gethistorybyId($history_id);
+        $pack = $this->packAdminServices->getPackById($pack_id);
+        $admin = $this->adminServices->getAdminById($admin_id);
+        $this->adminServices->addValidatedHistory($newhistory, $admin, $pack, $previoushistory);
+        return response()->json(['response' => 'pack Activated , new  history entry created'], 202);
+    }
+
+    public function addHistoryToAdmin(Request $request)
+    {
+        $newhistory = new HistoryPack();
+        $this->adminServices->addPackToAdmin($request, $newhistory);
+        return response()->json(['response' => 'pack Added , new  history entry created'], 202);
+
+    }
 }

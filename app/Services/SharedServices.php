@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Attestation_Type;
+use App\Models\AttestationType;
+use App\Models\CongressType;
 use App\Models\Country;
-use App\Models\Form_Input_Type;
 use App\Models\Privilege;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,7 +27,7 @@ class SharedServices
     {
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
-            Utils::$baseUrlBadge . '/badge/generateParticipant', [
+            UrlUtils::getUrlBadge() . '/badge/generateParticipant', [
                 'json' => [
                     'badgeIdGenerator' => $badgeIdGenerator,
                     'participant' => [
@@ -42,7 +42,7 @@ class SharedServices
 
     public function getAllTypesAttestation()
     {
-        return Attestation_Type::with(['attestations'])
+        return AttestationType::with(['attestations'])
             ->get();
     }
 
@@ -51,9 +51,9 @@ class SharedServices
         return Country::all();
     }
 
-    public function getFormInputTypes()
+    public function getAllCongressTypes()
     {
-        return Form_Input_Type::get();
+        return CongressType::all();
     }
 
 

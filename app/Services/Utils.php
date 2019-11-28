@@ -9,19 +9,10 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class Utils
 {
 
-    const baseUrlWEB = "https://congress.vayetek.com";
-    public static $baseUrlRT = 'http://apprtcongress-server:3000/api';
 
-    //public static $baseUrlPaiement = "http://137.74.165.25:3007";
-    public static $baseUrlPaiement = 'http://paiement-api:8080';
-    //public static $baseUrlPaiement = 'http://localhost:8080';
-    // public static $baseUrlPaiement = 'http://localhost:8080';
-    public static $baseUrlBadge = 'http://congress-file-generater-app:5000';
-    // public static $baseUrlBadge = 'http://congress-file-generater.vayetek.com';
+    // public static $baseUrl = 'http://localhost/congress-backend-modules/public/api/';
 
-    //public static $baseUrlBadge = 'http://137.74.165.25:8090';
-
-    //public static $baseUrlRT = 'http://137.74.165.25:3002/api';
+    public static $baseUrl = 'https://congress.vayetek.com/api/';
 
     public static function diffMinutes($enter_time, $endCongress)
     {
@@ -57,6 +48,31 @@ class Utils
         return date('H:i', strtotime($date));
     }
 
+    public static function objArraySearch($array, $index, $value)
+    {
+        foreach ($array as $arrayInf) {
+            if ($arrayInf->{$index} == $value) {
+                return $arrayInf;
+            }
+        }
+        return null;
+    }
+
+    public static function verifyImg(string $extension)
+    {
+        return $extension == 'jpeg' || $extension == 'png' || $extension == 'jpg' || $extension == 'svg' || $extension == 'gif';
+    }
+
+    public static function getAttestationByPrivilegeId($attestations, int $privilegeId)
+    {
+        for ($i = 0; $i < sizeof($attestations); $i++) {
+            if ($attestations[$i]->privilege_id == $privilegeId) {
+                return $attestations[$i]->attestation_generator_id;
+            }
+        }
+        return null;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
@@ -85,5 +101,16 @@ class Utils
         }
         return $randomString . $id;
     }
+
+    public static function groupBy($key, $data)
+    {
+        $result = array();
+        foreach ($data as $element) {
+            $result[$element[$key]][] = $element;
+        }
+
+        return $result;
+    }
+
 
 }

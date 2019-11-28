@@ -45,3 +45,15 @@ SELECT 0 , U.user_id , 14 FROM User as U
  *
  UPDATE User SET last_name = REPLACE(last_name,'è','e') //remove accent
  */
+
+/*
+ * php artisan migrate:refresh --seed
+ */
+
+/*
+ *
+ *  INSERT INTO Attestation_Access (attestation_generator_id, privilege_id, access_id)
+SELECT ASS.attestation_generator_id , 8 , ASS.access_id  FROM `Attestation_Access` as ASS
+INNER JOIN Access as A on A.access_id = ASS.access_id
+WHERE A.congress_id = 126 And ASS.privilege_id = 5
+ */

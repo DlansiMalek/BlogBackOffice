@@ -23,49 +23,42 @@ class Admin extends Authenticatable implements JWTSubject
 {
     protected $table = 'Admin';
     protected $primaryKey = 'admin_id';
-    protected $fillable = ['email', 'mobile', 'name', 'responsible', "passwordDecrypt",'voting_token'];
+    protected $fillable = ['email', 'mobile', 'name', "privilege_id", 'voting_token', 'passwordDecrypt'];
 
     protected $hidden = ["password"];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
-
-
-    public function privileges()
-    {
-        return $this->hasMany('App\Models\Admin_Privilege', 'admin_id', 'admin_id');
-    }
 
     public function congresses()
     {
-        return $this->hasMany('App\Models\Congress', 'admin_id', 'admin_id');
+        return $this->belongsToMany('App\Models\Congress', 'Admin_Congress', 'admin_id', 'congress_id');
     }
 
-    public function congress_allowed()
+    public function admin_congresses()
     {
-        return $this->hasMany('App\Models\Congress', 'admin_id', 'admin_id');
+        return $this->hasMany('App\Models\AdminCongress', 'admin_id', 'admin_id');
     }
 
-    public function congress_responsible()
+    public function payments()
     {
-        return $this->hasMany('App\Models\Congress', 'admin_id', 'responsible');
+        return $this->hasMany('App\Models\Payment', 'admin_id', 'admin_id');
     }
 
+    public function AdminPayments()
+    {
+        return $this->hasMany('App\Models\PaymentAdmin', 'admin_id', 'admin_id');
+    }
 
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
+    public function AdminHistories()
+    {
+        return $this->hasMany('App\Models\HistoryPack', 'admin_id', 'admin_id');
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
         return [];

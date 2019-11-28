@@ -15,10 +15,18 @@ class Access extends Model
     public $timestamps = true;
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
-    protected $fillable = ['price', 'name', 'ponderation', 'duration', 'congress_id', 'block',
-        'seuil', 'total_present_in_congress', 'intuitive','packless','seuil','max_places','theoric_start_data','theoric_end_data'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $fillable = ['name', 'price', 'duration', 'max_places', 'total_present_in_congress',
+        'seuil', 'room', 'description', 'congress_id', 'packless',
+        'start_date', 'real_start_date', 'end_date', 'parent_id', 'show_in_program',
+        'show_in_register', 'with_attestation'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+
+    public function user_accesses()
+    {
+        return $this->hasMany(UserAccess::class, 'access_id', 'access_id')
+            ->count();
+    }
 
     public function participants()
     {
@@ -26,17 +34,54 @@ class Access extends Model
             ->withPivot('isPresent');
     }
 
-    public function attestation()
+    // speakers
+    public function speakers()
     {
-        return $this->hasOne('App\Models\Attestation_Access', 'access_id', 'access_id');
+        return $this->belongsToMany('App\Models\User', 'Access_Speaker', 'access_id', 'user_id');
     }
 
-    public function votes(){
-        return $this->hasMany('App\Models\Access_Vote','access_id','access_id');
+    //chair persons
+    public function chairs()
+    {
+        return $this->belongsToMany('App\Models\User', 'Access_Chair', 'access_id', 'user_id');
     }
 
-    public function quiz_associations(){
-        return $this->hasMany('App\Models\Access_Vote','access_id','access_id');
+    public function attestations()
+    {
+        return $this->hasMany('App\Models\AttestationAccess', 'access_id', 'access_id');
+    }
+
+    public function votes()
+    {
+        return $this->hasMany('App\Models\AccessVote', 'access_id', 'access_id');
+    }
+
+    public function quiz_associations()
+    {
+        return $this->hasMany('App\Models\AccessVote', 'access_id', 'access_id');
+    }
+
+    //sub-access
+    public function sub_accesses()
+    {
+        return $this->hasMany('App\Models\Access', 'parent_id', 'access_id');
+    }
+
+    //topic
+    public function topic()
+    {
+        return $this->hasOne('App\Models\Topic', 'topic_id', 'topic_id');
+    }
+
+    //resources
+    public function resources()
+    {
+        return $this->hasMany('App\Models\Resource', 'access_id', 'access_id');
+    }
+
+    public function type()
+    {
+        return $this->hasOne('App\Models\AccessType', 'access_type_id', 'access_type_id');
     }
 
 

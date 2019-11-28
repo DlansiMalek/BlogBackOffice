@@ -19,6 +19,6 @@ class Mail extends Model
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     public function type(){
-        return $this->hasOne("App\Models\Mail_Type","mail_type_id","mail_type_id");
+        return $this->hasOne("App\Models\MailType","mail_type_id","mail_type_id");
     }
 }

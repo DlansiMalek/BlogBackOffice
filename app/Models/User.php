@@ -8,71 +8,78 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use Notifiable;
-    public $timestamps = true;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'first_name', 'last_name', 'gender', 'mobile', 'city_id', 'qr_code', 'isPresent', 'payement_type_id',
-        'price', 'email_sended', 'email_verified', 'verification_code', 'congress_id',
-        'organization_id', 'pack_id', 'privilege_id', 'rfid', 'email_attestation_sended', 'path_payement',
-        'ref_payment', 'autorisation_num','organization_accepted'
-    ];
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password'
-    ];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'email_verified', 'verification_code', 'rfid', 'profile_pic', 'country_id'];
+    public $timestamps = true;
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
-    function accesss()
+    function user_mails()
+    {
+        return $this->hasMany(UserMail::class, "user_id", "user_id");
+    }
+
+    function accesses()
     {
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
     }
 
+    //Speaker Access
+    function speaker_access()
+    {
+        return $this->belongsToMany('App\Models\Access', 'Access_Speaker', 'user_id', 'access_id');
+    }
+
+    //ChairPerson Access
+    function chair_access()
+    {
+        return $this->belongsToMany('App\Models\Access', 'Access_Chair', 'user_id', 'access_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany('App\Models\Payment', 'user_id', 'user_id');
+    }
+
     function organization()
     {
-        return $this->belongsTo('App\Models\Organization', 'organization_id', 'organization_id');
+        return $this->belongsToMany('App\Models\Organization', 'User_Congress', 'user_id', 'organization_id');
     }
 
-    function congress()
+    function congresses()
     {
-        return $this->hasOne('App\Models\Congress', 'congress_id', 'congress_id');
+        return $this->belongsToMany('App\Models\Congress', 'User_Congress', 'user_id', 'congress_id');
     }
 
-    function privilege()
+    function user_congresses()
     {
-        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'privilege_id');
-    }
-
-    function pack()
-    {
-        return $this->hasOne('App\Models\Pack', 'pack_id', 'pack_id');
+        return $this->hasMany('App\Models\UserCongress', 'user_id', 'user_id');
     }
 
     function country()
     {
-        return $this->hasOne('App\Models\Country', 'country_id', 'country_id');
+        return $this->hasOne('App\Models\Country', 'alpha3code', 'country_id');
     }
 
-    function responses(){
-        return $this->hasMany("App\Models\Form_Input_Reponse",'user_id','user_id');
+    function responses()
+    {
+        return $this->hasMany('App\Models\FormInputResponse', 'user_id', 'user_id');
     }
 
-    function attestation_requests(){
-        return $this->hasMany('App\Models\Attestation_Request','user_id','user_id');
+    function attestation_requests()
+    {
+        return $this->hasMany('App\Models\AttestationRequest', 'user_id', 'user_id');
     }
 
-    function feedback_responses(){
-        return $this->hasMany('App\Models\Feedback_Response','user_id','user_id');
+    function feedback_responses()
+    {
+        return $this->hasMany('App\Models\FeedbackResponse', 'user_id', 'user_id');
+    }
+
+    function likes()
+    {
+        return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
     }
 
 }

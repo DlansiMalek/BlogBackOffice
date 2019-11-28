@@ -2,6 +2,8 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AdminMiddelware;
+use App\Http\Middleware\MarketingMiddelware;
 use App\Http\Middleware\Organisateur;
 use App\Http\Middleware\Organization;
 use App\Http\Middleware\Super_Admin;
@@ -64,6 +66,8 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'organisateur' => Organisateur::class,
         'super-admin' => Super_Admin::class,
-        'organization' => Organization::class
+        'admin' => AdminMiddelware::class,
+        'organization' => Organization::class,
+        'marketing' => MarketingMiddelware::class
     ];
 }

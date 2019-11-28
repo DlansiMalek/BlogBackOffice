@@ -14,3 +14,6 @@ composer.lock
 ./resources/views/vendor/l5-swagger
 ./storage/api-docs
 .env
+
+
+_git2_a09040

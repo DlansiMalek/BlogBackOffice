@@ -161,7 +161,6 @@ return [
         Illuminate\Session\SessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
-        Wpb\String_Blade_Compiler\ViewServiceProvider::class,
 
 
         /*
@@ -180,11 +179,8 @@ return [
         Barryvdh\Cors\ServiceProvider::class,
         //Barryvdh\DomPDF\ServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
-
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
-        //niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
-        Barryvdh\DomPDF\ServiceProvider::class,
-
+        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
         'Chumper\Zipper\ZipperServiceProvider',
         'Anam\PhantomMagick\ConverterServiceProvider',
     ],
@@ -235,12 +231,10 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        //'PDF' => Barryvdh\DomPDF\Facade::class,
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
-        'PDF' => Barryvdh\DomPDF\Facade::class,
-        //'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
+        'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
         'Zipper' => 'Chumper\Zipper\Zipper',
         'Converter' => 'Anam\PhantomMagick\Facades\Converter'
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Admin_Privilege;
+use App\Models\AdminCongress;
 use Closure;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -11,23 +11,20 @@ class Organisateur
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-
-
         Try {
-            if (count(Admin_Privilege::where(function ($query) {
-                    $query->where('admin_id', '=', JWTAuth::parseToken()->toUser()->admin_id)->where('privilege_id', '=', '1');
-                })->orWhere(function ($query) {
-                    $query->where('admin_id', '=', JWTAuth::parseToken()->toUser()->admin_id)->where('privilege_id', '=', '2');
-                })->get()) > 0
-            )
+            $user = JWTAuth::parseToken()->toUser();
+            $adminCongresses = AdminCongress::where('admin_id', '=', $user->admin_id)
+                ->whereIn('privilege_id', [1, 2])
+                ->get();
+            if (sizeof($adminCongresses) != 0) {
                 return $next($request);
-            else
+            } else
                 return response()->json(['error' => 'Permission denied'], 403);
 
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {

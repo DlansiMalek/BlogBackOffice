@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Access_Presence;
+
+use App\Models\AccessPresence;
 use App\Models\Attestation;
-use App\Models\Attestation_Access;
-use App\Models\Attestation_Divers;
+use App\Models\AttestationAccess;
+use App\Models\AttestationDivers;
 use App\Models\Badge;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 
@@ -39,7 +38,7 @@ class BadgeServices
 
     public function validerAttestationType($congressId, $attestationIdGenerator, $type)
     {
-        $attestation = new Attestation_Divers();
+        $attestation = new AttestationDivers();
         $attestation->attestation_generator_id = $attestationIdGenerator;
         $attestation->attestation_type_id = $type;
         $attestation->congress_id = $congressId;
@@ -86,16 +85,18 @@ class BadgeServices
             ->first();
     }
 
-    public function getAttestationByCongressAndAccess($accessId)
+    public function getAttestationByCongressAndAccess($accessId, $privilegeId)
     {
-        return Attestation_Access::where('access_id', '=', $accessId)
+        return AttestationAccess::where('access_id', '=', $accessId)
+            ->where('privilege_id', '=', $privilegeId)
             ->first();
     }
 
-    public function validerAttestationAccess($accessId, $attesationIdGenerator)
+    public function validerAttestationAccess($accessId, $privilegeId, $attesationIdGenerator)
     {
-        $attestationAccess = new Attestation_Access();
+        $attestationAccess = new AttestationAccess();
         $attestationAccess->access_id = $accessId;
+        $attestationAccess->privilege_id = $privilegeId;
         $attestationAccess->attestation_generator_id = $attesationIdGenerator;
         $attestationAccess->save();
         return $attestationAccess;
@@ -103,9 +104,9 @@ class BadgeServices
 
     public function getAttestationEnabled($user_id, $access)
     {
-        $presenceAccess = Access_Presence::where('user_id', '=', $user_id)
+        $presenceAccess = AccessPresence::where('user_id', '=', $user_id)
             ->where('access_id', '=', $access->access_id)
-            ->orderBy('enter_time', 'asc')
+            ->orderBy('entered_at', 'asc')
             ->get();
         if (sizeof($presenceAccess) == 0) {
             return 0;
@@ -116,10 +117,10 @@ class BadgeServices
 
         $calculatedTime = 0;
         foreach ($presenceAccess as $item) {
-            if ($item->leave_time == null) {
-                $diff = Utils::diffMinutes($item->enter_time, $endCongress);
+            if ($item->left_at == null) {
+                $diff = Utils::diffMinutes($item->entered_at, $endCongress);
             } else {
-                $diff = Utils::diffMinutes($item->enter_time, $item->leave_time);
+                $diff = Utils::diffMinutes($item->entered_at, $item->left_at);
             }
             $calculatedTime += $diff;
         }
@@ -140,11 +141,9 @@ class BadgeServices
 
     public function saveAttestationsInPublic(array $request)
     {
-        Log::info($request);
-
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
-            Utils::$baseUrlBadge . '/badge/generateParticipantsAll', [
+            UrlUtils::getUrlBadge() . '/badge/generateParticipantsAll', [
                 'json' => [
                     'data' => $request
                 ]
@@ -155,14 +154,14 @@ class BadgeServices
 
     public function getAttestationByCongressAndType($congressId, $attestationTypeId)
     {
-        return Attestation_Divers::where('congress_id', '=', $congressId)
+        return AttestationDivers::where('congress_id', '=', $congressId)
             ->where('attestation_type_id', '=', $attestationTypeId)
             ->first();
     }
 
     public function getAttestationDiversByCongress($congressId)
     {
-        return Attestation_Divers::with(['type'])
+        return AttestationDivers::with(['type'])
             ->where('congress_id', '=', $congressId)
             ->get();
     }

@@ -15,8 +15,8 @@ class Organization extends Model
     public $timestamps = true;
     protected $table = 'Organization';
     protected $primaryKey = 'organization_id';
-    protected $fillable = ['name', 'description','email','mobile','admin_id'];
-    protected $dates = ['created_at', 'updated_at'];
+    protected $fillable = ['name', 'description', 'email', 'mobile', 'admin_id'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
     function users()
@@ -24,8 +24,13 @@ class Organization extends Model
         return $this->hasMany('App\Models\User', 'organization_id', 'organization_id');
     }
 
-    function congress_organization(){
-        return $this->hasOne('App\Models\Congress_Organization','organization_id','organization_id');
+    function congressOrganization()
+    {
+        return $this->hasMany(CongressOrganization::class, 'organization_id', 'organization_id');
     }
 
+    function admin()
+    {
+        return $this->hasOne(Admin::class, 'admin_id', 'admin_id');
+    }
 }

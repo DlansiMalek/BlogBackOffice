@@ -3,19 +3,28 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Mail;
+use App\Models\Access;
+use App\Models\Badge;
+use App\Models\ConfigCongress;
 use App\Models\User;
-use App\Models\User_Mail;
+use App\Models\UserMail;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\GeoServices;
+use App\Services\MailServices;
 use App\Services\PackServices;
+use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
+use App\Services\ResourcesServices;
 use App\Services\SharedServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 
 class CongressController extends Controller
@@ -29,8 +38,11 @@ class CongressController extends Controller
     protected $sharedServices;
     protected $badgeServices;
     protected $packService;
-//    public $baseUrl = "http://localhost/congress-backend-modules/public/api/";
-    public $baseUrl = "https://congress-api.vayetek.com/api/";
+    protected $resourceService;
+    protected $geoServices;
+    protected $mailServices;
+    protected $paymentServices;
+
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -38,9 +50,14 @@ class CongressController extends Controller
                          UserServices $userServices,
                          SharedServices $sharedServices,
                          BadgeServices $badgeServices,
-                         PackServices $packService)
+                         PackServices $packService,
+                         GeoServices $geoServices,
+                         MailServices $mailServices,
+                         ResourcesServices $resourceService,
+                         PaymentServices $paymentServices)
     {
         $this->congressServices = $congressServices;
+        $this->geoServices = $geoServices;
         $this->adminServices = $adminServices;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
@@ -48,65 +65,154 @@ class CongressController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->packService = $packService;
+        $this->resourceService = $resourceService;
+        $this->mailServices = $mailServices;
+        $this->paymentServices = $paymentServices;
     }
 
 
     public function addCongress(Request $request)
     {
-        $congress = $this->addFullCongress($request);
+        if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
+            return response()->json(['message' => 'bad request'], 400);
+        $admin = $this->adminServices->retrieveAdminFromToken();
+        return $this->congressServices->addCongress(
+            $request->input("name"),
+            $request->input("start_date"),
+            $request->input("end_date"),
+            $request->input('price'),
+            $request->input('congress_type_id'),
+            $request->input('config')['has_payment'],
+            $request->input('config')['free'],
+            $request->input('config')['prise_charge_option'],
+            $request->input('description'),
+            $admin->admin_id);
+    }
 
-        return response()->json($this->congressServices->getCongressById($congress->congress_id));
+    public function editStatus(Request $request, $congressId, $status)
+    {
+        $presence = $request->query('presence');
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+
+        $configCongress = $this->congressServices->getCongressConfigById($congressId);
+        if ($presence) {
+            $configCongress->auto_presence = $status;
+        } else {
+            $configCongress->status = $status;
+        }
+        $configCongress->update();
+
+        return response()->json(['message' => 'auto presence updating']);
+    }
+
+    public function editConfigCongress(Request $request, $congressId)
+    {
+
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+
+        $configCongress = $this->congressServices->getCongressConfigById($congressId);
+
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
+
+        $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId);
+
+
+        $eventLocation = $request->input("eventLocation");
+
+        if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
+
+            $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);
+
+            $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
+        }
+
+        return response()->json(['message' => 'edit configs success']);
 
     }
 
     public function editCongress(Request $request, $congressId)
     {
+        if (!$request->has(['name', 'start_date']))
+            return response()->json(['message' => 'bad request'], 400);
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
+        if (!$config = ConfigCongress::where('congress_id', '=', $congressId)->first())
+            $config = new ConfigCongress();
 
-        $admin = $this->adminServices->retrieveAdminFromToken();
+        $congress = $this->congressServices->editCongress($congress, $config, $request);
 
-//        if (!$this->isAllowedEdit($congress->congress_id)) {
-//            return response()->json(['error' => 'edit not allowed'], 401);
-//        }
+        return response()->json($congress);
+    }
 
-        $congress = $this->congressServices->editCongress($congress, $admin->admin_id, $request);
+    public function getMinimalCongressById($congressId)
+    {
+        if (!$congress = $this->congressServices->getMinimalCongressById($congressId)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
 
-        $accesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(false, $congressId), $request->input("accesss"), $congressId);
+        $congress = $this->congressServices->updateWithParticipantsCount($congress);
 
-        $intuitiveAccesses = $this->accessServices->editAccessesList($this->accessServices->getAccessesByCongressId(true, $congressId), $request->input("intuitiveAccesss"), $congressId);
-        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
+        return response()->json($congress);
+    }
 
-        $this->congressServices->addFormInputs($request->input("form_inputs"), $congress->congress_id);
+    public function getCongressByIdBadge($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressByIdAndRelations($congressId, [
+            'badges',
+            'accesss' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('with_attestation', '=', 1);
+            },
+            'accesss.attestations'
+        ])) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
 
-        return response()->json($this->congressServices->getCongressById($congress->congress_id));
+        return response()->json($congress);
     }
 
     public function getCongressById($congress_id)
     {
+        ini_set('memory_limit', '-1');
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["error" => "congress not found"], 404);
         }
         return response()->json($congress);
     }
 
-    private function addFullCongress(Request $request)
+    public function getCongressConfigById($congress_id)
     {
-        $admin = $this->adminServices->retrieveAdminFromToken();
-        $congress = $this->congressServices->addCongress(
-            $request->input("name"),
-            $request->input("date"),
-            $request->input("username_mail"),
-            $request->input('has_paiement'),
-            $request->input('price'),
-            $request->input('free'),
-            $admin->admin_id);
-        $accesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("accesss"));
-        $intuitiveAccesses = $this->accessServices->addAccessToCongress($congress->congress_id, $request->input("intuitiveAccesss"));
-        $this->packService->addPacks($accesses, $request->input("packs"), $congress);
-        $this->congressServices->addFormInputs($request->input('form_inputs'), $congress->congress_id);
-        return $congress;
+        if (!$configCongress = $this->congressServices->getCongressConfigById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
+        return response()->json([$configCongress, $location]);
+    }
+
+    public function getStatsChartByCongressId($congressId)
+    {
+        $congress = $this->congressServices->getCongressByIdAndRelations($congressId, [
+            'accesss' => function ($query) use ($congressId) {
+                $query->where('show_in_register', '=', 1);
+            },
+            'users.responses.form_input',
+            "users" => function ($query) use ($congressId) {
+                $query->where('privilege_id', '=', 3);
+            },
+            "form_inputs.type",
+            "form_inputs.values",
+            "accesss.participants.user_congresses" => function ($query) {
+                $query->where('privilege_id', '=', 3);
+            }
+        ]);
+
+        return response()->json($congress);
+
     }
 
 
@@ -128,15 +234,7 @@ class CongressController extends Controller
     public function getCongressByAdmin()
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
-        if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(1, $admin->admin_id)) {
-            return response()->json($this->congressServices->getCongressAllAccess($admin->admin_id));
-        }
-
-        if ($admin_priv = $this->privilegeServices->checkIfHasPrivilege(2, $admin->admin_id)) {
-            return response()->json($this->congressServices->getCongressAllAccess($admin->responsible));
-        }
-
-        return response()->json(["message" => "bizzare"]);
+        return response()->json($this->congressServices->getCongressAllAccess($admin->admin_id));
     }
 
     public function getBadgesByCongress($congressId)
@@ -162,29 +260,52 @@ class CongressController extends Controller
 
     public function sendMailAllParticipants($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congres not found'], 404);
-        }
-        $users = $this->userServices->getUsersEmailNotSendedByCongress($congressId);
 
-        if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-            if ($mail = $this->congressServices->getMail($congressId, $mailtype->mail_type_id)) {
-                foreach ($users as $user) {
-                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $mailtype = $this->congressServices->getMailType('confirmation');
+        if ($mailtype) {
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+            $mailId = $mail->mail_id;
+            $users = $this->userServices->getUsersWithRelations($congressId,
+                ['accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                    'user_mails' => function ($query) use ($mailId) {
+                        $query->where('mail_id', '=', $mailId);
+                    }], null);
+            foreach ($users as $user) {
+                if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
+                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                        $user->user_congresses[0]->privilege_id);
+                    $fileAttached = false;
                     if ($badgeIdGenerator != null) {
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, true,
-                            null);
+                        $fileAttached = true;
+                    }
+
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if ($userMail->status != 1) {
+                        $this->userServices->sendMail($this->congressServices
+                            ->renderMail($mail->template, $congress, $user, null, null, null),
+                            $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }
             }
-
+            return response()->json(['message' => 'send mail successs']);
+        } else {
+            return response()->json(['error' => 'vous devez configurer votre mail de confirmation'], 500);
         }
-
-
-        return response()->json(['message' => 'send mail successs']);
     }
 
     public function getAttestationDiversByCongress($congressId)
@@ -219,16 +340,71 @@ class CongressController extends Controller
         return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congress);
     }
 
-    public function sendMailAllParticipantsAttestation($congressId)
+    public function sendMailAllParticipantsSondage($congressId)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
+        $mailtype = $this->congressServices->getMailType('sondage');
+        $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+        $mailId = $mail->mail_id;
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+                $query->where('with_attestation', "=", 1);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('isPresent', '=', 1);
+            },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }], 1);
+        foreach ($users as $user) {
+            if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
+                if ($mail) {
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if ($userMail->status != 1) {
+                        $linkSondage = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
 
-        $users = $this->userServices->getUsersEmailAttestationNotSendedByCongress($congressId);
+                        Log::info($linkSondage);
+
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
+                            $user, $congress, $mail->object, false, $userMail);
+                    }
+                }
+            }
+        }
+        return response()->json(['message' => 'send mail successs']);
+
+    }
+
+    public function sendMailAllParticipantsAttestation($congressId, $strict = 1)
+    {
+
+        // $strict = 0;
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $mailtype = $this->congressServices->getMailType('attestation');
+        $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+        $mailId = $mail->mail_id;
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+                $query->where('with_attestation', "=", 1);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('isPresent', '=', 1);
+            },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }], 1);
         foreach ($users as $user) {
             $request = array();
-            if ($user->email != null && $user->email != "-" && $user->email != "" && $user->isPresent == 1) {
+            if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
                 if ($congress->attestation) {
                     array_push($request,
                         array(
@@ -237,103 +413,69 @@ class CongressController extends Controller
                             'qrCode' => false
                         ));
                 }
-                foreach ($user->accesss as $access) {
-                    if ($access->pivot->isPresent == 1 && $access->attestation) {
-                        $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                        if ($infoPresence['enabled'] == 1) {
-                            array_push($request,
-                                array(
-                                    'badgeIdGenerator' => $access->attestation->attestation_generator_id,
-                                    'name' => Utils::getFullName($user->first_name, $user->last_name),
-                                    'qrCode' => false
-                                ));
+
+                foreach ($user->accesses as $access) {
+                    if ($strict == 0 || $access->pivot->isPresent == 1) {
+                        if (sizeof($access->attestations) > 0) {
+                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                            if ($attestationId) {
+                                array_push($request,
+                                    array(
+                                        'badgeIdGenerator' => $attestationId,
+                                        'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                        'qrCode' => false
+                                    ));
+                            }
                         }
+
                     }
+                    //TODO Change performance
+                    $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $user->user_id);
+                    $privilegeId = null;
+                    if ($chairPerson) {
+                        $privilegeId = 5;
+                    }
+                    $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $user->user_id);
+                    if ($speakerPerson) {
+                        $privilegeId = 8;
+                    }
+                    $attestationId = null;
+                    if ($privilegeId)
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, $privilegeId);
+                    if ($attestationId) {
+                        array_push($request,
+                            array(
+                                'badgeIdGenerator' => $attestationId,
+                                'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                'qrCode' => false
+                            ));
+                    }
+
                 }
-
-                $mailtype = $this->congressServices->getMailType('attestation');
-                $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
-
                 if ($mail) {
-                    $this->badgeServices->saveAttestationsInPublic($request);
-                    $this->userServices->sendMailAttesationToUser($user, $congress, $mail->object,
-                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null));
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if ($userMail->status != 1) {
+                        $this->badgeServices->saveAttestationsInPublic($request);
+                        $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
+                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+                    }
                 }
             }
         }
         return response()->json(['message' => 'send mail successs']);
     }
 
-    public function uploadLogo($congressId, Request $request)
-    {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
-        }
-        $congress = $this->congressServices->uploadLogo($congress, $request);
-
-        return response()->json($congress);
-    }
-
-    public function uploadBanner($congressId, Request $request)
-    {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
-        }
-        $congress = $this->congressServices->uploadBanner($congress, $request);
-
-        return response()->json($congress);
-    }
-
-    public function saveMail(Request $request, $congress_id, $mode)
-    {
-        if (!$request->has(['object', 'template']))
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-
-        if (!$type = $this->congressServices->getMailType($mode))
-            return response()->json(['resposne' => 'bad url', 'error' => 'mail type not found'], 400);
-
-        if ($type->name != 'custom') {
-            $mail = $this->congressServices->getMail($congress_id, $type->mail_type_id);
-            if (!$mail) $mail = new Mail();
-        } else {
-            $mail = new Mail();
-        }
-        $mail->congress_id = $congress_id;
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->mail_type_id = $type->mail_type_id;
-        $mail->save();
-        return $mail;
-    }
-
-    public function editCustomMail(Request $request, $congress_id, $id)
-    {
-        if (!$request->has(['object', 'template']))
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
-
-        if (!$mail = $this->congressServices->getMailById($id)) {
-            return response()->json(['resposne' => 'bad request', 'error' => ['email not found']], 400);
-        }
-
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->save();
-        return $mail;
-    }
-
-    public function uploadMailImage(Request $request)
-    {
-        $file = $request->file('image');
-        $chemin = config('media.mail-images');
-        $path = $file->store('mail-images' . $chemin);
-//        return $path."+++".substr($path,12);
-        return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
-    }
 
     public function getAllCongresses()
     {
         return $this->congressServices->getAllCongresses();
     }
+
 
     public function sendCustomMailToAllUsers($mail_id)
     {
@@ -341,12 +483,12 @@ class CongressController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         foreach ($congress->users as $user) {
-            $userMail = User_Mail::where('user_id', '=', $user->user_id)
+            $userMail = UserMail::where('user_id', '=', $user->user_id)
                 ->where('mail_id', '=', $mail->mail_id)
                 ->first();
 
             if (!$userMail) {
-                $userMail = new User_Mail();
+                $userMail = new UserMail();
                 $userMail->user_id = $user->user_id;
                 $userMail->mail_id = $mail_id;
                 $userMail->save();
@@ -358,8 +500,7 @@ class CongressController extends Controller
             }
 
             if ($userMail) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null), $user, $congress, $mail->object, false,
-                    null, $userMail);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
             }
 
 
@@ -378,5 +519,151 @@ class CongressController extends Controller
         return $congress;
     }
 
+    public function getAll()
+    {
+        return $this->congressServices->getAll();
 
+    }
+
+    function getParticipantsCounts(Request $request)
+    {
+        $result = [];
+        foreach ($request->all() as $congress_id) {
+            if (!$this->congressServices->getCongressById($congress_id))
+                return response()->json(['message' => 'congresses not found'], 404);
+            array_push($result, (object)[
+                'congress_id' => $congress_id,
+                'count' => $this->congressServices->getParticipantsCount($congress_id, 3, null)
+            ]);
+        }
+        return $result;
+    }
+
+    function getLogo($congress_id)
+    {
+        if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
+        if (!$config->logo) return response()->json(['response' => 'no logo'], 400);
+        return Storage::download($config->logo);
+    }
+
+    function getBanner($congress_id)
+    {
+        if (!$config = $this->congressServices->getCongressConfig($congress_id)) return response()->json(['response' => 'congress not found'], 404);
+        if (!$config->banner) return response()->json(['response' => 'no logo'], 400);
+        return Storage::download($config->banner);
+    }
+
+    function addDemo($admin_id)
+    {
+        // add congrees , congress_config , Admin_Congress
+        $congress = $this->congressServices->addCongress("DemoCongress", date('Y-m-d'), date('Y-m-d'), 99, 1,
+            true, false, true, "this is the Demo descrtiption", $admin_id);
+
+        // add users
+        for ($x = 0; $x <= 10; $x++) {
+            $arr = array('email' => 'DemoMail' . $x . '@gmail.com', 'first_name' => 'FirstnameFrmo' . $x, 'last_name' => 'LastnameDemo' . $x,
+                'gender' => 1, 'mobile' => 89456123, 'country_id' => 'TUN');
+            $user = $this->userServices->addUser($arr);
+            $userCongress = new UserCongress();
+            $userCongress->congress_id = $congress->congress_id;
+            $userCongress->user_id = $user->user_id;
+            $userCongress->privilege_id = 3;    //privilege particiapant
+            $userCongress->save();
+        }
+
+        //add badges
+        $badge = new Badge();
+        $badge->badge_id_generator = "5c6dbd67d2cb3900015d7a65";
+        $badge->privilege_id = 3;
+        $badge->congress_id = $congress->congress_id;
+        $badge->save();
+
+        //add access (add multiple access)
+        for ($x = 0; $x <= 10; $x++) {
+            $access = new Access();
+            $access->name = "AccesDemo " . $x;
+            $access->start_date = date('Y-m-d');
+            $access->end_date = date('Y-m-d');
+            $access->access_type_id = 1; // type session
+            $access->price = 99;
+            $access->packless = 1;
+            $access->description = " description de l'access demo num " . $x;
+            $access->seuil = 99;
+            $access->max_places = 100;
+            $access->congress_id = $congress->congress_id;
+            $access->save();
+        }
+        //add mail
+        $this->mailServices->saveMail($congress->congress_id, 1, "inscription", '<p>Veuillez cliquer sur ce lien afin de valider votre paiement.</p><p><a href="{{%24link}}">Lien</a></p>');
+        $this->mailServices->saveMail($congress->congress_id, 2, "Paiement", "Veuillez cliquer sur ce lien afin de valider votre paiement");
+        $this->mailServices->saveMail($congress->congress_id, 5, "Confirmation", "Voullez vous vraiment confirmer Cette action");
+
+        return response()->json(["status" => "success added demo congress"], 200);
+    }
+
+    public function delete($congressId)
+    {
+        $congress = $this->congressServices->getCongressById($congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'conrgess not found'], 404);
+        } elseif ($congress) {
+            $congress->delete();
+        }
+        return response()->json(['response' => 'congress deleted'], 202);
+    }
+
+    public function RemoveCongressFromAdmin($admin_id, $congressId)
+    {
+        $congress = $this->congressServices->getCongressById($congressId);
+        $admin = $this->adminServices->getAdminById($admin_id);
+        if (!($congress && $admin)) {
+            return response()->json(['response' => 'congress or admin not found'], 404);
+        } else {
+            $this->congressServices->RemoveCongressFromAdmin($congressId, $admin_id);
+            return response()->json(['response' => 'congress Removed from Admin'], 202);
+        }
+
+    }
+
+    public function getStatsByCongressId($congressId)
+    {
+
+        $totalUsers = $this->congressServices->getParticipantsCount($congressId, null, null);
+        $participantUsers = $this->congressServices->getParticipantsCount($congressId, 3, null);
+        $revenue = $this->congressServices->getRevenuCongress($congressId);
+        $gratuitNb = $this->paymentServices->getFreeUserByCongressId($congressId);
+        $totalPresenceUsers = $this->congressServices->getParticipantsCount($congressId, null, 1);
+        $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, 3, 1);
+
+
+        return response()->json([
+            'total_users' => $totalUsers,
+            'participant_users' => $participantUsers,
+            'revenues' => $revenue,
+            'total_free' => $gratuitNb,
+            'total_presence_users' => $totalPresenceUsers,
+            'total_presence_participants' => $totalParPresenceUsers
+        ]);
+
+
+    }
+
+    public function getStatsAccessByCongressId($congressId)
+    {
+        //Cette stats concerne les participants et les ateliers qui ont choisit.
+
+        $access = $this->accessServices->getAllAccessByCongress($congressId, 1,
+            [
+                'participants.user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                    $query->where('privilege_id', '=', 3);
+                },
+                'participants.payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }]);
+
+        return response()->json($access);
+
+
+    }
 }

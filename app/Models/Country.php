@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Abbes
- * Date: 25/08/2016
- * Time: 23:16
- */
 
 namespace App\Models;
 
@@ -13,9 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Country extends Model
 {
-    public $timestamps = false;
-    public $incrementing = false;
     protected $table = 'Country';
-    protected $primaryKey = 'country_id';
-    protected $fillable = ['name'];
+    protected $primaryKey = 'alpha3code';
+    public $incrementing = false;
+    protected $fillable = ['code', 'name'];
+    public $timestamps = false;
+
+    public function cities()
+    {
+        return $this->hasMany('App\Models\City', 'city_id', 'city_id');
+    }
 }
