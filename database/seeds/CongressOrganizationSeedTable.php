@@ -12,9 +12,10 @@ class CongressOrganizationSeedTable extends Seeder
      */
     public function run()
     {
-        DB::table('CongressOrganization')->insert([
+        DB::table('Congress_Organization')->insert([
             'congress_id' => 1,
-            'organization_id' => 1
+            'organization_id' => 1,
+            'montant' => 152.00
         ]);
     }
 }

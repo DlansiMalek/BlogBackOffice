@@ -15,7 +15,6 @@ class OrganizationSeedTable extends Seeder
         DB::table('Organization')->insert([
             'name' => 'Organization test',
             'description' => 'description',
-            'email' => 'labo@vayetek.com',
             'mobile' => '777777'
         ]);
     }
