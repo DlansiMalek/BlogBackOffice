@@ -1,26 +1,26 @@
 version: '2'
 services:
     web:
+        container_name: eventizer-api-dev-web
         build:
             context: ./
             dockerfile: web.docker
         volumes:
             - ./:/var/www
-        ports:
-            - "8083:80"
         links:
             - app
         environment:
-            VIRTUAL_HOST: eventizer-conf-api.vayetek.com
-            LETSENCRYPT_HOST: eventizer-conf-api.vayetek.com
+            VIRTUAL_HOST: dev.api.eventizer.io
+            LETSENCRYPT_HOST: dev.api.eventizer.io
             LETSENCRYPT_EMAIL: vayetek@gmail.com
     app:
+        container_name: eventizer-api-dev-app
         build:
             context: ./
             dockerfile: app.docker
         volumes:
             - ./:/var/www
-            - ../../data/eventizer_data:/var/www/storage/app
+            - ../../data/eventizer_dev_data:/var/www/storage/app
             - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
         env_file: .env
 
