@@ -10,8 +10,8 @@ services:
         links:
             - app
         environment:
-            VIRTUAL_HOST: eventizer-api.vayetek.com, api.eventizer.io
-            LETSENCRYPT_HOST: eventizer-api.vayetek.com, api.eventizer.io
+            VIRTUAL_HOST: eventizer-api.vayetek.com,api.eventizer.io
+            LETSENCRYPT_HOST: eventizer-api.vayetek.com,api.eventizer.io
             LETSENCRYPT_EMAIL: vayetek@gmail.com
     app:
         container_name: eventizer-api-app
