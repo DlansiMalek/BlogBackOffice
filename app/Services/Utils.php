@@ -12,7 +12,7 @@ class Utils
 
     // public static $baseUrl = 'http://localhost/congress-backend-modules/public/api/';
 
-    public static $baseUrl = 'https://congress.vayetek.com/api/';
+    public static $baseUrl = 'https://api.eventizer.io/api/';
 
     public static function diffMinutes($enter_time, $endCongress)
     {
