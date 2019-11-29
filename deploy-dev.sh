@@ -1,7 +1,6 @@
 cp ../config-eventizer/.env-dev .env
 
 composer install
-composer update
 php artisan jwt:secret
 
 docker-compose -f docker-compose-dev.yml kill
