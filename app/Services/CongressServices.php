@@ -260,7 +260,7 @@ class CongressServices
         $congress->name = $request->input('name');
         $congress->start_date = $request->input('start_date');
         $congress->end_date = $request->input('end_date');
-        $congress->price = $request->input('price') &&  $request->input('congress_type_id') === '1' ? $request->input('price') : 0;
+        $congress->price = $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0;
         $congress->congress_type_id = $request->input('congress_type_id');
         $congress->description = $request->input('description');
         $congress->update();
@@ -372,8 +372,12 @@ class CongressServices
             $accesses = $accesses . "</ul>";
         }
 
+        $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
+        $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
+
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
-        $template = str_replace('{{$congress-&gt;date}}', '{{$congress->date}}', $template);
+        $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
+        $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
