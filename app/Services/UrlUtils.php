@@ -22,6 +22,9 @@ class UrlUtils
         if (App::environment() == 'prod') {
             return "http://appvoting-server:3000";
         }
+        if (App::environment() == 'dev') {
+            return "http://appvoting-server:3000";
+        }
         return "http://137.74.165.25:3001/";
     }
 
@@ -31,6 +34,9 @@ class UrlUtils
             return "http://localhost:4200";
         }
         if (App::environment() == 'prod') {
+            return "https://eventizer.vayetek.com";
+        }
+        if (App::environment() == 'dev') {
             return "https://eventizer.vayetek.com";
         }
         return "http://localhost:4200";
@@ -44,6 +50,9 @@ class UrlUtils
         if (App::environment() == 'prod') {
             return "http://apprtcongress-server:3000/api";
         }
+        if (App::environment() == 'dev') {
+            return "http://apprtcongress-server:3000/api";
+        }
         return "http://137.74.165.25:3002/api";
     }
 
@@ -53,6 +62,9 @@ class UrlUtils
             return "http://localhost:8080";
         }
         if (App::environment() == 'prod') {
+            return "http://paiement-api:8080";
+        }
+        if (App::environment() == 'dev') {
             return "http://paiement-api:8080";
         }
         return "http://137.74.165.25:3007";
@@ -66,6 +78,9 @@ class UrlUtils
         if (App::environment() == 'prod') {
             return "http://congress-file-generater-app:5000";
         }
+        if (App::environment() == 'dev') {
+            return "http://congress-file-generater-app:5000";
+        }
         return "http://137.74.165.25:8090";
     }
 
@@ -77,6 +92,24 @@ class UrlUtils
         if (App::environment() == 'prod') {
             return "https://eventizer-api.vayetek.com/api";
         }
+        if (App::environment() == 'dev') {
+            return "https://eventizer-api.vayetek.com/api";
+        }
+        return "http://localhost:8888";
+    }
+
+    public static function getBaseImgUrl()
+    {
+        if (App::environment() == 'test'){
+            return "http://localhost:8888";
+        }
+        if (App::environment() == 'prod') {
+            return "http://eventizer-api-web";
+        }
+        if (App::environment() == 'dev') {
+            return "http://eventizer-api-dev-web";
+        }
+
         return "http://localhost:8888";
     }
 

@@ -724,7 +724,7 @@ class AdminController extends Controller
                     ],
                     'price' => $userPayment->price,
                     'reference' => $userPayment->reference,
-                    'url' => 'http://eventizer-api-web'
+                    'url' => UrlUtils::getBaseImgUrl()
                 ]
             ]);
         }
