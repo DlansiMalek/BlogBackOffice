@@ -34,10 +34,10 @@ class UrlUtils
             return "http://localhost:4200";
         }
         if (App::environment() == 'prod') {
-            return "https://eventizer.vayetek.com";
+            return "https://organizer.eventizer.io";
         }
         if (App::environment() == 'dev') {
-            return "https://eventizer.vayetek.com";
+            return "https://dev.organizer.eventizer.io";
         }
         return "http://localhost:4200";
     }
