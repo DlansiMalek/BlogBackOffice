@@ -201,6 +201,7 @@ class CongressController extends Controller
                 $query->where('show_in_register', '=', 1);
             },
             'users.responses.form_input',
+            'users.responses.values',
             "users" => function ($query) use ($congressId) {
                 $query->where('privilege_id', '=', 3);
             },
