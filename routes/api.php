@@ -408,4 +408,5 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/participant-count', 'CongressController@getParticipantsCounts');
     Route::post('/profile-pic/{user_id}', 'UserController@uploadProfilePic');
     Route::get('/profile-pic/{user_id}', 'UserController@getProfilePic');
+    Route::post('/send-firebase-key/{congress_id}', 'NotificationController@sendFirebaseKey');
 });
