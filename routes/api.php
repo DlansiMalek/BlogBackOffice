@@ -391,6 +391,9 @@ Route::group(['prefix' => 'access'], function () {
     Route::put('{access_id}', 'AccessController@editAccess');
 });
 
+Route::group(["prefix" => "notification"], function () {
+    Route::post('/send/{congressId}', 'NotificationController@sendNotificationToCongress');
+});
 Route::group(["prefix" => "user-app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
     Route::get('/congress', 'CongressController@getAllCongresses');
@@ -400,7 +403,7 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/request-attestation/{user_id}', 'UserController@requestAttestations');
     Route::post('/requested-attestation/', 'UserController@requestedAttestations');
     Route::post('/feedback/{user_id}', 'FeedbackController@saveFeedbackResponses');
-//    Route::get("quiz", "VotingController@getListPolls");
+    //Route::get("quiz", "VotingController@getListPolls");
     // Route::get('/quiz/{congress_id}', 'VotingController@getQuiz');
     Route::post('/quiz', 'VotingController@getQuiz');
     Route::put('/edit-user/{user_id}', 'UserController@mobileEditUser');

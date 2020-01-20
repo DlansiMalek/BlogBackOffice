@@ -77,6 +77,13 @@ class Utils
         return null;
     }
 
+    public static function mapDataByKey($data, string $key)
+    {
+        return array_map(function ($object) use ($key) {
+            return $object[$key];
+        }, json_decode($data, true));
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
