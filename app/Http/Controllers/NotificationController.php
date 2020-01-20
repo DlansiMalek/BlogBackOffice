@@ -10,7 +10,9 @@ namespace App\Http\Controllers;
 
 use App\Services\CongressServices;
 use App\Services\NotificationServices;
+use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 
 class NotificationController extends Controller
@@ -48,6 +50,23 @@ class NotificationController extends Controller
         $this->notificationService->saveKeyByCongress($congressId, $firebaseKey);
 
         return response()->json(['message' => 'save with success']);
+    }
+
+    public function sendNotificationToCongress($congressId, Request $request)
+    {
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+
+        $message = $request->input("message");
+
+        $usersToken = $this->notificationService->getAllKeysByCongressId($congressId);
+
+        $tokens = Utils::mapDataByKey($usersToken, 'firebase_key_user');
+
+        $this->notificationService->sendNotification($message, $tokens);
+
+        return response()->json(['message' => 'success send']);
     }
 
 }
