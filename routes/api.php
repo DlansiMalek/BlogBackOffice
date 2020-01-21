@@ -110,13 +110,14 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::group(["prefix" => 'form'], function () {
         Route::get('input-types', 'RegistrationFormController@getInputTypes');
         Route::get('{congress_id}', 'RegistrationFormController@getForm');
-        Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
+        Route::post('{congress_id}', 'RegistrationFormController@setForm')
+            ->middleware('admin');
     });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
-        Route::get('', 'CongressController@getCongressById');
+        Route::get('', 'CongressController@getCongressById'); // Done Unit Test
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
 
@@ -264,7 +265,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
             });
-            Route::post('add', 'CongressController@addCongress');
+            Route::post('add', 'CongressController@addCongress'); //TODO Unit Test
         });
     });
     Route::group(['prefix' => 'qrcode'], function () {
