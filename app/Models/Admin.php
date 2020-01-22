@@ -23,7 +23,7 @@ class Admin extends Authenticatable implements JWTSubject
 {
     protected $table = 'Admin';
     protected $primaryKey = 'admin_id';
-    protected $fillable = ['email', 'mobile', 'name', "privilege_id", 'voting_token', 'passwordDecrypt'];
+    protected $fillable = ['email', 'mobile', 'name', "privilege_id", 'passwordDecrypt'];
 
     protected $hidden = ["password"];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

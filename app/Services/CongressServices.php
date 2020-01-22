@@ -144,7 +144,7 @@ class CongressServices
         $congress->name = $name;
         $congress->start_date = $start_date;
         $congress->end_date = $end_date;
-        $congress->price = $price && $congressTypeId === '1' ? $price : 0;
+        $congress->price = $price && $congressTypeId === 1 ? $price : 0;
         $congress->description = $description;
         $congress->congress_type_id = $congressTypeId;
         $congress->save();
