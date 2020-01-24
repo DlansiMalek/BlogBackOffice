@@ -144,7 +144,7 @@ class CongressServices
         $congress->name = $name;
         $congress->start_date = $start_date;
         $congress->end_date = $end_date;
-        $congress->price = $price && $congressTypeId === 1 ? $price : 0;
+        $congress->price = $price && $congressTypeId === '1' ? $price : 0;
         $congress->description = $description;
         $congress->congress_type_id = $congressTypeId;
         $congress->save();
@@ -266,7 +266,7 @@ class CongressServices
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
-        $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Ateliers';
+        $config->access_system = isset($request->input('config')['access_system']) ? $request->input('config')['access_system'] : 'Ateliers';
         $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
         $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->update();

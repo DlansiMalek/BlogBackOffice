@@ -18,6 +18,10 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        // This will run all your migration
+        //  Artisan::call('migrate:refresh');
+
         $this->faker = Factory::create();
 
         $this->setClientToken();

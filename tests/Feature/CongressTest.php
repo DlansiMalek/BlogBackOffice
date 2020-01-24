@@ -48,19 +48,7 @@ class CongressTest extends TestCase
     public function testAddCongressSimple()
     {
         // Url : api/admin/me/congress/add
-        $data = [
-            'name' => $this->faker->sentence,
-            'start_date' => $this->faker->date(),
-            'end_date' => $this->faker->date(),
-            'price' => $this->faker->randomFloat(2, 0, 5000),
-            'congress_type_id' => $this->faker->numberBetween(1, 3),
-            'description' => $this->faker->paragraph,
-            'config' => [
-                'has_payment' => $this->faker->numberBetween(0, 1),
-                'free' => $this->faker->numberBetween(0, 1),
-                'prise_charge_option' => $this->faker->numberBetween(0, 1)
-            ]
-        ];
+        $data = $this->getFakeDataCongress();
 
         $response = $this->post('api/admin/me/congress/add', $data)
             ->assertStatus(201);
@@ -74,7 +62,7 @@ class CongressTest extends TestCase
         $this->assertEquals($data['name'], $congress->name);
         $this->assertEquals($data['start_date'], $congress->start_date);
         $this->assertEquals($data['end_date'], $congress->end_date);
-        $this->assertEquals($data['congress_type_id'] == 1 ? $data['price'] : 0, $congress->price);
+        $this->assertEquals($data['congress_type_id'] == '1' ? $data['price'] : 0, $congress->price);
         $this->assertEquals($data['congress_type_id'], $congress->congress_type_id);
         $this->assertEquals($data['description'], $congress->description);
 
@@ -105,5 +93,108 @@ class CongressTest extends TestCase
         $this->assertEquals($dataResponse['congress_id'], $adminCongress->congress_id);
         $this->assertNull($adminCongress->organization_id);
         $this->assertEquals(1, $adminCongress->privilege_id);
+    }
+
+    /**
+     * A basic feature test delete congress
+     *
+     * @return void
+     */
+    public function testDeleteCongress()
+    {
+        // Url : api/congress/{congress_id}/delete
+        $congress = factory(Congress::class)->create();
+
+        $this->delete('api/congress/' . $congress->congress_id . '/delete')
+            ->assertStatus(202);
+
+        $congressData = Congress::where('congress_id', '=', $congress->congress_id)
+            ->first();
+
+        $this->assertNull($congressData);
+    }
+
+    /**
+     * A basic feature test edit congress
+     *
+     * @return void
+     */
+    public function testEditCongress()
+    {
+        // Url : api/admin/me/congress/edit
+
+        $data = $this->getFakeDataCongress();
+
+        $congressOld = factory(Congress::class)->create();
+
+        $adminCongressOld = factory(AdminCongress::class)->create([
+            'admin_id' => $this->admin->admin_id,
+            'congress_id' => $congressOld->congress_id,
+            'privilege_id' => 1
+        ]);
+        $configCongressOld = factory(ConfigCongress::class)->create(['congress_id' => $congressOld->congress_id]);
+
+
+        $response = $this->put('api/admin/me/congress/' . $congressOld->congress_id . '/edit', $data)
+            ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+
+        // *** Verify Editing Congress ***
+        $congress = Congress::where('congress_id', '=', $dataResponse['congress_id'])
+            ->first();
+
+        $this->assertEquals($congressOld->congress_id, $dataResponse['congress_id']);
+        $this->assertEquals($data['name'], $congress->name);
+        $this->assertEquals($data['start_date'], $congress->start_date);
+        $this->assertEquals($data['end_date'], $congress->end_date);
+        $this->assertEquals($data['congress_type_id'] == '1' ? $data['price'] : 0, $congress->price);
+        $this->assertEquals($data['congress_type_id'], $congress->congress_type_id);
+        $this->assertEquals($data['description'], $congress->description);
+
+        // *** Verify Adding Config Congress ***
+        $configCongress = ConfigCongress::where('congress_id', '=', $dataResponse['congress_id'])
+            ->first();
+
+        $this->assertEquals($data['config']['has_payment'], $configCongress->has_payment);
+        $this->assertEquals($data['config']['free'], $configCongress->free);
+        $this->assertEquals($data['config']['prise_charge_option'], $configCongress->prise_charge_option);
+        $this->assertEquals($configCongressOld->logo, $configCongress->logo);
+        $this->assertEquals($configCongressOld->banner, $configCongress->banner);
+        $this->assertNull($configCongress->feedback_start);
+        $this->assertEquals($configCongressOld->program_link, $configCongress->program_link);
+        $this->assertNull($configCongress->voting_token);
+        $this->assertNull($configCongress->nb_ob_access);
+        $this->assertEquals(0, $configCongress->auto_presence);
+        $this->assertNull($configCongress->link_sondage);
+        $this->assertEquals('Ateliers', $configCongress->access_system);
+        $this->assertEquals(1, $configCongress->status);
+        $this->assertEquals($configCongressOld->congress_id, $configCongress->congress_id);
+
+        // *** Verify Adding Admin Congress ***
+        $adminCongress = AdminCongress::where('congress_id', '=', $dataResponse['congress_id'])
+            ->first();
+
+        $this->assertEquals($this->admin->admin_id, $adminCongress->admin_id);
+        $this->assertEquals($adminCongressOld->congress_id, $adminCongress->congress_id);
+        $this->assertNull($adminCongress->organization_id);
+        $this->assertEquals(1, $adminCongress->privilege_id);
+    }
+
+    private function getFakeDataCongress()
+    {
+        return [
+            'name' => $this->faker->sentence,
+            'start_date' => $this->faker->date(),
+            'end_date' => $this->faker->date(),
+            'price' => $this->faker->randomFloat(2, 0, 5000),
+            'congress_type_id' => strval($this->faker->numberBetween(1, 3)),
+            'description' => $this->faker->paragraph,
+            'config' => [
+                'has_payment' => $this->faker->numberBetween(0, 1),
+                'free' => $this->faker->numberBetween(0, 1),
+                'prise_charge_option' => $this->faker->numberBetween(0, 1)
+            ]
+        ];
     }
 }

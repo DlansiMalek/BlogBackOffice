@@ -101,7 +101,6 @@ Route::group(['prefix' => 'users'], function () {
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
-
     Route::group(['prefix' => 'mail'], function () {
         Route::get('{mailId}', 'MailController@getById');
         Route::get('types/{typeId}', 'MailController@getMailTypeById');
@@ -120,7 +119,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('', 'CongressController@getCongressById'); // Done Unit Test
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
-
+        Route::delete('delete', 'CongressController@delete')
+            ->middleware('admin'); // Done Unit Test
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
@@ -192,7 +192,6 @@ Route::group(['prefix' => 'packadmin'], function () {
     Route::put('admins/{admin_id}/update', 'AdminController@update');
     Route::post('Demo/{admin_id}', 'CongressController@addDemo');
     Route::get('congress/all', 'CongressController@getAll');
-    Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
     Route::delete('admins/{admin_id}/{congressId}', 'CongressController@RemoveCongressFromAdmin');
     Route::get('mailtypes/all', 'MailController@getAllMailTypesAdmin');
     Route::put('mails/{mail_id}/update', 'MailController@updateMailAdmin');
@@ -262,10 +261,10 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
                 Route::get('edit-status/{status}', 'CongressController@editStatus');
-                Route::post('edit', 'CongressController@editCongress');
+                Route::put('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
             });
-            Route::post('add', 'CongressController@addCongress'); //TODO Unit Test
+            Route::post('add', 'CongressController@addCongress'); //Done Unit Test
         });
     });
     Route::group(['prefix' => 'qrcode'], function () {
