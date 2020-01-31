@@ -163,7 +163,7 @@ class UserServices
             Mail::send('emailCredentialsOrganizer', ['email' => $email, 'password' => $admin->passwordDecrypt
             ], function ($message) use ($email, $pathToFile) {
                 $message->attach($pathToFile);
-                $message->to($email)->subject('Accès à la plateforme VayeCongress');
+                $message->to($email)->subject('Accès à la plateforme Eventizer');
             });
         } catch (\Exception $exception) {
             Log::info($exception);
@@ -666,6 +666,7 @@ class UserServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
@@ -673,6 +674,7 @@ class UserServices
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
+            return $exception;
             if ($userMail) {
                 $userMail->status = -1;
                 $userMail->update();
@@ -699,6 +701,7 @@ class UserServices
 
         try {
             Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
                 $message->subject($object);
                 $message->setBody($view, 'text/html');
                 $message->attach($pathToFile);
