@@ -310,6 +310,7 @@ class AdminServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
