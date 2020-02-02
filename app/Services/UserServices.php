@@ -166,7 +166,6 @@ class UserServices
                 $message->to($email)->subject('Accès à la plateforme Eventizer');
             });
         } catch (\Exception $exception) {
-            Log::info($exception);
             return 1;
         }
         return 1;
@@ -666,7 +665,13 @@ class UserServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
+                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+
+                if ($congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
@@ -697,11 +702,15 @@ class UserServices
 
         $pathToFile = storage_path() . "/app/attestations.zip";
 
-        Log::info("test!!");
-
         try {
             Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
+                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+
+                if ($congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
                 $message->subject($object);
                 $message->setBody($view, 'text/html');
                 $message->attach($pathToFile);
@@ -709,7 +718,6 @@ class UserServices
             });
             $userMail->status = 1;
         } catch (\Exception $exception) {
-            Log::info($exception);
             Storage::delete('app/badge.png');
             $userMail->status = -1;
         }
