@@ -185,6 +185,8 @@ class CongressServices
         $configCongress->nb_ob_access = $configCongressRequest['nb_ob_access'];
         $configCongress->congress_id = $congressId;
         $configCongress->link_sondage = $configCongressRequest['link_sondage'];
+        $configCongress->from_mail = $configCongressRequest['from_mail'];
+        $configCongress->replyto_mail = $configCongressRequest['replyto_mail'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
