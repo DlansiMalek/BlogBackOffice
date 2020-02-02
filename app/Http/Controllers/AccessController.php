@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\UserAccess;
 use App\Services\AccessServices;
 use App\Services\CongressServices;
+use App\Services\NotificationServices;
 use App\Services\ResourcesServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
@@ -17,17 +18,20 @@ class AccessController extends Controller
     protected $userServices;
     protected $congressServices;
     protected $resourcesServices;
+    protected $notificationServices;
 
 
     function __construct(AccessServices $accessServices,
                          UserServices $userServices,
                          CongressServices $congressServices,
-                         ResourcesServices $resourcesServices)
+                         ResourcesServices $resourcesServices,
+                         NotificationServices $notificationServices)
     {
         $this->accessServices = $accessServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->resourcesServices = $resourcesServices;
+        $this->notificationServices = $notificationServices;
     }
 
 
@@ -180,6 +184,9 @@ class AccessController extends Controller
         if ($request->has('sub_accesses') && count($request->input('sub_accesses'))) {
             $this->accessServices->editSubAccesses($access, $request->input('sub_accesses'));
         } else $this->accessServices->deleteAllSubAccesses($access_id);
+
+        $this->notificationServices->sendNotificationToCongress('Changement du programme: ' . $access->name
+            , $access->congress_id);
 
         return $this->accessServices->getAccessById($access->access_id);
     }
