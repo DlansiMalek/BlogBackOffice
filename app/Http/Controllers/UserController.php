@@ -238,11 +238,19 @@ class UserController extends Controller
     }
 
     public function saveUser(Request $request, $congress_id)
-    {
-        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
+    {   
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name','code']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name','code',]], 400);
 
-
+         if ($request->has('code_confirmation')){
+            if ($request->code!=$request->code_confirmation)
+            return response()->json(['response' => 'bad request password don`t match']);
+            
+         }
+            
+            
+     
+           
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
@@ -337,7 +345,7 @@ class UserController extends Controller
     public function editerUserToCongress(Request $request, $congressId, $userId)
     {
 
-        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name','code']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
 
@@ -873,10 +881,23 @@ class UserController extends Controller
 
     }
 
-    function userConnect($qrCode)
-    {
-        $user = $this->userServices->getUserByQrCode($qrCode);
+    function userConnect(Request $request)
+    {  
+        if ($request->qrCode){
+
+    
+        $user = $this->userServices->getUserByQrCode($request->qrCode);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+         }
+    else
+    {
+        $user=$this->userServices->getUserByEmail($request->email);
+        if (!$user){
+            return response()->json(["error" => "wrong email"], 404);
+        }
+        return $user->code==$request->code ? response()->json($user, 200, []) : response()->json(["error" => "wrong password"], 404);
+     }
+
     }
 
     function getPresenceStatus($user_id)
