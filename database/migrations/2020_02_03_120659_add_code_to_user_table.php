@@ -15,7 +15,7 @@ class AddCodeToUserTable extends Migration
     {
         Schema::table('user', function (Blueprint $table) {
             $table->string('code')->nullable()->default(null);
-            $table->string('code_confirmation')->nullable()->default(null);
+           
         });
     }
 

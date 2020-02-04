@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -244,14 +244,11 @@ class UserController extends Controller
 
          if ($request->has('code_confirmation')){
             if ($request->code!=$request->code_confirmation)
-            return response()->json(['response' => 'bad request password don`t match']);
+            return response()->json(['response' => 'bad request password don`t match'],400);
             
          }
-            
-            
-     
-           
-        $privilegeId = $request->input('privilege_id');
+
+         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
@@ -881,12 +878,12 @@ class UserController extends Controller
 
     }
 
-    function userConnect(Request $request)
+    function userConnect(Request $request,$qrCode=null)
     {  
-        if ($request->qrCode){
+        if ($qrCode){
 
     
-        $user = $this->userServices->getUserByQrCode($request->qrCode);
+        $user = $this->userServices->getUserByQrCode($qrCode);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
          }
     else
