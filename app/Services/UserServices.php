@@ -881,11 +881,8 @@ class UserServices
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
-        if ($request->has('code'))
-        { 
-            $user->code=$request->input('code') ; 
-            $user->code_confirmation=$request->input('code');
-        }
+        if ($request->has('code'))  $user->code=$request->input('code') ; 
+        
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         $user->verification_code = str_random(40);
         $user->save();
@@ -904,10 +901,9 @@ class UserServices
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
-        if ($request->has('code')){
-            $user->code=$request->input('code'); 
-            $user->code_confirmation=$request->input('code');
-        }
+        if ($request->has('code')) $user->code=$request->input('code'); 
+         
+     
         if ($request->has('country_id')) $user->country_id = $request->country_id;
 
         $user->update();

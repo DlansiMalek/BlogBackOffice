@@ -239,14 +239,10 @@ class UserController extends Controller
 
     public function saveUser(Request $request, $congress_id)
     {   
-        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name','code']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name','code',]], 400);
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name',]], 400);
 
-         if ($request->has('code_confirmation')){
-            if ($request->code!=$request->code_confirmation)
-            return response()->json(['response' => 'bad request password don`t match'],400);
-            
-         }
+        
 
          $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
@@ -886,14 +882,18 @@ class UserController extends Controller
         $user = $this->userServices->getUserByQrCode($qrCode);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
          }
-    else
-    {
+         
+         $validateData=Validator::make($request->all(),[
+             'email'=>'required',
+             'code'=>'required',
+         ]);
+         if ($validateData->fails())  return response()->json(['response' => 'bad request', 'required fields' => ['email','code']], 400);
         $user=$this->userServices->getUserByEmail($request->email);
         if (!$user){
             return response()->json(["error" => "wrong email"], 404);
         }
         return $user->code==$request->code ? response()->json($user, 200, []) : response()->json(["error" => "wrong password"], 404);
-     }
+     
 
     }
 
