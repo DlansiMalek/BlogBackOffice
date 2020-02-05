@@ -240,7 +240,7 @@ class UserController extends Controller
     public function saveUser(Request $request, $congress_id)
     {   
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name',]], 400);
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         
 
@@ -338,7 +338,7 @@ class UserController extends Controller
     public function editerUserToCongress(Request $request, $congressId, $userId)
     {
 
-        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name','code']))
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
 
@@ -874,12 +874,12 @@ class UserController extends Controller
 
     }
 
-    function userConnect(Request $request,$qrCode=null)
+    function userConnect(Request $request)
     {  
-        if ($qrCode){
+        if ($request->qr_code ){
 
     
-        $user = $this->userServices->getUserByQrCode($qrCode);
+        $user = $this->userServices->getUserByQrCode($request->qr_code);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
          }
          

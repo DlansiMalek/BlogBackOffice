@@ -13,7 +13,7 @@ class AddCodeToUserTable extends Migration
      */
     public function up()
     {
-        Schema::table('user', function (Blueprint $table) {
+        Schema::table('User', function (Blueprint $table) {
             $table->string('code')->nullable()->default(null);
            
         });
@@ -26,7 +26,7 @@ class AddCodeToUserTable extends Migration
      */
     public function down()
     {
-        Schema::table('user', function (Blueprint $table) {
+        Schema::table('User', function (Blueprint $table) {
             $table->dropColumn('code');
         });
     }
