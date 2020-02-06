@@ -235,7 +235,7 @@ class CongressController extends Controller
     public function getCongressByAdmin()
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return response()->json($this->congressServices->getCongressAllAccess($admin->admin_id));
+        return response()->json($this->congressServices->getCongressByAdmin($admin->admin_id));
     }
 
     public function getBadgesByCongress($congressId)
@@ -297,9 +297,9 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     //if ($userMail->status != 1) {
-                        return $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null),
-                            $user, $congress, $mail->object, $fileAttached, $userMail);
+                    return $this->userServices->sendMail($this->congressServices
+                        ->renderMail($mail->template, $congress, $user, null, null, null),
+                        $user, $congress, $mail->object, $fileAttached, $userMail);
                     //}
                 }
             }
