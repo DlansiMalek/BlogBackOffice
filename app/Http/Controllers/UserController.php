@@ -239,7 +239,7 @@ class UserController extends Controller
 
     public function saveUser(Request $request, $congress_id)
     {
-        $checkExistingUser=true ;
+        
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
@@ -255,16 +255,18 @@ class UserController extends Controller
             $user = $this->userServices->saveUser($request);
            
         }
-        //update existing user
+        else  
+         $user= $this->userServices->editUser($request,$user);
       
+        
 
         // Check if User already registed to congress
         if ($user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
             return response()->json(['error' => 'user registred congress'], 405);
         }   
-        if ($checkExistingUser){
-           $user= $this->userServices->editUser($request,$user);
-        }
+           //update existing user
+        
+         
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $request);
 
