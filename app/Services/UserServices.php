@@ -942,7 +942,8 @@ class UserServices
     }
 
     public function saveUserCongress($congress_id, $user_id, Request $request)
-    {
+    {   
+        $user=User::where('user_id',$user_id)->first();
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
@@ -952,7 +953,10 @@ class UserServices
             $user_congress->organization_id = $request->input('organization_id');
         if ($request->has('pack_id'))
             $user_congress->pack_id = $request->input("pack_id");
+        if ($request->has('code'))
+        $user->code=$request->code;
 
+        $user->save();
         $user_congress->save();
         return $user_congress;
     }
