@@ -14,8 +14,11 @@ class AddCodeToUserTable extends Migration
     public function up()
     {
         Schema::table('User', function (Blueprint $table) {
-            $table->string('code')->nullable()->default(null);
-           
+            $table->string('code')
+                ->nullable()
+                ->default(null)
+                ->after('country_id');
+
         });
     }
 
