@@ -251,7 +251,7 @@ class UserController extends Controller
 
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
-            $checkExistingUser=false;
+            
             $user = $this->userServices->saveUser($request);
            
         }
