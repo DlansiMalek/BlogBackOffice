@@ -220,6 +220,15 @@ class CongressServices
         return $congress;
     }
 
+    public function getCongressByAdmin($adminId)
+    {
+        $congress = Congress::whereHas("admins", function ($query) use ($adminId) {
+            $query->where('Admin.admin_id', '=', $adminId);
+        })
+            ->get();
+        return $congress;
+    }
+
     public function getBadgesByUsers($badgeName, $users)
     {
 
