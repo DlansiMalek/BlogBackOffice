@@ -51,6 +51,7 @@ class CongressServices
     {
 
         return Congress::with([
+            "mails.type",
             "attestation",
             "badges",
             "accesss",
