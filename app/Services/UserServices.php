@@ -13,7 +13,6 @@ use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use PDF;
@@ -679,7 +678,6 @@ class UserServices
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
-            return $exception;
             if ($userMail) {
                 $userMail->status = -1;
                 $userMail->update();
