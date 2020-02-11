@@ -40,6 +40,10 @@ Route::group(['prefix' => 'congress-banner/{path}'], function () {
     Route::get('', 'FileController@getBannerCongress');
     Route::post('delete', 'FileController@deleteBannerCongress');
 });
+Route::group(['prefix' => 'user-cv/{path}'], function () {
+    Route::get('', 'FileController@getUserCV');
+    Route::post('delete', 'FileController@deleteUserCV');
+});
 
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
@@ -72,6 +76,7 @@ Route::group(['prefix' => 'users'], function () {
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::delete('delete', 'UserController@delete');
+           
             Route::post('upload-payement', 'UserController@uploadPayement');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
@@ -130,6 +135,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
         Route::post('/upload-logo', 'FileController@uploadLogo');
         Route::post('/upload-banner', 'FileController@uploadBanner');
+        Route::post('/upload-cv/{userId}','FileController@uploadCv');
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
