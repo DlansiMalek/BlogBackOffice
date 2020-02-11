@@ -46,13 +46,16 @@ class FileController extends Controller
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 
-    public function deleteUserCV($path)
+    public function deleteUserCV($path,$userId)
     {
+        if (!$user=$this->userServices->getUserById($userId))
+        return response()->json(['response'=>'user not found'],400);
 
+    
         $chemin = config('media.user-cv');
         $path = $chemin . '/' . $path;
         Storage::delete($path);
-
+        $this->userServices->makeUserPathCvNull($user);
         return response()->json(['response' => 'user cv deleted', 'media' => $path], 201);
     }
     public function deleteLogoCongress($path)

@@ -36,6 +36,11 @@ class UserServices
         $user->update();
         return $user;
     }
+    public function makeUserPathCvNull($user){
+        $user->path_cv=null;
+        $user->update();
+        return $user;
+    }
 
 
     public function editerUser(Request $request, $newUser)

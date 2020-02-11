@@ -42,7 +42,7 @@ Route::group(['prefix' => 'congress-banner/{path}'], function () {
 });
 Route::group(['prefix' => 'user-cv/{path}'], function () {
     Route::get('', 'FileController@getUserCV');
-    Route::post('delete', 'FileController@deleteUserCV');
+    Route::post('delete/{userId}', 'FileController@deleteUserCV');
 });
 
 //Mobile API
@@ -76,7 +76,6 @@ Route::group(['prefix' => 'users'], function () {
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::delete('delete', 'UserController@delete');
-           
             Route::post('upload-payement', 'UserController@uploadPayement');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
@@ -124,7 +123,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
-
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
