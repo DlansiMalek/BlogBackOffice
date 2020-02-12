@@ -13,8 +13,8 @@ class AddIscodeshowToConfigCongressTable extends Migration
      */
     public function up()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
-            $table->boolean('isCodeShown')->default(0);
+        Schema::table('Config_Congress', function (Blueprint $table) {
+            $table->boolean('is_code_shown')->default(0);
         });
     }
 
@@ -25,8 +25,8 @@ class AddIscodeshowToConfigCongressTable extends Migration
      */
     public function down()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
-            $table->dropColumn('isCodeShown');
+        Schema::table('Config_Congress', function (Blueprint $table) {
+            $table->dropColumn('is_code_shown');
         });
     }
 }
