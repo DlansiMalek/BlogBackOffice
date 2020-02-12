@@ -19,7 +19,7 @@ class FileController extends Controller
         $this->userServices = $userServices;
     }
 
-    public function uploadCv(Request $request,$congressId,$userId){
+    public function uploadCV(Request $request,$congressId,$userId){
       
         
         
@@ -39,7 +39,7 @@ class FileController extends Controller
 
   
 
-    public function getusercv($path)
+    public function getUserCV($path)
     {
         if (!$path) 
         return response()->json(['response'=>'No CV Found'],400);
