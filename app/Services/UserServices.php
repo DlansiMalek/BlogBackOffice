@@ -31,7 +31,7 @@ class UserServices
     
     public function updateUserPathCV($path,$user){
         if (!$path)
-        return response()->json(['Response'=>'No cv found']);
+        return null;
         $user->path_cv=$path;
         $user->update();
         return $user;

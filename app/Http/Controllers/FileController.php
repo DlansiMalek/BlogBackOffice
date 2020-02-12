@@ -29,7 +29,9 @@ class FileController extends Controller
         $file=$request->file("cv-file");
         $chemin=config('media.user-cv');
         $path = $file->store($chemin);
-        $this->userServices->updateUserPathCV($path,$user);
+        if(!$user=$this->userServices->updateUserPathCV($path,$user))
+        return response()->json(['response'=>'Path not found'],400);
+
         return response()->json(['path' => $path]);
      
         
@@ -57,6 +59,7 @@ class FileController extends Controller
         Storage::delete($path);
         $this->userServices->makeUserPathCvNull($user);
         return response()->json(['response' => 'user cv deleted', 'media' => $path], 201);
+        
     }
     public function deleteLogoCongress($path)
     {

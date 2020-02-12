@@ -40,9 +40,9 @@ Route::group(['prefix' => 'congress-banner/{path}'], function () {
     Route::get('', 'FileController@getBannerCongress');
     Route::post('delete', 'FileController@deleteBannerCongress');
 });
-Route::group(['prefix' => 'user-cv/{path}'], function () {
+Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
-    Route::post('delete/{userId}', 'FileController@deleteUserCV');
+    Route::post('delete', 'FileController@deleteUserCV');
 });
 
 //Mobile API
