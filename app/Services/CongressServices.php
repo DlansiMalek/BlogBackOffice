@@ -51,6 +51,7 @@ class CongressServices
     {
 
         return Congress::with([
+            "mails.type",
             "attestation",
             "badges",
             "accesss",
@@ -218,6 +219,15 @@ class CongressServices
             })
             ->get();
         //$congress->accesss = $congress->accesses; // ?????
+        return $congress;
+    }
+
+    public function getCongressByAdmin($adminId)
+    {
+        $congress = Congress::whereHas("admins", function ($query) use ($adminId) {
+            $query->where('Admin.admin_id', '=', $adminId);
+        })
+            ->get();
         return $congress;
     }
 
