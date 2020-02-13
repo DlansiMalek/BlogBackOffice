@@ -188,6 +188,7 @@ class CongressServices
         $configCongress->link_sondage = $configCongressRequest['link_sondage'];
         $configCongress->from_mail = $configCongressRequest['from_mail'];
         $configCongress->replyto_mail = $configCongressRequest['replyto_mail'];
+        $configCongress->is_code_shown=$configCongressRequest['is_code_shown'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 

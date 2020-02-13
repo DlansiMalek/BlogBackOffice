@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -239,9 +239,9 @@ class UserController extends Controller
 
     public function saveUser(Request $request, $congress_id)
     {
+
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
-
 
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
@@ -251,7 +251,8 @@ class UserController extends Controller
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
-        }
+        } else
+            $user = $this->userServices->editUser($request, $user);
 
         // Check if User already registed to congress
         if ($user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
@@ -330,7 +331,6 @@ class UserController extends Controller
                 }
             }
         }
-
         return $user;
     }
 
@@ -873,10 +873,25 @@ class UserController extends Controller
 
     }
 
-    function userConnect($qrCode)
+    function userConnect(Request $request)
     {
-        $user = $this->userServices->getUserByQrCode($qrCode);
-        return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+        if ($request->qr_code) {
+            $user = $this->userServices->getUserByQrCode($request->qr_code);
+            return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+        }
+
+        $validateData = Validator::make($request->all(), [
+            'email' => 'required',
+            'code' => 'required',
+        ]);
+
+        if ($validateData->fails()) return response()->json(['response' => 'bad request', 'required fields' => ['email', 'code']], 400);
+
+        $user = $this->userServices->getUserByEmailAndCode($request->email, $request->code);
+        if (!$user) {
+            return response()->json(["error" => "wrong credentials"], 401);
+        }
+        return response()->json($user);
     }
 
     function getPresenceStatus($user_id)
