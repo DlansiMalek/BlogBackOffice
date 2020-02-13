@@ -28,7 +28,8 @@ class ConfigCongress extends Model
         'nb_ob_access',
         'access_system',
         'congress_id',
-        'status'
+        'status',
+        'is_code_shown'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
