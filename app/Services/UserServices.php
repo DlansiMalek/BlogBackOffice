@@ -28,6 +28,20 @@ class UserServices
         return User::orderBy('updated_at', 'asc')
             ->get();
     }
+    
+    public function updateUserPathCV($path,$user){
+        if (!$path)
+        return null;
+        $user->path_cv=$path;
+        $user->update();
+        return $user;
+    }
+    public function makeUserPathCvNull($user){
+        $user->path_cv=null;
+        $user->update();
+        return $user;
+    }
+
 
     public function editerUser(Request $request, $newUser)
     {
