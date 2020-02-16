@@ -396,6 +396,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
         $template = str_replace('{{$userPayment-&gt;price}}', '{{$userPayment->price}}', $template);
+        $template = str_replace('{{$participant-&gt;code}}', '{{$participant->code}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
         $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
