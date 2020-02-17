@@ -84,6 +84,11 @@ class Utils
         }, json_decode($data, true));
     }
 
+    public static function getDefaultMailNotifNewRegister()
+    {
+        return '<p>Bonjour,</p><p>Vous avez re&ccedil;u une nouvelle inscription dans votre &eacute;v&eacute;nement<strong>&nbsp;{{$congress-&gt;name}}</strong> au nom de :</p><p><strong>Nom &amp; pr&eacute;nom :</strong>&nbsp; {{$participant-&gt;last_name}} {{$participant-&gt;first_name}}</p><p><strong>Email :</strong> {{$participant-&gt;email}}</p><p><strong>T&eacute;l&eacute;phone :</strong>&nbsp; &nbsp;{{$participant-&gt;mobile}}</p><p><strong>Date de l&#39;inscription :</strong> {{$participant-&gt;registration_date}}</p><p><strong>Ateliers :</strong> {{$participant-&gt;accesses}}</p><p><strong>Montant &agrave; payer :</strong> {{$userPayment-&gt;price}} DT</p><p><br></p><p>Vous pouvez acc&eacute;der au back-office &agrave; travers ce lien pour suivre et valider les inscriptions. &nbsp;</p><p>En cas de probl&egrave;me, n&#39;h&eacute;sitez pas &agrave; contacter l&#39;&eacute;quipe Support d&#39;Eventizer &nbsp;disponible 24/7.&nbsp;</p><p><br></p><p>SUPPORT Eventizer<a href="mailto:contact@eventizer.io" rel="noopener noreferrer"></a></p><p><a href="mailto:contact@eventizer.io" rel="noopener noreferrer">contact@eventizer.io</a></p><p>+216 98 613 158&nbsp;</p>';
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");

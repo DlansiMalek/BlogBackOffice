@@ -29,7 +29,8 @@ class ConfigCongress extends Model
         'access_system',
         'congress_id',
         'status',
-        'is_code_shown'
+        'is_code_shown',
+        'is_notif_register_mail'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

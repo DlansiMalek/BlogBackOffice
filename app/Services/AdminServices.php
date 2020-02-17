@@ -302,10 +302,10 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached)
+    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail)
     {
 
-        $email = $admin->email;
+        $email = $admin ? $admin->email : $customEmail;
         $pathToFile = storage_path() . "/app/badge.png";
 
         try {
@@ -323,5 +323,19 @@ class AdminServices
         }
         Storage::delete('app/badge.png');
         return 1;
+    }
+
+    public function getAdminByCongress($congress_id)
+    {
+        // Get Mail Responsible For the
+        return Admin::whereHas('admin_congresses', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        })
+            ->where('privilege_id', '=', 1)
+            ->first();
+    }
+
+    public function renderMail($template, $congress, ?\App\Models\User $user, \App\Models\Payment $userPayment)
+    {
     }
 }
