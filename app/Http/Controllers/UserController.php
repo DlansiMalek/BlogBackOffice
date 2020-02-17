@@ -294,6 +294,7 @@ class UserController extends Controller
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
+        $userPayment = null;
         if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && !$congress->config->has_payment) || $isFree) {
             //Free Mail
             if ($isFree) {
