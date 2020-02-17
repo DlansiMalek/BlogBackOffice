@@ -331,6 +331,15 @@ class UserController extends Controller
                 }
             }
         }
+
+        // Notify Organizer Mail Rule (privilege ==3 & configCongress Activated & form user-register not backoffice add)
+        if ($privilegeId === 3 && $congress->config->replyto_mail && $congress->config->is_notif_register_mail && !$user->is_admin_created) {
+            $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
+            $template = Utils::getDefaultMailNotifNewRegister();
+            $objectMail = "Nouvelle Inscription";
+            $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
+        }
+
         return $user;
     }
 

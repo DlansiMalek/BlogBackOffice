@@ -188,7 +188,8 @@ class CongressServices
         $configCongress->link_sondage = $configCongressRequest['link_sondage'];
         $configCongress->from_mail = $configCongressRequest['from_mail'];
         $configCongress->replyto_mail = $configCongressRequest['replyto_mail'];
-        $configCongress->is_code_shown=$configCongressRequest['is_code_shown'];
+        $configCongress->is_code_shown = $configCongressRequest['is_code_shown'];
+        $configCongress->is_notif_register_mail = $configCongressRequest['is_notif_register_mail'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
@@ -388,6 +389,7 @@ class CongressServices
         $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
         $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
 
+
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
         $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
@@ -405,6 +407,9 @@ class CongressServices
         $template = str_replace('{{$organization-&gt;description}}', '{{$organization->description}}', $template);
         $template = str_replace('{{$organization-&gt;email}}', '{{$organization->email}}', $template);
         $template = str_replace('{{$organization-&gt;mobile}}', '{{$organization->mobile}}', $template);
+        $template = str_replace('{{$participant-&gt;registration_date}}', date('Y-m-d H:i:s'), $template);
+        $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
+        $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
