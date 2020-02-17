@@ -389,8 +389,6 @@ class CongressServices
         $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
         $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
 
-        $price = $userPayment ? $userPayment->price : "";
-
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
         $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
@@ -398,7 +396,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
-        $template = str_replace('{{$userPayment-&gt;price}}', $price, $template);
+        $template = str_replace('{{$userPayment-&gt;price}}', $userPayment ? '{{$userPayment->price}}' : '', $template);
         $template = str_replace('{{$participant-&gt;code}}', '{{$participant->code}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
@@ -414,7 +412,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'linkSondage' => $linkSondage]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage]);
     }
 
     public
