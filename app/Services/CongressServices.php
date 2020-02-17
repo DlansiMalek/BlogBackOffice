@@ -389,7 +389,7 @@ class CongressServices
         $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
         $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
 
-        $price = $userPayment ? $userPayment->price : null;
+        $price = $userPayment ? $userPayment->price : "";
 
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
@@ -414,7 +414,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'linkSondage' => $linkSondage]);
     }
 
     public
