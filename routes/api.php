@@ -399,7 +399,8 @@ Route::group(["prefix" => "notification"], function () {
     Route::post('/send/{congressId}', 'NotificationController@sendNotificationToCongress');
 });
 Route::group(["prefix" => "user-app"], function () {
-    Route::post('/user-connect', 'UserController@userConnect');
+    Route::get('/connect/{qrCode}', 'UserController@userConnect');
+    Route::post('/user-connect', 'UserController@userConnectPost');
     Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/congress/{congress_id}', 'CongressController@getCongressById');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');

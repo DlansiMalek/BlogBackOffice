@@ -873,7 +873,13 @@ class UserController extends Controller
 
     }
 
-    function userConnect(Request $request)
+    function userConnect($qrCode)
+    {
+        $user = $this->userServices->getUserByQrCode($qrCode);
+        return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+    }
+
+    function userConnectPost(Request $request)
     {
         if ($request->qr_code) {
             $user = $this->userServices->getUserByQrCode($request->qr_code);
