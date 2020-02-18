@@ -28,6 +28,22 @@ class UserServices
             ->get();
     }
 
+    public function updateUserPathCV($path, $user)
+    {
+        if (!$path)
+            return null;
+        $user->path_cv = $path;
+        $user->update();
+        return $user;
+    }
+
+    public function makeUserPathCvNull($user)
+    {
+        $user->path_cv = null;
+        $user->update();
+        return $user;
+    }
+
     public function editerUser(Request $request, $newUser)
     {
         $newUser->first_name = $request->input('first_name');
@@ -468,6 +484,25 @@ class UserServices
             ->get();
     }
 
+    public function getUserByEmailAndCode($email, $code)
+    {
+        return User::with(['user_congresses.congress.accesss.speakers',
+            'user_congresses.congress.accesss.chairs',
+            'user_congresses.congress.accesss.sub_accesses',
+            'user_congresses.congress.accesss.topic',
+            'user_congresses.congress.accesss.type',
+            'user_congresses.privilege',
+            'user_congresses.pack',
+            'accesses',
+            'speaker_access',
+            'chair_access',
+            'country',
+            'likes'])
+            ->whereRaw('lower(email) like (?)', ["{$email}"])
+            ->where('code', '=', $code)
+            ->first();
+    }
+
     private function sendingRTAccess($user, $accessId)
     {
         $client = new \GuzzleHttp\Client();
@@ -506,6 +541,7 @@ class UserServices
         return User::whereRaw('lower(email) like (?)', ["{$email}"])
             ->first();
     }
+
 
     public function getUsersByEmail($email)
     {
@@ -878,6 +914,7 @@ class UserServices
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
+        if ($request->has('code')) $user->code = $request->input('code');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         $user->verification_code = str_random(40);
         $user->save();
@@ -896,10 +933,10 @@ class UserServices
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
+        if ($request->has('code')) $user->code = $request->input('code');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
 
         $user->update();
-
         return $user;
     }
 

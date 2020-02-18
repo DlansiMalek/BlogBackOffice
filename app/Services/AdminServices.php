@@ -302,10 +302,10 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached)
+    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail)
     {
 
-        $email = $admin->email;
+        $email = $admin ? $admin->email : $customEmail;
         $pathToFile = storage_path() . "/app/badge.png";
 
         try {

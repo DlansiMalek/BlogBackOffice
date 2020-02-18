@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -242,16 +242,16 @@ class UserController extends Controller
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
-
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
 
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
             $user = $this->userServices->saveUser($request);
-        }
+        else
+            $user = $this->userServices->editUser($request, $user);
 
         // Check if User already registed to congress
         if ($user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
@@ -293,6 +293,7 @@ class UserController extends Controller
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
+        $userPayment = null;
         if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && !$congress->config->has_payment) || $isFree) {
             //Free Mail
             if ($isFree) {
@@ -331,21 +332,26 @@ class UserController extends Controller
             }
         }
 
+        // Notify Organizer Mail Rule (privilege ==3 & configCongress Activated & form user-register not backoffice add)
+        if ($privilegeId === 3 && $congress->config->replyto_mail && $congress->config->is_notif_register_mail && !$user->is_admin_created) {
+            $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
+            $template = Utils::getDefaultMailNotifNewRegister();
+            $objectMail = "Nouvelle Inscription";
+            $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
+        }
+
         return $user;
     }
 
     public function editerUserToCongress(Request $request, $congressId, $userId)
     {
-
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
-
 
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
-
 
         // Get User perId
         $user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
@@ -359,7 +365,6 @@ class UserController extends Controller
             $query->where('congress_id', '=', $congressId);
         }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type']);
-
 
         if (!$user) {
             return response()->json(['error' => 'user not found'], 404);
@@ -384,7 +389,6 @@ class UserController extends Controller
 
         $this->userServices->updateUserCongress($user->user_congresses[0], $request);
 
-
         //Adding Responses User To Form (Additional Information)
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
@@ -406,7 +410,6 @@ class UserController extends Controller
             $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
         } else if ($userAccessIds && array_count_values($userAccessIds)) $this->userServices->deleteAccess($user->user_id, $userAccessIds);
-
 
         return response()->json($user, 200);
     }
@@ -877,6 +880,27 @@ class UserController extends Controller
     {
         $user = $this->userServices->getUserByQrCode($qrCode);
         return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+    }
+
+    function userConnectPost(Request $request)
+    {
+        if ($request->qr_code) {
+            $user = $this->userServices->getUserByQrCode($request->qr_code);
+            return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+        }
+
+        $validateData = Validator::make($request->all(), [
+            'email' => 'required',
+            'code' => 'required',
+        ]);
+
+        if ($validateData->fails()) return response()->json(['response' => 'bad request', 'required fields' => ['email', 'code']], 400);
+
+        $user = $this->userServices->getUserByEmailAndCode($request->email, $request->code);
+        if (!$user) {
+            return response()->json(["error" => "wrong credentials"], 401);
+        }
+        return response()->json($user);
     }
 
     function getPresenceStatus($user_id)
