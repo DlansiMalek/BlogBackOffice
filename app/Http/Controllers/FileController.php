@@ -13,54 +13,50 @@ class FileController extends Controller
 {
     protected $fileServices;
     protected $userServices;
-    function __construct(FileServices $fileService,UserServices $userServices)
+
+    function __construct(FileServices $fileService, UserServices $userServices)
     {
         $this->fileServices = $fileService;
         $this->userServices = $userServices;
     }
 
-    public function uploadCV(Request $request,$congressId,$userId){
-      
-        
-        
-        if (!$user=$this->userServices->getUserById($userId))
-        return response()->json(['response'=>'User not found'],400);
+    public function uploadCV(Request $request, $congressId, $userId)
+    {
 
-        $file=$request->file("cv-file");
-        $chemin=config('media.user-cv');
+        if (!$user = $this->userServices->getUserById($userId))
+            return response()->json(['response' => 'User not found'], 400);
+
+        $file = $request->file("cv-file");
+        $chemin = config('media.user-cv');
         $path = $file->store($chemin);
-        if(!$user=$this->userServices->updateUserPathCV($path,$user))
-        return response()->json(['response'=>'Path not found'],400);
+        if (!$user = $this->userServices->updateUserPathCV($path, $user))
+            return response()->json(['response' => 'Path not found'], 400);
 
         return response()->json(['path' => $path]);
-     
-        
     }
 
-  
 
     public function getUserCV($path)
     {
-        if (!$path) 
-        return response()->json(['response'=>'No CV Found'],400);
-      
+        if (!$path)
+            return response()->json(['response' => 'No CV Found'], 400);
+
         $chemin = config('media.user-cv');
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 
-    public function deleteUserCV($path,$userId)
+    public function deleteUserCV($path, $userId)
     {
-        if (!$user=$this->userServices->getUserById($userId))
-        return response()->json(['response'=>'user not found'],400);
+        if (!$user = $this->userServices->getUserById($userId))
+            return response()->json(['response' => 'user not found'], 400);
 
-    
         $chemin = config('media.user-cv');
         $path = $chemin . '/' . $path;
         Storage::delete($path);
         $this->userServices->makeUserPathCvNull($user);
         return response()->json(['response' => 'user cv deleted', 'media' => $path], 201);
-        
     }
+
     public function deleteLogoCongress($path)
     {
 

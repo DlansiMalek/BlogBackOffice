@@ -239,7 +239,6 @@ class UserController extends Controller
 
     public function saveUser(Request $request, $congress_id)
     {
-
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
@@ -249,9 +248,9 @@ class UserController extends Controller
         }
 
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
             $user = $this->userServices->saveUser($request);
-        } else
+        else
             $user = $this->userServices->editUser($request, $user);
 
         // Check if User already registed to congress
@@ -346,16 +345,13 @@ class UserController extends Controller
 
     public function editerUserToCongress(Request $request, $congressId, $userId)
     {
-
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
-
 
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
-
 
         // Get User perId
         $user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
@@ -369,7 +365,6 @@ class UserController extends Controller
             $query->where('congress_id', '=', $congressId);
         }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type']);
-
 
         if (!$user) {
             return response()->json(['error' => 'user not found'], 404);
@@ -394,7 +389,6 @@ class UserController extends Controller
 
         $this->userServices->updateUserCongress($user->user_congresses[0], $request);
 
-
         //Adding Responses User To Form (Additional Information)
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
@@ -416,7 +410,6 @@ class UserController extends Controller
             $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
         } else if ($userAccessIds && array_count_values($userAccessIds)) $this->userServices->deleteAccess($user->user_id, $userAccessIds);
-
 
         return response()->json($user, 200);
     }

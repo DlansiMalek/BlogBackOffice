@@ -13,7 +13,6 @@ use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use PDF;
@@ -28,20 +27,22 @@ class UserServices
         return User::orderBy('updated_at', 'asc')
             ->get();
     }
-    
-    public function updateUserPathCV($path,$user){
+
+    public function updateUserPathCV($path, $user)
+    {
         if (!$path)
-        return null;
-        $user->path_cv=$path;
-        $user->update();
-        return $user;
-    }
-    public function makeUserPathCvNull($user){
-        $user->path_cv=null;
+            return null;
+        $user->path_cv = $path;
         $user->update();
         return $user;
     }
 
+    public function makeUserPathCvNull($user)
+    {
+        $user->path_cv = null;
+        $user->update();
+        return $user;
+    }
 
     public function editerUser(Request $request, $newUser)
     {
@@ -962,7 +963,7 @@ class UserServices
             $user_congress->organization_id = $request->input('organization_id');
         if ($request->has('pack_id'))
             $user_congress->pack_id = $request->input("pack_id");
-      
+
         $user_congress->save();
         return $user_congress;
     }
