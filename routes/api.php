@@ -117,9 +117,9 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::post('/send-sms','SmsSenderController@sendSms');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
-
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
@@ -219,7 +219,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('status-presence', 'UserController@getUserStatusPresences');
             Route::get('mailTest', 'CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
-
+           
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');

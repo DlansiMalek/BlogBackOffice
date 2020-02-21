@@ -13,6 +13,7 @@ use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
+use App\Services\SmsServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-
+    protected $smsServices;
     protected $userServices;
     protected $congressServices;
     protected $adminServices;
@@ -43,8 +44,10 @@ class UserController extends Controller
                          PackServices $packServices,
                          OrganizationServices $organizationServices,
                          PaymentServices $paymentServices,
+                         SmsServices $smsServices,
                          MailServices $mailServices)
     {
+        $this->smsServices=$smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -330,7 +333,8 @@ class UserController extends Controller
                 }
             }
         }
-
+        
+        $this->smsServices->sendSms($congress_id,$user);
         return $user;
     }
 
