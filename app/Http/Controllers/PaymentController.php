@@ -7,6 +7,7 @@ use App\Services\CongressServices;
 use App\Services\MailServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
+use App\Services\SmsServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-
+    protected $smsServices;
     protected $paymentServices;
     protected $userServices;
     protected $congressServices;
@@ -25,8 +26,10 @@ class PaymentController extends Controller
                          UserServices $userServices,
                          CongressServices $congressServices,
                          SharedServices $sharedServices,
+                         SmsServices $smsServices,
                          MailServices $mailServices)
     {
+        $this->smsServices = $smsServices;
         $this->paymentServices = $paymentServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -68,9 +71,7 @@ class PaymentController extends Controller
                 $userPayment->isPaid = 1;
                 $userPayment->authorization = $param;
                 $userPayment->update();
-
                 $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
-
                 $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
                     $userCongress->privilege_id);
                 $fileAttached = false;
@@ -94,9 +95,11 @@ class PaymentController extends Controller
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
+                    $config=$this->congressServices->getCongressConfig($congress->congress_id);
+                    $this->smsServices->sendSms($congress->congress_id,$user,$config);
                 }
-
-
+               
+                
                 return "Reference=" . $ref . "&Action=" . $action . "&Reponse=OK";
 
             case "REFUS":

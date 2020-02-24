@@ -24,6 +24,10 @@ class Utils
         return ucfirst($first_name) . " " . strtoupper($last_name);
     }
 
+    public static function getSmsMessage($qrCode){
+
+        return 'Hello !';
+    }
     public static function convertDateFrench($date)
     {
 

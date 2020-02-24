@@ -322,6 +322,8 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
+            $config=$this->congressServices->getCongressConfig($congress_id);
+            $this->smsServices->sendSms($congress_id,$user,$config);
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
@@ -342,7 +344,7 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
-
+        
         return $user;
     }
 
@@ -551,6 +553,8 @@ class UserController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
+                $config=$this->congressServices->getCongressConfig($congress->congress_id);
+                $this->smsServices->sendSms($congress->congress_id,$user,$config);
             }
 
         }
