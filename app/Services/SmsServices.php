@@ -77,7 +77,7 @@ class SmsServices{
                     'address'=>'tel:'.Utils::getMobileFormatted($user->mobile),
                     'senderAddress'=>'tel:+21653780474',
                     'outboundSMSTextMessage'=>[
-                        'message'=> Utils::getSmsMessage($user->qr_code,$user->first_name,$user->last_name,$congress->name,$congress->start_date)
+                        'message'=> Utils::getSmsMessage($user->qr_code,$user->first_name,$user->last_name,$congress->name,$congress->start_date,$congress->config['mobile_committee'])
                     ]
                 ]
             ]

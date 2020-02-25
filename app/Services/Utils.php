@@ -30,7 +30,7 @@ class Utils
       return '+216'.$mobile;
       
     }
-    public static function getSmsMessage($qrCode,$first_name,$last_name,$congress_name,$congress_date){
+    public static function getSmsMessage($qrCode,$first_name,$last_name,$congress_name,$congress_date,$mobile_committee){
         
         return 
         '        Inscription validée
@@ -46,7 +46,7 @@ class Utils
         .'Code d`accès :'.$qrCode.' Veuillez présenter votre code à l`accueil le jour de l`événement.
         '
  
-        .'Comité d`organisation : numéro de tel du congrés
+        .'Comité d`organisation :'.$mobile_committee.' 
         '
         
         .'Hotline technique :'.'numéro eventizer';
