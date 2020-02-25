@@ -17,11 +17,9 @@ class SmsServices{
     
     
     protected $maxRequest;
-    protected $utils;
+   
 
-    public function __construct(Utils $utils){
-        $this->utils=$utils;
-     }
+    public function __construct(){ }
 
    
 
@@ -43,44 +41,43 @@ class SmsServices{
                  
     }
     
-    public function sendSms($congressId, $user,$config){
+    public function sendSms($congressId, $user,$congress){
         
        while($this->maxRequest<=3){
        try {
-        $response=$this->configSms($congressId,$user,$config);
+        $response=$this->configSms($congressId,$user,$congress);
         return json_decode($response->getBody(),true);
 
         } catch(Exception $e){
             $this->maxRequest++;
             if($e->getCode()==401){
-            $this->authentificationSms($congressId,$config);
-            $this->sendSms($congressId,$user,$config);
+            $this->authentificationSms($congressId,$congress->config);
+            $this->sendSms($congressId,$user,$congress);
             }
             return $e->getMessage();
             
         }
     }
     return response()->json(['Response'=>'Some serveur error please try again later']);
-                        
         
     }
 
-    public function configSms($congressId, $user,$config){
+    public function configSms($congressId, $user,$congress){
         
         $this->client=new Client([
             'base_uri' =>'https://api.orange.com',
             'headers'=>[
                 'Content-Type'=>'application/json',
-                'Authorization'=>'Bearer '.$config->token_sms
+                'Authorization'=>'Bearer '.$congress->config['token_sms']
             ]
         ]);
         $res=$this->client->post('/smsmessaging/v1/outbound/tel%3A%2B21653780474/requests',[
             'json'=>[
                 'outboundSMSMessageRequest'=>[
-                    'address'=>'tel:+216'.$user->mobile,
+                    'address'=>'tel:'.Utils::getMobileFormatted($user->mobile),
                     'senderAddress'=>'tel:+21653780474',
                     'outboundSMSTextMessage'=>[
-                        'message'=> $this->utils->getSmsMessage($user->qr_code)
+                        'message'=> Utils::getSmsMessage($user->qr_code,$user->first_name,$user->last_name,$congress->name,$congress->start_date)
                     ]
                 ]
             ]

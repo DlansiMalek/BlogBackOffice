@@ -95,8 +95,8 @@ class PaymentController extends Controller
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
-                    $config=$this->congressServices->getCongressConfig($congress->congress_id);
-                    $this->smsServices->sendSms($congress->congress_id,$user,$config);
+                    
+                    $this->smsServices->sendSms($congress->congress_id,$user,$congress);
                 }
                
                 
