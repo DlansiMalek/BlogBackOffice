@@ -344,7 +344,6 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
-        
         return $user;
         
     }
