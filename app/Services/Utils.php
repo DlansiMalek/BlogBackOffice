@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -22,6 +22,40 @@ class Utils
     public static function getFullName($first_name, $last_name)
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
+    }
+
+    public static function getMobileFormatted($mobile)
+    {
+        if (Str::contains($mobile, ['+216', '00216']))
+            return $mobile;
+
+        return '+216' . $mobile;
+
+    }
+
+    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name, $congress_date, $mobile_committee, $mobile_technical)
+    {
+
+        return
+            'Inscription validée
+        '
+
+            . 'Evénement : ' . $congress_name . '
+        '
+
+            . 'Date :' . $congress_date . '
+        '
+            . 'Nom et prénom : ' . $first_name . ' ' . $last_name . '
+        '
+            . 'Code d`accès : ' . $qrCode . ' Veuillez présenter votre code à l`accueil le jour de l`événement.
+        '
+
+            . 'Comité d`organisation : ' . $mobile_committee . ' 
+        '
+
+            . 'Hotline technique : ' . $mobile_technical;
+
+
     }
 
     public static function convertDateFrench($date)

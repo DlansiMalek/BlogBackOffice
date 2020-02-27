@@ -19,7 +19,6 @@ Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
 Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
 
-
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
@@ -223,7 +222,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('status-presence', 'UserController@getUserStatusPresences');
             Route::get('mailTest', 'CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
-
+           
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
