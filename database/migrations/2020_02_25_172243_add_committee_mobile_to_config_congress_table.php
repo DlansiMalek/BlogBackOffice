@@ -15,6 +15,8 @@ class AddCommitteeMobileToConfigCongressTable extends Migration
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
             $table->string('mobile_committee')->nullable()->default(null);
+            $table->string('mobile_technical')
+                ->default("+216 98 661 565");
         });
     }
 
@@ -27,6 +29,7 @@ class AddCommitteeMobileToConfigCongressTable extends Migration
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
             $table->dropColumn('mobile_committee');
+            $table->dropColumn('mobile_technical');
         });
     }
 }

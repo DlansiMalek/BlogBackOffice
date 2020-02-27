@@ -14,7 +14,10 @@ class AddTokenSmsToCongressConfigTable extends Migration
     public function up()
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
-            $table->string('token_sms');
+            $table->boolean("is_notif_sms_confirm")->default(0)
+                ->after('is_notif_register_mail');
+            $table->string('token_sms')->nullable()->default(null)
+                ->after('is_notif_sms_confirm');
         });
     }
 
@@ -26,7 +29,8 @@ class AddTokenSmsToCongressConfigTable extends Migration
     public function down()
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
-           $table->dropColumn('token_sms');
+            $table->dropColumn('token_sms');
+            $table->dropColumn('is_notif_sms_confirm');
         });
     }
 }

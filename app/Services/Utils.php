@@ -23,37 +23,41 @@ class Utils
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
     }
-    public static function getMobileFormatted($mobile){
-      if (Str::contains($mobile,['+216','00216']))
-        return $mobile;
-      
-      return '+216'.$mobile;
-      
+
+    public static function getMobileFormatted($mobile)
+    {
+        if (Str::contains($mobile, ['+216', '00216']))
+            return $mobile;
+
+        return '+216' . $mobile;
+
     }
-    public static function getSmsMessage($qrCode,$first_name,$last_name,$congress_name,$congress_date,$mobile_committee){
-        
-        return 
-        '        Inscription validée
+
+    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name, $congress_date, $mobile_committee, $mobile_technical)
+    {
+
+        return
+            'Inscription validée
         '
-        
-        .'Evénement :'.$congress_name.'
+
+            . 'Evénement : ' . $congress_name . '
         '
-        
-        .'Date :'.$congress_date.'
+
+            . 'Date :' . $congress_date . '
         '
-        .'Nom et prénom :'.$first_name.' '.$last_name.'
+            . 'Nom et prénom : ' . $first_name . ' ' . $last_name . '
         '
-        .'Code d`accès :'.$qrCode.' Veuillez présenter votre code à l`accueil le jour de l`événement.
+            . 'Code d`accès : ' . $qrCode . ' Veuillez présenter votre code à l`accueil le jour de l`événement.
         '
- 
-        .'Comité d`organisation :'.$mobile_committee.' 
+
+            . 'Comité d`organisation : ' . $mobile_committee . ' 
         '
-        
-        .'Hotline technique :'.'numéro eventizer';
-        
-        
-        
+
+            . 'Hotline technique : ' . $mobile_technical;
+
+
     }
+
     public static function convertDateFrench($date)
     {
 

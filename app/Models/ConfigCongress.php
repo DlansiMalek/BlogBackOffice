@@ -30,7 +30,9 @@ class ConfigCongress extends Model
         'congress_id',
         'status',
         'is_code_shown',
-        'is_notif_register_mail'
+        'is_notif_register_mail',
+        'is_notif_sms_confirm',
+        'token_sms'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
