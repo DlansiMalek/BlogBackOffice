@@ -364,8 +364,8 @@ class UserServices
             if ($privilegeIds != null) {
                 $query->whereIn('privilege_id', $privilegeIds);
             }
-        })
-            ->with(['user_congresses' => function ($query) use ($congressId) {
+        })  
+            ->with(['responses','user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                 $query->where('congress_id', '=', $congressId);
