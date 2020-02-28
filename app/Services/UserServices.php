@@ -364,7 +364,7 @@ class UserServices
             if ($privilegeIds != null) {
                 $query->whereIn('privilege_id', $privilegeIds);
             }
-        })  
+        })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
@@ -398,18 +398,17 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getAllUsersByCongress($congressId){
-        $users=User::whereHas('user_congresses', function($query) use ($congressId){
+    public function getAllUsersByCongress($congressId)
+    {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
         })
-        ->with(['user_congresses'=> function ($query) use ($congressId) {
-            $query->where('congress_id', '=', $congressId);
-        },'payments'=> function ($query) use ($congressId) {
-            $query->where('congress_id', '=', $congressId);
-        },'responses'=>function ($query) use ($congressId){
-            $query->where('congress_id','=',$congressId);
-        },'country'])
-        ->get();
+            ->with(['user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.values', 'country'])
+            ->get();
         return $users;
     }
 
