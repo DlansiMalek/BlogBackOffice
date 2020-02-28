@@ -13,6 +13,7 @@ use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
+use App\Services\SmsServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-
+    protected $smsServices;
     protected $userServices;
     protected $congressServices;
     protected $adminServices;
@@ -43,8 +44,10 @@ class UserController extends Controller
                          PackServices $packServices,
                          OrganizationServices $organizationServices,
                          PaymentServices $paymentServices,
+                         SmsServices $smsServices,
                          MailServices $mailServices)
     {
+        $this->smsServices = $smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->adminServices = $adminServices;
@@ -327,6 +330,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
+            $this->smsServices->sendSms($congress_id, $user, $congress);
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
@@ -347,8 +351,8 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
-
         return $user;
+
     }
 
     public function editerUserToCongress(Request $request, $congressId, $userId)
@@ -557,6 +561,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
+            $this->smsServices->sendSms($congress->congress_id, $user, $congress);
 
         }
         $userPayement->isPaid = $isPaid;
