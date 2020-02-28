@@ -238,6 +238,14 @@ class UserController extends Controller
         $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
         return response()->json(['add success'], 200);
+
+    }
+
+    public function getAllUsersByCongress($congress_id)
+    {
+        $users = $this->userServices->getAllUsersByCongress($congress_id);
+
+        return response()->json($users);
     }
 
     public function saveUser(Request $request, $congress_id)
