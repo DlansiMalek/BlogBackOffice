@@ -296,11 +296,11 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    //if ($userMail->status != 1) {
-                    return $this->userServices->sendMail($this->congressServices
-                        ->renderMail($mail->template, $congress, $user, null, null, null),
-                        $user, $congress, $mail->object, $fileAttached, $userMail);
-                    //}
+                    if ($userMail->status != 1) {
+                        $this->userServices->sendMail($this->congressServices
+                            ->renderMail($mail->template, $congress, $user, null, null, null),
+                            $user, $congress, $mail->object, $fileAttached, $userMail);
+                    }
                 }
             }
             return response()->json(['message' => 'send mail successs']);
