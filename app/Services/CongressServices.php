@@ -190,6 +190,9 @@ class CongressServices
         $configCongress->replyto_mail = $configCongressRequest['replyto_mail'];
         $configCongress->is_code_shown = $configCongressRequest['is_code_shown'];
         $configCongress->is_notif_register_mail = $configCongressRequest['is_notif_register_mail'];
+        $configCongress->is_notif_sms_confirm = $configCongressRequest['is_notif_sms_confirm'];
+        $configCongress->mobile_committee = $configCongressRequest['mobile_committee'];
+        $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 

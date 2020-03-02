@@ -302,7 +302,7 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail)
+    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail = null)
     {
 
         $email = $admin ? $admin->email : $customEmail;
