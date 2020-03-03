@@ -398,16 +398,19 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getAllUsersByCongress($congressId){
-        $users=User::whereHas('user_congresses', function($query) use ($congressId){
-            $query->where('congress_id', '=', $congressId);
+    public function getAllUsersByCongress($congressId,$privilegeId){
+        $users=User::whereHas('user_congresses', function($query) use ($congressId,$privilegeId){
+            if ($privilegeId)
+           $query->where('congress_id', '=', $congressId)->where('privilege_id','=',$privilegeId);
+           else 
+           $query->where('congress_id','=',$congressId);
         })
         ->with(['user_congresses'=> function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
         },'payments'=> function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
         },'responses'=>function ($query) use ($congressId){
-            $query->where('congress_id','=',$congressId);
+            $query->where('congress_id','=', $congressId);
         },'country'])
         ->get();
         return $users;
