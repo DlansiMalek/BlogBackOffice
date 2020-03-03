@@ -401,10 +401,9 @@ class UserServices
     public function getAllUsersByCongress($congressId,$privilegeId)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId,$privilegeId) {
-            if ($privilegeId)
-            $query->where('congress_id', '=', $congressId)->where('privilege_id','=',$privilegeId);
-            else 
             $query->where('congress_id','=',$congressId);
+            if ($privilegeId!="null")
+            $query->where('privilege_id','=',$privilegeId);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
