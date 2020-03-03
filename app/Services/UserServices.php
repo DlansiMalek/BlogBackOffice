@@ -385,14 +385,19 @@ class UserServices
                 }
             });
         //->orderBy($tri, $order);
-        if ($order && ($tri == 'user_id' || $tri == 'country_id')) {
+        if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri=='first_name' || $tri=='email'
+        || $tri=='mobile')) {
             $users = $users->orderBy($tri, $order);
         }
-        if ($order && $tri == 'isPaid') {
+        if ($order && ($tri == 'isPaid' || $tri=='price')) {
             $users = $users->join('Payment', 'Payment.user_id', '=', 'User.user_id')
                 ->where('Payment.congress_id', '=', $congressId)
-                ->orderBy($tri, $order)
-                ->orderBy('');
+                ->orderBy($tri, $order); 
+        }
+        if ($order && $tri=='type'){
+            $users=$users->join('User_Congress','User_Congress.user_id','=','User.user_id')
+                 ->where('User_Congress.congress_id','=',$congressId)
+                 ->orderby('privilege_id',$order);
         }
 
         return $perPage ? $users->paginate($perPage) : $users->get();
