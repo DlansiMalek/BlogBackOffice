@@ -398,10 +398,12 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getAllUsersByCongress($congressId)
+    public function getAllUsersByCongress($congressId, $privilegeId)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
+            if ($privilegeId)
+                $query->where('privilege_id', '=', $privilegeId);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);

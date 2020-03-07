@@ -241,9 +241,11 @@ class UserController extends Controller
 
     }
 
-    public function getAllUsersByCongress($congress_id)
+    public function getAllUsersByCongress($congress_id, Request $request)
     {
-        $users = $this->userServices->getAllUsersByCongress($congress_id);
+        $privilegeId = $request->query('privilege_id', null);
+
+        $users = $this->userServices->getAllUsersByCongress($congress_id, $privilegeId);
 
         return response()->json($users);
     }
