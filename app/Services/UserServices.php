@@ -384,15 +384,19 @@ class UserServices
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                 }
             });
-       
+
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-                || $tri == 'mobile')) {
+                || $tri == 'mobile' || $tri = 'country_id')) {
             $users = $users->orderBy($tri, $order);
         }
-        if ($order && $tri == 'type') {
+        if ($order && ($tri == 'type' || $tri == 'date')) {
             $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
-                ->where('User_Congress.congress_id', '=', $congressId)
-                ->orderBy('privilege_id', $order);
+                ->where('User_Congress.congress_id', '=', $congressId);
+
+            if ($tri == 'type')
+                $users->orderBy('privilege_id', $order);
+            if ($tri == 'date')
+                $users->orderBy('User_Congress.updated_at', $order);
         }
         if ($order && ($tri == 'isPaid' || $tri == 'price')) {
             $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
