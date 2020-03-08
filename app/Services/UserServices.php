@@ -384,24 +384,38 @@ class UserServices
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                 }
             });
-        //->orderBy($tri, $order);
-        if ($order && ($tri == 'user_id' || $tri == 'country_id')) {
+
+        if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
+                || $tri == 'mobile' || $tri = 'country_id')) {
             $users = $users->orderBy($tri, $order);
         }
-        if ($order && $tri == 'isPaid') {
-            $users = $users->join('Payment', 'Payment.user_id', '=', 'User.user_id')
-                ->where('Payment.congress_id', '=', $congressId)
-                ->orderBy($tri, $order)
-                ->orderBy('');
-        }
+        if ($order && ($tri == 'type' || $tri == 'date')) {
+            $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
+                ->where('User_Congress.congress_id', '=', $congressId);
 
+            if ($tri == 'type')
+                $users->orderBy('privilege_id', $order);
+            if ($tri == 'date')
+                $users->orderBy('User_Congress.updated_at', $order);
+        }
+        if ($order && ($tri == 'isPaid' || $tri == 'price')) {
+            $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+                ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
+                ->where(function ($query) use ($congressId) {
+                    $query->where('Payment.congress_id', '=', $congressId)
+                        ->orWhere('User_Congress.congress_id', '=', $congressId);
+                })
+                ->orderBy($tri, $order);
+        }
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getAllUsersByCongress($congressId)
+    public function getAllUsersByCongress($congressId, $privilegeId)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
+            if ($privilegeId)
+                $query->where('privilege_id', '=', $privilegeId);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
