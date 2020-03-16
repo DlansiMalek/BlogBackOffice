@@ -33,6 +33,8 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 Route::group(['prefix'=>'manage-sms/custom-sms'],function(){
     Route::get('/list','CustomSMSController@getListSMS');
+    Route::get('/{id}/sms','CustomSMSController@getSmsById');
+    Route::post('/configure','CustomSMSController@saveCustomSMS');
     Route::delete('/{id}/delete','CustomSMSController@deleteSMS');
 });
 /* Files API */
@@ -75,7 +77,7 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-
+    Route::post('/upload-users','UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::group(['prefix' => '{user_id}'], function () {
 

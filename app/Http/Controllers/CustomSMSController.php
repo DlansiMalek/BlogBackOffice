@@ -29,10 +29,22 @@ class CustomSMSController extends Controller
         return response(['response'=>'sms deleted successfuly']);   
        }
        return response(['response'=>'no sms found']);
-       
-      
-   
     }
 
+    public function getSmsById($smsId)
+    {
+        $sms= $this->customSmsServices->getSmsById($smsId);
+        if ($sms)
+        return $sms;
+
+        return response(['response'=>'no sms found']);
+    }
+
+    public function saveCustomSMS(Request $request)
+    {
+        $sms=$this->customSmsServices->saveCustomSMS($request);
+
+        return $sms;
+    }
 
 }

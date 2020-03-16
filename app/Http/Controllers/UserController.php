@@ -572,6 +572,26 @@ class UserController extends Controller
         return response()->json(['message' => 'user updated success']);
     }
 
+    public function uploadUsers(Request $request){
+        
+        ini_set('max_execution_time', 500);
+        $savedUsers=array();
+        $users = $request->input("data");
+        foreach ($users as $userData) {
+            if ( $userData['first_name'] && $userData['last_name']  && $userData['mobile'] && $userData['email']) {
+                $request->merge(['first_name' => $userData['first_name'],
+                'last_name' => $userData['last_name'],
+                'email' => $userData['email'],
+                'mobile'=>$userData['mobile']]);
+                if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
+                    $user = $this->userServices->saveUser($request);
+                    array_push($savedUsers,$user);
+                }
+       }
+
+    }
+        return $savedUsers;
+    }
     public function saveUsersFromExcel($congressId, Request $request)
     {
         ini_set('max_execution_time', 500); //3 minutes
