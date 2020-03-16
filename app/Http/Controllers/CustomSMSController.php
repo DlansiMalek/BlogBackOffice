@@ -42,9 +42,8 @@ class CustomSMSController extends Controller
 
     public function saveCustomSMS(Request $request)
     {
-        $sms=$this->customSmsServices->saveCustomSMS($request);
+        return $this->customSmsServices->saveCustomSMS($request);
 
-        return $sms;
     }
 
 }

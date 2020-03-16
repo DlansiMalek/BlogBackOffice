@@ -585,7 +585,7 @@ class UserController extends Controller
                 'mobile'=>$userData['mobile']]);
                 if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
                     $user = $this->userServices->saveUser($request);
-                    array_push($savedUsers,$user);
+                    array_push($savedUsers,$user->user_id);
                 }
        }
 
