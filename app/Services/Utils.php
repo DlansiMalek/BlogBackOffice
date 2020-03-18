@@ -33,7 +33,7 @@ class Utils
 
     }
 
-    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name=null, $congress_date=null, $mobile_committee=null, $mobile_technical=null)
+    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name, $congress_date, $mobile_committee, $mobile_technical=null)
     {
 
         return
