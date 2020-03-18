@@ -26,7 +26,7 @@ class AdminServices
     public function getAdminByLogin($login)
     {
         return Admin::whereEmail($login)
-            ->with(["congresses","congresses.form_inputs","congresses.form_inputs.values"])
+            ->with(["congresses", "congresses.form_inputs.values"])
             ->first();
 
     }
@@ -50,7 +50,7 @@ class AdminServices
     public function getAdminById($admin_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(['admin_congresses.congress.badges', 'admin_congresses.congress.config','admin_congresses.congress.form_inputs','admin_congresses.congress.form_inputs.values','admin_congresses.privilege'])
+            ->with(['admin_congresses.congress.badges', 'admin_congresses.congress.config', 'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'])
             ->first();
     }
 
