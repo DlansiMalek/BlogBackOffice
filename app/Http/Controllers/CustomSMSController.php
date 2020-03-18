@@ -26,9 +26,9 @@ class CustomSMSController extends Controller
        $sms= $this->customSmsServices->getSmsById($smsId);
        if ($sms){
         $sms->delete();
-        return response(['response'=>'sms deleted successfuly']);   
+        return response(['response'=>'sms deleted successfuly'],200);   
        }
-       return response(['response'=>'no sms found']);
+       return response(['response'=>'no sms found'],400);
     }
 
     public function getSmsById($smsId)
@@ -44,6 +44,42 @@ class CustomSMSController extends Controller
     {
         return $this->customSmsServices->saveCustomSMS($request);
 
+    }
+
+    public function filterUsersBySmsStatus($smsId,Request $request)
+    {
+
+       $status= $request->query('status', '');
+       return $this->customSmsServices->filterUsersBySmsStatus($smsId,$status);
+       
+    }
+    
+    public function deleteUserSms($smsId,$userId){
+     
+        $user_sms = $this->customSmsServices->getUserSms($smsId,$userId);
+        $user_sms->delete();
+
+        return $user_sms;
+
+    }
+
+    
+    public function sendSmsToUsers($smsId)
+    {
+        $users=array();
+        $users=$this->customSmsServices->filterUsersBySmsStatus($smsId,0);
+        if (!count($users)>=1)
+        return response(['response'=>'There is no users'],400);
+        $sms=$this->customSmsServices->getSmsById($smsId);
+        
+        foreach($users as $user){
+        $this->customSmsServices->sendSmsToUsers($user,$sms);
+        $user_sms=$user->user_sms[0];
+        $user_sms->status=1;
+        $user_sms->update();
+        }    
+        
+        return response(['response'=>'Message sent successfully',200]);
     }
 
 }

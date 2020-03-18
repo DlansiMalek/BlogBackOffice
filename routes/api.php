@@ -34,8 +34,11 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 Route::group(['prefix'=>'manage-sms/custom-sms'],function(){
     Route::get('/list','CustomSMSController@getListSMS');
     Route::get('/{id}/sms','CustomSMSController@getSmsById');
+    Route::get('/{id}/users','CustomSMSController@filterUsersBySmsStatus');
+    Route::get('{id}/send-sms','CustomSMSController@sendSmsToUsers');
     Route::post('/configure','CustomSMSController@saveCustomSMS');
     Route::delete('/{id}/delete','CustomSMSController@deleteSMS');
+    Route::delete('/{id}/user/{userId}/delete','CustomSMSController@deleteUserSms');
 });
 /* Files API */
 Route::group(['prefix' => 'congress-logo/{path}'], function () {

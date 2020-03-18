@@ -587,6 +587,10 @@ class UserController extends Controller
                     $user = $this->userServices->saveUser($request);
                     array_push($savedUsers,$user->user_id);
                 }
+                else 
+                {
+                    array_push($savedUsers,$user->user_id);
+                }
        }
 
     }
