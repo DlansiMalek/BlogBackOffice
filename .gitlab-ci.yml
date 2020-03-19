@@ -40,7 +40,7 @@ docker-package:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE:-web$CI_COMMIT_REF_NAME"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
     - docker push "$IMAGE_NAME"
 
