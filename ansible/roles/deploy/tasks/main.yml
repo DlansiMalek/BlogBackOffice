@@ -21,10 +21,10 @@
           restart: always
           links:
             - app
-            environment:
-              VIRTUAL_HOST: "{{ host_name }}"
-              LETSENCRYPT_HOST: "{{ host_name }}"
-              LETSENCRYPT_EMAIL: "{{ letsencrypt_email }}"
+          environment:
+            VIRTUAL_HOST: "{{ host_name }}"
+            LETSENCRYPT_HOST: "{{ host_name }}"
+            LETSENCRYPT_EMAIL: "{{ letsencrypt_email }}"
         app:
           image: "{{ lookup('env','APP_IMAGE_NAME') }}"
           container_name: "eventizer-api-{{eventizer_version}}-app"
