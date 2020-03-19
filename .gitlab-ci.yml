@@ -23,7 +23,7 @@ docker-build:
   script:
     - cp $ENV_DEV .env
     - composer install
-    - php artisan jwt:secret
+    - echo "yes" | php artisan jwt:secret
 
 docker-package:
   stage: package
