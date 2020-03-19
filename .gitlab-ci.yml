@@ -51,7 +51,7 @@ docker-deploy-prod:
     - master
   before_script:
     - chmod 600 $SSH_KEY
-    - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - export DEPLOY_TARGET=prod
     - cd ansible
@@ -67,7 +67,7 @@ docker-deploy-dev:
     - develop
   before_script:
     - chmod 600 $SSH_KEY
-    - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - export DEPLOY_TARGET=dev
     - cd ansible
