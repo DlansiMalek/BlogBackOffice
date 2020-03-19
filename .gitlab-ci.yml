@@ -21,6 +21,7 @@ docker-build:
     - develop
     - master
   script:
+    - cp $ENV_DEV .env
     - composer install
     - php artisan jwt:secret
 
@@ -63,7 +64,7 @@ docker-deploy-dev:
   stage: deploy
   image: mullnerz/ansible-playbook:2.9.1
   only:
-    - master
+    - develop
   before_script:
     - chmod 600 $SSH_KEY
     - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE-app:$CI_COMMIT_REF_NAME"
