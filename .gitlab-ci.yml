@@ -37,10 +37,10 @@ docker-package:
   after_script:
     - docker logout "$CI_REGISTRY"
   script:
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE-app:$CI_COMMIT_REF_NAME"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
-    - IMAGE_NAME="$CI_REGISTRY_IMAGE-web:$CI_COMMIT_REF_NAME"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE:-web$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
     - docker push "$IMAGE_NAME"
 
@@ -51,8 +51,8 @@ docker-deploy-prod:
     - master
   before_script:
     - chmod 600 $SSH_KEY
-    - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE-app:$CI_COMMIT_REF_NAME"
-    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE-web:$CI_COMMIT_REF_NAME"
+    - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - export DEPLOY_TARGET=prod
     - cd ansible
   after_script:
@@ -67,8 +67,8 @@ docker-deploy-dev:
     - develop
   before_script:
     - chmod 600 $SSH_KEY
-    - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE-app:$CI_COMMIT_REF_NAME"
-    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE-web:$CI_COMMIT_REF_NAME"
+    - export API_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - export DEPLOY_TARGET=dev
     - cd ansible
   after_script:
