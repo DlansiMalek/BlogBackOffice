@@ -1,0 +1,29 @@
+FROM php:7-fpm
+
+# Set the locale
+RUN apt-get clean && apt-get update && apt-get install -y locales locales-all
+RUN locale-gen fr_FR
+RUN locale-gen fr_FR.UTF-8
+RUN update-locale
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+
+RUN apt-get update && apt-get install -y libmcrypt-dev \
+    mysql-client libmagickwand-dev --no-install-recommends \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && pecl install mcrypt-1.0.1 \
+    && docker-php-ext-enable mcrypt \
+    && docker-php-ext-install pdo_mysql \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install gd
+
+#path to phpini => php -i | grep php.ini
+ADD ./php.ini /usr/local/etc/php/php.ini
+
+ADD . /var/www
+
+COPY ./uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
+WORKDIR /var/www

@@ -1,0 +1,9 @@
+FROM nginx
+
+ADD . /var/www
+
+ADD ./vhost.conf /etc/nginx/conf.d/default.conf
+
+ADD ./nginx.conf /etc/nginx/nginx.conf
+
+WORKDIR /var/www
