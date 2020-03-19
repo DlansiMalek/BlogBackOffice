@@ -21,7 +21,6 @@ docker-build:
     - develop
     - master
   script:
-    - cp $ENV_DEV .env
     - composer install
     - echo "yes" | php artisan jwt:secret
 
@@ -34,8 +33,10 @@ docker-package:
     - master
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - cp $ENV_DEV .env
   after_script:
     - docker logout "$CI_REGISTRY"
+    - rm .env
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
