@@ -48,4 +48,4 @@
     docker exec eventizer-api-{{eventizer_version}}-app chmod -R 755 .
     docker exec eventizer-api-{{eventizer_version}}-app chmod -R 777 ./app
     docker exec eventizer-api-{{eventizer_version}}-app chmod -R 777 ./vendor
-    echo "yes" | docker exec eventizer-api-{{eventizer_version}}-app php artisan key:generate
+    docker exec eventizer-api-{{eventizer_version}}-app php artisan key:generate
