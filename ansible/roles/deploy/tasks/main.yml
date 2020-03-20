@@ -37,3 +37,15 @@
           external:
             name: "{{ docker_network }}"
 
+- name: Sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+
+- name: Change Dir Permission
+  command: >
+    docker exec eventizer-api-{{eventizer_version}}-app chown -R www-data.www-data .
+    docker exec eventizer-api-{{eventizer_version}}-app chmod -R 755 .
+    docker exec eventizer-api-{{eventizer_version}}-app chmod -R 777 ./app
+    docker exec eventizer-api-{{eventizer_version}}-app chmod -R 777 ./vendor
+    echo "yes" | docker exec eventizer-api-{{eventizer_version}}-app php artisan key:generate

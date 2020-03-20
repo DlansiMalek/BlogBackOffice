@@ -22,7 +22,6 @@ docker-build:
     - master
   script:
     - composer install
-    - echo "yes" | php artisan jwt:secret
 
 docker-package:
   stage: package
