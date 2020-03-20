@@ -2,12 +2,14 @@
 
 - name: Create Eventizer API data directory
   file:
-    path: "{{ eventizer_data }}"
+    path: "{{ eventizer_dir }}/data"
     state: directory
     owner: "{{ ansible_ssh_user }}"
     group: "{{ ansible_ssh_user }}"
   become: true
 
+- name: Copy .env
+  command: cp {{ lookup('env','ENV_DEV') }} {{ eventizer_dir }}/.env
 
 - name: Run Eventizer API
   docker_compose:
@@ -30,7 +32,8 @@
           container_name: "eventizer-api-{{eventizer_version}}-app"
           restart: always
           volumes:
-            - "{{ eventizer_data }}:/var/www/storage/app"
+            - "{{ eventizer_dir }}/data:/var/www/storage/app"
+          env_file: "{{ eventizer_dir }}/.env"
 
       networks:
         default:
@@ -43,9 +46,16 @@
 
 
 - name: Change Dir Permission
-  command: >
-    docker exec eventizer-api-{{eventizer_version}}-app chown -R www-data.www-data .
-    docker exec eventizer-api-{{eventizer_version}}-app chmod -R 755 .
-    docker exec eventizer-api-{{eventizer_version}}-app chmod -R 777 ./app
-    docker exec eventizer-api-{{eventizer_version}}-app chmod -R 777 ./vendor
-    docker exec eventizer-api-{{eventizer_version}}-app php artisan key:generate
+  command: docker exec eventizer-api-{{ eventizer_version }}-app chown -R www-data.www-data .
+
+- name: Change Dir Permission
+  command: docker exec eventizer-api-{{ eventizer_version }}-app chmod -R 755 .
+
+- name: Change Dir Permission
+  command:  docker exec eventizer-api-{{ eventizer_version }}-app chmod -R 777 ./app
+
+- name: Change Dir Permission
+  command: docker exec eventizer-api-{{ eventizer_version }}-app chmod -R 777 ./vendor
+
+- name: Change Dir Permission
+  command:   docker exec eventizer-api-{{ eventizer_version }}-app php artisan key:generate
