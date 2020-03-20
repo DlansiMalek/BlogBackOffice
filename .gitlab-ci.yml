@@ -18,7 +18,7 @@ docker-build:
   stage: build
   image: bitnami/laravel
   only:
-    - release
+    - master
   script:
     - composer install
 
@@ -27,7 +27,7 @@ docker-package:
   services:
     - docker:dind
   only:
-    - release
+    - master
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   after_script:

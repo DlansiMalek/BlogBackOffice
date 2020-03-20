@@ -9,7 +9,11 @@
   become: true
 
 - name: Copy .env
-  command: cp {{ lookup('env','ENV_DEV') }} {{ eventizer_dir }}/.env
+  copy:
+    src: "{{ lookup('env','ENV_DEV') }}"
+    dest: "{{ eventizer_dir }}/.env"
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
 
 - name: Run Eventizer API
   docker_compose:
