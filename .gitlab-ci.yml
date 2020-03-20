@@ -18,8 +18,7 @@ docker-build:
   stage: build
   image: bitnami/laravel
   only:
-    - develop
-    - master
+    - release
   script:
     - composer install
 
@@ -28,14 +27,11 @@ docker-package:
   services:
     - docker:dind
   only:
-    - develop
-    - master
+    - release
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - cp $ENV_DEV .env
   after_script:
     - docker logout "$CI_REGISTRY"
-    - rm .env
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
