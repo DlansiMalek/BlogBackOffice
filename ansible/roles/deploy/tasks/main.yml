@@ -37,6 +37,7 @@
           container_name: "eventizer-api-{{eventizer_version}}-app"
           restart: always
           volumes:
+            - "{{ eventizer_dir }}/.env:/var/www/.env"
             - "{{ eventizer_dir }}/data:/var/www/storage/app"
           env_file: "{{ eventizer_dir }}/.env"
 
