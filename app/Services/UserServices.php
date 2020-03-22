@@ -372,7 +372,7 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations','responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
