@@ -29,6 +29,12 @@ Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTy
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 
+//SMS API
+
+Route::group(['prefix'=>'manage-sms/custom-sms'],function(){
+    Route::get('/list','CustomSMSController@getListSMS');
+    Route::delete('/{id}/delete','CustomSMSController@deleteSMS');
+});
 /* Files API */
 Route::group(['prefix' => 'congress-logo/{path}'], function () {
     Route::get('', 'FileController@getLogoCongress');
