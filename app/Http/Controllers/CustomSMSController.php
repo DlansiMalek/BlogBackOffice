@@ -88,7 +88,7 @@ class CustomSMSController extends Controller
 
      
         foreach($users as $user){
-        return $this->customSmsServices->sendSmsToUsers($user,$sms);
+        $this->customSmsServices->sendSmsToUsers($user,$sms);
         $user_sms=$user->user_sms[0];
         $user_sms->status=1;
         $user_sms->update();
