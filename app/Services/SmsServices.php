@@ -25,7 +25,7 @@ class SmsServices
     }
 
 
-    public function authentificationSms($congressId, $config)
+    public function authentificationSms($config=null)
     {
 
         $this->client = new Client([
@@ -38,9 +38,13 @@ class SmsServices
                 'grant_type' => 'client_credentials'
             ]
         ]);
+
+        if ($config)
+        {
         $config->token_sms = json_decode($res->getBody(), true)['access_token'];
         $config->update();
-        return json_decode($res->getBody(), true);
+        }
+        return json_decode($res->getBody(), true)['access_token'];
 
     }
 
@@ -54,7 +58,7 @@ class SmsServices
                 } catch (Exception $e) {
                     $this->maxRequest++;
                     if ($e->getCode() == 401) {
-                        $this->authentificationSms($congressId, $congress->config);
+                        $this->authentificationSms($congress->config);
                         $this->sendSms($congressId, $user, $congress);
                     }
                     Log::info($e->getMessage());
@@ -66,14 +70,15 @@ class SmsServices
     }
 
     public
-    function configSms($user, $congress)
+    function configSms($user, $congress=null,$sms=null,$token_sms=null)
     {
+        $token=$token_sms ? $token_sms : $congress->config['token_sms'];
 
-        $this->client = new Client([
+       $this->client = new Client([
             'base_uri' => 'https://api.orange.com',
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $congress->config['token_sms']
+                'Authorization' => 'Bearer ' .$token
             ]
         ]);
         $res = $this->client->post('/smsmessaging/v1/outbound/tel%3A%2B21653780474/requests', [
@@ -82,7 +87,7 @@ class SmsServices
                     'address' => 'tel:' . Utils::getMobileFormatted($user->mobile),
                     'senderAddress' => 'tel:+21653780474',
                     'outboundSMSTextMessage' => [
-                        'message' => Utils::getSmsMessage($user->qr_code, $user->first_name, $user->last_name, $congress->name, $congress->start_date, $congress->config['mobile_committee'], $congress->config['mobile_technical'])
+                        'message' => $token_sms ? Utils::customSmsMessage($sms,$user) : Utils::getSmsMessage($user->qr_code, $user->first_name, $user->last_name, $congress->name, $congress->start_date, $congress->config['mobile_committee'], $congress->config['mobile_technical'])
                     ]
                 ]
             ]

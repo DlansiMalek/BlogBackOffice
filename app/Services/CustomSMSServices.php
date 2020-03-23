@@ -9,6 +9,7 @@ use App\Models\UserSms;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Exception;
+use App\Services\SmsServices;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -18,7 +19,12 @@ use Illuminate\Support\Facades\Log;
  */
 class CustomSmsServices
 {
+    protected $smsServices;
 
+    function __construct(SmsServices $smsServices)
+    {
+       $this->smsServices=$smsServices;
+    }
     public function getSMSList(){
         return CustomSMS::all();
     }
@@ -27,6 +33,12 @@ class CustomSmsServices
          return CustomSMS::where('custom_sms_id','=',$smsId)->first();
     }
     
+    public function getAllUserSms(){
+        
+        return UserSms::all();
+      
+    }
+
     public function getUserSms($smsId,$userId)
     {
         $conditionsToMatch=['custom_sms_id'=>$smsId,'user_id'=>$userId];
@@ -53,34 +65,13 @@ class CustomSmsServices
        ->get();
        return $users;
     }
-
-
-    public function authentificationSms()
-    {
-
-        $this->client = new Client([
-            'base_uri' => 'https://api.orange.com',
-            'headers' => ['Authorization' => 'Basic ' . env('SMS_AUTH')]
-        ]);
-
-        $res = $this->client->post('/oauth/v2/token', [
-            'form_params' => [
-                'grant_type' => 'client_credentials'
-            ]
-        ]);
-        return  json_decode($res->getBody(), true)['access_token'];
-
-
-    }
-
     public function sendSmsToUsers($user,$sms)
     {
       
-        $token_sms= $this->authentificationSms();
-         
+        $token_sms= $this->smsServices->authentificationSms();
                 try {
-                   $response = $this->configSms($sms,$user,$token_sms);  
-                   return json_decode($response->getBody(), true);
+                   $response = $this->smsServices->configSms($user,null,$sms,$token_sms) ;
+                   return  json_decode($response->getBody(), true);
                 } catch (Exception $e) {
                   
                     Log::info($e->getMessage());
@@ -88,34 +79,7 @@ class CustomSmsServices
                 }
     }
         
-     
-    
- public  function configSms($sms,$user,$token_sms)
-    {
-
-        $this->client = new Client([
-            'base_uri' => 'https://api.orange.com',
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $token_sms
-            ]
-        ]);
-        $res = $this->client->post('/smsmessaging/v1/outbound/tel%3A%2B21653780474/requests', [
-            'json' => [
-                'outboundSMSMessageRequest' => [
-                    'address' => 'tel:' . Utils::getMobileFormatted($user->mobile),
-                    'senderAddress' => 'tel:+21653780474',
-                    'outboundSMSTextMessage' => [
-                        'message' => Utils::customSmsMessage($sms,$user)
-                    ]
-                ]
-            ]
-        ]);
-        return $res;
-    }
     public function saveCustomSMS(Request $request){
-
-        if ( $request->has('title') && $request->has('content') && $request->has('userIds')){
 
         if (!$sms=$this->getSmsById($request->input('customSmsId'))){
             $sms=new CustomSMS();
@@ -124,10 +88,7 @@ class CustomSmsServices
             $sms->save();
            
             foreach($request->input('userIds') as $userId){
-                $user_sms=new UserSms();
-                $user_sms->custom_sms_id=$sms->custom_sms_id;
-                $user_sms->user_id=$userId;
-                $user_sms->save();
+                $this->saveUserSms($sms->custom_sms_id,$userId);
             }
 
             
@@ -137,23 +98,30 @@ class CustomSmsServices
             $sms->title=$request->input('title');
             $sms->content=$request->input('content');
             $sms->update();
+
+            //créer un nouveau user_sms pour chaque nouveau userId
+            $users_sms=$this->getAllUserSms(); 
             foreach($request->input('userIds') as $userId){
-                if ($user_sms= UserSms::where('user_id','=',$userId)->first())
-                {
-                    $user_sms->user_id=$userId;
-                    $user_sms->update(); 
+            $isUserIdExisting=false;
+            foreach ($users_sms as $user_sms)
+                {   
+                    if ($user_sms->user_id==$userId){
+                    $isUserIdExisting=true;
+                    break;
+                    }
                 }
-                else {
-                    $user_sms=new UserSms();
-                    $user_sms->custom_sms_id=$sms->custom_sms_id;
-                    $user_sms->user_id=$userId;
-                    $user_sms->save();
+                if (!$isUserIdExisting){
+                 $this->saveUserSms($sms->custom_sms_id,$userId);
                 }
             }
            
             return $sms; 
         }
     }
-    return response(['response'=>'Bad request']);
+    public function saveUserSms($smsId,$userId){
+                $user_sms=new UserSms();
+                $user_sms->custom_sms_id=$smsId;
+                $user_sms->user_id=$userId;
+                $user_sms->save();
     }
 }

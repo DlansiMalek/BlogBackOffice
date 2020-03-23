@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CustomSmsServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CustomSMSController extends Controller
 {
@@ -23,43 +24,54 @@ class CustomSMSController extends Controller
 
     public function deleteSMS($smsId)
     {
-       $sms= $this->customSmsServices->getSmsById($smsId);
-       if ($sms){
+     if ( !$sms=$this->customSmsServices->getSmsById($smsId))
+        return response(['response'=>'no sms found'],400);
+
         $sms->delete();
         return response(['response'=>'sms deleted successfuly'],200);   
-       }
-       return response(['response'=>'no sms found'],400);
     }
 
     public function getSmsById($smsId)
     {
-        $sms= $this->customSmsServices->getSmsById($smsId);
-        if ($sms)
-        return $sms;
-
+        if (!$sms=$this->customSmsServices->getSmsById($smsId))
         return response(['response'=>'no sms found']);
+        return $sms;
     }
 
     public function saveCustomSMS(Request $request)
-    {
+    {   
+        $validator = Validator::make($request->all(),[
+            'title'=>'required',
+            'content'=>'required',
+            'userIds'=>'required',
+        ]);
+        if ($validator->fails())
+        return $validator->errors();
+
         return $this->customSmsServices->saveCustomSMS($request);
+       
 
     }
 
     public function filterUsersBySmsStatus($smsId,Request $request)
     {
+       
+        $status= $request->query('status', '');
+         if (!$users= $this->customSmsServices->filterUsersBySmsStatus($smsId,$status))
+        return response(['No users found',404]);
 
-       $status= $request->query('status', '');
-       return $this->customSmsServices->filterUsersBySmsStatus($smsId,$status);
+        return $users;
        
     }
-    
-    public function deleteUserSms($smsId,$userId){
-     
-        $user_sms = $this->customSmsServices->getUserSms($smsId,$userId);
-        $user_sms->delete();
+  
 
-        return $user_sms;
+    public function deleteUserSms($smsId,$userId){
+
+        if (! $user_sms = $this->customSmsServices->getUserSms($smsId,$userId))
+        return response(['No user_sms found',404]);
+    
+        $user_sms->delete();
+        return $user_sms;   
 
     }
 
@@ -70,10 +82,13 @@ class CustomSMSController extends Controller
         $users=$this->customSmsServices->filterUsersBySmsStatus($smsId,0);
         if (!count($users)>=1)
         return response(['response'=>'There is no users'],400);
-        $sms=$this->customSmsServices->getSmsById($smsId);
-        
+
+        if (!$sms=$this->customSmsServices->getSmsById($smsId))
+        return response(['response'=>'There is no sms'],400);
+
+     
         foreach($users as $user){
-        $this->customSmsServices->sendSmsToUsers($user,$sms);
+        return $this->customSmsServices->sendSmsToUsers($user,$sms);
         $user_sms=$user->user_sms[0];
         $user_sms->status=1;
         $user_sms->update();
