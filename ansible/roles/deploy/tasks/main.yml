@@ -1,0 +1,39 @@
+---
+
+- name: Create Eventizer API data directory
+  file:
+    path: "{{ eventizer_data }}"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+  become: true
+
+
+- name: Run Eventizer API
+  docker_compose:
+    project_name: "eventizer-api-{{eventizer_version}}"
+    definition:
+      version: '3.7'
+      services:
+        web:
+          image: "{{ lookup('env','WEB_IMAGE_NAME') }}"
+          container_name: "eventizer-api-{{eventizer_version}}-web"
+          restart: always
+          links:
+            - app
+          environment:
+            VIRTUAL_HOST: "{{ host_name }}"
+            LETSENCRYPT_HOST: "{{ host_name }}"
+            LETSENCRYPT_EMAIL: "{{ letsencrypt_email }}"
+        app:
+          image: "{{ lookup('env','APP_IMAGE_NAME') }}"
+          container_name: "eventizer-api-{{eventizer_version}}-app"
+          restart: always
+          volumes:
+            - "{{ eventizer_data }}:/var/www/storage/app"
+
+      networks:
+        default:
+          external:
+            name: "{{ docker_network }}"
+
