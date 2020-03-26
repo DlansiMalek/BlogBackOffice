@@ -1,5 +1,12 @@
 ---
 
+- name: Login docker
+  docker_login:
+    registry_url: "{{ lookup('env','CI_REGISTRY') }}"
+    username: "{{ lookup('env','CI_REGISTRY_USER') }}"
+    password: "{{ lookup('env','CI_JOB_TOKEN') }}"
+    state: "present"
+
 - name: Create Eventizer API data directory
   file:
     path: "{{ eventizer_dir }}/data"
@@ -45,11 +52,11 @@
         default:
           external:
             name: "{{ docker_network }}"
+  notify: Log out of DockerHub
 
 - name: Sleep for 5 seconds
   wait_for:
     timeout: 5
-
 
 - name: Change Dir Permission
   command: docker exec eventizer-api-{{ eventizer_version }}-app chown -R www-data.www-data .
