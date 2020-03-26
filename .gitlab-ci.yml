@@ -5,6 +5,11 @@ services:
 variables:
   DOCKER_DRIVER: overlay
 
+cache:
+  paths:
+    - vendor/
+
+
 stages:
   - build
   - package
@@ -22,9 +27,6 @@ build:
     paths:
       - vendor/
     expire_in: 1 hours
-  cache:
-    paths:
-      - vendor/
 
 docker-package:
   stage: package
