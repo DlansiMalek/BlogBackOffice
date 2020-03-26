@@ -1,3 +1,4 @@
 # Docker
 
 host_name: api.eventizer.io
+eventizer_env_file: "{{ lookup('env','ENV_PROD') }}"
