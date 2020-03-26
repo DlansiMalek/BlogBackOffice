@@ -22,7 +22,9 @@ build:
     paths:
       - vendor/
     expire_in: 1 hours
-    when: always
+  cache:
+    paths:
+      - vendor/
 
 docker-package:
   stage: package
