@@ -5,7 +5,9 @@ services:
 variables:
   DOCKER_DRIVER: overlay
 
-
+cache:
+  paths:
+    - vendor/
 
 stages:
   - build
@@ -20,9 +22,6 @@ docker-build:
     - develop
   script:
     - composer install
-  cache:
-    paths:
-      - vendor/
 
 docker-package:
   stage: package
