@@ -5,11 +5,6 @@ services:
 variables:
   DOCKER_DRIVER: overlay
 
-cache:
-  paths:
-    - vendor/
-
-
 stages:
   - build
   - package
@@ -26,7 +21,11 @@ build:
   artifacts:
     paths:
       - vendor/
-    expire_in: 1 days
+    expire_in: 2 hours
+  cache:
+    paths:
+      - vendor/
+
 
 docker-package:
   stage: package
@@ -40,6 +39,7 @@ docker-package:
   after_script:
     - docker logout "$CI_REGISTRY"
   script:
+    - ls -la
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
     - docker push "$IMAGE_NAME"

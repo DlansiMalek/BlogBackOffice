@@ -32,6 +32,7 @@
         web:
           image: "{{ lookup('env','WEB_IMAGE_NAME') }}"
           container_name: "eventizer-api-{{eventizer_version}}-web"
+          pull: true
           restart: always
           links:
             - app
@@ -42,6 +43,7 @@
         app:
           image: "{{ lookup('env','APP_IMAGE_NAME') }}"
           container_name: "eventizer-api-{{eventizer_version}}-app"
+          pull: true
           restart: always
           volumes:
             - "{{ eventizer_dir }}/.env:/var/www/.env"
