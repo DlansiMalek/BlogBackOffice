@@ -10,6 +10,7 @@ stages:
   - package
   - deploy
 
+# Build stage
 build:
   stage: build
   image: bitnami/laravel
@@ -22,11 +23,9 @@ build:
     paths:
       - vendor/
     expire_in: 2 hours
-  cache:
-    paths:
-      - vendor/
 
 
+# Package stage
 docker-package:
   stage: package
   services:
@@ -39,7 +38,6 @@ docker-package:
   after_script:
     - docker logout "$CI_REGISTRY"
   script:
-    - ls -la
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
@@ -48,6 +46,7 @@ docker-package:
     - docker push "$IMAGE_NAME"
 
 
+# Deploy stage
 ansible-deploy-prod:
   stage: deploy
   image: mullnerz/ansible-playbook:2.9.1
