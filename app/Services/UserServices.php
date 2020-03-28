@@ -742,7 +742,6 @@ class UserServices
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
-            return $exception;
             if ($userMail) {
                 $userMail->status = -1;
                 $userMail->update();
