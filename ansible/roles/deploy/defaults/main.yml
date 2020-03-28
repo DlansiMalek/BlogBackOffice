@@ -1,3 +1,3 @@
 eventizer_version: develop
-eventizer_data: /data/eventizer-api/data/
+eventizer_dir: "/data/eventizer-api/{{ eventizer_version }}"
 host_name: dev.api.eventizer.io

@@ -5,38 +5,38 @@ services:
 variables:
   DOCKER_DRIVER: overlay
 
-cache:
-  paths:
-    - vendor/
-
 stages:
   - build
   - package
   - deploy
 
-docker-build:
+# Build stage
+build:
   stage: build
   image: bitnami/laravel
   only:
-    - develop
     - master
+    - develop
   script:
-    - composer install
-    - echo "yes" | php artisan jwt:secret
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 2 hours
 
+
+# Package stage
 docker-package:
   stage: package
   services:
     - docker:dind
   only:
-    - develop
     - master
+    - develop
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - cp $ENV_DEV .env
   after_script:
     - docker logout "$CI_REGISTRY"
-    - rm .env
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
@@ -45,7 +45,9 @@ docker-package:
     - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
     - docker push "$IMAGE_NAME"
 
-docker-deploy-prod:
+
+# Deploy stage
+ansible-deploy-prod:
   stage: deploy
   image: mullnerz/ansible-playbook:2.9.1
   only:
@@ -61,7 +63,7 @@ docker-deploy-prod:
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
 
-docker-deploy-dev:
+ansible-deploy-dev:
   stage: deploy
   image: mullnerz/ansible-playbook:2.9.1
   only:
