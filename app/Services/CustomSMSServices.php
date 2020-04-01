@@ -71,7 +71,6 @@ class CustomSmsServices
 
     public function sendSmsToUsers($user, $sms)
     {
-
         $token_sms = $this->smsServices->authentificationSms();
         try {
             $response = $this->smsServices->configSms($user, null, $sms, $token_sms);
