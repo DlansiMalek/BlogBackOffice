@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-
+use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\PrivilegeServices;
 use Illuminate\Http\Request;
@@ -60,6 +60,17 @@ class LoginController extends Controller
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
+
+    public function loginUser(request $request)
+    {
+       $conditionToMatch=['email'=>$request->input('email'),'code'=>$request->input('password')];
+       if (!$user=User::where($conditionToMatch)->first()){
+           return response()->json(['response'=>'Bad credentials'],400);
+       }
+       return response()->json(['user'=>$user,'accessToken'=>str_random(16)]);
+        
+    }
+
     public function forgetPassword(Request $request)
     {
         $admin = $this->adminServices->getAdminByLogin($request['email']);

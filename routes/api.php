@@ -70,6 +70,7 @@ Route::group(['prefix' => 'mobile'], function () {
 
 Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
 Route::post('auth/forgetPassword', 'Auth\LoginController@forgetPassword');
+Route::post('auth/login/user','Auth\LoginController@loginUser');
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
