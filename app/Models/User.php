@@ -57,6 +57,16 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\UserCongress', 'user_id', 'user_id');
     }
 
+    function custom_sms()
+    {
+        return $this->belongsToMany('App\Models\CustomSMS','User_Sms','user_id','custom_sms_id');
+    }
+    
+    function user_sms()
+    {
+        return $this->hasMany('App\Models\UserSms','user_id','user_id');
+    }
+    
     function country()
     {
         return $this->hasOne('App\Models\Country', 'alpha3code', 'country_id');
