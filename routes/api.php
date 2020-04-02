@@ -175,6 +175,15 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     });
 });
 
+//Submission API
+
+Route::group(['prefix' => 'submission'],function(){
+    Route::post('add','SubmissionController@addSubmission');
+});
+Route::group(['prefix'=>'theme'],function(){
+    Route::get('all','ThemeController@getAllTheme');
+    Route::get('themesByCongress','ThemeController@getAllThemesByCongress');
+});
 //PackAdmin API
 Route::group(['prefix' => 'packadmin'], function () {
     Route::get('list', 'PackAdminController@index');
