@@ -18,7 +18,10 @@ class SubmissionTableSeeder extends Seeder
             'prez_type'=>'workshop',
             'description'=>'submission_description',
             'global_note'=>13,
-            'status'=>1
+            'status'=>1,
+            'theme_id'=>1,
+            'congress_id'=>1
+
         ]);
     }
 }

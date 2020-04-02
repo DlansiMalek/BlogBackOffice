@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSubmissionTable extends Migration
+class CreateThemeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,10 @@ class CreateSubmissionTable extends Migration
      */
     public function up()
     {
-        Schema::create('Submission', function (Blueprint $table) {
-            $table->bigIncrements('submission_id');
-            $table->string('title');
-            $table->string('type');
-            $table->string('prez_type');
+        Schema::create('Theme', function (Blueprint $table) {
+            $table->increments('theme_id');
+            $table->string('label');
             $table->string('description');
-            $table->integer('global_note')->default(0);
-            $table->integer('status')->default(0);
             $table->timestamps();
         });
     }
@@ -32,6 +28,6 @@ class CreateSubmissionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Submission');
+        Schema::dropIfExists('Theme');
     }
 }

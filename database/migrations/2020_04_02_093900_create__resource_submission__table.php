@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CrateSubmissionEvaluationTable extends Migration
+class CreateResourceSubmissionTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,15 @@ class CrateSubmissionEvaluationTable extends Migration
      */
     public function up()
     {
-        Schema::create('Submission_Evaluation',function(Blueprint $table){
-            $table->bigIncrements('submission_evaluation_id');
+        Schema::create('Resource_Submission', function (Blueprint $table) {
+            $table->increments('resource_submission_id');
             $table->unsignedBigInteger('submission_id');
             $table->foreign('submission_id')->references('submission_id')->on('Submission')
-                ->onDelete('cascade');
-            $table->unsignedInteger('admin_id');
-            $table->foreign('admin_id')->references('admin_id')->on('Admin')
-                ->onDelete('cascade');
-            $table->integer('note')->default(0);
+            ->onDelete('cascade');
+            $table->unsignedInteger('resource_id');
+            $table->foreign('resource_id')->references('resource_id')->on('Resource')
+            ->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -32,6 +32,6 @@ class CrateSubmissionEvaluationTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Submission_Evaluation');
+        Schema::dropIfExists('Resource_Submission');
     }
 }
