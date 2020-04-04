@@ -4,14 +4,17 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code','code', 'email_verified', 'verification_code', 'rfid', 'profile_pic', 'country_id'];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'code', 'email_verified', 'verification_code', 'rfid', 'profile_pic', 'country_id'];
     public $timestamps = true;
+
+    protected $hidden = ["password", "passwordDecrypt"];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     function user_mails()
@@ -59,14 +62,14 @@ class User extends Authenticatable
 
     function custom_sms()
     {
-        return $this->belongsToMany('App\Models\CustomSMS','User_Sms','user_id','custom_sms_id');
+        return $this->belongsToMany('App\Models\CustomSMS', 'User_Sms', 'user_id', 'custom_sms_id');
     }
-    
+
     function user_sms()
     {
-        return $this->hasMany('App\Models\UserSms','user_id','user_id');
+        return $this->hasMany('App\Models\UserSms', 'user_id', 'user_id');
     }
-    
+
     function country()
     {
         return $this->hasOne('App\Models\Country', 'alpha3code', 'country_id');
@@ -92,4 +95,13 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
     }
 
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }

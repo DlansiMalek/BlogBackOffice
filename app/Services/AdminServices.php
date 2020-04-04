@@ -18,6 +18,7 @@ use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use JWTAuth;
 
 class AdminServices
@@ -217,7 +218,7 @@ class AdminServices
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
 
-        $password = str_random(8);
+        $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
 
