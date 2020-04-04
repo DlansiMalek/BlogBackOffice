@@ -160,6 +160,11 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function  getMinimalCongress()
+    {
+        return $this->congressServices->getMinimalCongress();
+    }
+
     public function getCongressByIdBadge($congressId)
     {
         if (!$congress = $this->congressServices->getCongressByIdAndRelations($congressId, [

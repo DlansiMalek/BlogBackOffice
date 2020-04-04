@@ -18,7 +18,7 @@ class CreateSubmissionTable extends Migration
             $table->string('title');
             $table->string('type');
             $table->string('prez_type');
-            $table->string('description');
+            $table->text('description');
             $table->integer('global_note')->default(0);
             $table->integer('status')->default(0);
 
