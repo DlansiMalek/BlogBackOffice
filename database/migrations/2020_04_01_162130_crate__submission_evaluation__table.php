@@ -13,15 +13,21 @@ class CrateSubmissionEvaluationTable extends Migration
      */
     public function up()
     {
-        Schema::create('Submission_Evaluation',function(Blueprint $table){
+        Schema::create('Submission_Evaluation', function (Blueprint $table) {
             $table->bigIncrements('submission_evaluation_id');
+
             $table->unsignedBigInteger('submission_id');
             $table->foreign('submission_id')->references('submission_id')->on('Submission')
                 ->onDelete('cascade');
+
             $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
-            $table->integer('note')->default(0);
+
+            $table->integer('note')->default(null);
+
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

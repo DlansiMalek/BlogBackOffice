@@ -13,11 +13,9 @@ class CreateResourcesTable extends Migration
      */
     public function up()
     {
-        Schema::create('Resource', function (Blueprint $table) {
-            $table->increments('resource_id');
-            $table->string('path');
-            $table->string('size');
-            $table->timestamps();
+        Schema::table('Resource', function (Blueprint $table) {
+            $table->string('size')
+                ->after('path');
         });
     }
 
@@ -28,6 +26,9 @@ class CreateResourcesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Resource');
+        Schema::table('Resource', function (Blueprint $table) {
+            $table->dropColumn('path');
+            $table->dropColumn('size');
+        });
     }
 }

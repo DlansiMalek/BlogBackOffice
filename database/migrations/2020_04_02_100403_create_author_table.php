@@ -31,6 +31,7 @@ class CreateAuthorTable extends Migration
                 $table->foreign('etablissement_id')->references('etablissement_id')->on('Etablissement')
                 ->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class DropResourceTable extends Migration
+class CreateThemeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,14 @@ class DropResourceTable extends Migration
      */
     public function up()
     {
-        Schema::drop('Resource');
+        Schema::create('Theme', function (Blueprint $table) {
+            $table->increments('theme_id');
+            $table->string('label');
+            $table->string('description');
+
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     /**
@@ -23,6 +30,6 @@ class DropResourceTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('Theme');
     }
 }

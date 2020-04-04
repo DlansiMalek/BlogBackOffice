@@ -21,6 +21,16 @@ class CreateSubmissionTable extends Migration
             $table->string('description');
             $table->integer('global_note')->default(0);
             $table->integer('status')->default(0);
+
+            $table->unsignedInteger('theme_id')->nullable();
+            $table->foreign('theme_id')->references('theme_id')->on('Theme')
+                ->onDelete('set null');
+
+            $table->unsignedInteger('congress_id');
+            $table->foreign('congress_id')->references('congress_id')->on('Congress')
+                ->onDelete('cascade');
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -33,5 +43,10 @@ class CreateSubmissionTable extends Migration
     public function down()
     {
         Schema::dropIfExists('Submission');
+
+        Schema::table('Submission', function ($table) {
+            $table->dropForeign(['theme_id']);
+            $table->dropForeign(['congress_id']);
+        });
     }
 }

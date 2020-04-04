@@ -12,19 +12,20 @@ class CreateConfigSubmissionTable extends Migration
      * @return void
      */
     public function up()
-    {                   
-        
+    {
+
         Schema::create('Config_Submission', function (Blueprint $table) {
             $table->increments('config_sumbission_id');
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
-             ->onDelete('cascade');
-          
+                ->onDelete('cascade');
+
             $table->integer('max_words');
-            $table->date('start_submission_date');
-            $table->date('end_submission_date');
-             
+            $table->dateTime('start_submission_date');
+            $table->dateTime('end_submission_date');
+
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

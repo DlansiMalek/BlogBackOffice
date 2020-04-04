@@ -17,10 +17,12 @@ class CreateResourceSubmissionTable extends Migration
             $table->increments('resource_submission_id');
             $table->unsignedBigInteger('submission_id');
             $table->foreign('submission_id')->references('submission_id')->on('Submission')
-            ->onDelete('cascade');
+                ->onDelete('cascade');
             $table->unsignedInteger('resource_id');
             $table->foreign('resource_id')->references('resource_id')->on('Resource')
-            ->onDelete('cascade');
+                ->onDelete('cascade');
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
