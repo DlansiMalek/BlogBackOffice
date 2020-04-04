@@ -31,9 +31,14 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 //SMS API
 
-Route::group(['prefix'=>'manage-sms/custom-sms'],function(){
-    Route::get('/list','CustomSMSController@getListSMS');
-    Route::delete('/{id}/delete','CustomSMSController@deleteSMS');
+Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
+    Route::get('/list', 'CustomSMSController@getListSMS');
+    Route::get('/{id}/sms', 'CustomSMSController@getSmsById');
+    Route::get('/{id}/users', 'CustomSMSController@filterUsersBySmsStatus');
+    Route::get('{id}/send-sms', 'CustomSMSController@sendSmsToUsers');
+    Route::post('/configure', 'CustomSMSController@saveCustomSMS');
+    Route::delete('/{id}/delete', 'CustomSMSController@deleteSMS');
+    Route::delete('/{id}/user/{userId}/delete', 'CustomSMSController@deleteUserSms');
 });
 /* Files API */
 Route::group(['prefix' => 'congress-logo/{path}'], function () {
@@ -68,15 +73,24 @@ Route::group(['prefix' => 'mobile'], function () {
 });
 
 
-Route::post('auth/login/admin', 'Auth\LoginController@loginAdmin');
-Route::post('auth/forgetPassword', 'Auth\LoginController@forgetPassword');
-Route::post('auth/login/user','Auth\LoginController@loginUser');
+Route::group(['prefix' => 'auth'], function () {
+
+    Route::group(['middleware' => ['assign.guard:admins']], function () {
+        Route::post('login/admin', 'Auth\LoginController@loginAdmin');
+        Route::post('forgetPassword', 'Auth\LoginController@forgetPassword');
+    });
+
+    Route::group(['middleware' => ['assign.guard:users']], function () {
+        Route::post('login/user', 'Auth\LoginController@loginUser');
+    });
+
+});
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-
+    Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::group(['prefix' => '{user_id}'], function () {
 
@@ -134,12 +148,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
         Route::get('config', 'CongressController@getCongressConfigById');
         Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
-        Route::get('badges', 'CongressController@getBadgesByCongress');
         Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
-
         Route::post('/upload-logo', 'FileController@uploadLogo');
         Route::post('/upload-banner', 'FileController@uploadBanner');
-        Route::post('/upload-cv/{userId}','FileController@uploadCV');
+        Route::post('/upload-cv/{userId}', 'FileController@uploadCV');
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
@@ -218,7 +230,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
-            Route::get('list-all','UserController@getAllUsersByCongress');
+            Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
@@ -230,7 +242,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('status-presence', 'UserController@getUserStatusPresences');
             Route::get('mailTest', 'CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
-           
+
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
@@ -351,7 +363,6 @@ Route::group(['prefix' => 'payment'], function () {
 });
 
 Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');
-Route::get('generateBadges/{userPos}', 'AdminController@generateBadges');
 Route::get('generateTickets', 'AdminController@generateTickets');
 Route::get('updateUsers', 'AdminController@updateUsers');
 Route::get('generateUserQrCode', 'AdminController@generateUserQrCode');

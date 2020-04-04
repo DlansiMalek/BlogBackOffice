@@ -3,6 +3,8 @@
 namespace App\Http;
 
 use App\Http\Middleware\AdminMiddelware;
+use App\Http\Middleware\AssignGuard;
+use App\Http\Middleware\JwtAnyUserMiddleware;
 use App\Http\Middleware\MarketingMiddelware;
 use App\Http\Middleware\Organisateur;
 use App\Http\Middleware\Organization;
@@ -68,6 +70,7 @@ class Kernel extends HttpKernel
         'super-admin' => Super_Admin::class,
         'admin' => AdminMiddelware::class,
         'organization' => Organization::class,
-        'marketing' => MarketingMiddelware::class
+        'marketing' => MarketingMiddelware::class,
+        'assign.guard' => AssignGuard::class
     ];
 }

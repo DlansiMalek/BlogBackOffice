@@ -9,6 +9,7 @@ stages:
   - build
   - package
   - deploy
+  - backup
 
 # Build stage
 build:
@@ -78,3 +79,25 @@ ansible-deploy-dev:
     - cd ..
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
+
+# Backup stages
+backup-bitbucket:
+  stage: backup
+  image: gitlab.master.ssd.vps.vayetek.com:55555/vayetek/devops/git:master
+  only:
+    - master
+    - develop
+  before_script:
+    - git checkout $CI_COMMIT_REF_NAME
+    - git pull
+    - eval $(ssh-agent -s)
+    - ssh-add -D
+    - chmod 600 $BITBUCKET_RSA
+    - ssh-add $BITBUCKET_RSA
+    - ssh git@bitbucket.com
+  script:
+    - git remote add bitbucket git@bitbucket.org:vayetek/congress-backend-modules.git
+    - git push bitbucket $CI_COMMIT_REF_NAME
+  after_script:
+    - git remote remove bitbucket
+    - ssh-add -D

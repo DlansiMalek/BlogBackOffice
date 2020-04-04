@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\PrivilegeServices;
+use App\Services\UserServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -14,12 +16,16 @@ class LoginController extends Controller
 {
 
     protected $adminServices;
+    protected $userServices;
     protected $privilegeServices;
 
-    public function __construct(AdminServices $adminServices, PrivilegeServices $privilegeServices)
+    public function __construct(AdminServices $adminServices,
+                                PrivilegeServices $privilegeServices,
+                                UserServices $userServices)
     {
         $this->adminServices = $adminServices;
         $this->privilegeServices = $privilegeServices;
+        $this->userServices = $userServices;
     }
 
     /**
@@ -49,33 +55,37 @@ class LoginController extends Controller
      */
     public function loginAdmin(Request $request)
     {
+
         $credentials = request(['email', 'password']);
 
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
 
 
         if (!$token = auth()->attempt($credentials)) {
-                return response()->json(['error' => 'invalid credentials'], 401);
+            return response()->json(['error' => 'invalid credentials'], 401);
         }
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 
-    public function loginUser(request $request)
+    public function loginUser(Request $request)
     {
-       $conditionToMatch=['email'=>$request->input('email'),'code'=>$request->input('password')];
-       if (!$user=User::where($conditionToMatch)->first()){
-           return response()->json(['response'=>'Bad credentials'],400);
-       }
-       return response()->json(['user'=>$user,'accessToken'=>str_random(16)]);
-        
+        $credentials = request(['email', 'password']);
+
+        $user = $this->userServices->getUserByEmail($request->input("email"));
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
+        }
+
+        return response()->json(['user' => $user, 'token' => $token], 200);
     }
 
     public function forgetPassword(Request $request)
     {
         $admin = $this->adminServices->getAdminByLogin($request['email']);
 
-        if(!$admin)
+        if (!$admin)
             return response()->json(['error' => 'invalid email'], 501);
 
         $password = $this->adminServices->generateNewPassword($admin);
@@ -83,7 +93,7 @@ class LoginController extends Controller
         // ??
         $email = $admin->email;
         Mail::send('forgetPasswordMail', ['user_name' => $admin->name, 'last_name' => $admin->last_name,
-             'password' => $password], function ($message) use ($email) {
+            'password' => $password], function ($message) use ($email) {
             $message->to($email)->subject('Change your password');
         });
 

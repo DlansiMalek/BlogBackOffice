@@ -340,12 +340,6 @@ class UserServices
     }
 
 
-    public function getAllowedBadgeUsersByCongress($congressId)
-    {
-        return User::where('congress_id', '=', $congressId)
-            ->where('isBadgeGeted', '=', 0)
-            ->get();
-    }
 
     public function getUsersMinByCongress($congressId, $privilegeId)
     {
@@ -566,7 +560,7 @@ class UserServices
     public function getUserByEmail($email)
     {
         $email = strtolower($email);
-        return User::whereRaw('lower(email) like (?)', ["{$email}"])
+        return User::whereRaw('lower(email) = (?)', ["{$email}"])
             ->first();
     }
 
