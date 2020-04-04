@@ -15,6 +15,7 @@ class CreateEtablissementTable extends Migration
     {
         Schema::create('Etablissement', function (Blueprint $table) {
             $table->increments('etablissement_id');
+            $table->string('city')->default('');
             $table->string('label');
             $table->timestamps();
         });

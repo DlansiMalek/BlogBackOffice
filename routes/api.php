@@ -125,6 +125,7 @@ Route::group(['prefix' => 'users'], function () {
 //Congress API
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
+    Route::get('/all', 'CongressController@getAllCongresses');
 
     Route::group(['prefix' => 'mail'], function () {
         Route::get('{mailId}', 'MailController@getById');
@@ -227,6 +228,8 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
+
+    Route::post('/register', 'UserController@registerUser');
 
     Route::group(['prefix' => 'congress'], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
@@ -394,7 +397,6 @@ Route::group(["prefix" => "voting-users"], function () {
     Route::post("send-scores", "VotingController@sendScores");
 });
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
-
 
 Route::get('encrypt/{password}', 'SharedController@encrypt');
 
