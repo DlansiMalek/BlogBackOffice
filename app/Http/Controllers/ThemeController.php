@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class ThemeController extends Controller
 {
-    private $themeServices;
+    protected $themeServices;
 
     function __construct(ThemeServices $themeServices)
     {
@@ -20,7 +20,7 @@ class ThemeController extends Controller
     }
 
     public function getAllThemesByCongress(){
-        
+
         return $this->themeServices->getAllThemesByCongress();
     }
 }

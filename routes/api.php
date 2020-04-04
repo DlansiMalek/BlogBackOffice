@@ -22,6 +22,8 @@ Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
+Route::get('/services','SharedController@getAllServices');
+Route::get('/etablissements','SharedController@getAllEtablissements');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
@@ -76,7 +78,7 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-
+    Route::post('save-athor','AuthorController@saveAuthor');
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::group(['prefix' => '{user_id}'], function () {
 
@@ -218,6 +220,8 @@ Route::group(['prefix' => 'packadmin'], function () {
 });
 
 //User API
+
+
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
@@ -226,6 +230,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
 
     Route::group(['prefix' => 'congress'], function () {
+        Route::get('getMinimalCongress','CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::get('list-all','UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');

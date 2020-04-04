@@ -9,7 +9,7 @@ class SubmissionServices
 
 
 
-    public function addSubmission($title,$type,$prez_type,$description,$author_id,$congress_id,$theme_id)
+    public function addSubmission($title,$type,$prez_type,$description,$congress_id,$theme_id)
         
     {
 
@@ -21,7 +21,7 @@ class SubmissionServices
         $submission->congress_id=$congress_id;
         $submission->theme_id=$theme_id;
         $submission->save();
-      
+        return $submission;
     }
 
 }

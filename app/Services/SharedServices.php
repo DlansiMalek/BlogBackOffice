@@ -6,6 +6,8 @@ use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
 use App\Models\Privilege;
+use App\Models\Service;
+use App\Models\Etablissement;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -21,6 +23,13 @@ class SharedServices
     {
         return Privilege::with(['badges'])
             ->get();
+    }
+
+    public function getAllServices(){
+        return Service::all();
+    }
+    public function getAllEtablissements(){
+        return Etablissement::all();
     }
 
     public function saveBadgeInPublic($badgeIdGenerator, $name, $qrCode)
