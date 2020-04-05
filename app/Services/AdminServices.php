@@ -99,7 +99,37 @@ class AdminServices
         $admin->save();
         return $admin;
     }
+    
+    public function getAllEvaluators(){
 
+       if(!$evaluateurs=Admin::where("privilege_id","=",11)->get())
+        return response()->json(['response'=>'no Evaluators found']);
+        
+        return $evaluateurs;
+
+    }
+
+    public function getEvaluatorsByCongressId($congressId,$privilegeId){
+        $evaluateurs=Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId){
+                $query->where('congress_id','=',$congressId);
+                $query->where('privilege_id','=',$privilegeId);
+            })->get();
+            if (!sizeof($evaluateurs)>=1)
+            
+            return response()->json(['response'=>'no Evaluators found'],400);
+
+            return $evaluateurs;
+
+    }
+
+    public function getEvluatiorsBySubmission(){
+        $evaluateurs=Admin::whereHas('submission_evaluation')
+        ->with(['submission'])
+        ->get();
+        
+        return $evaluateurs;
+
+    }
     public function addHistory($history, $admin, $pack)
     {
         $history->admin_id = $admin->admin_id;

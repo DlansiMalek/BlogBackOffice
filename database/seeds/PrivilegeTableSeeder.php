@@ -48,5 +48,9 @@ class PrivilegeTableSeeder extends Seeder
             'privilege_id' => 10,
             'name' => 'Marketing'
         ]);
+        DB::table('Privilege')->insert([
+            'privilege_id'=>11,
+            'name'=>'Comite scientifique'
+        ]);
     }
 }

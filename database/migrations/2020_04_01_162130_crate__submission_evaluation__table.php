@@ -24,7 +24,7 @@ class CrateSubmissionEvaluationTable extends Migration
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
 
-            $table->integer('note')->default(null);
+            $table->integer('note')->nullable()->default(null);
 
             $table->softDeletes();
             $table->timestamps();

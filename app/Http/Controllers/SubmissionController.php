@@ -2,18 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SubmissionEvaluation;
+use App\Services\AdminServices;
 use App\Services\AuthorServices;
+use App\Services\SubmissionEvaluationService;
 use App\Services\SubmissionServices;
+use App\Services\ThemeServices;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
 {
     private $submissionServices;
     private $autherServices;
-    function __construct(SubmissionServices $submissionServices, AuthorServices $authorServices)
+    private $themeServices;
+    private $adminServices;
+    private $submissionEvaluationServices;
+
+    function __construct(
+    SubmissionServices $submissionServices, 
+    AuthorServices $authorServices,
+    ThemeServices $themeServices,
+    AdminServices $adminServices,
+    SubmissionEvaluationService $submissionEvaluationServices
+    )
     {   
       $this->submissionServices=$submissionServices;
       $this->autherServices=$authorServices;
+      $this->themeServices=$themeServices;
+      $this->adminServices=$adminServices;
+      $this->submissionEvaluationServices=$submissionEvaluationServices;
     }
 
     public function addSubmission(Request $request)
@@ -35,6 +52,7 @@ class SubmissionController extends Controller
             
         );
         $this->saveAuthorsBySubmission($request->input('authors'),$submission);
+        $this->affectSubmissionToEvaluators($submission->theme_id,$submission->congress_id,$submission->submission_id);
         return response()->json(['response'=>'Enregistrement avec succes'],200);
 
     }
@@ -54,4 +72,33 @@ class SubmissionController extends Controller
         }
     }
 
+    public function affectSubmissionToEvaluators($themeId,$congressId,$submissionId){
+      
+      $theme=$this->themeServices->getThemeByCongressIdAndThemeId($themeId,$congressId) ;  
+
+      $admins=$this->adminServices->getEvaluatorsByCongressId($congressId,11);
+
+        if ($theme){
+            foreach($admins as $admin){
+                
+                $this->submissionEvaluationServices->addSubmissionEvaluation($admin->admin_id,$submissionId);
+                
+            }
+        }
+        else {
+            $evaluators= $this->adminServices->getEvluatiorsBySubmission();
+            $admin_id=$evaluators[0]->admin_id;
+            $min=count($evaluators[0]->submission);
+            foreach($evaluators as $evaluator){
+                if (count($evaluator->submission)<$min)
+                {
+                    $min=count($evaluator->submission);
+                    $admin_id=$evaluator->admin_id;
+                }
+                return $this->submissionEvaluationServices->addSubmissionEvaluation($admin_id,$submissionId);
+
+            }
+        }
+    
+    }
 }

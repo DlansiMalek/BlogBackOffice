@@ -742,6 +742,10 @@ class AdminController extends Controller
             return response()->json(['response' => 'admin added with payment and history'], 202);
         }
     }
+    public function getAllEvaluators($congressId,$privilegeId){
+
+        return $this->adminServices->getEvaluatorsByCongressId($congressId,$privilegeId);
+    }
 
     public function update(Request $request, $admin_id)
     {
