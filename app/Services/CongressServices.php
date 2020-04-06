@@ -436,7 +436,7 @@ class CongressServices
             'accesss.sub_accesses',
             'accesss.topic',
             'accesss.type'])
-            ->where('end_date', ">=", $day)
+            //->where('end_date', ">=", $day)
             ->get();
 
     }

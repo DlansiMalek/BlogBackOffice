@@ -4,11 +4,32 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Resource;
+use App\Models\ResourceSubmission;
 use App\SpeakerAccess;
 
 class ResourcesServices
 {
-    private $path = 'resources/';
+
+    public function saveResource($path,$size)
+    {
+        $resource= new Resource();
+        $resource->path=$path;
+        $resource->size=$size;
+        $resource->save();
+        return $resource;
+    }
+
+    public function saveResourceSubmission($resource_id,$Submission_id){
+
+        $resourceSubmission=new ResourceSubmission();
+        $resourceSubmission->resource_id=$resource_id;
+        $resourceSubmission->Submission_id=$Submission_id;
+        $resourceSubmission->save();
+        return $resourceSubmission;
+
+    }
+
+    /*private $path = 'resources/';
 
     public function uploadResource($file)
     {
@@ -77,5 +98,5 @@ class ResourcesServices
                 $resource->update();
             }
         }
-    }
+    }*/
 }

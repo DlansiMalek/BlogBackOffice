@@ -57,6 +57,10 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::post('delete', 'FileController@deleteUserCV');
 });
 
+Route::get('getSubmissionById/{submissionId}','SubmissionController@getSubmissionById');
+Route::group(['prefix'=>'files'],function(){
+    Route::post('/upload-resource','FileController@uploadResource');
+});
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
     Route::post('/login', 'Auth\LoginController@loginAdminMobile');

@@ -24,4 +24,8 @@ class SubmissionServices
         return $submission;
     }
 
+    public function getSubmissionById($submission_id){
+        return Submission::where('submission_id','=',$submission_id)->first();
+    }
+
 }
