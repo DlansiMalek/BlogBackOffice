@@ -14,13 +14,9 @@ class ThemeController extends Controller
         $this->themeServices=$themeServices;
     }
 
+
     public function getAllThemes(){
-        
-        return Theme::All();
-    }
 
-    public function getAllThemesByCongress(){
-
-        return $this->themeServices->getAllThemesByCongress();
+        return $this->themeServices->getAllThemes();
     }
 }

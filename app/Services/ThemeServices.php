@@ -9,9 +9,10 @@ use App\Models\Theme;
 class ThemeServices {
 
 
-    public function getAllThemesByCongress(){
+    public function getAllThemes()
+    {
 
-        return Theme::whereHas('congresses')->get();
+        return Theme::all();
     
     }
     

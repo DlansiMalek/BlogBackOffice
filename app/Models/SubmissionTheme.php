@@ -12,10 +12,12 @@ class SubmissionTheme extends Model
     protected $fillable = ['theme_id','congress_id'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
-    function theme(){
-        $this->belongsTo('App\Models\Theme','theme_id','theme_id');
+    function theme()
+    {
+        return  $this->belongsTo('App\Models\Theme','theme_id','theme_id');
     }
-    function congress(){
-        $this->belongsTo('App\Models\congress','congress_id','congress_id');
+    function congress()
+    {
+         return  $this->belongsTo('App\Models\Congress','congress_id','congress_id');
     }
 }

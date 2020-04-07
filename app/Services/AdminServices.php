@@ -109,22 +109,30 @@ class AdminServices
 
     }
 
-    public function getEvaluatorsByCongressId($congressId,$privilegeId){
-        $evaluateurs=Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId){
-                $query->where('congress_id','=',$congressId);
-                $query->where('privilege_id','=',$privilegeId);
-            })->get();
-            if (!sizeof($evaluateurs)>=1)
-            
-            return response()->json(['response'=>'no Evaluators found'],400);
+    public function getEvaluatorsByCongressId($congressId,$privilegeId,$themeId){
 
-            return $evaluateurs;
+            return Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId){
+                    $query->where('congress_id','=',$congressId);
+                    $query->where('privilege_id','=',$privilegeId);
+                })->with(['congresses.theme'=> function($query) use ($themeId){
+                    $query->where('Theme.theme_id','=',$themeId);
+                }])->withCount(['submission'=> function($query) use ($congressId){
+                    $query->where('congress_id','=',$congressId);
+                   
+                }])
+                ->orderBy('submission_count','asc')
+                ->get();
+
+
+           
 
     }
 
-    public function getEvluatiorsBySubmission(){
-        $evaluateurs=Admin::whereHas('submission_evaluation')
-        ->with(['submission'])
+    public function getEvluatiorsBySubmission($congress_id){
+        $evaluateurs=Admin::whereHas('submission_evaluation') //privilege_id='comité scientifique', congress_id
+        ->with(['submission'=>function($query) use ($congress_id){
+            $query->where('congress_id','=',$congress_id);
+        }])
         ->get();
         
         return $evaluateurs;

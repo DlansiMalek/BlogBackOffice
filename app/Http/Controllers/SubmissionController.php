@@ -18,7 +18,6 @@ class SubmissionController extends Controller
     protected $autherServices;
     protected $themeServices;
     protected $adminServices;
-    protected $submissionEvaluationServices;
     protected $resourcesServices;
 
     function __construct(
@@ -26,7 +25,6 @@ class SubmissionController extends Controller
     AuthorServices $authorServices,
     ThemeServices $themeServices,
     AdminServices $adminServices,
-    SubmissionEvaluationService $submissionEvaluationServices,
     ResourcesServices $resourcesServices
     )
     {   
@@ -34,7 +32,6 @@ class SubmissionController extends Controller
       $this->autherServices=$authorServices;
       $this->themeServices=$themeServices;
       $this->adminServices=$adminServices;
-      $this->submissionEvaluationServices=$submissionEvaluationServices;
       $this->resourcesServices=$resourcesServices;
     }
 
@@ -62,9 +59,9 @@ class SubmissionController extends Controller
 
         $this->affectSubmissionToEvaluators($submission->theme_id,$submission->congress_id,$submission->submission_id);
 
-        if (sizeof($request->input('resources'))>=1){
+        if (sizeof($request->input('resourceIds'))>=1){
 
-        $this->saveResourceSubmission($request->input('resources'),$submission->submission_id);
+        $this->saveResourceSubmission($request->input('resourceIds'),$submission->submission_id);
         }
         
         return response()->json(['response'=>'Enregistrement avec succes'],200);
@@ -101,52 +98,32 @@ class SubmissionController extends Controller
         }
     }
 
-    public function saveResourceSubmission($resources,$submission_id){
+    public function saveResourceSubmission($resourceIds,$submission_id)
+    {
 
-        $savedResources=[];
-        try{
-        foreach($resources as $resource){
-           array_push($savedResources ,$this->resourcesServices->saveResource($resource['path'],$resource['size']));
-        }
-        foreach($savedResources as $savedResource){
-            $this->resourcesServices->saveResourceSubmission($savedResource['resource_id'],$submission_id);
-        }
-        }
-        catch(Exception $e) {
+       foreach($resourceIds as $resourceId)
+        {
 
-            Log::info($e->getMessage());
-            return response()->json(['response'=>$e->getMessage()],400);
-
+            $this->resourcesServices->saveResourceSubmission($resourceId,$submission_id);
+        
         }
     }
 
-    public function affectSubmissionToEvaluators($themeId,$congressId,$submissionId){
-      
-      $theme=$this->themeServices->getThemeByCongressIdAndThemeId($themeId,$congressId) ;  
+    public function affectSubmissionToEvaluators($themeId,$congressId,$submissionId)
+    {
 
-      $admins=$this->adminServices->getEvaluatorsByCongressId($congressId,11);
-       
-        if ($theme){
-            foreach($admins as $admin){
-                
-                return $this->submissionEvaluationServices->addSubmissionEvaluation($admin['admin_id'],$submissionId);
-                
-            }
-        }
-        else {
-            $evaluators= $this->adminServices->getEvluatiorsBySubmission();
-            $admin_id=$evaluators[0]->admin_id;
-            $min=count($evaluators[0]->submission);
-            foreach($evaluators as $evaluator){
-                if (count($evaluator->submission)<$min)
-                {
-                    $min=count($evaluator->submission);
-                    $admin_id=$evaluator->admin_id;
-                }
-                return $this->submissionEvaluationServices->addSubmissionEvaluation($admin_id,$submissionId);
+            $configSubmission=$this->submissionServices->getConfigSubmission($congressId);
 
-            }
-        }
+            $admins= $this->adminServices->getEvaluatorsByCongressId($congressId,11,$themeId);
+
+            
+        
+        for ($i=0;$i<$configSubmission['num_evaluators'];$i++)
+        {          
+
+             $this->submissionServices->addSubmissionEvaluation($admins[$i]->admin_id,$submissionId);
+            
+        }      
     
     }
 }

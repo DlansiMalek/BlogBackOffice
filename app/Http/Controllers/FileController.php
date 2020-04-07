@@ -128,6 +128,8 @@ class FileController extends Controller
       
         $chemin = config('media.resource');
         $path=$file->store($chemin);
-        return response()->json(['path' => $path,'size'=>$file->getSize()]);
+        $savedPath=str_replace('resource/','',$path);
+        $resource=$this->resourceServices->saveResource($savedPath,$file->getSize());
+        return response()->json(['resource'=>$resource]);
     }
 }

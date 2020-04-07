@@ -56,7 +56,6 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
 });
-
 Route::group(['prefix'=>'files'],function(){
     Route::post('/upload-resource','FileController@uploadResource');
 });
@@ -200,8 +199,8 @@ Route::group(['prefix' => 'submission'],function(){
     Route::post('add','SubmissionController@addSubmission');
 });
 Route::group(['prefix'=>'theme'],function(){
-    Route::get('all','ThemeController@getAllTheme');
-    Route::get('themesByCongress','ThemeController@getAllThemesByCongress');
+    Route::get('all','ThemeController@getAllThemes');
+   
 });
 //PackAdmin API
 Route::group(['prefix' => 'packadmin'], function () {
