@@ -102,10 +102,7 @@ class AdminServices
     
     public function getAllEvaluators(){
 
-       if(!$evaluateurs=Admin::where("privilege_id","=",11)->get())
-        return response()->json(['response'=>'no Evaluators found']);
-        
-        return $evaluateurs;
+      return Admin::where("privilege_id","=",11)->get();
 
     }
 
