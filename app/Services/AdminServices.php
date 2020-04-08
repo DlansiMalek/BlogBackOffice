@@ -109,16 +109,15 @@ class AdminServices
 
     }
 
-    public function getEvaluatorsByCongressId($congressId,$privilegeId,$themeId){
+    public function getEvaluatorsByCongress($congressId,$privilegeId){
 
-            return Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId){
+            return Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId)
+                {
                     $query->where('congress_id','=',$congressId);
                     $query->where('privilege_id','=',$privilegeId);
-                })->with(['congresses.theme'=> function($query) use ($themeId){
-                    $query->where('Theme.theme_id','=',$themeId);
-                }])->withCount(['submission'=> function($query) use ($congressId){
+                })
+                ->withCount(['submission'=> function($query) use ($congressId){
                     $query->where('congress_id','=',$congressId);
-                   
                 }])
                 ->orderBy('submission_count','asc')
                 ->get();
@@ -128,16 +127,25 @@ class AdminServices
 
     }
 
-    public function getEvluatiorsBySubmission($congress_id){
-        $evaluateurs=Admin::whereHas('submission_evaluation') //privilege_id='comité scientifique', congress_id
-        ->with(['submission'=>function($query) use ($congress_id){
-            $query->where('congress_id','=',$congress_id);
-        }])
-        ->get();
-        
-        return $evaluateurs;
+    public function getEvaluatorsByTheme($themeId,$congressId,$privilegeId){
+
+        return Admin::whereHas('theme_admin',function($query) use ($privilegeId,$themeId)
+            {
+                $query->where('privilege_id','=',$privilegeId);
+                $query->where('theme_id','=',$themeId);
+            
+            })
+            ->withCount(['submission'=> function($query) use ($congressId){
+                $query->where('congress_id','=',$congressId);   
+            }])
+            ->orderBy('submission_count','asc')
+            ->get();
+
+
+       
 
     }
+  
     public function addHistory($history, $admin, $pack)
     {
         $history->admin_id = $admin->admin_id;

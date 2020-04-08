@@ -15,4 +15,10 @@ class Theme extends Model
     {
         return $this->belongsToMany('App\Models\Congress', 'Submission_Theme', 'theme_id', 'congress_id');
     }
+    
+    function theme_admin(){
+
+        return $this->hasMany('App\Models\ThemeAdmin','theme_id','theme_id');
+    }
+    
 }

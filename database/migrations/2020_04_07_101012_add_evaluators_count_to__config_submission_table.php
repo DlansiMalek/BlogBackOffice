@@ -14,7 +14,8 @@ class AddEvaluatorsCountToConfigSubmissionTable extends Migration
     public function up()
     {
         Schema::table('Config_Submission', function (Blueprint $table) {
-            $table->integer('num_evaluators');
+            $table->integer('num_evaluators')
+            ->after('max_words');
         });
     }
 
@@ -26,7 +27,7 @@ class AddEvaluatorsCountToConfigSubmissionTable extends Migration
     public function down()
     {
         Schema::table('config_Submission', function (Blueprint $table) {
-            $table->dropColumn('num_evaluators');
+            $table->dropColumn('num_evaluators');       
         });
     }
 }

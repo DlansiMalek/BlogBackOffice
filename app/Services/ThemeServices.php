@@ -16,10 +16,10 @@ class ThemeServices {
     
     }
     
-    public function getThemeByCongressIdAndThemeId($themeId,$congressId){
-        return Theme::whereHas('congresses',function($query) use ($themeId,$congressId){
+    public function getThemesByCongressId($congressId){
+        return Theme::whereHas('congresses',function($query) use ($congressId){
             $query->where('Congress.congress_id','=',$congressId);
-            $query->where('theme_id','=',$themeId);
-        })->first();
+         
+        })->get();
     }
 }

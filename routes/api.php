@@ -192,7 +192,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
     });
 });
-
 //Submission API
 
 Route::group(['prefix' => 'submission'],function(){
@@ -200,7 +199,7 @@ Route::group(['prefix' => 'submission'],function(){
 });
 Route::group(['prefix'=>'theme'],function(){
     Route::get('all','ThemeController@getAllThemes');
-   
+    Route::get('congress/{congressId}','ThemeController@getThemesByCongressId');
 });
 //PackAdmin API
 Route::group(['prefix' => 'packadmin'], function () {

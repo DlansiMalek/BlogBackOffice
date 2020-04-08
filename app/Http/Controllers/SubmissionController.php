@@ -57,15 +57,22 @@ class SubmissionController extends Controller
             );
         $this->saveAuthorsBySubmission($request->input('authors'),$submission->submission_id);
 
-        $this->affectSubmissionToEvaluators($submission->theme_id,$submission->congress_id,$submission->submission_id);
+        $this->affectSubmissionToEvaluators(
+        $submission->theme_id,
+        $submission->congress_id,
+        $submission->submission_id
+        );
 
-        if (sizeof($request->input('resourceIds'))>=1){
+        if (sizeof($request->input('resourceIds'))>=1)
+        {
 
         $this->saveResourceSubmission($request->input('resourceIds'),$submission->submission_id);
+        
         }
         
         return response()->json(['response'=>'Enregistrement avec succes'],200);
          }
+
          catch (Exception $e) {
 
             Log::info($e->getMessage());
@@ -73,7 +80,8 @@ class SubmissionController extends Controller
         }
 
     }
-    public function getSubmissionById($submission_id){
+    public function getSubmissionById($submission_id)
+    {
         if (!$submission=$this->submissionServices->getSubmissionById($submission_id)){
             return response()->json(['response'=>'no submission found'],400);
         }
@@ -114,16 +122,22 @@ class SubmissionController extends Controller
 
             $configSubmission=$this->submissionServices->getConfigSubmission($congressId);
 
-            $admins= $this->adminServices->getEvaluatorsByCongressId($congressId,11,$themeId);
+            $admins= $this->adminServices->getEvaluatorsByTheme($themeId,$congressId,11);
 
-            
-        
-        for ($i=0;$i<$configSubmission['num_evaluators'];$i++)
-        {          
+            if (!sizeof($admins)>0)
+            {
+                $admins=$this->adminServices->getEvaluatorsByCongress($congressId,11);
+            }
 
-             $this->submissionServices->addSubmissionEvaluation($admins[$i]->admin_id,$submissionId);
+            $loopLength=sizeof($admins)>$configSubmission['num_evaluators'] ? $configSubmission['num_evaluators'] : sizeof($admins);
+
+            for ($i=0;$i<$loopLength;$i++)
+            {          
+
+                    $this->submissionServices->addSubmissionEvaluation($admins[$i]->admin_id,$submissionId);
+                    
+            }
             
-        }      
     
     }
 }
