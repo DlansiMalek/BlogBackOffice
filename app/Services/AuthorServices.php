@@ -12,6 +12,12 @@ use App\Models\Author;
 
 class AuthorServices{
 
+    protected $submissionServices;
+
+    function __construct(SubmissionServices $submissionServices)
+    {
+        $this->submissionServices=$submissionServices;
+    }
 
     public function saveAuthor($first_name,$last_name,$rank,$submission_id,$service_id,$etablissement_id){
 
@@ -26,5 +32,22 @@ class AuthorServices{
         return $author;
     }
 
+    public function saveAuthorsBySubmission($authors,$submission_id)
+    {
+        if(!$submission=$this->submissionServices->getSubmissionById($submission_id)){
+            return response()->json(['response'=>'no submission found'],400);
+        }
+        foreach($authors as $author){
+            $this->saveAuthor(
+                $author['first_name'],
+                $author['last_name'],
+                $author['rank'],
+                $submission_id,
+                $author['service_id'],
+                $author['etablissement_id'],
+
+            );
+        }
+    }
 
 }

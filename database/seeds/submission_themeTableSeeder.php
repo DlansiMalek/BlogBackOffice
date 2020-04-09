@@ -12,7 +12,7 @@ class submission_themeTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::insert('submission_theme')->insert([
+        DB::insert('Submission_Theme')->insert([
             'congress_id'=>1,
             'theme_id'=>1
         ]);

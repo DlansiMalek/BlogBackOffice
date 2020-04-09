@@ -95,7 +95,6 @@ Route::get('/testImpression', 'UserController@testImpression');
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
-    Route::post('save-athor','AuthorController@saveAuthor');
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::group(['prefix' => '{user_id}'], function () {
 

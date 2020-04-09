@@ -126,7 +126,7 @@ class AdminServices
 
     public function getEvaluatorsByTheme($themeId,$congressId,$privilegeId){
 
-        return Admin::whereHas('theme_admin',function($query) use ($privilegeId,$themeId)
+        return Admin::whereHas('themeAdmin',function($query) use ($privilegeId,$themeId)
             {
                 $query->where('privilege_id','=',$privilegeId);
                 $query->where('theme_id','=',$themeId);
