@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Submission;
 use App\Models\ConfigSubmission;
 use App\Models\SubmissionEvaluation;
+use App\Models\ResourceSubmission;
 class SubmissionServices 
 {
     protected $resourcesServices;
@@ -47,32 +48,22 @@ class SubmissionServices
     public function saveResourceSubmission($resourceIds,$submission_id)
     {
 
-        if(!$submission=$this->getSubmissionById($submission_id)){
-            return response()->json(['response'=>'no submission found'],400);
-        }
-
        foreach($resourceIds as $resourceId)
         {
 
-            $this->resourcesServices->saveResourceSubmission($resourceId,$submission_id);
+            $resourceSubmission=new ResourceSubmission();
+            $resourceSubmission->resource_id=$resourceId;
+            $resourceSubmission->Submission_id=$submission_id;
+            $resourceSubmission->save();
+            $resourceSubmission;
         
         }
     }
 
-    public function affectSubmissionToEvaluators($theme_id,$congress_id,$submission_id)
+    public function affectSubmissionToEvaluators($congress_id,$submission_id,$admins)
     {
-            if(!$submission=$this->getSubmissionById($submission_id)){
-                return response()->json(['response'=>'no submission found'],400);
-            }
 
             $configSubmission=$this->getConfigSubmission($congress_id);
-
-            $admins= $this->adminServices->getEvaluatorsByTheme($theme_id,$congress_id,11);
-
-            if (!sizeof($admins)>0)
-            {
-                $admins=$this->adminServices->getEvaluatorsByCongress($congress_id,11);
-            }
 
             $loopLength=sizeof($admins)>$configSubmission['num_evaluators'] ? $configSubmission['num_evaluators'] : sizeof($admins);
 

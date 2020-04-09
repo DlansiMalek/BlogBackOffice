@@ -40,6 +40,10 @@ class Congress extends Model
         return $this->hasMany('App\Models\Badge', 'congress_id', 'congress_id');
     }
 
+    public function ConfigSubmission(){
+        return $this->hasOne('App\Models\ConfigSubmission','congress_id','congress_id');
+    }
+
     public function mails()
     {
         return $this->hasMany('App\Models\Mail', 'congress_id', 'congress_id');

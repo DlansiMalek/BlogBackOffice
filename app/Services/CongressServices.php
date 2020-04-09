@@ -107,6 +107,9 @@ class CongressServices
                 'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
                     $query->where('congress_id', '=', $id_Congress);
                 },
+                'ConfigSubmission'=>function ($query) use ($id_Congress){
+                    $query->where('congress_id','=',$id_Congress);
+                },
                 'location.city.country',
                 'accesss.speakers',
                 'accesss.chairs',

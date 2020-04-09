@@ -16,15 +16,17 @@ class SubmissionController extends Controller
 {
     protected $submissionServices;
     protected $authorServices;
-
+    protected $adminServices;
 
     function __construct(
         SubmissionServices $submissionServices,
-        AuthorServices $authorServices
+        AuthorServices $authorServices,
+        AdminServices $adminServices
         )
     {
         $this->submissionServices=$submissionServices;
         $this->authorServices=$authorServices;
+        $this->adminServices=$adminServices;
     }
 
     public function addSubmission(Request $request)
@@ -48,11 +50,13 @@ class SubmissionController extends Controller
                 
             );
         $this->authorServices->saveAuthorsBySubmission($request->input('authors'),$submission->submission_id);
+        
+        $admins=$this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id,11);
 
         $this->submissionServices->affectSubmissionToEvaluators(
-        $submission->theme_id,
         $submission->congress_id,
-        $submission->submission_id
+        $submission->submission_id,
+        $admins
         );
 
         $this->submissionServices->saveResourceSubmission($request->input('resourceIds'),$submission->submission_id);
