@@ -18,9 +18,13 @@ class CreateSubmissionTable extends Migration
             $table->string('title');
             $table->string('type');
             $table->string('prez_type');
-            $table->string('description');
+            $table->text('description');
             $table->integer('global_note')->default(0);
             $table->integer('status')->default(0);
+
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('user_id')->on('User')
+                ->onDelete('cascade');
 
             $table->unsignedInteger('theme_id')->nullable();
             $table->foreign('theme_id')->references('theme_id')->on('Theme')
@@ -42,11 +46,13 @@ class CreateSubmissionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Submission');
-
         Schema::table('Submission', function ($table) {
             $table->dropForeign(['theme_id']);
             $table->dropForeign(['congress_id']);
+            $table->dropForeign(['user_id']);
         });
+        Schema::dropIfExists('Submission');
+
+
     }
 }

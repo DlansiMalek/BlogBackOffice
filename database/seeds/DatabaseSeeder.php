@@ -64,6 +64,8 @@ class DatabaseSeeder extends Seeder
         $this->call(HistoryTableSeeder::class);
         $this->call(PaymentAdminSeedTable::class);
 
+        $this->call(SubmissionModuleSeeders::class);
+
         // $this->call(MigrationOldData::class);
 
 

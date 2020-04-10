@@ -23,11 +23,11 @@ class CreateAuthorTable extends Migration
             $table->foreign('submission_id')->references('submission_id')->on('Submission')
                 ->onDelete('cascade');
             
-                $table->unsignedInteger('service_id');
+                $table->unsignedInteger('service_id')->nullable()->default(null);
                 $table->foreign('service_id')->references('service_id')->on('Service')
                 ->onDelete('cascade');
 
-                $table->unsignedInteger('etablissement_id');
+                $table->unsignedInteger('etablissement_id')->nullable()->default(null);
                 $table->foreign('etablissement_id')->references('etablissement_id')->on('Etablissement')
                 ->onDelete('cascade');
 

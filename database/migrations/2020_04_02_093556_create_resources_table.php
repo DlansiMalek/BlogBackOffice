@@ -27,7 +27,6 @@ class CreateResourcesTable extends Migration
     public function down()
     {
         Schema::table('Resource', function (Blueprint $table) {
-            $table->dropColumn('path');
             $table->dropColumn('size');
         });
     }

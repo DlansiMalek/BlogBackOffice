@@ -42,6 +42,27 @@ class CongressServices
         return Congress::all();
     }
 
+    public function getMinimalCongress()
+    {
+        
+        return Congress::with([
+            "mails.type",
+            "attestation",
+            "badges",
+            "accesss",
+            "form_inputs.type",
+            "form_inputs.values",
+            "config",
+            "accesss" => function ($query) {
+                $query->where('show_in_register', '=', 1);
+                $query->whereNull('parent_id');
+            },
+            'accesss.participants.user_congresses' => function ($query) {
+                $query->where('privilege_id', '=', 3);
+            }])
+
+            ->get();
+    }
 
     public function getMinimalCongressById($congressId)
     {
@@ -85,6 +106,9 @@ class CongressServices
                 },
                 'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
                     $query->where('congress_id', '=', $id_Congress);
+                },
+                'ConfigSubmission'=>function ($query) use ($id_Congress){
+                    $query->where('congress_id','=',$id_Congress);
                 },
                 'location.city.country',
                 'accesss.speakers',

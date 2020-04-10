@@ -99,7 +99,59 @@ class AdminServices
         $admin->save();
         return $admin;
     }
+    
+    public function getAllEvaluators(){
 
+      return Admin::where("privilege_id","=",11)->get();
+
+    }
+
+    public function getEvaluatorsByCongress($congressId,$privilegeId){
+
+            return Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId)
+                {
+                    $query->where('congress_id','=',$congressId);
+                    $query->where('privilege_id','=',$privilegeId);
+                })
+                ->withCount(['submission'=> function($query) use ($congressId){
+                    $query->where('congress_id','=',$congressId);
+                }])
+                ->orderBy('submission_count','asc')
+                ->get();
+
+
+           
+
+    }
+
+    public function getEvaluatorsByTheme($themeId,$congressId,$privilegeId){
+
+        return Admin::whereHas('themeAdmin',function($query) use ($privilegeId,$themeId)
+            {
+                $query->where('privilege_id','=',$privilegeId);
+                $query->where('theme_id','=',$themeId);
+            
+            })
+            ->withCount(['submission'=> function($query) use ($congressId){
+                $query->where('congress_id','=',$congressId);   
+            }])
+            ->orderBy('submission_count','asc')
+            ->get();
+
+
+       
+
+    }
+
+    public function getEvaluatorsByThemeOrByCongress($themeId,$congressId,$privilegeId){
+        
+        $admins=$this->getEvaluatorsByTheme($themeId,$congressId,$privilegeId);
+        if (!sizeof($admins)>0){
+            $admins=$this->getEvaluatorsByCongress($congressId,$privilegeId);
+        }
+        return $admins;
+    }
+  
     public function addHistory($history, $admin, $pack)
     {
         $history->admin_id = $admin->admin_id;

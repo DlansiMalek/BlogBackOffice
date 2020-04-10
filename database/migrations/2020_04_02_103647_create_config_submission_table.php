@@ -21,6 +21,7 @@ class CreateConfigSubmissionTable extends Migration
                 ->onDelete('cascade');
 
             $table->integer('max_words');
+            $table->integer('num_evaluators');
             $table->dateTime('start_submission_date');
             $table->dateTime('end_submission_date');
 
