@@ -13,7 +13,7 @@ class Theme extends Model
 
     function congresses()
     {
-        return $this->belongsToMany('App\Models\Congress', 'Submission_Theme', 'theme_id', 'congress_id');
+        return $this->belongsToMany('App\Models\Congress', 'Congress_Theme', 'theme_id', 'congress_id');
     }
     
     function themeAdmin(){
