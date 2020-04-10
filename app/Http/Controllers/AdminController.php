@@ -438,10 +438,10 @@ class AdminController extends Controller
         }
 
         $admin = $request->input('admin');
-
+        $privilegeId = (int)$request->input('privilege_id');
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin);
+            $admin = $this->adminServices->addPersonnel($admin,$privilegeId);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
@@ -455,11 +455,17 @@ class AdminController extends Controller
             // else edit changed infos while creating
 
             $admin['admin_id'] = $admin_id;
-            $this->adminServices->editPersonnel($admin);
+            $this->adminServices->editPersonnel($admin,$privilegeId);
         }
 
-        $privilegeId = (int)$request->input('privilege_id');
         $congress = $this->congressService->getById($congress_id);
+
+        //create themeAdmin if privilege is "comité Scientifique"
+
+        if ($privilegeId==11){
+            $this->adminServices->affectThemesToAdmin($request->input("themesSelected"),$admin_id);
+        }
+
         //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
             $privilegeId,
@@ -497,12 +503,17 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $request->input('admin');
-        $this->adminServices->editPersonnel($admin);
+        $privilegeId=(int)$request->input('privilege_id');
+        $this->adminServices->editPersonnel($admin,$privilegeId);
         $this->privilegeServices->editPrivilege(
-            (int)$request->input('privilege_id'),
+            $privilegeId,
             $admin_id,
             $congress_id);
         //message d'erreur à revoir
+
+        if ((int)$request->input('privilege_id')==11){
+          $this->adminServices->modifyAdminThemes($admin['admin_id'],$request->input('themesSelected'));
+        }
         return response()->json(['message' => 'working'], 200);
     }
 

@@ -13,6 +13,7 @@ use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
 use App\Models\HistoryPack;
+use App\Models\ThemeAdmin;
 use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
@@ -214,6 +215,9 @@ class AdminServices
                 $query->where('congress_id', '=', $congress_id)
                     ->where('admin_id', '=', $admin_id)
                     ->first();
+            }])->with(['themeAdmin'=>function ($query) use ($admin_id){
+                $query->where('admin_id','=',$admin_id);  
+                //on a besoin du themeAdmin pour effectuer l'edit
             }])
             ->first();
     }
@@ -254,7 +258,7 @@ class AdminServices
 
     }
 
-    public function addPersonnel($admin)
+    public function addPersonnel($admin,$privilegeId)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
@@ -264,24 +268,72 @@ class AdminServices
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
-
+        $personnel->privilege_id=$privilegeId;
         $personnel->save();
 
         return $personnel;
     }
 
-    public function editPersonnel($admin)
+    public function editPersonnel($admin,$privilegeId)
     {
         return Admin::where("admin_id", "=", $admin['admin_id'])
             ->update(['name' => $admin["name"],
                 'email' => $admin["email"],
-                'mobile' => $admin["mobile"]]);
+                'mobile' => $admin["mobile"],
+                'privilege_id'=>$privilegeId]);
 
     }
 
     public function deleteAdminById($admin)
     {
         $admin->delete();
+    }
+
+    public function affectThemesToAdmin($themesIds,$admin_id){
+
+       foreach($themesIds as $themeId){
+           $themeAdmin=new ThemeAdmin();
+           $themeAdmin->theme_id=$themeId;
+           $themeAdmin->admin_id=$admin_id;
+           $themeAdmin->save();
+       }     
+    }
+
+    public function modifyAdminThemes($admin_id,$themesIds){
+        
+        $themeAdmin=ThemeAdmin::where('admin_id','=',$admin_id)->get();
+        $loopLength=sizeof($themeAdmin)<sizeof($themesIds) ? sizeof($themeAdmin) :  sizeof($themesIds);
+
+        //1)update 
+        for($i=0;$i<$loopLength;$i++){
+            $themeAdmin[$i]['theme_id']=$themesIds[$i];
+            $themeAdmin[$i]->update();
+        }
+        
+        //2)soit creér des nouveau themeAdmin soit en supprimer selon la taille des tableaux
+        
+        //le cas ou themeAdmin > themeIds donc on va supprimer les autres themes de cet admin
+
+        if (sizeof($themeAdmin)>sizeof($themesIds)){
+
+            for ($i=sizeof($themesIds);$i<sizeof($themeAdmin);$i++){
+                
+                   $themeAdmin[$i]->delete();
+                
+            }
+        }
+        //le cas ou themeadmin < themeIds donc on va affecter des themes à cet admin
+        else {
+            for ($i=sizeof($themeAdmin);$i<sizeof($themesIds);$i++){
+                
+                    $themeAdmin=new ThemeAdmin();
+                    $themeAdmin->theme_id=$themesIds[$i];
+                    $themeAdmin->admin_id=$admin_id;
+                    $themeAdmin->save();
+                
+            }
+        }
+        return $themeAdmin;
     }
 
     public function getAdminByQrCode($QrCode)

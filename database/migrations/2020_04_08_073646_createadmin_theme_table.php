@@ -22,12 +22,7 @@ class CreateadminThemeTable extends Migration
 
             $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
-                ->onDelete('cascade');
-
-            $table->unsignedInteger('privilege_id');
-            $table->foreign('privilege_id')->references('privilege_id')->on('Privilege')
-                    ->onDelete('cascade');
-
+                ->onDelete('cascade');  
             $table->timestamps();
         });
     }
