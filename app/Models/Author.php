@@ -13,4 +13,10 @@ class Author extends Model
     protected $hidden = ["password"];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
+
+
+
+    public function submission() {
+        return $this->hasMany('App\Models\Submission','author_id');
+    }
 }

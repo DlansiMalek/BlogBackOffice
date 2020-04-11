@@ -20,5 +20,8 @@ class Theme extends Model
 
         return $this->hasMany('App\Models\ThemeAdmin','theme_id','theme_id');
     }
-    
+
+    public function submission() {
+        return $this->hasMany('App\Models\Submission','theme_id');
+    }
 }

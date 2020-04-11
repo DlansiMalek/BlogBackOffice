@@ -78,4 +78,34 @@ class SubmissionController extends Controller
         }
 
     }
+
+    public function getCongressSubmission($congressId)
+    {   if($congressId<1)
+            {return response()->json(['response' => 'bad request'], 400);}
+        try {
+        $admin = $this->adminServices->retrieveAdminFromToken();
+        $submissions = $this->submissionServices->getCongressSubmission($admin,$congressId);
+        return response()->json(['submissions' => $submissions], 200);
+        }
+        catch (Exception $e) {
+
+        Log::info($e->getMessage());
+        return response()->json(['response' => $e->getMessage()], 400);
+        }
+    }
+
+    public function getCongressSubmissionForEvaluator($congressId)
+    {   if($congressId<1)
+            {return response()->json(['response' => 'bad request'], 400);}
+        try {
+            $admin = $this->adminServices->retrieveAdminFromToken();
+            $submissions = $this->submissionServices->getCongressSubmissionForEvaluator($admin,$congressId);
+            return response()->json(['submissions_evaluation' => $submissions], 200);
+        }
+        catch (Exception $e) {
+
+            Log::info($e->getMessage());
+            return response()->json(['response' => $e->getMessage()], 400);
+        }
+    }
 }

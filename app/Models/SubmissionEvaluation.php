@@ -11,4 +11,9 @@ class SubmissionEvaluation extends Model {
     protected $primaryKey = 'submission_evaluation_id';
     protected $fillable = ['submission_id','admin_id','note'];
     public $timestamps = false;
+
+    public function submission() {
+        return $this->belongsTo('App\Models\Submission','submission_evaluation_id');
+    }
+
 }

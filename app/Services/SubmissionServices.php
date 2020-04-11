@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AdminCongress;
 use App\Models\Submission;
 use App\Models\ConfigSubmission;
 use App\Models\SubmissionEvaluation;
@@ -72,6 +73,49 @@ class SubmissionServices
         $submissionEvaluation->admin_id = $admin_id;
         $submissionEvaluation->save();
         return $submissionEvaluation;
+    }
+
+    public  function getCongressSubmission($admin,$congress_id)
+    {
+        if($congress_id == AdminCongress::where('congress_id','=',$congress_id)
+                ->where('admin_id','=',$admin->admin_id)->where('privilege_id','=',1)->first()->congress_id) {
+
+        $allSubmission = Submission::with(['user','author','theme'])->where('congress_id','=',$congress_id)->get();
+        $allSubmissionToRender = $allSubmission->map(function ($submission) {
+            return collect($submission->toArray())
+                ->only(['submission_id', 'title', 'type',
+                    'prez_type', 'description', 'global_note',
+                    'status', 'theme','user','author',
+                    'congress_id', 'created_at'])
+                ->all();
+        });
+        return $allSubmissionToRender;
+    }
+    }
+
+    public function getCongressSubmissionForEvaluator($admin,$congress_id)
+    {
+        if($congress_id == AdminCongress::where('congress_id','=',$congress_id)
+            ->where('admin_id','=',$admin->admin_id)->where('privilege_id','=',1)->first()->congress_id) {
+        $submissions = Submission::where('congress_id','=',$congress_id)->get();
+        $submission_ids=array();
+        foreach ($submissions as $submission) {
+            array_push($submission_ids,$submission->submission_id);
+        }
+        $allSubmissionToEvaluate = SubmissionEvaluation::with(['submission'])
+            ->whereIn('submission_id',$submission_ids)
+            ->where('admin_id','=',$admin->admin_id)->get();
+
+        $allSubmissionToEvaluateToRender = $allSubmissionToEvaluate->map(function ($submissionEvaluation) {
+                return collect($submissionEvaluation->toArray())
+                    ->only(['submission_evaluation_id','note','submission'])
+                    ->all();
+            });
+        return $allSubmissionToEvaluateToRender;
+
+
+        }
+
     }
 
 }
