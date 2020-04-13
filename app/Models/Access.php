@@ -18,7 +18,7 @@ class Access extends Model
     protected $fillable = ['name', 'price', 'duration', 'max_places', 'total_present_in_congress',
         'seuil', 'room', 'description', 'congress_id', 'packless',
         'start_date', 'real_start_date', 'end_date', 'parent_id', 'show_in_program',
-        'show_in_register', 'with_attestation','online'];
+        'show_in_register', 'with_attestation','is_online'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 

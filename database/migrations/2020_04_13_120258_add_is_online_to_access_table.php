@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddOnlineToAccessTable extends Migration
+class AddIsOnlineToAccessTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddOnlineToAccessTable extends Migration
      */
     public function up()
     {
-        Schema::table('access', function (Blueprint $table) {
-            $table->unsignedTinyInteger('online')->default(0)->after('with_attestation');
+        Schema::table('Access', function (Blueprint $table) {
+            $table->unsignedTinyInteger('is_online')->default(0)->after('with_attestation');
         });
     }
 
@@ -25,8 +25,8 @@ class AddOnlineToAccessTable extends Migration
      */
     public function down()
     {
-        Schema::table('access', function (Blueprint $table) {
-            $table->dropColumn(['online']);
+        Schema::table('Access', function (Blueprint $table) {
+            $table->dropColumn(['is_online']);
         });
     }
 }

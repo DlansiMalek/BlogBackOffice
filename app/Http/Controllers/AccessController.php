@@ -185,8 +185,8 @@ class AccessController extends Controller
             $this->accessServices->editSubAccesses($access, $request->input('sub_accesses'));
         } else $this->accessServices->deleteAllSubAccesses($access_id);
 
-//        $this->notificationServices->sendNotificationToCongress('Changement du programme: ' . $access->name
-//            , $access->congress_id);
+        $this->notificationServices->sendNotificationToCongress('Changement du programme: ' . $access->name
+            , $access->congress_id);
 
         return $this->accessServices->getAccessById($access->access_id);
     }
