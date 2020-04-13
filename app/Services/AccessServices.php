@@ -80,6 +80,8 @@ class AccessServices
         if ($request->has('with_attestation'))
             $access->with_attestation = $request->input('with_attestation');
 
+        if ($request->has('online'))
+            $access->online = $request->input('online');
 
         $access->update();
         return $access;
