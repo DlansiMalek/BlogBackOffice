@@ -132,4 +132,8 @@ class FileController extends Controller
         $resource=$this->resourceServices->saveResource($savedPath,$file->getSize());
         return response()->json(['resource'=>$resource]);
     }
+    public function getResouce($path){
+        $chemin = config('media.resource');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
+    }
 }

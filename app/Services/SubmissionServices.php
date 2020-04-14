@@ -36,7 +36,16 @@ class SubmissionServices
 
     public function getSubmissionById($submission_id)
     {
-        return Submission::where('submission_id', '=', $submission_id)->first();
+        return Submission::with([
+            'Authors'=>function ($query) use ($submission_id){
+                $query->where('submission_id','=',$submission_id);
+            },
+            'Resources'=>function ($query) use ($submission_id){
+                $query->where('submission_id','=',$submission_id);
+            }
+            ])
+            ->where('submission_id', '=', $submission_id)
+            ->first();
     }
 
     public function getConfigSubmission($congress_id)

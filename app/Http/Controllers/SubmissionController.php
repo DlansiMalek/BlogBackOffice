@@ -78,4 +78,9 @@ class SubmissionController extends Controller
         }
 
     }
+
+    public function getSubmissionById($submission_id){
+        
+        return $this->submissionServices->getSubmissionById($submission_id);
+    }
 }
