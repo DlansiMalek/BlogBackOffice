@@ -188,7 +188,7 @@ class OrganizationController extends Controller
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null,'https://abstract.eventizer.io/#/login'), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }

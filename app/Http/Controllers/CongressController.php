@@ -282,7 +282,7 @@ class CongressController extends Controller
                     }
                     if ($userMail->status != 1) {
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null),
+                            ->renderMail($mail->template, $congress, $user, null, null, null,'https://abstract.eventizer.io/#/login'),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }

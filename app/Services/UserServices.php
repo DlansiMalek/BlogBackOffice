@@ -934,11 +934,11 @@ class UserServices
         $user->email = $request->email;
 
         $password = '';
-        if ($request->has('password')) {
-            $password = $request->input('password');
-        } else {
+        if (!($request->has('password'))) {
+            return response()->json(['response'=>'Password is required'],400);
+        } /*else {
             $password = Str::random(8);
-        }
+        }*/
 
         if ($request->has('first_name')) $user->first_name = $request->input('first_name');
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
