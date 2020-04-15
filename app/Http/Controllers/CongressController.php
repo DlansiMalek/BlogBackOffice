@@ -160,6 +160,14 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function  getCongressPagination($offset,$perPage,$search)
+    {
+//        $perPage = $request->query('perPage', 6);
+//        $search = $request->query('search', '');
+//        return response()->json(["response" => $request->all()],200);
+        return $this->congressServices->getCongressPagination($offset,$perPage,$search);
+    }
+
     public function  getMinimalCongress()
     {
         return $this->congressServices->getMinimalCongress();

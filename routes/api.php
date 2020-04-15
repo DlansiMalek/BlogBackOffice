@@ -31,6 +31,10 @@ Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTy
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 
+//Front Office Congress
+Route::group(['prefix' => 'congress'], function () {
+    Route::get('pagination/{offset}/{perPage}/{search}', 'CongressController@getCongressPagination');
+});
 //SMS API
 
 Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
@@ -59,6 +63,7 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
 });
+
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
     Route::post('/login', 'Auth\LoginController@loginAdminMobile');
