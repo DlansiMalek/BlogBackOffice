@@ -10,7 +10,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-
+use App\Models\SubmissionEvaluation;
 /**
  * @property mixed responsible
  * @property mixed admin_id
@@ -39,6 +39,27 @@ class Admin extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\AdminCongress', 'admin_id', 'admin_id');
     }
 
+    public function submissionEvaluation(){
+
+        return $this->hasMany('App\Models\SubmissionEvaluation','admin_id','admin_id');
+    } 
+
+    function themeAdmin()
+    {
+
+        return $this->hasMany('App\Models\ThemeAdmin','admin_id','admin_id');
+    }
+    function theme()
+    {
+        return $this->belongsToMany('App\Models\Theme','Theme_Admin','admin_id','theme_id');
+    }
+
+    public function submission()
+    {
+        return $this->belongsToMany('App\Models\Submission', 'Submission_Evaluation', 'admin_id', 'submission_id');
+    }
+
+    
     public function payments()
     {
         return $this->hasMany('App\Models\Payment', 'admin_id', 'admin_id');

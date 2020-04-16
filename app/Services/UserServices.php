@@ -15,6 +15,7 @@ use App\Models\UserMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use PDF;
 
 class UserServices
@@ -112,7 +113,7 @@ class UserServices
         $newUser->email = $email;
 
         $newUser->email_verified = 0;
-        $newUser->verification_code = str_random(40);
+        $newUser->verification_code = Str::random(40);
 
         /* Generation QRcode */
         $qrcode = Utils::generateCode($newUser->user_id);
@@ -280,7 +281,7 @@ class UserServices
         }
 
 
-        $user->qr_code = str_random(7);
+        $user->qr_code = Str::random(7);
         $user->congress_id = $congress_id;
         $user->payement_type_id = $request->input('payement_type_id');
 
@@ -340,13 +341,6 @@ class UserServices
     }
 
 
-    public function getAllowedBadgeUsersByCongress($congressId)
-    {
-        return User::where('congress_id', '=', $congressId)
-            ->where('isBadgeGeted', '=', 0)
-            ->get();
-    }
-
     public function getUsersMinByCongress($congressId, $privilegeId)
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
@@ -372,7 +366,7 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations','responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
@@ -566,7 +560,7 @@ class UserServices
     public function getUserByEmail($email)
     {
         $email = strtolower($email);
-        return User::whereRaw('lower(email) like (?)', ["{$email}"])
+        return User::whereRaw('lower(email) = (?)', ["{$email}"])
             ->first();
     }
 
@@ -938,13 +932,22 @@ class UserServices
     {
         $user = new User();
         $user->email = $request->email;
+
+        $password = '';
+        if ($request->has('password')) {
+            $password = $request->input('password');
+        } else {
+            $password = Str::random(8);
+        }
+
         if ($request->has('first_name')) $user->first_name = $request->input('first_name');
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
-        if ($request->has('code')) $user->code = $request->input('code');
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
-        $user->verification_code = str_random(40);
+        $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
             $user->qr_code = Utils::generateCode($user->user_id);
@@ -957,11 +960,16 @@ class UserServices
     public function editUser(Request $request, $user)
     {
         $user->email = $request->email;
+
+        if ($request->has('password')) {
+            $user->password = bcrypt($request->input('password'));
+            $user->passwordDecrypt = $request->input('password');
+        }
+
         if ($request->has('first_name')) $user->first_name = $request->input('first_name');
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
-        if ($request->has('code')) $user->code = $request->input('code');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
 
         $user->update();
@@ -1285,6 +1293,22 @@ class UserServices
         $user->save();
 
         return $user;
+    }
+
+    public function retrieveUserFromToken()
+    {
+        try {
+            return auth()->user();
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            $refreshed = JWTAuth::refresh(JWTAuth::getToken());
+            $user = JWTAuth::setToken($refreshed)->toUser();
+            header('Authorization: Bearer ' . $refreshed);
+            return $user;
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return null;
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return null;
+        }
     }
 
 }
