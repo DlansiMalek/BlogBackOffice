@@ -33,7 +33,7 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
-    Route::get('pagination/{offset}/{perPage}/{search}', 'CongressController@getCongressPagination');
+    Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
 //SMS API
 

@@ -51,7 +51,10 @@ class CongressServices
             "theme:label,description",
             "location.city:city_id,name"
             ])->orderBy('start_date','desc')
-            ->offset($offset)->limit($perPage)->where('name','LIKE','%'.$search.'%')->get();
+            ->offset($offset)->limit($perPage)
+            ->where('name','LIKE','%'.$search.'%')
+            ->orWhere('description','LIKE','%'.$search.'%')
+            ->get();
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
                 ->only(["congress_id","name","start_date",
