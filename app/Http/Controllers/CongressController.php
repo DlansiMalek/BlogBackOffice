@@ -160,6 +160,11 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function  getMinimalCongress()
+    {
+        return $this->congressServices->getMinimalCongress();
+    }
+
     public function getCongressByIdBadge($congressId)
     {
         if (!$congress = $this->congressServices->getCongressByIdAndRelations($congressId, [
@@ -236,27 +241,6 @@ class CongressController extends Controller
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
         return response()->json($this->congressServices->getCongressByAdmin($admin->admin_id));
-    }
-
-    public function getBadgesByCongress($congressId)
-    {
-        ini_set('max_execution_time', 300); //300 seconds = 5 minutes
-
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congress not found'], 404);
-        }
-
-        $badgeName = $congress->badge_name;
-        $users = $this->userServices->getAllowedBadgeUsersByCongress($congressId);
-        $users->each(function ($user) {
-            $user->update(['isBadgeGeted' => 1]);
-        });
-
-        if (sizeof($users) == 0) {
-            return response(['message' => 'not even user'], 404);
-        }
-
-        return $this->congressServices->getBadgesByUsers($badgeName, $users);
     }
 
     public function sendMailAllParticipants($congressId)
