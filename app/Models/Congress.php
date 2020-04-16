@@ -30,9 +30,19 @@ class Congress extends Model
         return $this->hasOne('App\Models\Mail_Config', 'congress_id', 'congress_id');
     }
 
+    public function theme()
+    {
+        return $this->belongsToMany('App\Models\Theme', 'Congress_Theme', 'congress_id', 'theme_id');
+    }
+
     public function badges()
     {
         return $this->hasMany('App\Models\Badge', 'congress_id', 'congress_id');
+    }
+
+    public function ConfigSubmission()
+    {
+        return $this->hasOne('App\Models\ConfigSubmission', 'congress_id', 'congress_id');
     }
 
     public function mails()

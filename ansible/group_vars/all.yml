@@ -11,4 +11,4 @@ letsencrypt_email: vayetek@gmail.com
 # Docker
 docker_network: nginx-proxy
 
-eventizer_version: "{{ lookup('env','CI_COMMIT_REF_NAME') }}"
+project_version: "{{ lookup('env','CI_COMMIT_REF_NAME') }}"

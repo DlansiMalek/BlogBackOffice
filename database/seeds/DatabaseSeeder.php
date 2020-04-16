@@ -57,12 +57,14 @@ class DatabaseSeeder extends Seeder
         $this->call(AttestationRequestSeedTable::class);
         $this->call(LikeSeedTable::class);
         $this->call(CitySeedTable::class);
-         $this->call(LocationSeedTable::class);
+        $this->call(LocationSeedTable::class);
         $this->call(PackAdminSeedTable::class);
         $this->call(ModuleSeedTable::class);
         $this->call(PackAdminModuleSeedTable::class);
         $this->call(HistoryTableSeeder::class);
         $this->call(PaymentAdminSeedTable::class);
+
+        $this->call(SubmissionModuleSeeders::class);
 
         // $this->call(MigrationOldData::class);
 

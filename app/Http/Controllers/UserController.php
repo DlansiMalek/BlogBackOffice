@@ -250,6 +250,21 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function registerUser(Request $request)
+    {
+        if (!$request->has(['email', 'first_name', 'last_name', 'password']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'first_name', 'last_name', 'password']], 400);
+
+        // Get User per mail
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+            $user = $this->userServices->saveUser($request);
+            // TODO Sending Confirmation Mail
+        } else
+            $user = $this->userServices->editUser($request, $user);
+
+        return response()->json($user);
+    }
+
     public function saveUser(Request $request, $congress_id)
     {
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
@@ -570,6 +585,30 @@ class UserController extends Controller
         $userPayement->update();
 
         return response()->json(['message' => 'user updated success']);
+    }
+
+    public function uploadUsers(Request $request)
+    {
+
+        ini_set('max_execution_time', 500);
+        $savedUsers = array();
+        $users = $request->input("data");
+        foreach ($users as $userData) {
+            if ($userData['first_name'] && $userData['last_name'] && $userData['mobile'] && $userData['email']) {
+                $request->merge(['first_name' => $userData['first_name'],
+                    'last_name' => $userData['last_name'],
+                    'email' => $userData['email'],
+                    'mobile' => $userData['mobile']]);
+                if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
+                    $user = $this->userServices->saveUser($request);
+                    array_push($savedUsers, $user->user_id);
+                } else {
+                    array_push($savedUsers, $user->user_id);
+                }
+            }
+
+        }
+        return $savedUsers;
     }
 
     public function saveUsersFromExcel($congressId, Request $request)

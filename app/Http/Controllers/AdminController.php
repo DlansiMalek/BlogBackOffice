@@ -22,8 +22,6 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use niklasravnsborg\LaravelPdf\Facades\Pdf;
-use Zipper;
 
 class AdminController extends Controller
 {
@@ -381,57 +379,11 @@ class AdminController extends Controller
     }
 
     public
-    function generateBadges($userPos)
-    {
-        ini_set("memory_limit", "-1");
-        set_time_limit(3600);
-
-        $users = $this->userServices->getUsersByCongress(4, $userPos);
-        File::cleanDirectory(public_path() . '/badge/neuro');
-        for ($i = 0; $i < sizeof($users) / 3; $i++) {
-            $tempUsers = array_slice($users, $i * 3, 3);
-            $j = 1;
-            $pdfFileName = '';
-            foreach ($tempUsers as $tempUser) {
-                Utils::generateQRcode($tempUser['qr_code'], 'qrcode_' . $j);
-                $pdfFileName .= '_' . $tempUser['id_User'];
-                $j++;
-            }
-            $data = [
-                'users' => json_decode(json_encode($tempUsers), false)];
-
-            $pdf = PDF::loadView('pdf.badges-09-03', $data);
-            //return $pdf->stream('badges-09-03.pdf');
-            $pdf->save(public_path() . '/badge/neuro/badges' . $pdfFileName . '.pdf');
-        }
-        $files = glob(public_path() . '/badge/neuro/*');
-        Zipper::make(public_path() . '/badge/neuro/neuro_badges.zip')->add($files)->close();
-        return response()->download(public_path() . '/badge/neuro/neuro_badges.zip');
-        //return $pdf->stream('badges.pdf');
-    }
-
-    public
     function cleanBadges()
     {
         File::cleanDirectory(public_path() . '/badge/jnn');
         return response()->json(["message" => "Badges deleted"]);
     }
-
-    /*
-    public
-    function updatePaiedParticipator($userId, Request $request)
-    {
-        if (!$request->has(['status', 'congressId'])) {
-            return response()->json(['resposne' => 'bad request', 'required fields' => ['status', 'congressId']], 400);
-        }
-        if (!$congressUser = $this->adminServices->updateStatusPaied($userId, $request->input("status"), $request->input("congressId"))) {
-            return response()->json(["error" => "User not inscrit Congress"]);
-        }
-
-        return response()->json(["message" => "status update success"]);
-
-    }
-    */
 
     public
     function generateTickets()

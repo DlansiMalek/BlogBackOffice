@@ -51,6 +51,8 @@ class AccessServices
         if ($request->has('with_attestation'))
             $access->with_attestation = $request->input('with_attestation');
 
+        if ($request->has('is_online'))
+            $access->is_online = $request->input('is_online');
 
         $access->congress_id = $congress_id;
         $access->save();
@@ -78,6 +80,8 @@ class AccessServices
         if ($request->has('with_attestation'))
             $access->with_attestation = $request->input('with_attestation');
 
+        if ($request->has('is_online'))
+            $access->is_online = $request->input('is_online');
 
         $access->update();
         return $access;

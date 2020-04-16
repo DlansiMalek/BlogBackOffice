@@ -136,4 +136,12 @@ class SharedController extends Controller
 
 
     }
+
+    public function getAllServices(){
+        return $this->sharedServices->getAllServices();
+    }
+
+    public function getAllEtablissements(){
+        return $this->sharedServices->getAllEtablissements();
+    }
 }

@@ -33,7 +33,7 @@ class Utils
 
     }
 
-    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name, $congress_date, $mobile_committee, $mobile_technical)
+    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name, $congress_date, $mobile_committee, $mobile_technical=null)
     {
 
         return
@@ -54,8 +54,21 @@ class Utils
         '
 
             . 'Hotline technique : ' . $mobile_technical;
+    }
 
+    public static function customSmsMessage($sms,$user)
+    {
+        $content=$sms->content;
+        $content=str_replace('{{first_name}}',$user->first_name,$content);
+        $content=str_replace('{{last_name}}',$user->last_name,$content);
+        $content=str_replace('{{email}}',$user->email,$content);
+        $content=str_replace('{{mobile}}',$user->mobile,$content);
 
+        return
+           $sms->title.'
+        '
+
+         .$content;
     }
 
     public static function convertDateFrench($date)
