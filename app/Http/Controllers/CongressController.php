@@ -267,12 +267,12 @@ class CongressController extends Controller
                     $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
                     $fileAttached = false;
-                    if ($badgeIdGenerator != null) {
+                   /* if ($badgeIdGenerator != null) {
                         $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
                         $fileAttached = true;
-                    }
+                    }*/
 
                     $userMail = null;
                     if (sizeof($user->user_mails) == 0) {

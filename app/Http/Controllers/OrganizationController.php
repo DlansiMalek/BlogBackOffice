@@ -172,12 +172,12 @@ class OrganizationController extends Controller
         $organization = $this->organizationServices->getOrganizationById($user->organization_id);
         $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
         $fileAttached = false;
-        if ($badgeIdGenerator != null) {
+        /*if ($badgeIdGenerator != null) {
             $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
             $fileAttached = true;
-        }
+        }*/
 
 
         if ($mailtype = $this->congressServices->getMailType('subvention')) {

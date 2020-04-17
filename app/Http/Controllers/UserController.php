@@ -335,12 +335,12 @@ class UserController extends Controller
             //Confirm Direct
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
             $fileAttached = false;
-            if ($badgeIdGenerator != null) {
+           /* if ($badgeIdGenerator != null) {
                 $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
                 $fileAttached = true;
-            }
+            }*/
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
