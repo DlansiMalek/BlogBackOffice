@@ -267,12 +267,12 @@ class CongressController extends Controller
                     $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
                     $fileAttached = false;
-                   /* if ($badgeIdGenerator != null) {
-                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                    if ($badgeIdGenerator != null) {
+                      /*  $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $fileAttached = true;
-                    }*/
+                        $fileAttached = true;*/
+                    }
 
                     $userMail = null;
                     if (sizeof($user->user_mails) == 0) {
@@ -281,8 +281,9 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
+                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null,'https://abstract.eventizer.io/#/login'),
+                            ->renderMail($mail->template, $congress, $user, null, null, null,$linkFrontOffice),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }

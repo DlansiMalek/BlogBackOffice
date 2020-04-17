@@ -10,6 +10,7 @@ use App\Services\SharedServices;
 use App\Services\SmsServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\UrlUtils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -75,12 +76,12 @@ class PaymentController extends Controller
                 $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
                     $userCongress->privilege_id);
                 $fileAttached = false;
-                /*if ($badgeIdGenerator != null) {
-                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                if ($badgeIdGenerator != null) {
+                    /*$this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                         ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                         $user->qr_code);
-                    $fileAttached = true;
-                }*/
+                    $fileAttached = true;*/
+                }
 
 
                 if ($mailtype = $this->congressServices->getMailType('paiement')) {
@@ -91,9 +92,10 @@ class PaymentController extends Controller
                     }
                 }
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                    $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment,'https://abstract.eventizer.io/#/login'), $user, $congress, $mail->object, $fileAttached, $userMail);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment,$linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                     
                     $this->smsServices->sendSms($congress->congress_id,$user,$congress);

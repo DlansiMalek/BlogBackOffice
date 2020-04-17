@@ -10,6 +10,7 @@ use App\Services\OrganizationServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
+use App\Services\UrlUtils;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -172,12 +173,12 @@ class OrganizationController extends Controller
         $organization = $this->organizationServices->getOrganizationById($user->organization_id);
         $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
         $fileAttached = false;
-        /*if ($badgeIdGenerator != null) {
-            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+        if ($badgeIdGenerator != null) {
+           /* $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
-            $fileAttached = true;
-        }*/
+            $fileAttached = true;*/
+        }
 
 
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
@@ -187,8 +188,9 @@ class OrganizationController extends Controller
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null,'https://abstract.eventizer.io/#/login'), $user, $congress, $mail->object, $fileAttached);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null,$linkFrontOffice), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }

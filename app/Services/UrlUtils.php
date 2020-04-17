@@ -113,4 +113,8 @@ class UrlUtils
         return "http://localhost:8888";
     }
 
+    public static function getBaseUrlFrontOffice(){
+        return 'https://abstract.eventizer.io/#/login';
+    }
+
 }
