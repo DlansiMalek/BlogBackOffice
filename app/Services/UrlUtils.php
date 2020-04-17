@@ -100,7 +100,7 @@ class UrlUtils
 
     public static function getBaseImgUrl()
     {
-        if (App::environment() == 'test'){
+        if (App::environment() == 'test') {
             return "http://localhost:8888";
         }
         if (App::environment() == 'prod') {
@@ -111,6 +111,21 @@ class UrlUtils
         }
 
         return "http://localhost:8888";
+    }
+
+    public static function getBaseUrlFrontOffice()
+    {
+        if (App::environment() == 'test') {
+            return "http://localhost:8888";
+        }
+        if (App::environment() == 'prod') {
+            return 'https://abstract.eventizer.io/#/login';
+        }
+        if (App::environment() == 'dev') {
+            return 'https://abstract.eventizer.io/#/login';
+        }
+
+        return "http://localhost:4200/#/login";
     }
 
 }
