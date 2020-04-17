@@ -160,7 +160,7 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
-    public function  getMinimalCongress()
+    public function getMinimalCongress()
     {
         return $this->congressServices->getMinimalCongress();
     }
@@ -268,10 +268,9 @@ class CongressController extends Controller
                         $user->user_congresses[0]->privilege_id);
                     $fileAttached = false;
                     if ($badgeIdGenerator != null) {
-                      /*  $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                        $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $fileAttached = true;*/
                     }
 
                     $userMail = null;
@@ -283,7 +282,7 @@ class CongressController extends Controller
                     if ($userMail->status != 1) {
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null,$linkFrontOffice),
+                            ->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }

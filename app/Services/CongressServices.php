@@ -44,7 +44,7 @@ class CongressServices
 
     public function getMinimalCongress()
     {
-        
+
         return Congress::with([
             "mails.type",
             "attestation",
@@ -60,7 +60,6 @@ class CongressServices
             'accesss.participants.user_congresses' => function ($query) {
                 $query->where('privilege_id', '=', 3);
             }])
-
             ->get();
     }
 
@@ -107,8 +106,8 @@ class CongressServices
                 'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
                     $query->where('congress_id', '=', $id_Congress);
                 },
-                'ConfigSubmission'=>function ($query) use ($id_Congress){
-                    $query->where('congress_id','=',$id_Congress);
+                'ConfigSubmission' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
                 },
                 'location.city.country',
                 'accesss.speakers',
@@ -350,7 +349,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null,$linkFrontOffice=null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null)
     {
 
         $accesses = "";
@@ -386,7 +385,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;code}}', '{{$participant->code}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
-        $template = str_replace('{{%24linkFrontOffice}}','{{$linkFrontOffice',$template);
+        $template = str_replace('{{%24linkFrontOffice}}', '{{$linkFrontOffice}}', $template);
         $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
@@ -396,10 +395,10 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;registration_date}}', date('Y-m-d H:i:s'), $template);
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
-        
+
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage,'linkFrontOffice'=>$linkFrontOffice]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice]);
     }
 
     public
