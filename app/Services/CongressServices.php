@@ -42,6 +42,28 @@ class CongressServices
         return Congress::all();
     }
 
+
+    public function getCongressPagination($offset,$perPage,$search)
+    {
+
+        $all_congresses = Congress::with([
+            "config:congress_id,logo,banner,program_link,status,free",
+            "theme:label,description",
+            "location.city:city_id,name"
+            ])->orderBy('start_date','desc')
+            ->offset($offset)->limit($perPage)
+            ->where('name','LIKE','%'.$search.'%')
+            ->orWhere('description','LIKE','%'.$search.'%')
+            ->get();
+        $congress_renderer = $all_congresses->map(function ($congress) {
+            return collect($congress->toArray())
+                ->only(["congress_id","name","start_date",
+        "end_date","price","description","congress_type_id","config","theme","location"])->all();});
+
+
+        return  $congress_renderer ;
+    }
+
     public function getMinimalCongress()
     {
 

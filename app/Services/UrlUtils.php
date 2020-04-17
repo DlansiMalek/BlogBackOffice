@@ -20,12 +20,12 @@ class UrlUtils
             return "http://localhost:3000";
         }
         if (App::environment() == 'prod') {
-            return "http://appvoting-server:3000";
+            return "http://vayevoting-backend-master:3000";
         }
         if (App::environment() == 'dev') {
-            return "http://appvoting-server:3000";
+            return "http://vayevoting-backend-master:3000";
         }
-        return "http://137.74.165.25:3001/";
+        return "https://ws.vayetek.com";
     }
 
     public static function getUrlEventizerWeb()
@@ -62,26 +62,26 @@ class UrlUtils
             return "http://localhost:8080";
         }
         if (App::environment() == 'prod') {
-            return "http://paiement-api:8080";
+            return "http://payment-api-master:8080";
         }
         if (App::environment() == 'dev') {
-            return "http://paiement-api:8080";
+            return "http://payment-api-master:8080";
         }
-        return "http://137.74.165.25:3007";
+        return "https://paiement-api.vayetek.com";
     }
 
     public static function getUrlBadge()
     {
         if (App::environment() == 'test') {
-            return "http://137.74.165.25:8090";
+            return "https://congress-file-generater.vayetek.com";
         }
         if (App::environment() == 'prod') {
-            return "http://congress-file-generater-app:5000";
+            return "http://eventizer-file-generator-master:8000";
         }
         if (App::environment() == 'dev') {
-            return "http://congress-file-generater-app:5000";
+            return "http://eventizer-file-generator-master:8000";
         }
-        return "http://137.74.165.25:8090";
+        return "https://congress-file-generater.vayetek.com";
     }
 
     public static function getBaseUrl()
@@ -90,10 +90,10 @@ class UrlUtils
             return "http://localhost:8888/api";
         }
         if (App::environment() == 'prod') {
-            return "https://eventizer-api.vayetek.com/api";
+            return "https://api.eventizer.io/api";
         }
         if (App::environment() == 'dev') {
-            return "https://eventizer-api.vayetek.com/api";
+            return "https://dev.api.eventizer.io/api";
         }
         return "http://localhost:8888";
     }
@@ -104,10 +104,10 @@ class UrlUtils
             return "http://localhost:8888";
         }
         if (App::environment() == 'prod') {
-            return "http://eventizer-api-web";
+            return "http://eventizer-api-master-web";
         }
         if (App::environment() == 'dev') {
-            return "http://eventizer-api-dev-web";
+            return "http://eventizer-api-develop-web";
         }
 
         return "http://localhost:8888";
