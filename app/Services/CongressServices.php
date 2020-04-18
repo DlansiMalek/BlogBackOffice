@@ -42,9 +42,31 @@ class CongressServices
         return Congress::all();
     }
 
+
+    public function getCongressPagination($offset,$perPage,$search)
+    {
+
+        $all_congresses = Congress::with([
+            "config:congress_id,logo,banner,program_link,status,free",
+            "theme:label,description",
+            "location.city:city_id,name"
+            ])->orderBy('start_date','desc')
+            ->offset($offset)->limit($perPage)
+            ->where('name','LIKE','%'.$search.'%')
+            ->orWhere('description','LIKE','%'.$search.'%')
+            ->get();
+        $congress_renderer = $all_congresses->map(function ($congress) {
+            return collect($congress->toArray())
+                ->only(["congress_id","name","start_date",
+        "end_date","price","description","congress_type_id","config","theme","location"])->all();});
+
+
+        return  $congress_renderer ;
+    }
+
     public function getMinimalCongress()
     {
-        
+
         return Congress::with([
             "mails.type",
             "attestation",
@@ -60,7 +82,6 @@ class CongressServices
             'accesss.participants.user_congresses' => function ($query) {
                 $query->where('privilege_id', '=', 3);
             }])
-
             ->get();
     }
 
@@ -107,8 +128,8 @@ class CongressServices
                 'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
                     $query->where('congress_id', '=', $id_Congress);
                 },
-                'ConfigSubmission'=>function ($query) use ($id_Congress){
-                    $query->where('congress_id','=',$id_Congress);
+                'ConfigSubmission' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
                 },
                 'location.city.country',
                 'accesss.speakers',
@@ -350,7 +371,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null)
     {
 
         $accesses = "";
@@ -386,6 +407,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;code}}', '{{$participant->code}}', $template);
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
+        $template = str_replace('{{%24linkFrontOffice}}', '{{$linkFrontOffice}}', $template);
         $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
@@ -398,7 +420,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice]);
     }
 
     public
