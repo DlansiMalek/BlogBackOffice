@@ -75,12 +75,16 @@ class SubmissionServices
         return $submissionEvaluation;
     }
 
-    public  function getCongressSubmission($admin,$congress_id)
+    public  function getCongressSubmissionForAdmin($admin,$congress_id)
     {
         if($congress_id == AdminCongress::where('congress_id','=',$congress_id)
                 ->where('admin_id','=',$admin->admin_id)->where('privilege_id','=',1)->first()->congress_id) {
 
-        $allSubmission = Submission::with(['user','author','theme'])->where('congress_id','=',$congress_id)->get();
+        $allSubmission = Submission::with([
+            'user:user_id,first_name,last_name,email',
+            'author:author_id,first_name,last_name',
+            'theme:theme_id,label'
+        ])->where('congress_id','=',$congress_id)->get();
         $allSubmissionToRender = $allSubmission->map(function ($submission) {
             return collect($submission->toArray())
                 ->only(['submission_id', 'title', 'type',
@@ -95,15 +99,14 @@ class SubmissionServices
 
     public function getCongressSubmissionForEvaluator($admin,$congress_id)
     {
-        if($congress_id == AdminCongress::where('congress_id','=',$congress_id)
-            ->where('admin_id','=',$admin->admin_id)->where('privilege_id','=',1)->first()->congress_id) {
         $submissions = Submission::where('congress_id','=',$congress_id)->get();
         $submission_ids=array();
         foreach ($submissions as $submission) {
             array_push($submission_ids,$submission->submission_id);
         }
-        $allSubmissionToEvaluate = SubmissionEvaluation::with(['submission'])
-            ->whereIn('submission_id',$submission_ids)
+        $allSubmissionToEvaluate = SubmissionEvaluation::with([
+            'submission:submission_id,title,type,description'
+        ])->whereIn('submission_id',$submission_ids)
             ->where('admin_id','=',$admin->admin_id)->get();
 
         $allSubmissionToEvaluateToRender = $allSubmissionToEvaluate->map(function ($submissionEvaluation) {
@@ -113,9 +116,22 @@ class SubmissionServices
             });
         return $allSubmissionToEvaluateToRender;
 
+    }
+    public function putEvaluationToSubmission($admin,$submissionEvaluationId, $note){
 
+        $evaluation = SubmissionEvaluation::where('admin_id','=', $admin->admin_id)
+            ->where('submission_evaluation_id','=',$submissionEvaluationId)->firstOrFail();
+        if ($evaluation){
+            $evaluation->note = $note;
+            $evaluation->save();
+            $submissionId = $evaluation->submission_id;
+            $global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
+                ->where('note','>=',0)->average('note');
+            $submissionUpdated= Submission::where('submission_id','=', $submissionId)->first();
+            $submissionUpdated->global_note = $global_note;
+            $submissionUpdated->save();
+            return $global_note;
         }
-
     }
 
 }
