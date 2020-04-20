@@ -160,7 +160,16 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
-    public function  getMinimalCongress()
+    public function getCongressPagination(Request $request)
+    {
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = $request->query('search', '');
+//        return response()->json(["response" => $request->all()],200);
+        return $this->congressServices->getCongressPagination($offset, $perPage, $search);
+    }
+
+    public function getMinimalCongress()
     {
         return $this->congressServices->getMinimalCongress();
     }
@@ -268,10 +277,9 @@ class CongressController extends Controller
                         $user->user_congresses[0]->privilege_id);
                     $fileAttached = false;
                     if ($badgeIdGenerator != null) {
-                        $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                        $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                             ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                             $user->qr_code);
-                        $fileAttached = true;
                     }
 
                     $userMail = null;
@@ -281,8 +289,9 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
+                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null),
+                            ->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }

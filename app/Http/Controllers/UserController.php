@@ -267,8 +267,8 @@ class UserController extends Controller
 
     public function saveUser(Request $request, $congress_id)
     {
-        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
+        if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name', 'password']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name', 'password']], 400);
 
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
@@ -336,15 +336,15 @@ class UserController extends Controller
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
-                $fileAttached = true;
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSms($congress_id, $user, $congress);
@@ -558,10 +558,9 @@ class UserController extends Controller
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                     $user->qr_code);
-                $fileAttached = true;
             }
 
             // $link = Utils::baseUrlWEB . "/#/auth/user/" . $user->user_id . "/manage-account?token=" . $user->verification_code;
@@ -573,9 +572,10 @@ class UserController extends Controller
             }*/
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement,null ,$linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSms($congress->congress_id, $user, $congress);
