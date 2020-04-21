@@ -17,5 +17,8 @@ class Submission extends Model
      function Resources(){
         return $this->belongsToMany('App\Models\Resource','Resource_Submission','submission_id','resource_id');
      }
+     function Congress(){
+        return $this->belongsTo('App\Models\Congress','congress_id','congress_id');
+     }
 }
 

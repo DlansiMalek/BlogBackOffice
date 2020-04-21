@@ -26,8 +26,7 @@ class SubmissionController extends Controller
         AuthorServices $authorServices,
         AdminServices $adminServices,
         UserServices $userServices
-    )
-    {
+    ) {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
         $this->adminServices = $adminServices;
@@ -39,48 +38,68 @@ class SubmissionController extends Controller
 
         if (!($request->has('submission.title') && $request->has('submission.type') && $request->has('submission.prez_type')
             && $request->has('submission.description') && $request->has('submission.congress_id') && $request->has('submission.theme_id')
-            && $request->has('authors'))
-        ) {
+            && $request->has('authors'))) {
             return response()->json(['response' => 'bad request'], 400);
         }
+        $user = $this->userServices->retrieveUserFromToken();
+        if ($request->has('submission.submission_id')) {
+            try {
+                $submission = $this->submissionServices->editSubmission(
+                    $request->input('submission.submission_id'),
+                    $request->input('submission.title'),
+                    $request->input('submission.type'),
+                    $request->input('submission.prez_type'),
+                    $request->input('submission.description'),
+                    $request->input('submission.theme_id')
+                );
+                $this->authorServices->editAuthors($request->input('authors'), $submission->submission_id);
+                $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
+                return response()->json(['response' => 'modification avec success'], 200);
+            } catch (Exception $e) {
 
-        try {
+                Log::info($e->getMessage());
+                return response()->json(['response' => $e->getMessage()], 400);
+            }
+        } else {
 
-            $user = $this->userServices->retrieveUserFromToken();
+            try {
 
-            Log::info($user);
-            $submission = $this->submissionServices->addSubmission(
-                $request->input('submission.title'),
-                $request->input('submission.type'),
-                $request->input('submission.prez_type'),
-                $request->input('submission.description'),
-                $request->input('submission.congress_id'),
-                $request->input('submission.theme_id'),
-                $user->user_id
-            );
-            $this->authorServices->saveAuthorsBySubmission($request->input('authors'), $submission->submission_id);
 
-            $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
 
-            $this->submissionServices->affectSubmissionToEvaluators(
-                $submission->congress_id,
-                $submission->submission_id,
-                $admins
-            );
+                Log::info($user);
+                $submission = $this->submissionServices->addSubmission(
+                    $request->input('submission.title'),
+                    $request->input('submission.type'),
+                    $request->input('submission.prez_type'),
+                    $request->input('submission.description'),
+                    $request->input('submission.congress_id'),
+                    $request->input('submission.theme_id'),
+                    $user->user_id
+                );
+                $this->authorServices->saveAuthorsBySubmission($request->input('authors'), $submission->submission_id);
 
-            $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
+                $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
 
-            return response()->json(['response' => 'Enregistrement avec succes'], 200);
-        } catch (Exception $e) {
+                $this->submissionServices->affectSubmissionToEvaluators(
+                    $submission->congress_id,
+                    $submission->submission_id,
+                    $admins
+                );
 
-            Log::info($e->getMessage());
-            return response()->json(['response' => $e->getMessage()], 400);
+                $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
+
+                return response()->json(['response' => 'Enregistrement avec succes'], 200);
+            } catch (Exception $e) {
+
+                Log::info($e->getMessage());
+                return response()->json(['response' => $e->getMessage()], 400);
+            }
         }
-
     }
 
-    public function getSubmissionById($submission_id){
-        
-        return $this->submissionServices->getSubmissionById($submission_id);
+    public function getSubmission($submission_id)
+    {
+
+        return $this->submissionServices->getSubmission($submission_id);
     }
 }

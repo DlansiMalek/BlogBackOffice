@@ -14,8 +14,8 @@ class SubmissionServices
 
     function __construct(
         AdminServices $adminServices,
-        ResourcesServices $resourcesServices)
-    {
+        ResourcesServices $resourcesServices
+    ) {
         $this->resourcesServices = $resourcesServices;
         $this->adminServices = $adminServices;
     }
@@ -34,18 +34,38 @@ class SubmissionServices
         return $submission;
     }
 
-    public function getSubmissionById($submission_id)
+    public function editSubmission($id, $title, $type, $prez_type, $description, $theme_id)
+    {
+        $submission = $this->getSubmission($id);
+        $submission->title = $title;
+        $submission->type = $type;
+        $submission->prez_type = $prez_type;
+        $submission->description = $description;
+        $submission->theme_id = $theme_id;
+        $submission->update();
+        return $submission;
+    }
+
+    public function getSubmission($submission_id)
     {
         return Submission::with([
-            'Authors'=>function ($query) use ($submission_id){
-                $query->where('submission_id','=',$submission_id);
+            'Authors' => function ($query) use ($submission_id) {
+                $query->where('submission_id', '=', $submission_id);
+                $query->orderBy('rank');
             },
-            'Resources'=>function ($query) use ($submission_id){
-                $query->where('submission_id','=',$submission_id);
-            }
-            ])
+            'Resources' => function ($query) use ($submission_id) {
+                $query->where('submission_id', '=', $submission_id);
+            },
+            'Congress.ConfigSubmission'
+        ])
             ->where('submission_id', '=', $submission_id)
             ->first();
+    }
+
+    public function getSubmissionById($submission_id)
+    {
+
+        return Submission::where('submission_id', '=', $submission_id);
     }
 
     public function getConfigSubmission($congress_id)
@@ -55,11 +75,26 @@ class SubmissionServices
 
     public function saveResourceSubmission($resourceIds, $submission_id)
     {
-        foreach ($resourceIds as $resourceId) {
-            $resourceSubmission = new ResourceSubmission();
-            $resourceSubmission->resource_id = $resourceId;
-            $resourceSubmission->Submission_id = $submission_id;
-            $resourceSubmission->save();
+        $resources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
+        if (sizeof($resources) > 0) {
+            foreach ($resourceIds as $resourceId) {
+                foreach ($resources as $resource) {
+                    if ($resource['resource_id'] != $resourceId) {
+                        $resourceSubmission = new ResourceSubmission();
+                        $resourceSubmission->resource_id = $resourceId;
+                        $resourceSubmission->Submission_id = $submission_id;
+                        $resourceSubmission->save();
+                    }
+                }
+            }
+        } else {
+            foreach ($resourceIds as $resourceId) {
+
+                $resourceSubmission = new ResourceSubmission();
+                $resourceSubmission->resource_id = $resourceId;
+                $resourceSubmission->Submission_id = $submission_id;
+                $resourceSubmission->save();
+            }
         }
     }
 
@@ -82,5 +117,4 @@ class SubmissionServices
         $submissionEvaluation->save();
         return $submissionEvaluation;
     }
-
 }
