@@ -14,15 +14,15 @@ class Submission extends Model
 
 
     public function user() {
-        return $this->belongsTo('App\Models\User','submission_id');
+        return $this->belongsTo('App\Models\User','user_id');
     }
 
     public function author() {
-        return $this->belongsTo('App\Models\Author','submission_id');
+        return $this->belongsTo('App\Models\Author','author_id');
     }
 
     public function theme() {
-        return $this->belongsTo('App\Models\Theme','submission_id');
+        return $this->belongsTo('App\Models\Theme','theme_id');
     }
     public function submission_evaluation() {
         return $this->hasMany('App\Models\SubmissionEvaluation','submission_id');

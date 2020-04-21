@@ -13,7 +13,11 @@ class SubmissionEvaluation extends Model {
     public $timestamps = false;
 
     public function submission() {
-        return $this->belongsTo('App\Models\Submission','submission_evaluation_id');
+        return $this->belongsTo('App\Models\Submission','submission_id');
+    }
+    public function  admin() {
+        return $this->belongsTo('App\Models\Admin','admin_id');
+
     }
 
 }

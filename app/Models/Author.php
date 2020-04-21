@@ -16,7 +16,10 @@ class Author extends Model
 
 
 
-    public function submission() {
-        return $this->hasMany('App\Models\Submission','author_id');
-    }
+//    public function submission() {
+//        return $this->hasMany('App\Models\Submission','author_id');
+//    }
+//    public function submission() {
+//        return $this->hasOne('App\Models\Submission','submission_id');
+//   }
 }

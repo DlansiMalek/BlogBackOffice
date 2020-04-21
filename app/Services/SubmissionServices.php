@@ -75,63 +75,76 @@ class SubmissionServices
         return $submissionEvaluation;
     }
 
-    public  function getCongressSubmissionForAdmin($admin,$congress_id)
+    public function getCongressSubmissionForAdmin($admin, $congress_id)
     {
-        if($congress_id == AdminCongress::where('congress_id','=',$congress_id)
-                ->where('admin_id','=',$admin->admin_id)->where('privilege_id','=',1)->first()->congress_id) {
+        if ($congress_id == AdminCongress::where('congress_id', '=', $congress_id)
+                ->where('admin_id', '=', $admin->admin_id)->where('privilege_id', '=', 1)->first()->congress_id) {
 
-        $allSubmission = Submission::with([
-            'user:user_id,first_name,last_name,email',
-            'author:author_id,first_name,last_name',
-            'theme:theme_id,label'
-        ])->where('congress_id','=',$congress_id)->get();
-        $allSubmissionToRender = $allSubmission->map(function ($submission) {
-            return collect($submission->toArray())
-                ->only(['submission_id', 'title', 'type',
-                    'prez_type', 'description', 'global_note',
-                    'status', 'theme','user','author',
-                    'congress_id', 'created_at'])
-                ->all();
-        });
-        return $allSubmissionToRender;
-    }
+            $allSubmission = Submission::with([
+                'user:user_id,first_name,last_name,email',
+                'author:author_id',
+                'theme:theme_id,label',
+//            'submission_evaluation:submission_id,admin_id,note'
+                'submission_evaluation' => function ($query) {
+                    $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
+                        ->with(['admin:admin_id,name,email']);
+                }
+            ])->where('congress_id', '=', $congress_id)->get();
+            $allSubmissionToRender = $allSubmission->map(function ($submission) {
+                return collect($submission->toArray())
+                    ->only(['submission_id', 'title', 'type',
+                        'prez_type', 'description', 'global_note',
+                        'status', 'theme', 'user', 'author', 'submission_evaluation',
+                        'congress_id', 'created_at'])
+                    ->all();
+            });
+            return $allSubmissionToRender;
+        }
     }
 
-    public function getCongressSubmissionForEvaluator($admin,$congress_id)
+    public function getCongressSubmissionForEvaluator($admin, $congress_id)
     {
-        $submissions = Submission::where('congress_id','=',$congress_id)->get();
-        $submission_ids=array();
+        $submissions = Submission::where('congress_id', '=', $congress_id)->get();
+        $submission_ids = array();
         foreach ($submissions as $submission) {
-            array_push($submission_ids,$submission->submission_id);
+            array_push($submission_ids, $submission->submission_id);
         }
         $allSubmissionToEvaluate = SubmissionEvaluation::with([
             'submission:submission_id,title,type,description'
-        ])->whereIn('submission_id',$submission_ids)
-            ->where('admin_id','=',$admin->admin_id)->get();
+        ])->whereIn('submission_id', $submission_ids)
+            ->where('admin_id', '=', $admin->admin_id)->get();
 
         $allSubmissionToEvaluateToRender = $allSubmissionToEvaluate->map(function ($submissionEvaluation) {
-                return collect($submissionEvaluation->toArray())
-                    ->only(['submission_evaluation_id','note','submission'])
-                    ->all();
-            });
+            return collect($submissionEvaluation->toArray())
+                ->only(['submission_evaluation_id', 'note', 'submission'])
+                ->all();
+        });
         return $allSubmissionToEvaluateToRender;
 
     }
-    public function putEvaluationToSubmission($admin,$submissionEvaluationId, $note){
 
-        $evaluation = SubmissionEvaluation::where('admin_id','=', $admin->admin_id)
-            ->where('submission_evaluation_id','=',$submissionEvaluationId)->firstOrFail();
-        if ($evaluation){
+    public function putEvaluationToSubmission($admin, $submissionEvaluationId, $note)
+    {
+
+        $evaluation = SubmissionEvaluation::where('admin_id', '=', $admin->admin_id)
+            ->where('submission_evaluation_id', '=', $submissionEvaluationId)->firstOrFail();
+        if ($evaluation) {
             $evaluation->note = $note;
             $evaluation->save();
             $submissionId = $evaluation->submission_id;
             $global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
-                ->where('note','>=',0)->average('note');
-            $submissionUpdated= Submission::where('submission_id','=', $submissionId)->first();
+                ->where('note', '>=', 0)->average('note');
+            $submissionUpdated = Submission::where('submission_id', '=', $submissionId)->first();
             $submissionUpdated->global_note = $global_note;
             $submissionUpdated->save();
-            return $global_note;
+            $eval = $evaluation->with([
+                'submission:submission_id,title,type,description'])->get();
+            $evalUpdate = $eval->map(function ($submissionEvaluation) use ($submissionEvaluationId) {
+                return collect($submissionEvaluation->toArray())
+                    ->only(['submission_evaluation_id', 'note', 'submission'])->all();
+            })->where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
+            return $evalUpdate;
         }
-    }
 
+    }
 }
