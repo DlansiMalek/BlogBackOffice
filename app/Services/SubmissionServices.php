@@ -82,7 +82,7 @@ class SubmissionServices
 
             $allSubmission = Submission::with([
                 'user:user_id,first_name,last_name,email',
-                'author:author_id',
+                'author:submission_id,author_id,first_name,last_name',
                 'theme:theme_id,label',
 //            'submission_evaluation:submission_id,admin_id,note'
                 'submission_evaluation' => function ($query) {

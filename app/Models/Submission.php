@@ -18,7 +18,7 @@ class Submission extends Model
     }
 
     public function author() {
-        return $this->belongsTo('App\Models\Author','author_id');
+        return $this->hasMany('App\Models\Author','submission_id');
     }
 
     public function theme() {
