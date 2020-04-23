@@ -74,5 +74,10 @@ class MailTypeSeedTable extends Seeder
             'name' => 'sondage',
             'display_name' => "Mail de Sondage",
         ]);
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_id' => 12,
+            'name' => 'Acitivation',
+            'display_name' => 'Email de confirmation',
+        ]);
     }
 }

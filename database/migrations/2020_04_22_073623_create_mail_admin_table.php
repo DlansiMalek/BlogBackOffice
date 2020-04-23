@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMaillAdminTable extends Migration
+class CreateMailAdminTable extends Migration
 {
     /**
      * Run the migrations.
@@ -21,8 +21,8 @@ class CreateMaillAdminTable extends Migration
             $table->text("template");
 
 
-            $table->unsignedInteger("mail_type_id");
-            $table->foreign("mail_type_id")->references('mail_type_id')->on('Mail_Type_Admin');
+            $table->unsignedInteger("mail_type_admin_id");
+            $table->foreign("mail_type_admin_id")->references('mail_type_admin_id')->on('Mail_Type_Admin');
 
             $table->timestamps();
             $table->softDeletes();
