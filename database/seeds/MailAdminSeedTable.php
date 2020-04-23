@@ -14,9 +14,9 @@ class MailAdminSeedTable extends Seeder
         //
         DB::table('Mail_Admin')->insert([
             'object' => "Test object",
-            'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre paiement.</p><p><a href="{{%24link}}">Lien</a></p>',
+            'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre compte.</p><p><a href="{{%24activationLink}}">Lien</a></p>',
 
-            'mail_type_id' => 1
+            'mail_type_id' => 10
         ]);
     }
 }

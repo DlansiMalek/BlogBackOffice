@@ -257,9 +257,9 @@ class UserServices
             $query->where("Congress_User . id_Congress", "=", $congressId)
                 ->where("Congress_User . isPresent", "=", 1);
         }])->withCount(['congresses as isPaid' => function ($query) use ($congressId) {
-                $query->where("Congress_User . id_Congress", "=", $congressId)
-                    ->where("Congress_User . isPaid", "=", 1);;
-            }])->where("id_User", "=", $userId)
+            $query->where("Congress_User . id_Congress", "=", $congressId)
+                ->where("Congress_User . isPaid", "=", 1);;
+        }])->where("id_User", "=", $userId)
             ->first();
     }
 
@@ -576,7 +576,11 @@ class UserServices
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
             ->first();
     }
-
+    public function getUserByVerificationCodeAndId($code, $user_id)
+    {
+        $conditions = ['verification_code' => $code, 'user_id' => $user_id, 'email_verified' => 0];
+        return User::where($conditions)->first();
+    }
 
     public function getUsersByEmail($email)
     {
@@ -724,19 +728,16 @@ class UserServices
 
     public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null)
     {
-
         //TODO detect email sended user
         $email = $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
-
-        if ($congress->username_mail)
+        if ($congress != null && $congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-
-                if ($congress->config && $congress->config->replyto_mail) {
+                $fromMailName = $congress != null &&  $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+                if ($congress != null && $congress->config && $congress->config->replyto_mail) {
                     $message->replyTo($congress->config->replyto_mail);
                 }
 
@@ -753,7 +754,7 @@ class UserServices
                 $userMail->update();
             }
             Storage::delete('/app/badge.png');
-            return 1;
+            return $exception->getMessage();
         }
         if ($userMail) {
             $userMail->status = 1;

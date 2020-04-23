@@ -128,4 +128,20 @@ class UrlUtils
         return "http://localhost:4200/#/login";
     }
 
+    public static function getActiviationLink()
+    {
+        if (App::environment() == 'test') {
+            return "http://localhost:4200/#/confirmation";
+        }
+        if (App::environment() == 'prod') {
+            return 'https://app.eventizer.io/#/confirmation';
+        }
+        if (App::environment() == 'dev') {
+            return 'https://dev.app.eventizer.io/#/confirmation';
+        }
+
+        return "http://localhost:4200/#/confirmation";
+    
+    }
+
 }

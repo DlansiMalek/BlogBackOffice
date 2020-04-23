@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMailAdminTable extends Migration
+class CreateMaillAdminTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class CreateMailAdminTable extends Migration
     public function up()
     {
         Schema::create('Mail_Admin', function (Blueprint $table) {
-            $table->increments("mail_id");
+            $table->increments("mail_admin_id");
 
 
             $table->string('object');
