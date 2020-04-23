@@ -14,7 +14,7 @@ class MailAdminSeedTable extends Seeder
         //
         DB::table('Mail_Admin')->insert([
             'object' => "Confirmation d'incsription ",
-            'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre compte.</p><p><a href="{{%24activationLink}}">Lien</a></p>',
+            'template' => '<p>Votre compte a été créer, veuillez cliquer sur ce lien afin de le  valider.</p><p><a href="{{%24activationLink}}">Lien</a></p>',
 
             'mail_type_admin_id' => 10
         ]);

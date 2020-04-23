@@ -375,7 +375,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $activationLink = null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null)
     {
 
         $accesses = "";
@@ -396,14 +396,12 @@ class CongressServices
             }
             $accesses = $accesses . "</ul>";
         }
-        if ($congress != null) {
-            $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
-            $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
-            $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
-            $template = str_replace('{{$congress-&gt;end_date}}',  $endDate . '', $template);
-        }
+        $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
+        $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
+        $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
+        $template = str_replace('{{$congress-&gt;end_date}}',  $endDate . '', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
@@ -413,7 +411,6 @@ class CongressServices
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
         $template = str_replace('{{%24linkFrontOffice}}', '{{$linkFrontOffice}}', $template);
         $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
-        $template = str_replace('{{%24activationLink}}', '{{$activationLink}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
         $template = str_replace('{{$organization-&gt;description}}', '{{$organization->description}}', $template);
@@ -424,7 +421,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'activationLink' => $activationLink]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice]);
     }
 
     public
