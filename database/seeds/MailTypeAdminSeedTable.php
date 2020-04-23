@@ -66,7 +66,7 @@ class MailTypeAdminSeedTable extends Seeder
         ]);
         DB::table('Mail_Type_Admin')->insert([
             'mail_type_admin_id' => 10,
-            'name' => 'Acitivation',
+            'name' => 'acitivation',
             'display_name' => 'Email de confirmation',
         ]);
     }
