@@ -277,9 +277,9 @@ class UserController extends Controller
             // TODO Sending Confirmation Mail
             if ($mailAdminType = $this->mailServices->getMailTypeAdmin('activation')) {
                 $activationLink = UrlUtils::getActiviationLink() . '/' . $user->verification_code . '/' . $user->user_id;
-                if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_id)) {
+                if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, null, $user, null, null, null, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
+                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, null, $user, null, null, null, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
                 }
             }
         } else

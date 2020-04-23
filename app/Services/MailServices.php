@@ -108,8 +108,8 @@ class MailServices
         return MailTypeAdmin::where('name', '=', $name)->first();
     }
 
-    public function getMailAdmin($mailTypeId){
-        return MailAdmin::where('mail_type_id','=',$mailTypeId)->first();
+    public function getMailAdmin($mailTypeAdminId){
+        return MailAdmin::where('mail_type_admin_id','=',$mailTypeAdminId)->first();
     }
 
     public function updateMailAdmin($request, $mail)
