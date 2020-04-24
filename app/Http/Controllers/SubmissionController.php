@@ -91,6 +91,8 @@ class SubmissionController extends Controller
             if ($submissions) {
                 return response()->json($submissions, 200);
             }
+            return response()->json("not found", 400);
+
         } catch (Exception $e) {
 
             Log::info($e->getMessage());
@@ -98,22 +100,29 @@ class SubmissionController extends Controller
         }
     }
 
-    public function getCongressSubmissionForEvaluator(Request $request)
+
+    public function getCongressSubmissionDetailById(Request $request)
     {
         $congressId = $request->query('congress_id', -1);
-        if ($congressId < 1) {
+        $submission_id = $request->query('submission_id', -1);
+        if ($congressId < 1 || $submission_id<1) {
             return response()->json(['response' => 'bad request'], 400);
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            $submissions = $this->submissionServices->getCongressSubmissionForEvaluator($admin, $congressId);
-            return response()->json($submissions, 200);
+            $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $congressId, $submission_id);
+            if ($submission_detail) {
+                return response()->json($submission_detail, 200);
+        }
+            return response()->json("not found", 400);
+
         } catch (Exception $e) {
 
             Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
+
 
     public function putEvaluationToSubmission(Request $request)
     {

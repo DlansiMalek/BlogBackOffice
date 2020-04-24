@@ -17,14 +17,14 @@ class Submission extends Model
         return $this->belongsTo('App\Models\User','user_id');
     }
 
-    public function author() {
+    public function authors() {
         return $this->hasMany('App\Models\Author','submission_id');
     }
 
     public function theme() {
         return $this->belongsTo('App\Models\Theme','theme_id');
     }
-    public function submission_evaluation() {
+    public function submissions_evaluations() {
         return $this->hasMany('App\Models\SubmissionEvaluation','submission_id');
     }
 }

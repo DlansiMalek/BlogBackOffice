@@ -15,7 +15,7 @@ class SubmissionEvaluation extends Model {
     public function submission() {
         return $this->belongsTo('App\Models\Submission','submission_id');
     }
-    public function  admin() {
+    public function  evaluator() {
         return $this->belongsTo('App\Models\Admin','admin_id');
 
     }
