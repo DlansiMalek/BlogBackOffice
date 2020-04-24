@@ -3,22 +3,14 @@
 namespace App\Services;
 
 use App\Models\Submission;
-use App\Models\ConfigSubmission;
 use App\Models\SubmissionEvaluation;
 use App\Models\ResourceSubmission;
 
 class SubmissionServices
 {
-    protected $resourcesServices;
-    protected $adminServices;
 
-    function __construct(
-        AdminServices $adminServices,
-        ResourcesServices $resourcesServices
-    ) {
-        $this->resourcesServices = $resourcesServices;
-        $this->adminServices = $adminServices;
-    }
+
+    function __construct() {}
 
     public function addSubmission($title, $type, $prez_type, $description, $congress_id, $theme_id, $user_id)
     {
@@ -34,9 +26,8 @@ class SubmissionServices
         return $submission;
     }
 
-    public function editSubmission($id, $title, $type, $prez_type, $description, $theme_id)
+    public function editSubmission($submission,$title, $type, $prez_type, $description, $theme_id)
     {
-        $submission = $this->getSubmission($id);
         $submission->title = $title;
         $submission->type = $type;
         $submission->prez_type = $prez_type;
@@ -49,14 +40,13 @@ class SubmissionServices
     public function getSubmission($submission_id)
     {
         return Submission::with([
-            'Authors' => function ($query) use ($submission_id) {
-                $query->where('submission_id', '=', $submission_id);
+            'authors' => function ($query) {
                 $query->orderBy('rank');
             },
-            'Resources' => function ($query) use ($submission_id) {
+            'resources' => function ($query) use ($submission_id) {
                 $query->where('submission_id', '=', $submission_id);
             },
-            'Congress.ConfigSubmission'
+            'congress.configSubmission'
         ])
             ->where('submission_id', '=', $submission_id)
             ->first();
@@ -65,43 +55,42 @@ class SubmissionServices
     public function getSubmissionById($submission_id)
     {
 
-        return Submission::where('submission_id', '=', $submission_id);
+        return Submission::where('submission_id', '=', $submission_id)->first();
     }
 
-    public function getConfigSubmission($congress_id)
-    {
-        return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
-    }
 
     public function saveResourceSubmission($resourceIds, $submission_id)
     {
-        $resources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
-        if (sizeof($resources) > 0) {
+        $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
+        if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
-                foreach ($resources as $resource) {
-                    if ($resource['resource_id'] != $resourceId) {
-                        $resourceSubmission = new ResourceSubmission();
-                        $resourceSubmission->resource_id = $resourceId;
-                        $resourceSubmission->Submission_id = $submission_id;
-                        $resourceSubmission->save();
+                foreach ($oldResources as $oldResource) {
+                    if ($oldResource['resource_id'] != $resourceId) {
+                        $this->addResourceSubmission($resourceId,$submission_id);
                     }
                 }
             }
         } else {
             foreach ($resourceIds as $resourceId) {
 
-                $resourceSubmission = new ResourceSubmission();
-                $resourceSubmission->resource_id = $resourceId;
-                $resourceSubmission->Submission_id = $submission_id;
-                $resourceSubmission->save();
+                $this->addResourceSubmission($resourceId,$submission_id);
             }
         }
     }
 
-    public function affectSubmissionToEvaluators($congress_id, $submission_id, $admins)
-    {
-        $configSubmission = $this->getConfigSubmission($congress_id);
+    function addResourceSubmission($resourceId,$submissionId){
 
+        $resourceSubmission = new ResourceSubmission();
+        $resourceSubmission->resource_id = $resourceId;
+        $resourceSubmission->Submission_id = $submissionId;
+        $resourceSubmission->save();
+
+        return $resourceSubmission ;
+}
+
+    public function affectSubmissionToEvaluators($configSubmission,$submission_id, $admins)
+    {
+     
         $loopLength = sizeof($admins) > $configSubmission['num_evaluators'] ? $configSubmission['num_evaluators'] : sizeof($admins);
 
         for ($i = 0; $i < $loopLength; $i++) {

@@ -14,12 +14,7 @@ use App\Models\Author;
 class AuthorServices
 {
 
-    protected $submissionServices;
-
-    function __construct(SubmissionServices $submissionServices)
-    {
-        $this->submissionServices = $submissionServices;
-    }
+    function __construct(){}
 
     public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id)
     {
@@ -34,24 +29,20 @@ class AuthorServices
         $author->save();
         return $author;
     }
-    public function editAuthor($id, $rank)
+    public function editAuthor($author, $rank)
     {
 
-        $author = $this->getAuthorById($id);
         $author->rank = $rank;
         $author->update();
         return $author;
     }
-    public function deleteAuthor($author_id)
+    public function deleteAuthor($author)
     {
-        $author = $this->getAuthorById($author_id);
         $author->delete();
     }
     public function saveAuthorsBySubmission($authors, $submission_id)
     {
-        if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
-            return response()->json(['response' => 'no submission found'], 400);
-        }
+
 
         foreach ($authors as $author) {
             $this->saveAuthor(
@@ -66,10 +57,9 @@ class AuthorServices
         }
     }
 
-    public function editAuthors($authors, $submission_id)
+    public function editAuthors($existingAuthors,$authors, $submission_id)
     {
 
-        $existingAuthors = $this->getAuthorsBySubmissionId($submission_id);
         //test si il exist que l'utilisateur seuelement
         if (sizeof($authors) > 1 )  {
             //première loop pour voir les auteurs qui ont été modifié ou supprimé
@@ -80,7 +70,7 @@ class AuthorServices
                         if ($existingAuthor['author_id'] == $author['author_id']) {
                             $isExist = true;
                             $this->editAuthor(
-                                $author['author_id'],
+                                $author,
                                 $author['rank'],
 
                             );
@@ -88,7 +78,7 @@ class AuthorServices
                     } 
                 }
                 if (!($isExist)) {
-                    $this->deleteAuthor($existingAuthor['author_id']);
+                    $this->deleteAuthor($existingAuthor);
                 }
             }
             //2eme loop pour ajouter les nouveaux auteurs 
@@ -107,7 +97,7 @@ class AuthorServices
 
         } else {
             for ($i = 1; $i < sizeof($existingAuthors); $i++) {
-                $this->deleteAuthor($existingAuthors[$i]['author_id']);
+                $this->deleteAuthor($existingAuthors[$i]);
             }
         }
     }
