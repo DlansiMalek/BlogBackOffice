@@ -134,15 +134,17 @@ class SubmissionController extends Controller
     }
 
 
-    public function putEvaluationToSubmission(Request $request)
+    public function putEvaluationToSubmission($submissionEvaluationId, Request $request)
     {
-        $submissionEvaluationId = $request->input('submission_evaluation_id', -1);
         $note = $request->input('note', -1);
-            if ($submissionEvaluationId < 1 || $note < 0 || $note > 20) {
-                return response()->json(['response' => 'bad request'], 400);
-            }
+        if ((!($submissionEvaluation = $this->submissionServices->getSubmissionEvaluationById($submissionEvaluationId))) || $note < 0 || $note > 20) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
             try {
                 $admin = $this->adminServices->retrieveAdminFromToken();
+                if (!($evaluation=$this->submissionServices->getSubmissionEvaluationByAdminId($admin,$submissionEvaluationId))) {
+                    return response()->json(['response' => 'bad request'], 400);
+                }
                 $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionEvaluationId, $note);
                 return response()->json($evaluation, 200);
             } catch (Exception $e) {

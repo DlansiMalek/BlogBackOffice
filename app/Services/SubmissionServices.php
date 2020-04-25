@@ -142,10 +142,7 @@ class SubmissionServices
 
     public function putEvaluationToSubmission($admin, $submissionEvaluationId, $note)
     {
-
-        $evaluation = SubmissionEvaluation::where('admin_id', '=', $admin->admin_id)
-            ->where('submission_evaluation_id', '=', $submissionEvaluationId)->firstOrFail();
-        if ($evaluation) {
+            $evaluation=$this->getSubmissionEvaluationByAdminId($admin,$submissionEvaluationId);
             $evaluation->note = $note;
             $evaluation->save();
             $submissionId = $evaluation->submission_id;
@@ -161,7 +158,15 @@ class SubmissionServices
                     ->only(['submission_evaluation_id', 'note', 'submission'])->all();
             })->where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
             return $evalUpdate;
-        }
 
+
+    }
+    public function  getSubmissionEvaluationById($submissionEvaluationId) {
+        return SubmissionEvaluation::where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
+    }
+
+    public function getSubmissionEvaluationByAdminId($admin,$submissionEvaluationId) {
+        return SubmissionEvaluation::where('admin_id', '=', $admin->admin_id)
+            ->where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
     }
 }
