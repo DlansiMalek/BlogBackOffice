@@ -6,10 +6,10 @@ use App\Models\SubmissionEvaluation;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\ResourcesServices;
-use App\Services\SubmissionEvaluationService;
 use App\Services\SubmissionServices;
 use App\Services\ThemeServices;
 use App\Services\UserServices;
+use App\Services\CongressServices;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -20,18 +20,22 @@ class SubmissionController extends Controller
     protected $authorServices;
     protected $adminServices;
     protected $userServices;
+    protected $congressServices;
 
     function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
         AdminServices $adminServices,
-        UserServices $userServices
+        UserServices $userServices,
+        CongressServices $congressServices
     )
     {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
         $this->adminServices = $adminServices;
         $this->userServices = $userServices;
+        $this->congressServices = $congressServices;
+
     }
 
     public function addSubmission(Request $request)
@@ -79,19 +83,21 @@ class SubmissionController extends Controller
 
     }
 
-    public function getCongressSubmission(Request $request)
+    public function getCongressSubmission($congressId)
     {
-        $congressId = $request->query('congress_id', -1);
-        if ($congressId < 1) {
+        if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId);
-            if ($submissions) {
-                return response()->json($submissions, 200);
+            if (!($adminCongress=$this->congressServices->getAdminByCongressId($congressId,$admin))) {
+                return response()->json(['response' => 'bad request'], 400);
             }
-            return response()->json("not found", 400);
+            $privilege_id = $adminCongress->privilege_id;
+            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId,$privilege_id);
+
+            return response()->json($submissions, 200);
+
 
         } catch (Exception $e) {
 
@@ -101,20 +107,24 @@ class SubmissionController extends Controller
     }
 
 
-    public function getCongressSubmissionDetailById(Request $request)
+    public function getCongressSubmissionDetailById($congressId,$submissionId)
     {
-        $congressId = $request->query('congress_id', -1);
-        $submission_id = $request->query('submission_id', -1);
-        if ($congressId < 1 || $submission_id<1) {
+
+        if (!(($congress = $this->congressServices->getCongressById($congressId))
+            && ($submission = $this->submissionServices->getSubmissionById($submissionId) ) )) {
             return response()->json(['response' => 'bad request'], 400);
         }
+
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $congressId, $submission_id);
-            if ($submission_detail) {
-                return response()->json($submission_detail, 200);
-        }
-            return response()->json("not found", 400);
+            if (!($adminCongress=$this->congressServices->getAdminByCongressId($congressId,$admin))) {
+                return response()->json(['response' => 'bad request'], 400);
+            }
+            $privilege_id = $adminCongress->privilege_id;
+            $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $congressId, $submissionId,$privilege_id);
+            return response()->json($submission_detail, 200);
+
+
 
         } catch (Exception $e) {
 

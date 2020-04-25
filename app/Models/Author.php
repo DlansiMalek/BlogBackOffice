@@ -15,7 +15,4 @@ class Author extends Model
     public $timestamps = true;
 
 
-    public function submission() {
-        return $this->belongsTo('App\Models\Submission','submission_id');
-    }
 }

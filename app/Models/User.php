@@ -95,14 +95,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
     }
 
-//    public function submission() {
-//        return $this->hasMany('App\Models\Submission','user_id');
-//    }
-
-//    public function submission() {
-//        return $this->belongsTo('App\Models\Submission','submission_id');
-//    }
-
 
     public function getJWTIdentifier()
     {
