@@ -194,8 +194,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
-    Route::put('evaluate/put/{submissionEvaluationId}', 'SubmissionController@putEvaluationToSubmission');
-    Route::get('{congressId}/{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
+    Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
+    Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {

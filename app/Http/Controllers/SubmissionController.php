@@ -107,21 +107,20 @@ class SubmissionController extends Controller
     }
 
 
-    public function getCongressSubmissionDetailById($congressId,$submissionId)
+    public function getCongressSubmissionDetailById($submissionId)
     {
 
-        if (!(($congress = $this->congressServices->getCongressById($congressId))
-            && ($submission = $this->submissionServices->getSubmissionById($submissionId) ) )) {
+        if (!($submission = $this->submissionServices->getSubmissionById($submissionId) ) ) {
             return response()->json(['response' => 'bad request'], 400);
         }
-
         try {
+            $congressId = $submission->congress_id;
             $admin = $this->adminServices->retrieveAdminFromToken();
             if (!($adminCongress=$this->congressServices->getAdminByCongressId($congressId,$admin))) {
                 return response()->json(['response' => 'bad request'], 400);
             }
             $privilege_id = $adminCongress->privilege_id;
-            $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $congressId, $submissionId,$privilege_id);
+            $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId,$privilege_id);
             return response()->json($submission_detail, 200);
 
 
@@ -134,9 +133,10 @@ class SubmissionController extends Controller
     }
 
 
-    public function putEvaluationToSubmission($submissionEvaluationId, Request $request)
+    public function putEvaluationToSubmission($submissionId, Request $request)
     {
         $note = $request->input('note', -1);
+        $submissionEvaluationId = $request->input('submission_evaluation_id', -1);
         if ((!($submissionEvaluation = $this->submissionServices->getSubmissionEvaluationById($submissionEvaluationId))) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }

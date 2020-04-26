@@ -81,19 +81,23 @@ class SubmissionServices
         return $submissionEvaluation;
     }
 
+    public function renderSubmissionForAdmin() {
+        return  Submission::with([
+            'user:user_id,first_name,last_name,email',
+            'authors:submission_id,author_id,first_name,last_name',
+            'theme:theme_id,label',
+            'submissions_evaluations' => function ($query) {
+                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
+                    ->with(['evaluator:admin_id,name,email']);
+            }
+        ]);
+    }
+
     public function getCongressSubmissionForAdmin($admin, $congress_id,$privilege_id)
     {
             if ($privilege_id == 1) {
-
-                $allSubmission = Submission::with([
-                        'user:user_id,first_name,last_name,email',
-                        'authors:submission_id,author_id,first_name,last_name',
-                        'theme:theme_id,label',
-                        'submissions_evaluations' => function ($query) {
-                            $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
-                                ->with(['evaluator:admin_id,name,email']);
-                        }
-                    ])->where('congress_id', '=', $congress_id)->get();
+                $allSubmission = $this->renderSubmissionForAdmin()
+                    ->where('congress_id', '=', $congress_id)->get();
                     $allSubmissionToRender = $allSubmission->map(function ($submission) {
                         return collect($submission->toArray())
                             ->only(['submission_id', 'title', 'type',
@@ -130,11 +134,39 @@ class SubmissionServices
     }
 
 
-    public function getSubmissionDetailById($admin, $congress_id, $submission_id, $privilege_id) {
+    public function getSubmissionDetailById($admin, $submission_id, $privilege_id) {
+        if ($privilege_id == 1) {
+            $submissionById = $this->renderSubmissionForAdmin()
+                ->where('submission_id', '=', $submission_id)->first();
+            if ($submissionById) {
+            $submissionToRender = $submissionById
+                    ->only(['submission_id', 'title', 'type',
+                        'prez_type', 'description', 'global_note',
+                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
+                        'congress_id', 'created_at']);
+            return $submissionToRender;}
 
-        $allSubmissionToRender = $this->getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id);
-        $submission_detail = $allSubmissionToRender->where("submission_id","=", $submission_id)->first();
-        return $submission_detail;
+        } elseif ($privilege_id == 11) {
+            $submissionById = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
+                $query->where('admin_id', '=', $admin->admin_id);
+            })
+                ->with([
+                    'theme:theme_id,label',
+                    'submissions_evaluations' => function ($query) use ($admin) {
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
+                            ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
+                    }
+                ])->where('submission_id', '=', $submission_id)->first();
+            if ($submissionById)
+            {$submissionToRender = $submissionById
+                    ->only(['submission_id', 'title', 'type',
+                        'prez_type', 'description', 'global_note',
+                        'status', 'theme', 'submissions_evaluations',
+                        'congress_id', 'created_at']);
+
+            return $submissionToRender;}
+
+        }
 
 
     }
