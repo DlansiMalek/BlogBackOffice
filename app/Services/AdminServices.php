@@ -350,7 +350,6 @@ class AdminServices
 
     public function renderAdminMail($template, $activationLink)
     {
-        $template = str_replace('{{%24activationLink}}', '{{$activationLink}}', $template);
         return view(['template' => '<html>' . $template . '</html>'], ['activationLink' => $activationLink]);
     }
 

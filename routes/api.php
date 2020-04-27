@@ -101,7 +101,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
-    Route::get('confirmInscription/{code}/{user_id}','UserController@confirmInscription');
+    Route::get('confirmInscription/{user_id}','UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {

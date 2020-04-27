@@ -84,14 +84,17 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function confirmInscription($code, $userId)
+    public function confirmInscription(Request $request ,$userId)
     {
+        $code = $request->query('verification_code','');
+
         if (!($user = $this->userServices->getUserByVerificationCodeAndId($code, $userId)))
             return response()->json(['error' => 'user not found'], 404);
 
         $user->email_verified = 1;
         $user->update();
-        return response()->json($user);
+    
+        return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "?valid_account=true");
     }
 
     public function getUserByCongressIdAndUserId($userId, $congressId)
@@ -275,8 +278,9 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
             // TODO Sending Confirmation Mail
-            if ($mailAdminType = $this->mailServices->getMailTypeAdmin('activation')) {
-                $activationLink = UrlUtils::getActiviationLink() . '/' . $user->verification_code . '/' . $user->user_id;
+          
+            if ($mailAdminType = $this->mailServices->getMailTypeAdmin('confirmation')) {
+                $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id .'?verification_code='. $user->verification_code;
                 if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
                     $this->userServices->sendMail($this->adminServices->renderAdminMail($mail->template,$activationLink), $user, null, $mail->object, null, $userMail);

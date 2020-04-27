@@ -754,7 +754,7 @@ class UserServices
                 $userMail->update();
             }
             Storage::delete('/app/badge.png');
-            return $exception->getMessage();
+            return 1;
         }
         if ($userMail) {
             $userMail->status = 1;
