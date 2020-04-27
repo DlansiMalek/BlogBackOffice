@@ -172,33 +172,22 @@ class SubmissionServices
     }
 
 
-    public function putEvaluationToSubmission($admin, $submissionEvaluationId, $note)
+    public function putEvaluationToSubmission($admin, $submissionId, $note)
     {
-            $evaluation=$this->getSubmissionEvaluationByAdminId($admin,$submissionEvaluationId);
+            $evaluation=$this->getSubmissionEvaluationByAdminId($admin,$submissionId);
             $evaluation->note = $note;
             $evaluation->save();
-            $submissionId = $evaluation->submission_id;
             $global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
                 ->where('note', '>=', 0)->average('note');
             $submissionUpdated = Submission::where('submission_id', '=', $submissionId)->first();
             $submissionUpdated->global_note = $global_note;
             $submissionUpdated->save();
-            $eval = $evaluation->with([
-                'submission:submission_id,title,type,description'])->get();
-            $evalUpdate = $eval->map(function ($submissionEvaluation) use ($submissionEvaluationId) {
-                return collect($submissionEvaluation->toArray())
-                    ->only(['submission_evaluation_id', 'note', 'submission'])->all();
-            })->where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
-            return $evalUpdate;
+            return "Update Successfully";
 
 
     }
-    public function  getSubmissionEvaluationById($submissionEvaluationId) {
-        return SubmissionEvaluation::where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
-    }
-
-    public function getSubmissionEvaluationByAdminId($admin,$submissionEvaluationId) {
+    public function getSubmissionEvaluationByAdminId($admin,$submissionId) {
         return SubmissionEvaluation::where('admin_id', '=', $admin->admin_id)
-            ->where('submission_evaluation_id', '=', $submissionEvaluationId)->first();
+            ->where('submission_id', '=', $submissionId)->first();
     }
 }
