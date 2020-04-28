@@ -441,7 +441,7 @@ class AdminController extends Controller
         $privilegeId = (int)$request->input('privilege_id');
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin,$privilegeId);
+            $admin = $this->adminServices->addPersonnel($admin);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
@@ -455,14 +455,14 @@ class AdminController extends Controller
             // else edit changed infos while creating
 
             $admin['admin_id'] = $admin_id;
-            $this->adminServices->editPersonnel($admin,$privilegeId);
+            $this->adminServices->editPersonnel($admin);
         }
 
         $congress = $this->congressService->getById($congress_id);
 
         //create themeAdmin if privilege is "comité Scientifique"
 
-        if ($privilegeId==11){
+        if ($privilegeId == 11){
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"),$admin_id);
         }
 
@@ -503,15 +503,16 @@ class AdminController extends Controller
         }
         $admin = $request->input('admin');
         $privilegeId=(int)$request->input('privilege_id');
-        $this->adminServices->editPersonnel($admin,$privilegeId);
+        $this->adminServices->editPersonnel($admin);
         $this->privilegeServices->editPrivilege(
             $privilegeId,
             $admin_id,
             $congress_id);
         //message d'erreur à revoir
 
-        if ((int)$request->input('privilege_id')==11){
-          $this->adminServices->modifyAdminThemes($admin['admin_id'],$request->input('themesSelected'));
+        if ($privilegeId == 11){
+          $themesAdmin=$this->adminServices->getThemeAdmin($admin['admin_id']);
+          $this->adminServices->modifyAdminThemes($themesAdmin,$admin['admin_id'],$request->input('themesSelected'));
         }
         return response()->json(['message' => 'working'], 200);
     }
