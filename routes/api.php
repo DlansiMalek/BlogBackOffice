@@ -86,6 +86,7 @@ Route::group(['prefix' => 'auth'], function () {
 
     Route::group(['middleware' => ['assign.guard:admins']], function () {
         Route::post('login/admin', 'Auth\LoginController@loginAdmin');
+        Route::post('login/superAdmin', 'Auth\LoginController@loginSuperAdminVayetek');
         Route::post('forgetPassword', 'Auth\LoginController@forgetPassword');
     });
 
