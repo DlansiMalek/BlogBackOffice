@@ -10,7 +10,11 @@ class Resource extends Model
     protected $table = 'Resource';
     protected $primaryKey = 'resource_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
-    protected $fillable = ['path', 'size'];
+    protected $fillable = ['access_id','path', 'size'];
 
+    public function access(){
+        
+            return $this->belongsTo('App\Models\Access', 'access_id', 'access_id');
+        }
  
 }

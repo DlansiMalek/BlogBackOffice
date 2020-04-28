@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Privilege;
 use App\Models\Service;
 use App\Models\Etablissement;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -25,28 +26,36 @@ class SharedServices
             ->get();
     }
 
-    public function getAllServices(){
+    public function getAllServices()
+    {
         return Service::all();
     }
-    public function getAllEtablissements(){
+
+    public function getAllEtablissements()
+    {
         return Etablissement::all();
     }
 
     public function saveBadgeInPublic($badgeIdGenerator, $name, $qrCode)
     {
-        $client = new \GuzzleHttp\Client();
-        $res = $client->request('POST',
-            UrlUtils::getUrlBadge() . '/badge/generateParticipant', [
-                'json' => [
-                    'badgeIdGenerator' => $badgeIdGenerator,
-                    'participant' => [
-                        'name' => $name,
-                        'qrCode' => $qrCode
+        return false;
+        try {
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('POST',
+                UrlUtils::getUrlBadge() . '/badge/generateParticipant', [
+                    'json' => [
+                        'badgeIdGenerator' => $badgeIdGenerator,
+                        'participant' => [
+                            'name' => $name,
+                            'qrCode' => $qrCode
+                        ]
                     ]
-                ]
-            ]);
-        Storage::put('badge.png', $res->getBody(), 'public');
-        return 'badge.png';
+                ]);
+            Storage::put('badge.png', $res->getBody(), 'public');
+            return true;
+        } catch (ClientException $e) {
+            return false;
+        }
     }
 
     public function getAllTypesAttestation()

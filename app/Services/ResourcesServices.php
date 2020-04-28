@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\Resource;
-use App\Models\ResourceSubmission;
 use App\SpeakerAccess;
 
 class ResourcesServices
@@ -19,17 +18,8 @@ class ResourcesServices
         return $resource;
     }
 
-    public function saveResourceSubmission($resource_id,$Submission_id){
 
-        $resourceSubmission=new ResourceSubmission();
-        $resourceSubmission->resource_id=$resource_id;
-        $resourceSubmission->Submission_id=$Submission_id;
-        $resourceSubmission->save();
-        return $resourceSubmission;
-
-    }
-
-    /*private $path = 'resources/';
+    private $path = 'resources/';
 
     public function uploadResource($file)
     {
@@ -98,5 +88,5 @@ class ResourcesServices
                 $resource->update();
             }
         }
-    }*/
+    }
 }

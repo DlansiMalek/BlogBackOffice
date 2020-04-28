@@ -22,8 +22,8 @@ Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
-Route::get('/services','SharedController@getAllServices');
-Route::get('/etablissements','SharedController@getAllEtablissements');
+Route::get('/services', 'SharedController@getAllServices');
+Route::get('/etablissements', 'SharedController@getAllEtablissements');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
@@ -31,6 +31,10 @@ Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTy
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 
+//Front Office Congress
+Route::group(['prefix' => 'congress'], function () {
+    Route::get('list/pagination', 'CongressController@getCongressPagination');
+});
 //SMS API
 
 Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
@@ -56,9 +60,10 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
 });
-Route::group(['prefix'=>'files'],function(){
-    Route::post('/upload-resource','FileController@uploadResource');
+Route::group(['prefix' => 'files'], function () {
+    Route::post('/upload-resource', 'FileController@uploadResource');
 });
+
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
     Route::post('/login', 'Auth\LoginController@loginAdminMobile');
@@ -193,12 +198,13 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 });
 //Submission API
 
-Route::group(['prefix' => 'submission'],function(){
-    Route::post('add','SubmissionController@addSubmission');
+Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
+    Route::post('add', 'SubmissionController@addSubmission');
+
 });
-Route::group(['prefix'=>'theme'],function(){
-    Route::get('all','ThemeController@getAllThemes');
-    Route::get('congress/{congressId}','ThemeController@getThemesByCongressId');
+Route::group(['prefix' => 'theme'], function () {
+    Route::get('all', 'ThemeController@getAllThemes');
+    Route::get('congress/{congressId}', 'ThemeController@getThemesByCongressId');
 });
 //PackAdmin API
 Route::group(['prefix' => 'packadmin'], function () {
@@ -246,7 +252,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
     Route::post('/register', 'UserController@registerUser');
 
     Route::group(['prefix' => 'congress'], function () {
-        Route::get('getMinimalCongress','CongressController@getMinimalCongress');
+        Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');

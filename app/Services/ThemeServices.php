@@ -3,7 +3,7 @@
 
 namespace App\Services;
 
-use App\Models\SubmissionTheme;
+use App\Models\CongressTheme;
 use App\Models\Theme;
 
 class ThemeServices {

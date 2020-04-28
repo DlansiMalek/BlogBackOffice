@@ -483,10 +483,9 @@ class AdminController extends Controller
             $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     $admin->name,
                     $admin->passwordDecrypt);
-                $fileAttached = true;
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -613,10 +612,9 @@ class AdminController extends Controller
             $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     $admin->name,
                     $admin->passwordDecrypt);
-                $fileAttached = true;
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;

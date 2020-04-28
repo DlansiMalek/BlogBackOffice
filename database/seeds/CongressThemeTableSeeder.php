@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class submission_themeTableSeeder extends Seeder
+class CongressThemeTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,9 +12,9 @@ class submission_themeTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::insert('Submission_Theme')->insert([
-            'congress_id'=>1,
-            'theme_id'=>1
+        DB::table('Congress_Theme')->insert([
+            'congress_id' => 1,
+            'theme_id' => 1
         ]);
     }
 }

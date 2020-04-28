@@ -143,6 +143,15 @@ class AdminServices
        
 
     }
+
+    public function getEvaluatorsByThemeOrByCongress($themeId,$congressId,$privilegeId){
+        
+        $admins=$this->getEvaluatorsByTheme($themeId,$congressId,$privilegeId);
+        if (!sizeof($admins)>0){
+            $admins=$this->getEvaluatorsByCongress($congressId,$privilegeId);
+        }
+        return $admins;
+    }
   
     public function addHistory($history, $admin, $pack)
     {
