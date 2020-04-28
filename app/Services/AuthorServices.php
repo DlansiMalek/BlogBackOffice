@@ -70,7 +70,7 @@ class AuthorServices
                         if ($existingAuthor['author_id'] == $author['author_id']) {
                             $isExist = true;
                             $this->editAuthor(
-                                $author,
+                                $existingAuthor,
                                 $author['rank'],
 
                             );

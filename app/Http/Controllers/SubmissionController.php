@@ -77,10 +77,10 @@ class SubmissionController extends Controller
         }
     }
 
-    public function editSubmssion(Request $request)
+    public function editSubmssion(Request $request,$submission_id)
     {
         try {
-            if (!($submission = $this->submissionServices->getSubmissionById($request->input('submission.submission_id')))) {
+            if (!($submission = $this->submissionServices->getSubmissionById($submission_id))) {
                 return response()->json(['response' => 'no submission found'], 400);
             }
             $submission = $this->submissionServices->editSubmission(

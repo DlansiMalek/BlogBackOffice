@@ -43,9 +43,7 @@ class SubmissionServices
             'authors' => function ($query) {
                 $query->orderBy('rank');
             },
-            'resources' => function ($query) use ($submission_id) {
-                $query->where('submission_id', '=', $submission_id);
-            },
+            'resources',
             'congress.configSubmission'
         ])
             ->where('submission_id', '=', $submission_id)

@@ -206,9 +206,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
-    Route::post('edit','SubmissionController@editSubmssion');
-    Route::get('{submission_id}','SubmissionController@getSubmission');
-
+    Route::group(['prefix' => '{submission_id}'], function() {
+        Route::get('','SubmissionController@getSubmission');
+        Route::put('/edit','SubmissionController@editSubmssion');
+    });
 
 });
 Route::group(['prefix' => 'theme'], function () {
