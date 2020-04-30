@@ -1057,6 +1057,28 @@ class UserServices
             ->first();
     }
 
+    public function isAuthorizedToRoom($userId,$congressId,$accessId)
+    {
+        $user = User::with([
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id','=',$congressId);
+            },
+            'payments' => function ($query) use ($congressId){
+                $query->where('congress_id','=',$congressId);
+            },
+            'accesses' => function ($query) use ($congressId,$accessId){
+                $query->where('Access.access_id','=',$accessId)->where('congress_id','=',$congressId);
+            }
+        ])
+        ->where('user_id','=',$userId)
+        ->first();
+        if ($user && sizeof($user->user_congresses) > 0 && $user->payments[0]['isPaid'] == 1 && sizeof($user->accesses) > 0 ){
+            return 1 ;
+        }
+        else {
+            return 0 ;
+        }
+    }
     public function getUserById($userId)
     {
         return User::with([
