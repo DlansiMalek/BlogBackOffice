@@ -722,21 +722,21 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null)
+    public function sendMail($view, $user,$toSendEmail=null, $congress, $objectMail, $fileAttached, $userMail = null)
     {
 
         //TODO detect email sended user
-        $email = $user->email;
+        $email = $toSendEmail ? $toSendEmail : $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
 
-        if ($congress->username_mail)
+        if ($congress!=null && $congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+                $fromMailName = $congress!=null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
 
-                if ($congress->config && $congress->config->replyto_mail) {
+                if ($congress!=null && $congress->config && $congress->config->replyto_mail) {
                     $message->replyTo($congress->config->replyto_mail);
                 }
 
