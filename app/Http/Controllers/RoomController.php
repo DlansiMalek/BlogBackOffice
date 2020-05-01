@@ -82,11 +82,12 @@ class RoomController extends Controller
                 null,
                 null,
                 $urlModerator,
-                $urlInvitee
+                $urlInvitee,
+                $room
             ),
             $admin,
             null,
-            $mail->object,
+            'Invitation: ' . $room->name,
             null,
             null,
             $email
