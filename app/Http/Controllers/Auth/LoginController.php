@@ -69,22 +69,6 @@ class LoginController extends Controller
     }
 
 
-    public function loginSuperAdminVayetek(Request $request)
-    {
-
-        $credentials = request(['email', 'password']);
-
-        $admin = $this->adminServices->getAdminByLogin($request->input("email"));
-        if (($admin->privilege_id!= 9)&& ($admin->privilege_id!= 10))
-        { return response()->json(['error' => 'invalid credentials'], 401);}
-        if (!$token = auth()->attempt($credentials)) {
-                return response()->json(['error' => 'invalid credentials'], 401);
-        
-    }
-        $admin=$admin->only(['admin_id','name','email','privilege_id','congresses']);
-        return response()->json(['admin' => $admin, 'token' => $token], 200);
-    }
-
     public function loginUser(Request $request)
     {
         $credentials = request(['email', 'password']);

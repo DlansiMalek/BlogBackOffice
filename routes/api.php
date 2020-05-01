@@ -348,7 +348,7 @@ Route::group(['prefix' => 'access'], function () {
 
 // Super Admin API
 Route::group(['middelware' => 'marketing'], function () {
-
+    Route::get('/admin/all', 'AdminController@getClients');
 });
 
 
