@@ -33,6 +33,9 @@ class CreateRoomTable extends Migration
      */
     public function down()
     {
+        Schema::table('Room', function ($table) {
+            $table->dropForeign(['admin_id']);
+        });
         Schema::dropIfExists('Room');
     }
 }

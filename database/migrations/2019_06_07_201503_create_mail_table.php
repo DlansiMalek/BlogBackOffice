@@ -21,7 +21,7 @@ class CreateMailTable extends Migration
             $table->text("template");
 
 
-            $table->unsignedInteger("congress_id")->nullable()->default(null);
+            $table->unsignedInteger("congress_id");
             $table->foreign("congress_id")->references("congress_id")->on('Congress')->onDelete('cascade');
 
             $table->unsignedInteger("mail_type_id");

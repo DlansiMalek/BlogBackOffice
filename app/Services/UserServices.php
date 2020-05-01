@@ -257,9 +257,9 @@ class UserServices
             $query->where("Congress_User . id_Congress", "=", $congressId)
                 ->where("Congress_User . isPresent", "=", 1);
         }])->withCount(['congresses as isPaid' => function ($query) use ($congressId) {
-                $query->where("Congress_User . id_Congress", "=", $congressId)
-                    ->where("Congress_User . isPaid", "=", 1);;
-            }])->where("id_User", "=", $userId)
+            $query->where("Congress_User . id_Congress", "=", $congressId)
+                ->where("Congress_User . isPaid", "=", 1);;
+        }])->where("id_User", "=", $userId)
             ->first();
     }
 
@@ -385,7 +385,7 @@ class UserServices
             });
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-            || $tri == 'mobile' || $tri = 'country_id')) {
+                || $tri == 'mobile' || $tri = 'country_id')) {
             $users = $users->orderBy($tri, $order);
         }
         if ($order && ($tri == 'type' || $tri == 'date')) {
@@ -722,21 +722,21 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user,$toSendEmail=null, $congress, $objectMail, $fileAttached, $userMail = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
     {
 
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
 
-        if ($congress!=null && $congress->username_mail)
+        if ($congress != null && $congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress!=null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+                $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
 
-                if ($congress!=null && $congress->config && $congress->config->replyto_mail) {
+                if ($congress != null && $congress->config && $congress->config->replyto_mail) {
                     $message->replyTo($congress->config->replyto_mail);
                 }
 
@@ -1057,28 +1057,6 @@ class UserServices
             ->first();
     }
 
-    public function isAuthorizedToRoom($userId,$congressId,$accessId)
-    {
-        $user = User::with([
-            'user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id','=',$congressId);
-            },
-            'payments' => function ($query) use ($congressId){
-                $query->where('congress_id','=',$congressId);
-            },
-            'accesses' => function ($query) use ($congressId,$accessId){
-                $query->where('Access.access_id','=',$accessId)->where('congress_id','=',$congressId);
-            }
-        ])
-        ->where('user_id','=',$userId)
-        ->first();
-        if ($user && sizeof($user->user_congresses) > 0 && $user->payments[0]['isPaid'] == 1 && sizeof($user->accesses) > 0 ){
-            return 1 ;
-        }
-        else {
-            return 0 ;
-        }
-    }
     public function getUserById($userId)
     {
         return User::with([

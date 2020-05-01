@@ -443,12 +443,6 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function isAuthorizedToRoom($userId,$congressId,$accessId)
-    {
-        $isAuth = $this->userServices->isAuthorizedToRoom($userId,$congressId,$accessId);
-       return response()->json(['isAuth'=> $isAuth ],200);
-    }
-
     function validateUserAccount($userId = null, $congressId = null, $token = null)
     {
         $user = $this->userServices->getUserById($userId);
@@ -581,7 +575,7 @@ class UserController extends Controller
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement,null ,$linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSms($congress->congress_id, $user, $congress);

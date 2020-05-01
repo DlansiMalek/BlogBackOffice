@@ -21,7 +21,8 @@ class RoomController extends Controller
         RoomServices $roomServices,
         CongressServices $congressServices,
         UserServices $userServices
-    ) {
+    )
+    {
         $this->adminServices = $adminServices;
         $this->roomServices = $roomServices;
         $this->congressServices = $congressServices;
@@ -50,7 +51,7 @@ class RoomController extends Controller
         $email = $request->has('moderator_email') ? $request->input('moderator_email') : $admin->email;
 
 
-        $moderator_token  = $this->roomServices->createToken($admin, $email, $request->input('name'), true);
+        $moderator_token = $this->roomServices->createToken($admin, $email, $request->input('name'), true);
         $invitee_token = $this->roomServices->createToken($admin, $email, $request->input('name'), false);
 
         $room = $this->roomServices->addRoom(
@@ -82,11 +83,11 @@ class RoomController extends Controller
                 $urlInvitee
             ),
             $admin,
-            $email,
             null,
             $mail->object,
             null,
-            null
+            null,
+            $email
         );
     }
 }

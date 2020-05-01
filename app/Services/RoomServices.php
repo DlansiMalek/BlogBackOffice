@@ -15,7 +15,7 @@ class RoomServices
 
     public function createToken($admin, $email, $name, $isModerator)
     {
-        $key = env('SECRET_KEY');
+        $key = env('SECRET_KEY_JITSI');
         $payload = array(
             "context" => array(
                 "user" => array(
@@ -32,6 +32,7 @@ class RoomServices
         );
         return JWT::encode($payload, $key);
     }
+
     public function addRoom($name, $admin_id, $moderator_token, $invitee_token, $moderator_email = null)
     {
         $room = new Room();
@@ -39,7 +40,8 @@ class RoomServices
         $room->admin_id = $admin_id;
         $room->moderator_token = $moderator_token;
         $room->invitee_token = $invitee_token;
-        $room->moderator_email = $moderator_email;
+        if ($moderator_email)
+            $room->moderator_email = $moderator_email;
         $room->save();
         return $room;
     }
