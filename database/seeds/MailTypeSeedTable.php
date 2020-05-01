@@ -78,6 +78,6 @@ class MailTypeSeedTable extends Seeder
             'mail_type_id' => 12,
             'name' => 'room',
             'display_name' => "Creation d\'une room",
-        ])
+        ]);
     }
 }

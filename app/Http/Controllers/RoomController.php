@@ -7,7 +7,9 @@ use App\Services\CongressServices;
 use App\Services\RoomServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
+use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RoomController extends Controller
 {
@@ -50,18 +52,18 @@ class RoomController extends Controller
 
         $email = $request->has('moderator_email') ? $request->input('moderator_email') : $admin->email;
 
+        $name = Utils::getUCWords($request->input('name'));
 
-        $moderator_token = $this->roomServices->createToken($admin, $email, $request->input('name'), true);
-        $invitee_token = $this->roomServices->createToken($admin, $email, $request->input('name'), false);
+        $moderator_token = $this->roomServices->createToken($email, $name, true);
+        $invitee_token = $this->roomServices->createToken($email, $name, false);
 
         $room = $this->roomServices->addRoom(
-            $request->input('name'),
+            $name,
             $admin->admin_id,
             $moderator_token,
             $invitee_token,
             $request->has('moderator_email') ? $email : null
         );
-
 
         $mailtype = $this->congressServices->getMailType('room');
         $mail = $this->congressServices->getMailOutOfCongress($mailtype->mail_type_id);
@@ -69,7 +71,7 @@ class RoomController extends Controller
         $urlModerator = UrlUtils::getMeetEventizerUrl() . '/' . $room->name . '?jwt=' . $moderator_token;
         $urlInvitee = UrlUtils::getMeetEventizerUrl() . '/' . $room->name . '?jwt=' . $invitee_token;
 
-        return $this->userServices->sendMail(
+        $this->userServices->sendMail(
             $this->congressServices->renderMail(
                 $mail->template,
                 null,
@@ -89,5 +91,7 @@ class RoomController extends Controller
             null,
             $email
         );
+
+        return response()->json(['message' => 'added room success']);
     }
 }

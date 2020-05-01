@@ -13,14 +13,14 @@ class RoomServices
         return Room::where('admin_id', '=', $admin_id)->get();
     }
 
-    public function createToken($admin, $email, $name, $isModerator)
+    public function createToken($email, $name, $isModerator)
     {
         $key = env('SECRET_KEY_JITSI');
         $payload = array(
             "context" => array(
                 "user" => array(
                     "avatar" => "avatar",
-                    "name" => $admin->name,
+                    "name" => $isModerator ? "Eventizer Moderator" : "Eventizer Invitee",
                     "email" => $email,
                 )
             ),
