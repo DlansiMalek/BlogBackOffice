@@ -285,6 +285,10 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
 
     });
+    Route::group(['prefix' => 'room'],function () {
+        Route::get('','RoomController@getAdminRooms');
+        Route::post('','RoomController@addAdminRooms');
+    });
 
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
     Route::group(['prefix' => 'me'], function () {
