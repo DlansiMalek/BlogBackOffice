@@ -1057,9 +1057,27 @@ class UserServices
             ->first();
     }
 
-    public function checkUserRights($userId,$congressId,$accessId)
+    public function checkUserRights($user)
     {
-        $user = User::with([
+        
+        if ($user && $user->user_access[0]['jetsi_token']){
+            return 1;
+        }
+        if ($user && sizeof($user->user_congresses) > 0 && $user->payments[0]['isPaid'] == 1 && sizeof($user->accesses) > 0 ){
+            if ($user->user_congresses[0]['privilege_id'] == 3){
+                return 2 ;
+            }
+            if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8 ){
+                return 3 ;
+            }
+        }
+        else {
+            return -1 ;
+        }
+    }
+
+    public function getUserWithCongressPaymentsAccess($userId,$congressId,$accessId){
+         return User::with([
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id','=',$congressId);
             },
@@ -1068,20 +1086,13 @@ class UserServices
             },
             'accesses' => function ($query) use ($congressId,$accessId){
                 $query->where('Access.access_id','=',$accessId)->where('congress_id','=',$congressId);
+            },
+            'user_access' => function ($query) use ($userId,$accessId){
+                $query->where('user_id','=',$userId)->where('access_id','=',$accessId);
             }
         ])
         ->where('user_id','=',$userId)
         ->first();
-        if ($user && $user->user_congresses[0]['jetsi_token']){
-            return 1;
-        }
-        if ($user && sizeof($user->user_congresses) > 0 && $user->payments[0]['isPaid'] == 1 && sizeof($user->accesses) > 0 ){
-            
-            return 1 ;
-        }
-        else {
-            return 0 ;
-        }
     }
     public function getUserById($userId)
     {

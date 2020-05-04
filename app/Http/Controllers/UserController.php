@@ -12,6 +12,7 @@ use App\Services\MailServices;
 use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
+use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\SmsServices;
 use App\Services\UrlUtils;
@@ -35,6 +36,7 @@ class UserController extends Controller
     protected $organizationServices;
     protected $paymentServices;
     protected $mailServices;
+    protected $roomServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -45,6 +47,7 @@ class UserController extends Controller
                          OrganizationServices $organizationServices,
                          PaymentServices $paymentServices,
                          SmsServices $smsServices,
+                         RoomServices $roomServices,
                          MailServices $mailServices)
     {
         $this->smsServices = $smsServices;
@@ -58,6 +61,7 @@ class UserController extends Controller
         $this->organizationServices = $organizationServices;
         $this->paymentServices = $paymentServices;
         $this->mailServices = $mailServices;
+        $this->roomServices = $roomServices;
     }
 
     public function getUserByTypeAndCongressId($congress_id, Request $request)
@@ -445,12 +449,27 @@ class UserController extends Controller
 
     public function checkUserRights($userId,$congressId,$accessId)
     {
-        $isAuth = $this->userServices->checkUserRights($userId,$congressId,$accessId);
-        if ($isAuth == true){
-            return response()->json(['response'=>'autorized'],200);
+        $user = $this->userServices->getUserWithCongressPaymentsAccess($userId,$congressId,$accessId);
+        $userRight = $this->userServices->checkUserRights($user);
+        if ($userRight == 1){
+            return response()->json(['response' => $user->user_access[0] ],200); 
+        }        
+        if ($userRight == 2 || $userRight == 3 ) {
+            $user_access = $user->user_access[0];
+            $access = $user->accesses[0];
+            $token = $this->roomServices->createToken(
+                $user->email,
+                $access->name,
+                $userRight == 2 ? false : true ,
+            );
+            $user_access->token_jitsi = $token;
+            $user_access->update();
+            return response()->json(['response' => $user->user_access[0] ],200);
+          
         }
+   
         else {
-            return response()->json(['response'=>'not autorized'],401);
+            return response()->json(['response'=>'not authorized'],401);
         }
     }
 
