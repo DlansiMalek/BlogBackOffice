@@ -60,6 +60,12 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
 });
+
+Route::group(['prefix' => 'resource/{path}'], function () {
+    Route::get('', 'FileController@getResouce');
+    Route::post('delete', 'FileController@deleteResouce');
+});
+
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
 });
@@ -200,6 +206,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
+    Route::group(['prefix' => '{submission_id}'], function() {
+        Route::get('','SubmissionController@getSubmission');
+        Route::put('/edit','SubmissionController@editSubmssion');
+    });
 
 });
 Route::group(['prefix' => 'theme'], function () {

@@ -12,6 +12,7 @@ use App\Models\MailType;
 use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\Payment;
+use App\Models\ConfigSubmission;
 use App\Models\User;
 use App\Models\UserCongress;
 use Illuminate\Support\Facades\Config;
@@ -40,6 +41,11 @@ class CongressServices
     public function getAll()
     {
         return Congress::all();
+    }
+    
+    public function getConfigSubmission($congress_id)
+    {
+        return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
 
 
