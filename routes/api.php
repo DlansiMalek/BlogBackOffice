@@ -117,7 +117,7 @@ Route::group(['prefix' => 'users'], function () {
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
             Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
             Route::get('send-sondage', 'UserController@sendSondage');
-            Route::get('/{accessId}/isAuthorizedToRoom','UserController@checkUserRights');
+            Route::get('/{accessId}/checkUserRights','UserController@checkUserRights');
         });
 
         Route::put('', 'UserController@update');
