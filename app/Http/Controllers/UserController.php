@@ -443,10 +443,15 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function isAuthorizedToRoom($userId,$congressId,$accessId)
+    public function checkUserRights($userId,$congressId,$accessId)
     {
-        $isAuth = $this->userServices->isAuthorizedToRoom($userId,$congressId,$accessId);
-       return response()->json(['isAuth'=> $isAuth ],200);
+        $isAuth = $this->userServices->checkUserRights($userId,$congressId,$accessId);
+        if ($isAuth == true){
+            return response()->json(['response'=>'autorized'],200);
+        }
+        else {
+            return response()->json(['response'=>'not autorized'],401);
+        }
     }
 
     function validateUserAccount($userId = null, $congressId = null, $token = null)

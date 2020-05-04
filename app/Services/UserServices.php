@@ -1057,7 +1057,7 @@ class UserServices
             ->first();
     }
 
-    public function isAuthorizedToRoom($userId,$congressId,$accessId)
+    public function checkUserRights($userId,$congressId,$accessId)
     {
         $user = User::with([
             'user_congresses' => function ($query) use ($congressId) {
@@ -1072,7 +1072,11 @@ class UserServices
         ])
         ->where('user_id','=',$userId)
         ->first();
+        if ($user && $user->user_congresses[0]['jetsi_token']){
+            return 1;
+        }
         if ($user && sizeof($user->user_congresses) > 0 && $user->payments[0]['isPaid'] == 1 && sizeof($user->accesses) > 0 ){
+            
             return 1 ;
         }
         else {
