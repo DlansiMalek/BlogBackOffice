@@ -1060,7 +1060,7 @@ class UserServices
     public function checkUserRights($user)
     {
         
-        if ($user && $user->user_access[0]['jetsi_token']){
+        if ($user && sizeof($user->accesses) > 0 && $user->user_access[0]['jetsi_token']){
             return 1;
         }
         if ($user && sizeof($user->user_congresses) > 0 && $user->payments[0]['isPaid'] == 1 && sizeof($user->accesses) > 0 ){
