@@ -452,14 +452,13 @@ class UserController extends Controller
         $user = $this->userServices->getUserWithCongressPaymentsAccess($userId,$congressId,$accessId);
         $userRight = $this->userServices->checkUserRights($user);
         if ($userRight == 1){
-            return response()->json(['response' => $user->user_access[0] ],200); 
+            return response()->json(['response' => $user->user_access[0] ],200);
         }        
         if ($userRight == 2 || $userRight == 3 ) {
             $user_access = $user->user_access[0];
-            $access = $user->accesses[0];
             $token = $this->roomServices->createToken(
                 $user->email,
-                $access->name,
+                'eventizer_room_'.$congressId .$accessId,
                 $userRight == 2 ? false : true ,
             );
             $user_access->token_jitsi = $token;
