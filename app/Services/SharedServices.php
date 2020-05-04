@@ -38,7 +38,6 @@ class SharedServices
 
     public function saveBadgeInPublic($badgeIdGenerator, $name, $qrCode)
     {
-        return false;
         try {
             $client = new \GuzzleHttp\Client();
             $res = $client->request('POST',
