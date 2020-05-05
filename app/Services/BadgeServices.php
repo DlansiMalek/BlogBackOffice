@@ -8,6 +8,7 @@ use App\Models\Attestation;
 use App\Models\AttestationAccess;
 use App\Models\AttestationDivers;
 use App\Models\Badge;
+use App\Models\BadgeParams;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 
@@ -51,6 +52,7 @@ class BadgeServices
         $badge->congress_id = $congressId;
         $badge->badge_id_generator = $badgeIdGenerator;
         $badge->privilege_id = $privilegeId;
+        $badge->enable = 1;
         $badge->save();
 
         return $badge;
@@ -138,6 +140,31 @@ class BadgeServices
             ->first();
     }
 
+    public function getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $privilegeId,$badgeIdGenerator) {
+        return Badge::where('congress_id', '=', $congressId)
+            ->where('privilege_id', '=', $privilegeId)->where('badge_id_generator','=',$badgeIdGenerator)
+            ->first();
+    }
+
+    public function updateBadgeParams($badge_id,$keys) {
+        BadgeParams::where('$badge_id','=',$badge_id)->delete();
+        foreach($keys as $key){
+            $badgeParam = new BadgeParams();
+            $badgeParam->badge_id =$badge_id;
+            $badgeParam->key =$key;
+            $badgeParam->save();
+        }
+
+}
+
+
+    public function getBadgesByCongressAndPrivilege($congressId, $privilegeId)
+    {
+        return Badge::where('congress_id', '=', $congressId)
+            ->where('privilege_id', '=', $privilegeId)
+            ->get();
+    }
+
 
     public function saveAttestationsInPublic(array $request)
     {
@@ -165,6 +192,38 @@ class BadgeServices
             ->where('congress_id', '=', $congressId)
             ->get();
     }
+
+    public function getBadgesByCongress($congressId) {
+        if (Badge::where('congress_id','=',$congressId)->get())
+        {
+            $badges =  Badge::with(['privilege:privilege_id,name'])
+                ->where('congress_id','=',$congressId)->orderBy('privilege_id')->get();
+            $badgesToRender = $badges->map(function ($submission) {
+                
+                return collect($submission->toArray())
+                    ->only(['badge_id','privilege','congress_id','badge_id_generator','enable','updated_at'])
+                    ->all();
+            });
+            return $badgesToRender;
+        }
+    }
+
+
+
+    public function activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator) {
+        foreach($badges as $b) {
+            if ($b->badge_id_generator == $badgeIdGenerator) {
+                $b->enable = 1;
+                $b->update();
+            }
+            else {
+                $b->enable = 0;
+                $b->update();
+            }
+        }
+        return "activated successfully";
+    }
+
 
 
 }

@@ -91,11 +91,13 @@ class CongressServices
         return Congress::with([
             "mails.type",
             "attestation",
-            "badges",
             "accesss",
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "badges" => function ($query) use ($congressId) {
+                $query->where('enable', '=', 1);
+                },
             "accesss" => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
                 $query->where('show_in_register', '=', 1);

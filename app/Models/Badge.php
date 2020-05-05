@@ -21,4 +21,9 @@ class Badge extends Model
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 
 
+
+    public function privilege() {
+        return  $this->belongsTo('App\Models\Privilege','privilege_id');
+
+    }
 }

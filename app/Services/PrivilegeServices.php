@@ -12,6 +12,7 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\Admin_Privilege;
 use App\Models\AdminCongress;
+use App\Models\Privilege;
 
 class PrivilegeServices
 {
@@ -45,6 +46,11 @@ class PrivilegeServices
     public function deleteAdminCongressByIds($admincongress)
     {
         $admincongress->delete();
+    }
+
+    public function checkValidPrivilege($privilege_id) {
+        return Privilege::where('privilege_id','=', $privilege_id)->first();
+
     }
 
 }
