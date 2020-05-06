@@ -13,6 +13,8 @@ use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
 use App\Models\HistoryPack;
+use App\Models\MailTypeAdmin;
+use App\Models\MailAdmin;
 use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
@@ -363,7 +365,7 @@ class AdminServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'),$congress? $congress->name : '');
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
@@ -376,5 +378,31 @@ class AdminServices
         }
         Storage::delete('app/badge.png');
         return 1;
+    }
+    public function AddClient($name,$email,$mobile,$passwordDecrypt,$valid_date)
+    {
+        $admin = new admin();
+        $admin->name = $name;
+        $admin->email= $email;
+        $admin->mobile = $mobile;
+        $admin->passwordDecrypt= $passwordDecrypt;
+        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        if($valid_date)
+        {
+            $admin->valid_date= $valid_date;
+            $admin->status= 2;
+        }
+        $admin->privilege_id=1;
+        $admin->save();
+        return $admin;
+    }
+    public function getMailTypeAdmin($name){
+        return MailTypeAdmin::where('name','=',$name)->first();
+    }
+    public function getMailAdmin($mail_type_admin_id){
+        return MailAdmin::where('mail_type_admin_id','=',$mail_type_admin_id)->first();
+    }
+    public function renderMail($email, $password,$linkBackOffice,$template){
+        return view(['template' => '<html>' . $template . '</html>'], ['password' => $password, 'email' => $email,  'linkBackOffice' => $linkBackOffice]);
     }
 }

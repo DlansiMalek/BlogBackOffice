@@ -767,4 +767,32 @@ class AdminController extends Controller
         return response()->json(['response' => 'pack Added , new  history entry created'], 202);
 
     }
+    public function addClient(Request $request){
+        if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
+        return response()->json(['message' => 'bad request'], 400);
+        $admin = $this->adminServices->addClient(
+        $request->input("name"),
+        $request->input("email"),
+        $request->input("mobile"),
+        $request->input("passwordDecrypt"),
+        $request->input("valid_date")
+        );
+        $mailTypeAdmin=$this->adminServices->getMailTypeAdmin('creation');
+        if (!$mailTypeAdmin) {
+            return response()->json(['message' => 'Mail type not found'], 400);
+        }
+        $mailAdmin=$this->adminServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
+        if (!$mailAdmin) {
+            return response()->json(['message' => 'Mail not found'], 400);
+        }
+        $linkBackOffice=UrlUtils::getUrlBackOffice();
+        $this->adminServices->sendMAil(
+            $this->adminServices->renderMail($admin->email,$admin->passwordDecrypt,$linkBackOffice,$mailAdmin->template),
+            null,
+            $mailAdmin->object,
+            $admin,
+            null,
+            null
+        );
+    }
 }

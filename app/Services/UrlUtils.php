@@ -128,4 +128,8 @@ class UrlUtils
         return "http://localhost:4200/#/login";
     }
 
+    public static function getUrlBackOffice()
+    {
+        return "http://localhost:4200/#/";
+    }
 }

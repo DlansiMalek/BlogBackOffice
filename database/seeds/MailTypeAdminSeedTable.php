@@ -13,56 +13,62 @@ class MailTypeAdminSeedTable extends Seeder
     {
         //
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 1,
+            'mail_type_admin_id' => 1,
             'name' => 'inscription',
             'display_name' => 'Inscription',
         ]);
 
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 2,
+            'mail_type_admin_id' => 2,
             'name' => 'paiement',
             'display_name' => 'Paiement',
         ]);
 
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 3,
+            'mail_type_admin_id' => 3,
             'name' => 'attestation',
             'display_name' => 'Attestation',
         ]);
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 4,
+            'mail_type_admin_id' => 4,
             'name' => 'custom',
             'display_name' => 'Personnalisé',
         ]);
 
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 5,
+            'mail_type_admin_id' => 5,
             'name' => 'confirmation',
             'display_name' => 'Confirmation',
         ]);
 
 
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 6,
+            'mail_type_admin_id' => 6,
             'name' => 'organization',
             'display_name' => 'Organization',
         ]);
 
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 7,
+            'mail_type_admin_id' => 7,
             'name' => 'subvention',
             'display_name' => 'Subvention',
         ]);
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 8,
+            'mail_type_admin_id' => 8,
             'name' => 'upload',
             'display_name' => 'Téléchargement d\'un reçu bancaire'
         ]);
 
         DB::table('Mail_Type_Admin')->insert([
-            'mail_type_id' => 9,
+            'mail_type_admin_id' => 9,
             'name' => 'free',
             'display_name' => 'Inscription Gratuite',
+        ]);
+
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 10,
+            'name' => 'creation',
+            'display_name' => 'Creation de compte',
         ]);
     }
 }
