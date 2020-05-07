@@ -24,7 +24,9 @@ build:
     paths:
       - vendor/
     expire_in: 2 hours
-
+  after_script:
+    - rm $BITBUCKET_RSA
+    - rm $SSH_KEY
 
 # Package stage
 docker-package:
@@ -38,8 +40,6 @@ docker-package:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   after_script:
     - docker logout "$CI_REGISTRY"
-    - rm $BITBUCKET_RSA
-    - rm $SSH_KEY
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
