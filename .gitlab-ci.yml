@@ -61,6 +61,7 @@ ansible-deploy-prod:
     - cd ansible
   after_script:
     - cd ..
+    - rm $SSH_KEY
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
 
@@ -77,6 +78,7 @@ ansible-deploy-dev:
     - cd ansible
   after_script:
     - cd ..
+    - rm $SSH_KEY
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
 
@@ -101,3 +103,4 @@ backup-bitbucket:
   after_script:
     - git remote remove bitbucket
     - ssh-add -D
+    - rm $BITBUCKET_RSA
