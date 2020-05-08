@@ -30,7 +30,9 @@ class SmsServices
 
         $this->client = new Client([
             'base_uri' => 'https://api.orange.com',
-            'headers' => ['Authorization' => 'Basic ' . env('SMS_AUTH')]
+            'headers' => [
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => 'Basic ' . env('SMS_AUTH')]
         ]);
 
         $res = $this->client->post('/oauth/v2/token', [
@@ -72,7 +74,6 @@ class SmsServices
     function configSms($user, $congress, $sms = null, $token_sms = null)
     {
         $token = $token_sms ? $token_sms : ($congress ? $congress->config['token_sms'] : '');
-
         $this->client = new Client([
             'base_uri' => 'https://api.orange.com',
             'headers' => [
@@ -84,6 +85,7 @@ class SmsServices
             'json' => [
                 'outboundSMSMessageRequest' => [
                     'address' => 'tel:' . Utils::getMobileFormatted($user->mobile),
+                    'senderName' => $token_sms ? $sms->senderName : 'Eventizer',
                     'senderAddress' => 'tel:+21653780474',
                     'outboundSMSTextMessage' => [
                         'message' => $token_sms ? Utils::customSmsMessage($sms, $user) : Utils::getSmsMessage($user->qr_code, $user->first_name, $user->last_name, $congress->name, $congress->start_date, $congress->config['mobile_committee'], $congress->config['mobile_technical'])

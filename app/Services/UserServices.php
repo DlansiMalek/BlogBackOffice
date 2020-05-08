@@ -385,7 +385,7 @@ class UserServices
             });
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-            || $tri == 'mobile' || $tri = 'country_id')) {
+                || $tri == 'mobile' || $tri = 'country_id')) {
             $users = $users->orderBy($tri, $order);
         }
         if ($order && ($tri == 'type' || $tri == 'date')) {
@@ -576,6 +576,7 @@ class UserServices
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
             ->first();
     }
+
     public function getUserByVerificationCodeAndId($code, $user_id)
     {
         $conditions = ['verification_code' => $code, 'user_id' => $user_id, 'email_verified' => 0];
@@ -726,17 +727,18 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
     {
         //TODO detect email sended user
-        $email = $user->email;
+        $email = $toSendEmail ? $toSendEmail : $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
+
         if ($congress != null && $congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress != null &&  $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+                $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
                 if ($congress != null && $congress->config && $congress->config->replyto_mail) {
                     $message->replyTo($congress->config->replyto_mail);
                 }

@@ -27,6 +27,10 @@ class UrlUtils
         }
         return "https://ws.vayetek.com";
     }
+    public static function getMeetEventizerUrl()
+    {
+        return "https://meet.eventizer.io";
+    }
 
     public static function getUrlEventizerWeb()
     {

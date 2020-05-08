@@ -12,6 +12,7 @@ use App\Models\MailType;
 use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\Payment;
+use App\Models\ConfigSubmission;
 use App\Models\User;
 use App\Models\UserCongress;
 use Illuminate\Support\Facades\Config;
@@ -42,6 +43,11 @@ class CongressServices
         return Congress::all();
     }
 
+    public function getConfigSubmission($congress_id)
+    {
+        return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
+    }
+
 
     public function getCongressPagination($offset, $perPage, $search)
     {
@@ -57,14 +63,11 @@ class CongressServices
             ->get();
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
-                ->only([
-                    "congress_id", "name", "start_date",
-                    "end_date", "price", "description", "congress_type_id", "config", "theme", "location"
-                ])->all();
+                ->only(["congress_id", "name", "start_date",
+                    "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-
-        return  $congress_renderer;
+        return $congress_renderer;
     }
 
     public function getMinimalCongress()
@@ -375,7 +378,7 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null)
     {
 
         $accesses = "";
@@ -396,12 +399,18 @@ class CongressServices
             }
             $accesses = $accesses . "</ul>";
         }
-        $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
-        $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
+
+        if ($congress != null) {
+            $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
+            $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
+            $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
+            $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
+        }
+
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
         $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
-        $template = str_replace('{{$congress-&gt;end_date}}',  $endDate . '', $template);
+        $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
@@ -419,9 +428,10 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;registration_date}}', date('Y-m-d H:i:s'), $template);
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
+        $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room]);
     }
 
     public
@@ -434,6 +444,11 @@ class CongressServices
     function getMail($congressId, $mail_type_id)
     {
         return Mail::where("congress_id", '=', $congressId)->where('mail_type_id', '=', $mail_type_id)->first();
+    }
+
+    public function getMailOutOfCongress($mail_type_id)
+    {
+        return Mail::where('mail_type_id', '=', $mail_type_id)->first();
     }
 
     public

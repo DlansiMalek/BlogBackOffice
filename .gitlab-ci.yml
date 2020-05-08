@@ -25,7 +25,6 @@ build:
       - vendor/
     expire_in: 2 hours
 
-
 # Package stage
 docker-package:
   stage: package

@@ -60,6 +60,12 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
 });
+
+Route::group(['prefix' => 'resource/{path}'], function () {
+    Route::get('', 'FileController@getResouce');
+    Route::post('delete', 'FileController@deleteResouce');
+});
+
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
 });
@@ -201,6 +207,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
+    Route::group(['prefix' => '{submission_id}'], function() {
+        Route::get('','SubmissionController@getSubmission');
+        Route::put('/edit','SubmissionController@editSubmssion');
+    });
 
 });
 Route::group(['prefix' => 'theme'], function () {
@@ -285,6 +295,10 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
 
+    });
+    Route::group(['prefix' => 'room'],function () {
+        Route::get('','RoomController@getAdminRooms');
+        Route::post('','RoomController@addAdminRooms');
     });
 
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
