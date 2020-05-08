@@ -42,7 +42,7 @@ class CongressServices
     {
         return Congress::all();
     }
-    
+
     public function getConfigSubmission($congress_id)
     {
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
@@ -67,7 +67,6 @@ class CongressServices
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-
         return $congress_renderer;
     }
 
@@ -88,7 +87,8 @@ class CongressServices
             },
             'accesss.participants.user_congresses' => function ($query) {
                 $query->where('privilege_id', '=', 3);
-            }])
+            }
+        ])
             ->get();
     }
 
@@ -111,7 +111,8 @@ class CongressServices
             'accesss.participants.user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
                 $query->where('privilege_id', '=', 3);
-            }])
+            }
+        ])
             ->where("congress_id", "=", $congressId)
             ->first();
     }
@@ -362,7 +363,6 @@ class CongressServices
         $path = $file->storeAs('/logo/' . $timestamp, $file->getClientOriginalName());
 
         return $path;
-
     }
 
     public function uploadBanner($file)
@@ -399,14 +399,18 @@ class CongressServices
             }
             $accesses = $accesses . "</ul>";
         }
+
         if ($congress != null) {
             $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
             $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         }
+
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
+        $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
+        $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
@@ -472,10 +476,10 @@ class CongressServices
             'accesss.chairs',
             'accesss.sub_accesses',
             'accesss.topic',
-            'accesss.type'])
+            'accesss.type'
+        ])
             ->where('end_date', ">=", $day)
             ->get();
-
     }
 
     public
@@ -534,6 +538,4 @@ class CongressServices
         }
         return $congress;
     }
-
-
 }
