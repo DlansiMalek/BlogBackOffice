@@ -405,4 +405,30 @@ class AdminServices
     public function renderMail($email, $password,$linkBackOffice,$template){
         return view(['template' => '<html>' . $template . '</html>'], ['password' => $password, 'email' => $email,  'linkBackOffice' => $linkBackOffice]);
     }
+    public function  getClientById($admin_id){
+        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=',1)
+        ->first();
+    }
+
+    public function editClient($request,$clientId)
+    {
+        $admin=$this->getClientById($clientId);
+        $admin->name = $request->input('name');
+        $admin->email = $request->input('email');
+        $admin->passwordDecrypt= $request->input('passwordDecrypt');
+        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        $admin->mobile = $request->input('mobile');
+        if ($admin->valid_date){
+        $admin->valid_date = $request->input('valid_date');
+        if($valid_date)
+        {
+            $admin->valid_date= $valid_date;
+            $admin->status= 2;
+        }
+        }
+        $admin->privilege_id=1;
+        $admin->update();
+        return $this->getClientById($admin->admin_id);
+    }
+
 }

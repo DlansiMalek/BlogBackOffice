@@ -795,4 +795,21 @@ class AdminController extends Controller
             null
         );
     }
+    public function getClientById($admin_id){
+        if (!$admin = $this->adminServices->getClientById($admin_id)) {
+            return response()->json(["error" => "client not found"], 404);
+        }
+        return response()->json($admin);
+    }
+    public function editClient(Request $request, $clientId)
+    {
+        if (!$request->has(['name', 'email','mobile','passwordDecrypt']))
+            return response()->json(['message' => 'bad request'], 400);
+        if (!$admin = $this->adminServices->getClientById($clientId)) {
+            return response()->json(["message" => "client not found"], 404);
+        }
+        $admin = $this->adminServices->editClient($request,$clientId);
+        return response()->json($admin);
+    }
 }
+

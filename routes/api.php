@@ -350,6 +350,8 @@ Route::group(['prefix' => 'access'], function () {
 Route::group(['middelware' => 'marketing'], function () {
     Route::get('/admin/all', 'AdminController@getClients');
     Route::post('/admin/add', 'AdminController@addClient');
+    Route::get('/admin/{admin_id}', "AdminController@getClientById");
+    Route::put('/admin/{admin_id}', "AdminController@editClient");
 });
 
 
