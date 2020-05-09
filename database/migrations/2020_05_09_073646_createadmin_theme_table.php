@@ -22,7 +22,7 @@ class CreateadminThemeTable extends Migration
 
             $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
-                ->onDelete('cascade');  
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -34,6 +34,10 @@ class CreateadminThemeTable extends Migration
      */
     public function down()
     {
+        Schema::table('Theme_Admin', function ($table) {
+            $table->dropForeign(['theme_id']);
+            $table->dropForeign(['admin_id']);
+        });
         Schema::dropIfExists('Theme_Admin');
     }
 }
