@@ -3,11 +3,10 @@
 
 namespace App\Services;
 
-
-use App\MailAdmin;
-use App\MailTypeAdmin;
 use App\Models\Mail;
+use App\Models\MailAdmin;
 use App\Models\MailType;
+use App\Models\MailTypeAdmin;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 
@@ -17,9 +16,9 @@ class MailServices
     public function getAllMailTypes($congressId = null)
     {
         return MailType::with(['mails' => function ($query) use ($congressId) {
-                if ($congressId)
-                    $query->where('congress_id', '=', $congressId);
-            }])
+            if ($congressId)
+                $query->where('congress_id', '=', $congressId);
+        }])
             ->get();
     }
 
@@ -87,6 +86,7 @@ class MailServices
 
         return $mailUser;
     }
+
     public function addingUserMailAdmin($mailAdminId, $userId)
     {
         $userMailAdmin = new UserMailAdmin();
@@ -103,13 +103,15 @@ class MailServices
             ->where('mail_id', '=', $mailId)
             ->first();
     }
+
     public function getMailTypeAdmin($name)
     {
         return MailTypeAdmin::where('name', '=', $name)->first();
     }
 
-    public function getMailAdmin($mailTypeAdminId){
-        return MailAdmin::where('mail_type_admin_id','=',$mailTypeAdminId)->first();
+    public function getMailAdmin($mailTypeAdminId)
+    {
+        return MailAdmin::where('mail_type_admin_id', '=', $mailTypeAdminId)->first();
     }
 
     public function updateMailAdmin($request, $mail)

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class MailTypeAdminSeedTable extends Seeder
 {
@@ -15,7 +16,13 @@ class MailTypeAdminSeedTable extends Seeder
         DB::table('Mail_Type_Admin')->insert([
             'mail_type_admin_id' => 1,
             'name' => 'confirmation',
-            'display_name' => 'Email de confirmation',
+            'display_name' => 'Email de confirmation'
+        ]);
+
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 2,
+            'name' => 'creation_admin',
+            'display_name' => 'Création de compte Admin',
         ]);
     }
 }

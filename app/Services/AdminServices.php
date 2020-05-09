@@ -13,6 +13,8 @@ use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
 use App\Models\HistoryPack;
+use App\Models\MailTypeAdmin;
+use App\Models\MailAdmin;
 use App\Models\ThemeAdmin;
 use DateInterval;
 use DateTime;
@@ -401,11 +403,6 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function renderAdminMail($template, $activationLink)
-    {
-        return view(['template' => '<html>' . $template . '</html>'], ['activationLink' => $activationLink]);
-    }
-
     public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail = null)
     {
 
@@ -414,7 +411,7 @@ class AdminServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress->name);
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
@@ -427,5 +424,29 @@ class AdminServices
         }
         Storage::delete('app/badge.png');
         return 1;
+    }
+
+    public function addClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
+    {
+        $admin = new Admin();
+        $admin->name = $name;
+        $admin->email = $email;
+        $admin->mobile = $mobile;
+        $admin->passwordDecrypt = $passwordDecrypt;
+        $admin->password = bcrypt($admin->passwordDecrypt);
+        if ($valid_date) {
+            $admin->valid_date = $valid_date;
+        }
+        $admin->privilege_id = 1;
+        $admin->save();
+        return $admin;
+    }
+
+    public function renderMail($template, $admin = null, $activationLink = null, $backOfficeLink = null)
+    {
+        $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
+        $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
 }
