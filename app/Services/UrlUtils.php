@@ -27,6 +27,10 @@ class UrlUtils
         }
         return "https://ws.vayetek.com";
     }
+    public static function getMeetEventizerUrl()
+    {
+        return "https://meet.eventizer.io";
+    }
 
     public static function getUrlEventizerWeb()
     {
@@ -95,7 +99,7 @@ class UrlUtils
         if (App::environment() == 'dev') {
             return "https://dev.api.eventizer.io/api";
         }
-        return "http://localhost:8888";
+        return "http://localhost:8888/api";
     }
 
     public static function getBaseImgUrl()
