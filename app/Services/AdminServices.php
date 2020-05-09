@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by IntelliJ IDEA.
  * User: Abbes
@@ -8,13 +9,13 @@
 
 namespace App\Services;
 
-
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
 use App\Models\HistoryPack;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
+use App\Models\ThemeAdmin;
 use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
@@ -31,7 +32,6 @@ class AdminServices
         return Admin::whereEmail($login)
             ->with(["congresses", "congresses.form_inputs.values"])
             ->first();
-
     }
 
     public function retrieveAdminFromToken()
@@ -101,59 +101,50 @@ class AdminServices
         $admin->save();
         return $admin;
     }
-    
-    public function getAllEvaluators(){
 
-      return Admin::where("privilege_id","=",11)->get();
+    public function getAllEvaluators()
+    {
 
+        return Admin::where("privilege_id", "=", 11)->get();
     }
 
-    public function getEvaluatorsByCongress($congressId,$privilegeId){
+    public function getEvaluatorsByCongress($congressId, $privilegeId)
+    {
 
-            return Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId)
-                {
-                    $query->where('congress_id','=',$congressId);
-                    $query->where('privilege_id','=',$privilegeId);
-                })
-                ->withCount(['submission'=> function($query) use ($congressId){
-                    $query->where('congress_id','=',$congressId);
-                }])
-                ->orderBy('submission_count','asc')
-                ->get();
-
-
-           
-
-    }
-
-    public function getEvaluatorsByTheme($themeId,$congressId,$privilegeId){
-
-        return Admin::whereHas('themeAdmin',function($query) use ($privilegeId,$themeId)
-            {
-                $query->where('privilege_id','=',$privilegeId);
-                $query->where('theme_id','=',$themeId);
-            
-            })
-            ->withCount(['submission'=> function($query) use ($congressId){
-                $query->where('congress_id','=',$congressId);   
+        return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('privilege_id', '=', $privilegeId);
+        })
+            ->withCount(['submission' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
             }])
-            ->orderBy('submission_count','asc')
+            ->orderBy('submission_count', 'asc')
             ->get();
-
-
-       
-
     }
 
-    public function getEvaluatorsByThemeOrByCongress($themeId,$congressId,$privilegeId){
-        
-        $admins=$this->getEvaluatorsByTheme($themeId,$congressId,$privilegeId);
-        if (!sizeof($admins)>0){
-            $admins=$this->getEvaluatorsByCongress($congressId,$privilegeId);
+    public function getEvaluatorsByTheme($themeId, $congressId, $privilegeId)
+    {
+
+        return Admin::whereHas('themeAdmin', function ($query) use ($privilegeId, $themeId) {
+            $query->where('privilege_id', '=', $privilegeId);
+            $query->where('theme_id', '=', $themeId);
+        })
+            ->withCount(['submission' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->orderBy('submission_count', 'asc')
+            ->get();
+    }
+
+    public function getEvaluatorsByThemeOrByCongress($themeId, $congressId, $privilegeId)
+    {
+        $admins = $this->getEvaluatorsByTheme($themeId, $congressId, $privilegeId);
+        if (sizeof($admins) < 1) {
+            $admins = $this->getEvaluatorsByCongress($congressId, $privilegeId);
         }
         return $admins;
     }
-  
+
     public function addHistory($history, $admin, $pack)
     {
         $history->admin_id = $admin->admin_id;
@@ -218,13 +209,16 @@ class AdminServices
     public function getPersonelsByIdAndCongressId($congress_id, $admin_id)
     {
         return Admin::where('admin_id', '=', $admin_id)
-//        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
-//            $query->where('congress_id', '=', $congress_id);
-//        })
+            //        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
+            //            $query->where('congress_id', '=', $congress_id);
+            //        })
             ->with(['admin_congresses' => function ($query) use ($congress_id, $admin_id) {
                 $query->where('congress_id', '=', $congress_id)
                     ->where('admin_id', '=', $admin_id)
                     ->first();
+            }])->with(['themeAdmin' => function ($query) use ($admin_id) {
+                $query->where('admin_id', '=', $admin_id);
+                //on a besoin du themeAdmin pour effectuer l'edit
             }])
             ->first();
     }
@@ -254,15 +248,15 @@ class AdminServices
     {
         $newPassword = $this->generateRandomString(20);
         Admin::where('admin_id', '=', $admin->admin_id)
-            ->update(['passwordDecrypt' => $newPassword,
-                'password' => bcrypt($newPassword)]);
+            ->update([
+                'passwordDecrypt' => $newPassword,
+                'password' => bcrypt($newPassword)
+            ]);
         return $newPassword;
     }
 
     public function sendForgetPasswordEmail(Admin $admin)
     {
-
-
     }
 
     public function addPersonnel($admin)
@@ -275,7 +269,6 @@ class AdminServices
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
-
         $personnel->save();
 
         return $personnel;
@@ -284,15 +277,68 @@ class AdminServices
     public function editPersonnel($admin)
     {
         return Admin::where("admin_id", "=", $admin['admin_id'])
-            ->update(['name' => $admin["name"],
+            ->update([
+                'name' => $admin["name"],
                 'email' => $admin["email"],
-                'mobile' => $admin["mobile"]]);
-
+                'mobile' => $admin["mobile"]
+            ]);
     }
 
     public function deleteAdminById($admin)
     {
         $admin->delete();
+    }
+
+    public function affectThemesToAdmin($themesIds, $admin_id)
+    {
+
+        foreach ($themesIds as $themeId) {
+            $themeAdmin = new ThemeAdmin();
+            $themeAdmin->theme_id = $themeId;
+            $themeAdmin->admin_id = $admin_id;
+            $themeAdmin->save();
+        }
+    }
+
+    public function modifyAdminThemes($themesAdmin, $admin_id, $themesIds)
+    {
+
+        $loopLength = sizeof($themesAdmin) < sizeof($themesIds) ? sizeof($themesAdmin) : sizeof($themesIds);
+
+        //1)update 
+        for ($i = 0; $i < $loopLength; $i++) {
+            $themesAdmin[$i]['theme_id'] = $themesIds[$i];
+            $themesAdmin[$i]->update();
+        }
+
+        //2)soit creér des nouveau themeAdmin soit en supprimer selon la taille des tableaux
+
+        //le cas ou themeAdmin > themeIds donc on va supprimer les autres themes de cet admin
+
+        if (sizeof($themesAdmin) > sizeof($themesIds)) {
+
+            for ($i = sizeof($themesIds); $i < sizeof($themesAdmin); $i++) {
+
+                $themesAdmin[$i]->delete();
+
+            }
+        } //le cas ou themeadmin < themeIds donc on va affecter des themes à cet admin
+        else {
+            for ($i = sizeof($themesAdmin); $i < sizeof($themesIds); $i++) {
+
+                $themeAdmin = new ThemeAdmin();
+                $themeAdmin->theme_id = $themesIds[$i];
+                $themeAdmin->admin_id = $admin_id;
+                $themeAdmin->save();
+
+            }
+        }
+        return $themesAdmin;
+    }
+
+    public function getThemeAdmin($admin_id)
+    {
+        return ThemeAdmin::where('admin_id', '=', $admin_id)->get();
     }
 
     public function getAdminByQrCode($QrCode)
@@ -365,7 +411,7 @@ class AdminServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'),$congress? $congress->name : '');
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
@@ -379,31 +425,29 @@ class AdminServices
         Storage::delete('app/badge.png');
         return 1;
     }
-    public function AddClient($name,$email,$mobile,$passwordDecrypt,$valid_date)
+
+    public function addClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
     {
-        $admin = new admin();
+        $admin = new Admin();
         $admin->name = $name;
-        $admin->email= $email;
+        $admin->email = $email;
         $admin->mobile = $mobile;
-        $admin->passwordDecrypt= $passwordDecrypt;
-        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
-        if($valid_date)
-        {
-            $admin->valid_date= $valid_date;
-            $admin->status= 2;
+        $admin->passwordDecrypt = $passwordDecrypt;
+        $admin->password = bcrypt($admin->passwordDecrypt);
+        if ($valid_date) {
+            $admin->valid_date = $valid_date;
         }
-        $admin->privilege_id=1;
+        $admin->privilege_id = 1;
         $admin->save();
         return $admin;
     }
-    public function getMailTypeAdmin($name){
-        return MailTypeAdmin::where('name','=',$name)->first();
-    }
-    public function getMailAdmin($mail_type_admin_id){
-        return MailAdmin::where('mail_type_admin_id','=',$mail_type_admin_id)->first();
-    }
-    public function renderMail($email, $password,$linkBackOffice,$template){
-        return view(['template' => '<html>' . $template . '</html>'], ['password' => $password, 'email' => $email,  'linkBackOffice' => $linkBackOffice]);
+
+    public function renderMail($template, $admin = null, $activationLink = null, $backOfficeLink = null)
+    {
+        $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
+        $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
     public function  getClientById($admin_id){
         return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=',1)

@@ -28,6 +28,11 @@ class UrlUtils
         return "https://ws.vayetek.com";
     }
 
+    public static function getMeetEventizerUrl()
+    {
+        return "https://meet.eventizer.io";
+    }
+
     public static function getUrlEventizerWeb()
     {
         if (App::environment() == 'test') {
@@ -95,7 +100,7 @@ class UrlUtils
         if (App::environment() == 'dev') {
             return "https://dev.api.eventizer.io/api";
         }
-        return "http://localhost:8888";
+        return "http://localhost:8888/api";
     }
 
     public static function getBaseImgUrl()
@@ -126,10 +131,5 @@ class UrlUtils
         }
 
         return "http://localhost:4200/#/login";
-    }
-
-    public static function getUrlBackOffice()
-    {
-        return "http://localhost:4200/#/";
     }
 }

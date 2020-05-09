@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class MailAdminSeedTable extends Seeder
 {
@@ -11,17 +12,15 @@ class MailAdminSeedTable extends Seeder
      */
     public function run()
     {
-        //
         DB::table('Mail_Admin')->insert([
-            'object' => "Test object",
-            'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre paiement.</p><p><a href="{{%24link}}">Lien</a></p>',
-
+            'object' => "Confirmation d'incsription ",
+            'template' => '<p>Votre compte a été créer, veuillez cliquer sur ce lien afin de le  valider.</p><p><a href="{{$activationLink}}">Lien</a></p>',
             'mail_type_admin_id' => 1
         ]);
-        
+
         DB::table('Mail_Admin')->insert([
-            'object' => "Credentials",
-            'template' => '<p>Voici vos coordonnées : </p><ul><li>Email: {{$email}}</li><li>Password : {{$password}}</li></ul><p>Accéedez à la platforme via :<a href="{{$linkBackOffice}}" target="_blank" rel="noopener noreferrer">Link</a></p>',
+            'object' => "Compte Organisateur Eventizer",
+            'template' => '<p>Voici vos coordonnées : </p><ul><li>Email: {{$admin-&gt;email}}</li><li>Password : {{$admin-&gt;passwordDecrypt}}</li></ul><p>Accéedez à la platforme via :<a href="{{$backOfficeLink}}" target="_blank" rel="noopener noreferrer">Link</a></p>',
             'mail_type_admin_id' => 2
         ]);
     }
