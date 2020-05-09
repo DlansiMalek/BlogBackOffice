@@ -21,7 +21,7 @@ class MailTypeAdminSeedTable extends Seeder
 
         DB::table('Mail_Type_Admin')->insert([
             'mail_type_admin_id' => 2,
-            'name' => 'creation',
+            'name' => 'creation_admin',
             'display_name' => 'Création de compte Admin',
         ]);
     }

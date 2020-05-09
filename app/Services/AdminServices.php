@@ -411,7 +411,7 @@ class AdminServices
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $congress ? $congress->name : '');
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
                 $message->subject($objectMail);
                 $message->setBody($view, 'text/html');
                 if ($fileAttached)
@@ -428,7 +428,7 @@ class AdminServices
 
     public function addClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
     {
-        $admin = new admin();
+        $admin = new Admin();
         $admin->name = $name;
         $admin->email = $email;
         $admin->mobile = $mobile;
@@ -440,16 +440,6 @@ class AdminServices
         $admin->privilege_id = 1;
         $admin->save();
         return $admin;
-    }
-
-    public function getMailTypeAdmin($name)
-    {
-        return MailTypeAdmin::where('name', '=', $name)->first();
-    }
-
-    public function getMailAdmin($mail_type_admin_id)
-    {
-        return MailAdmin::where('mail_type_admin_id', '=', $mail_type_admin_id)->first();
     }
 
     public function renderMail($template, $admin = null, $activationLink = null, $backOfficeLink = null)

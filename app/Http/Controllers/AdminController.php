@@ -11,6 +11,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\MailServices;
 use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
@@ -33,6 +34,7 @@ class AdminController extends Controller
     protected $badgeServices;
     protected $packAdminServices;
     protected $accessServices;
+    protected $mailServices;
 
     protected $client;
 
@@ -43,7 +45,8 @@ class AdminController extends Controller
                                 SharedServices $sharedServices,
                                 PackAdminServices $packAdminServices,
                                 BadgeServices $badgeServices,
-                                AccessServices $accessServices)
+                                AccessServices $accessServices,
+                                MailServices $mailServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
@@ -53,6 +56,7 @@ class AdminController extends Controller
         $this->badgeServices = $badgeServices;
         $this->packAdminServices = $packAdminServices;
         $this->accessServices = $accessServices;
+        $this->mailServices = $mailServices;
         $this->client = new Client();
     }
 
@@ -785,14 +789,18 @@ class AdminController extends Controller
         if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
             return response()->json(['message' => 'bad request'], 400);
 
+        if ($this->adminServices->getAdminByLogin($request->input("email"))) {
+            return response()->json(['message' => 'admin exists'], 400);
+        }
+
         $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
 
-        $mailTypeAdmin = $this->adminServices->getMailTypeAdmin('creation');
+        $mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin');
         if (!$mailTypeAdmin) {
             return response()->json(['message' => 'Mail type not found'], 400);
         }
 
-        $mailAdmin = $this->adminServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
+        $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
         if (!$mailAdmin) {
             return response()->json(['message' => 'Mail not found'], 400);
         }
@@ -809,4 +817,5 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Client added success']);
     }
+
 }

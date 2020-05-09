@@ -19,7 +19,7 @@ class MailAdminSeedTable extends Seeder
         ]);
 
         DB::table('Mail_Admin')->insert([
-            'object' => "Credentials",
+            'object' => "Compte Organisateur Eventizer",
             'template' => '<p>Voici vos coordonnées : </p><ul><li>Email: {{$admin-&gt;email}}</li><li>Password : {{$admin-&gt;passwordDecrypt}}</li></ul><p>Accéedez à la platforme via :<a href="{{$backOfficeLink}}" target="_blank" rel="noopener noreferrer">Link</a></p>',
             'mail_type_admin_id' => 2
         ]);
