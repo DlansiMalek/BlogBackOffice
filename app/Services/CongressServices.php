@@ -538,4 +538,11 @@ class CongressServices
         }
         return $congress;
     }
+
+    public function getAdminByCongressId($congress_id, $admin)
+    {
+        return AdminCongress::where('congress_id', '=', $congress_id)
+            ->where('admin_id', '=', $admin->admin_id)->first();
+    }
+
 }
