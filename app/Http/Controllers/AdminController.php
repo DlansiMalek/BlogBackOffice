@@ -438,7 +438,7 @@ class AdminController extends Controller
         }
 
         $admin = $request->input('admin');
-
+        $privilegeId = (int)$request->input('privilege_id');
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
             $admin = $this->adminServices->addPersonnel($admin);
@@ -458,8 +458,14 @@ class AdminController extends Controller
             $this->adminServices->editPersonnel($admin);
         }
 
-        $privilegeId = (int)$request->input('privilege_id');
         $congress = $this->congressService->getById($congress_id);
+
+        //create themeAdmin if privilege is "comité Scientifique"
+
+        if ($privilegeId == 11){
+            $this->adminServices->affectThemesToAdmin($request->input("themesSelected"),$admin_id);
+        }
+
         //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
             $privilegeId,
@@ -496,12 +502,18 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $request->input('admin');
+        $privilegeId=(int)$request->input('privilege_id');
         $this->adminServices->editPersonnel($admin);
         $this->privilegeServices->editPrivilege(
-            (int)$request->input('privilege_id'),
+            $privilegeId,
             $admin_id,
             $congress_id);
         //message d'erreur à revoir
+
+        if ($privilegeId == 11){
+          $themesAdmin=$this->adminServices->getThemeAdmin($admin['admin_id']);
+          $this->adminServices->modifyAdminThemes($themesAdmin,$admin['admin_id'],$request->input('themesSelected'));
+        }
         return response()->json(['message' => 'working'], 200);
     }
 

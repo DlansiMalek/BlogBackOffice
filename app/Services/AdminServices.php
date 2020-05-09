@@ -9,11 +9,11 @@
 
 namespace App\Services;
 
-
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
 use App\Models\HistoryPack;
+use App\Models\ThemeAdmin;
 use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
@@ -214,6 +214,9 @@ class AdminServices
                 $query->where('congress_id', '=', $congress_id)
                     ->where('admin_id', '=', $admin_id)
                     ->first();
+            }])->with(['themeAdmin' => function ($query) use ($admin_id) {
+                $query->where('admin_id', '=', $admin_id);
+                //on a besoin du themeAdmin pour effectuer l'edit
             }])
             ->first();
     }
@@ -264,7 +267,6 @@ class AdminServices
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
-
         $personnel->save();
 
         return $personnel;
@@ -283,6 +285,58 @@ class AdminServices
     public function deleteAdminById($admin)
     {
         $admin->delete();
+    }
+
+    public function affectThemesToAdmin($themesIds, $admin_id)
+    {
+
+        foreach ($themesIds as $themeId) {
+            $themeAdmin = new ThemeAdmin();
+            $themeAdmin->theme_id = $themeId;
+            $themeAdmin->admin_id = $admin_id;
+            $themeAdmin->save();
+        }
+    }
+
+    public function modifyAdminThemes($themesAdmin, $admin_id, $themesIds)
+    {
+
+        $loopLength = sizeof($themesAdmin) < sizeof($themesIds) ? sizeof($themesAdmin) : sizeof($themesIds);
+
+        //1)update 
+        for ($i = 0; $i < $loopLength; $i++) {
+            $themesAdmin[$i]['theme_id'] = $themesIds[$i];
+            $themesAdmin[$i]->update();
+        }
+
+        //2)soit creér des nouveau themeAdmin soit en supprimer selon la taille des tableaux
+
+        //le cas ou themeAdmin > themeIds donc on va supprimer les autres themes de cet admin
+
+        if (sizeof($themesAdmin) > sizeof($themesIds)) {
+
+            for ($i = sizeof($themesIds); $i < sizeof($themesAdmin); $i++) {
+
+                $themesAdmin[$i]->delete();
+
+            }
+        } //le cas ou themeadmin < themeIds donc on va affecter des themes à cet admin
+        else {
+            for ($i = sizeof($themesAdmin); $i < sizeof($themesIds); $i++) {
+
+                $themeAdmin = new ThemeAdmin();
+                $themeAdmin->theme_id = $themesIds[$i];
+                $themeAdmin->admin_id = $admin_id;
+                $themeAdmin->save();
+
+            }
+        }
+        return $themesAdmin;
+    }
+
+    public function getThemeAdmin($admin_id)
+    {
+        return ThemeAdmin::where('admin_id', '=', $admin_id)->get();
     }
 
     public function getAdminByQrCode($QrCode)
