@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by IntelliJ IDEA.
  * User: Abbes
@@ -29,7 +30,6 @@ class AdminServices
         return Admin::whereEmail($login)
             ->with(["congresses", "congresses.form_inputs.values"])
             ->first();
-
     }
 
     public function retrieveAdminFromToken()
@@ -99,59 +99,50 @@ class AdminServices
         $admin->save();
         return $admin;
     }
-    
-    public function getAllEvaluators(){
 
-      return Admin::where("privilege_id","=",11)->get();
+    public function getAllEvaluators()
+    {
 
+        return Admin::where("privilege_id", "=", 11)->get();
     }
 
-    public function getEvaluatorsByCongress($congressId,$privilegeId){
+    public function getEvaluatorsByCongress($congressId, $privilegeId)
+    {
 
-            return Admin::whereHas('admin_congresses',function($query) use ($congressId,$privilegeId)
-                {
-                    $query->where('congress_id','=',$congressId);
-                    $query->where('privilege_id','=',$privilegeId);
-                })
-                ->withCount(['submission'=> function($query) use ($congressId){
-                    $query->where('congress_id','=',$congressId);
-                }])
-                ->orderBy('submission_count','asc')
-                ->get();
-
-
-           
-
-    }
-
-    public function getEvaluatorsByTheme($themeId,$congressId,$privilegeId){
-
-        return Admin::whereHas('themeAdmin',function($query) use ($privilegeId,$themeId)
-            {
-                $query->where('privilege_id','=',$privilegeId);
-                $query->where('theme_id','=',$themeId);
-            
-            })
-            ->withCount(['submission'=> function($query) use ($congressId){
-                $query->where('congress_id','=',$congressId);   
+        return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('privilege_id', '=', $privilegeId);
+        })
+            ->withCount(['submission' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
             }])
-            ->orderBy('submission_count','asc')
+            ->orderBy('submission_count', 'asc')
             ->get();
-
-
-       
-
     }
 
-    public function getEvaluatorsByThemeOrByCongress($themeId,$congressId,$privilegeId){
-        
-        $admins=$this->getEvaluatorsByTheme($themeId,$congressId,$privilegeId);
-        if (!sizeof($admins)>0){
-            $admins=$this->getEvaluatorsByCongress($congressId,$privilegeId);
+    public function getEvaluatorsByTheme($themeId, $congressId, $privilegeId)
+    {
+
+        return Admin::whereHas('themeAdmin', function ($query) use ($privilegeId, $themeId) {
+            $query->where('privilege_id', '=', $privilegeId);
+            $query->where('theme_id', '=', $themeId);
+        })
+            ->withCount(['submission' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->orderBy('submission_count', 'asc')
+            ->get();
+    }
+
+    public function getEvaluatorsByThemeOrByCongress($themeId, $congressId, $privilegeId)
+    {
+        $admins = $this->getEvaluatorsByTheme($themeId, $congressId, $privilegeId);
+        if (sizeof($admins) < 1) {
+            $admins = $this->getEvaluatorsByCongress($congressId, $privilegeId);
         }
         return $admins;
     }
-  
+
     public function addHistory($history, $admin, $pack)
     {
         $history->admin_id = $admin->admin_id;
@@ -216,9 +207,9 @@ class AdminServices
     public function getPersonelsByIdAndCongressId($congress_id, $admin_id)
     {
         return Admin::where('admin_id', '=', $admin_id)
-//        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
-//            $query->where('congress_id', '=', $congress_id);
-//        })
+            //        ->whereHas('admin_congresses', function ($query) use ($congress_id) {
+            //            $query->where('congress_id', '=', $congress_id);
+            //        })
             ->with(['admin_congresses' => function ($query) use ($congress_id, $admin_id) {
                 $query->where('congress_id', '=', $congress_id)
                     ->where('admin_id', '=', $admin_id)
@@ -252,15 +243,15 @@ class AdminServices
     {
         $newPassword = $this->generateRandomString(20);
         Admin::where('admin_id', '=', $admin->admin_id)
-            ->update(['passwordDecrypt' => $newPassword,
-                'password' => bcrypt($newPassword)]);
+            ->update([
+                'passwordDecrypt' => $newPassword,
+                'password' => bcrypt($newPassword)
+            ]);
         return $newPassword;
     }
 
     public function sendForgetPasswordEmail(Admin $admin)
     {
-
-
     }
 
     public function addPersonnel($admin)
@@ -282,10 +273,11 @@ class AdminServices
     public function editPersonnel($admin)
     {
         return Admin::where("admin_id", "=", $admin['admin_id'])
-            ->update(['name' => $admin["name"],
+            ->update([
+                'name' => $admin["name"],
                 'email' => $admin["email"],
-                'mobile' => $admin["mobile"]]);
-
+                'mobile' => $admin["mobile"]
+            ]);
     }
 
     public function deleteAdminById($admin)
@@ -353,6 +345,11 @@ class AdminServices
         $adminCongress->congress_id = $congressId;
         $adminCongress->privilege_id = $privilegeId;
         $adminCongress->save();
+    }
+
+    public function renderAdminMail($template, $activationLink)
+    {
+        return view(['template' => '<html>' . $template . '</html>'], ['activationLink' => $activationLink]);
     }
 
     public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail = null)

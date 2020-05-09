@@ -31,6 +31,10 @@ Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTy
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
 
+//Front Office Congress
+Route::group(['prefix' => 'congress'], function () {
+    Route::get('list/pagination', 'CongressController@getCongressPagination');
+});
 //SMS API
 
 Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
@@ -56,9 +60,16 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
 });
+
+Route::group(['prefix' => 'resource/{path}'], function () {
+    Route::get('', 'FileController@getResouce');
+    Route::post('delete', 'FileController@deleteResouce');
+});
+
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
 });
+
 //Mobile API
 Route::group(['prefix' => 'mobile'], function () {
     Route::post('/login', 'Auth\LoginController@loginAdminMobile');
@@ -96,6 +107,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
+    Route::get('confirmInscription/{user_id}','UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {
@@ -200,6 +212,10 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
+    Route::group(['prefix' => '{submission_id}'], function() {
+        Route::get('','SubmissionController@getSubmission');
+        Route::put('/edit','SubmissionController@editSubmssion');
+    });
 
 
 });
@@ -285,6 +301,10 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
 
+    });
+    Route::group(['prefix' => 'room'],function () {
+        Route::get('','RoomController@getAdminRooms');
+        Route::post('','RoomController@addAdminRooms');
     });
 
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');

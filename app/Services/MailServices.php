@@ -9,24 +9,23 @@ use App\MailTypeAdmin;
 use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\UserMail;
+use App\Models\UserMailAdmin;
 
 class MailServices
 {
 
     public function getAllMailTypes($congressId = null)
     {
-        return MailType::
-        with(['mails' => function ($query) use ($congressId) {
-            if ($congressId)
-                $query->where('congress_id', '=', $congressId);
-        }])
+        return MailType::with(['mails' => function ($query) use ($congressId) {
+                if ($congressId)
+                    $query->where('congress_id', '=', $congressId);
+            }])
             ->get();
     }
 
     public function getAllMailTypesAdmin()
     {
-        return MailTypeAdmin::
-        with(['mails'])
+        return MailTypeAdmin::with(['mails'])
             ->get();
     }
 
@@ -69,8 +68,7 @@ class MailServices
     {
         return Mail::with(['type'])
             ->where('mail_id', '=', $mailId)
-            ->
-            first();
+            ->first();
     }
 
     public function getMailByUserIdAndMailId($mailId, $userId)
@@ -89,13 +87,29 @@ class MailServices
 
         return $mailUser;
     }
+    public function addingUserMailAdmin($mailAdminId, $userId)
+    {
+        $userMailAdmin = new UserMailAdmin();
+        $userMailAdmin->user_id = $userId;
+        $userMailAdmin->mail_admin_id = $mailAdminId;
+        $userMailAdmin->save();
+
+        return $userMailAdmin;
+    }
 
     public function getMailAdminById($mailId)
     {
         return MailAdmin::with(['type'])
             ->where('mail_id', '=', $mailId)
-            ->
-            first();
+            ->first();
+    }
+    public function getMailTypeAdmin($name)
+    {
+        return MailTypeAdmin::where('name', '=', $name)->first();
+    }
+
+    public function getMailAdmin($mailTypeAdminId){
+        return MailAdmin::where('mail_type_admin_id','=',$mailTypeAdminId)->first();
     }
 
     public function updateMailAdmin($request, $mail)

@@ -12,19 +12,34 @@ class Submission extends Model
     protected $fillable = ['title', 'type', 'prez_type', 'description', 'global_note', 'status'];
 
 
-
-    public function user() {
-        return $this->belongsTo('App\Models\User','user_id');
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'user_id');
     }
 
-    public function authors() {
-        return $this->hasMany('App\Models\Author','submission_id');
+    public function theme()
+    {
+        return $this->belongsTo('App\Models\Theme', 'theme_id');
     }
 
-    public function theme() {
-        return $this->belongsTo('App\Models\Theme','theme_id');
+    public function submissions_evaluations()
+    {
+        return $this->hasMany('App\Models\SubmissionEvaluation', 'submission_id');
     }
-    public function submissions_evaluations() {
-        return $this->hasMany('App\Models\SubmissionEvaluation','submission_id');
+
+    function authors()
+    {
+        return $this->hasMany('App\Models\Author', 'submission_id', 'submission_id');
+    }
+
+    function resources()
+    {
+        return $this->belongsToMany('App\Models\Resource', 'Resource_Submission', 'submission_id', 'resource_id');
+    }
+
+    function congress()
+    {
+        return $this->belongsTo('App\Models\Congress', 'congress_id', 'congress_id');
     }
 }
+

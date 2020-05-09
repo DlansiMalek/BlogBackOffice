@@ -10,6 +10,7 @@ use App\Services\OrganizationServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
+use App\Services\UrlUtils;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -88,10 +89,9 @@ class OrganizationController extends Controller
             $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                     strtoupper($organization->name),
                     $admin->passwordDecrypt);
-                $fileAttached = true;
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -173,10 +173,9 @@ class OrganizationController extends Controller
         $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
         $fileAttached = false;
         if ($badgeIdGenerator != null) {
-            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
+            $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
                 ucfirst($user->first_name) . " " . strtoupper($user->last_name),
                 $user->qr_code);
-            $fileAttached = true;
         }
 
 
@@ -187,8 +186,9 @@ class OrganizationController extends Controller
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null,null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }
