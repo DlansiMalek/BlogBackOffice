@@ -242,3 +242,4 @@ INSERT INTO  Country (code, alpha3code, name) VALUES ('YT', 'MYT', 'Mayotte');
 INSERT INTO  Country (code, alpha3code, name) VALUES ('ZA', 'ZAF', 'South Africa');
 INSERT INTO  Country (code, alpha3code, name) VALUES ('ZM', 'ZMB', 'Zambia');
 INSERT INTO  Country (code, alpha3code, name) VALUES ('ZW', 'ZWE', 'Zimbabwe');
+INSERT INTO  Country (code, alpha3code, name) VALUES ('RR', 'ILR', 'La Réunion');
