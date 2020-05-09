@@ -60,17 +60,29 @@ class BadgeController extends Controller
         if (!$this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
             return response(['error' => "invalid privilege"], 404);
         }
-        // Affectation Badge to Congress
-        
-        if ($badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'),$badgeIdGenerator)) {
-            $badge->enable = 1;
-            $badge->update();
-        } else {
-            $this->badgeServices->validerBadge($congressId, $badgeIdGenerator, $request->input('privilegeId'));
+        try {
+            $admin = $this->adminServices->retrieveAdminFromToken();
+            if (!($adminCongress=(AdminCongress::where('congress_id', '=', $congressId)
+                ->where('admin_id', '=', $admin->admin_id)->first()))) {
+                return response()->json(['error' => 'bad request'], 400);
+            }
+            // Affectation Badge to Congress
+            if ($badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'), $badgeIdGenerator)) {
+                $this->badgeServices->updateOrCreateBadgeParams($badge->badge_id, $request->input('keys'), true);
+                $badge->enable = 1;
+                $badge->update();
+            } else {
+                $badge = $this->badgeServices->validerBadge($congressId, $badgeIdGenerator, $request->input('privilegeId'));
+                $this->badgeServices->updateOrCreateBadgeParams($badge->badge_id, $request->input('keys'), false);
+            }
+            $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $request->input('privilegeId'));
+            $this->badgeServices->activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator);
+            return response($this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'), $badgeIdGenerator));
         }
-        $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $request->input('privilegeId'));
-        $this->badgeServices->activateBadgeByCongressByPriviledge($badges,$badgeIdGenerator);
-        return response($this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'),$badgeIdGenerator));
+        catch (Exception $e) {
+            Log::info($e->getMessage());
+            return response()->json(['response' => $e->getMessage()], 400);
+        }
     }
 
     function affectNewBadgeToCongress($congressId, Request $request) {
@@ -83,7 +95,7 @@ class BadgeController extends Controller
         }
         if ($badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'),$badgeIdGenerator)) {
 
-            $this->badgeServices->updateBadgeParams($badge->badge_id,$request->input('keys'));
+            $this->badgeServices->updateOrCreateBadgeParams($badge->badge_id,$request->input('keys'), true);
         }
 
         if ($badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $request->input('privilegeId'))) {

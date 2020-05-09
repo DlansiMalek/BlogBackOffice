@@ -26,4 +26,7 @@ class Badge extends Model
         return  $this->belongsTo('App\Models\Privilege','privilege_id');
 
     }
+    public function badge_param() {
+        return $this->hasMany('App\Models\BadgeParams','badge_id');
+    }
 }

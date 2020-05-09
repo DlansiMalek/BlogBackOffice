@@ -14,4 +14,9 @@ class BadgeParams extends Model
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 
+
+
+    public function badge() {
+        return $this->belongsTo('App\Models\Badge','badge_id');
+    }
 }

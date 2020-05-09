@@ -141,13 +141,15 @@ class BadgeServices
     }
 
     public function getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $privilegeId,$badgeIdGenerator) {
-        return Badge::where('congress_id', '=', $congressId)
+        return Badge::with(['privilege:privilege_id,name',
+                'badge_param:badge_id,key'])->where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', $privilegeId)->where('badge_id_generator','=',$badgeIdGenerator)
             ->first();
     }
 
-    public function updateBadgeParams($badge_id,$keys) {
-        BadgeParams::where('$badge_id','=',$badge_id)->delete();
+    public function updateOrCreateBadgeParams($badge_id,$keys,$update) {
+        if ($update)
+        {BadgeParams::where('badge_id','=',$badge_id)->delete();}
         foreach($keys as $key){
             $badgeParam = new BadgeParams();
             $badgeParam->badge_id =$badge_id;
@@ -196,12 +198,13 @@ class BadgeServices
     public function getBadgesByCongress($congressId) {
         if (Badge::where('congress_id','=',$congressId)->get())
         {
-            $badges =  Badge::with(['privilege:privilege_id,name'])
+            $badges =  Badge::with(['privilege:privilege_id,name',
+                'badge_param:badge_id,key'])
                 ->where('congress_id','=',$congressId)->orderBy('privilege_id')->get();
             $badgesToRender = $badges->map(function ($submission) {
                 
                 return collect($submission->toArray())
-                    ->only(['badge_id','privilege','congress_id','badge_id_generator','enable','updated_at'])
+                    ->only(['badge_id','privilege','congress_id','badge_id_generator','enable','badge_param','created_at'])
                     ->all();
             });
             return $badgesToRender;

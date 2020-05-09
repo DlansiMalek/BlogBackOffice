@@ -96,7 +96,7 @@ class CongressServices
             "form_inputs.values",
             "config",
             "badges" => function ($query) use ($congressId) {
-                $query->where('enable', '=', 1);
+                $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
                 },
             "accesss" => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
