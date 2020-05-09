@@ -13,8 +13,8 @@ class AddSenderNameToCustomSmsTable extends Migration
      */
     public function up()
     {
-        Schema::table('custom_sms', function (Blueprint $table) {
-            $table->string('senderName')->nullable()->default('Ecozone')->after('title');
+        Schema::table('Custom_SMS', function (Blueprint $table) {
+            $table->string('senderName')->nullable()->default('Eventizer')->after('title');
         });
     }
 
@@ -25,8 +25,8 @@ class AddSenderNameToCustomSmsTable extends Migration
      */
     public function down()
     {
-        Schema::table('custom_sms', function (Blueprint $table) {
-            $table->dropIfExists('senderName');
+        Schema::table('Custom_SMS', function (Blueprint $table) {
+            $table->dropColumn('senderName');
         });
     }
 }
