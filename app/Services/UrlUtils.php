@@ -27,6 +27,7 @@ class UrlUtils
         }
         return "https://ws.vayetek.com";
     }
+
     public static function getMeetEventizerUrl()
     {
         return "https://meet.eventizer.io";
@@ -130,10 +131,5 @@ class UrlUtils
         }
 
         return "http://localhost:4200/#/login";
-    }
-
-    public static function getUrlBackOffice()
-    {
-        return "http://localhost:4200/#/";
     }
 }

@@ -48,7 +48,8 @@ class UserController extends Controller
         PaymentServices $paymentServices,
         SmsServices $smsServices,
         MailServices $mailServices
-    ) {
+    )
+    {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -84,16 +85,16 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function confirmInscription(Request $request ,$userId)
+    public function confirmInscription(Request $request, $userId)
     {
-        $code = $request->query('verification_code','');
+        $code = $request->query('verification_code', '');
 
         if (!($user = $this->userServices->getUserByVerificationCodeAndId($code, $userId)))
             return response()->json(['error' => 'user not found'], 404);
 
         $user->email_verified = 1;
         $user->update();
-    
+
         return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "?valid_account=true");
     }
 
@@ -278,12 +279,12 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
             // TODO Sending Confirmation Mail
-          
+
             if ($mailAdminType = $this->mailServices->getMailTypeAdmin('confirmation')) {
-                $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id .'?verification_code='. $user->verification_code;
+                $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id . '?verification_code=' . $user->verification_code;
                 if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-                    $this->userServices->sendMail($this->adminServices->renderAdminMail($mail->template,$activationLink), $user, null, $mail->object, null, $userMail);
+                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $activationLink), $user, null, $mail->object, null, $userMail);
                 }
             }
         } else
@@ -1043,7 +1044,7 @@ class UserController extends Controller
             if ($already_exists) continue;
             $attestation_request = new AttestationRequest();
             $attestation_request->access_id = $access_id;
-            $attestation_request->user_id = (int) $user_id;
+            $attestation_request->user_id = (int)$user_id;
             $attestation_request->save();
             array_push($res, $attestation_request);
         }

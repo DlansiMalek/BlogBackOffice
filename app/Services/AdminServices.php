@@ -403,11 +403,6 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function renderAdminMail($template, $activationLink)
-    {
-        return view(['template' => '<html>' . $template . '</html>'], ['activationLink' => $activationLink]);
-    }
-
     public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail = null)
     {
 
@@ -431,17 +426,16 @@ class AdminServices
         return 1;
     }
 
-    public function AddClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
+    public function addClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
     {
         $admin = new admin();
         $admin->name = $name;
         $admin->email = $email;
         $admin->mobile = $mobile;
         $admin->passwordDecrypt = $passwordDecrypt;
-        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        $admin->password = bcrypt($admin->passwordDecrypt);
         if ($valid_date) {
             $admin->valid_date = $valid_date;
-            $admin->status = 2;
         }
         $admin->privilege_id = 1;
         $admin->save();
@@ -458,8 +452,11 @@ class AdminServices
         return MailAdmin::where('mail_type_admin_id', '=', $mail_type_admin_id)->first();
     }
 
-    public function renderMail($email, $password, $linkBackOffice, $template)
+    public function renderMail($template, $admin = null, $activationLink = null, $backOfficeLink = null)
     {
-        return view(['template' => '<html>' . $template . '</html>'], ['password' => $password, 'email' => $email, 'linkBackOffice' => $linkBackOffice]);
+        $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
+        $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
 }

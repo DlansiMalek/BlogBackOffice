@@ -462,8 +462,8 @@ class AdminController extends Controller
 
         //create themeAdmin if privilege is "comité Scientifique"
 
-        if ($privilegeId == 11){
-            $this->adminServices->affectThemesToAdmin($request->input("themesSelected"),$admin_id);
+        if ($privilegeId == 11) {
+            $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
         }
 
         //create admin congress bind privilege admin and congress
@@ -502,7 +502,7 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $request->input('admin');
-        $privilegeId=(int)$request->input('privilege_id');
+        $privilegeId = (int)$request->input('privilege_id');
         $this->adminServices->editPersonnel($admin);
         $this->privilegeServices->editPrivilege(
             $privilegeId,
@@ -510,9 +510,9 @@ class AdminController extends Controller
             $congress_id);
         //message d'erreur à revoir
 
-        if ($privilegeId == 11){
-          $themesAdmin=$this->adminServices->getThemeAdmin($admin['admin_id']);
-          $this->adminServices->modifyAdminThemes($themesAdmin,$admin['admin_id'],$request->input('themesSelected'));
+        if ($privilegeId == 11) {
+            $themesAdmin = $this->adminServices->getThemeAdmin($admin['admin_id']);
+            $this->adminServices->modifyAdminThemes($themesAdmin, $admin['admin_id'], $request->input('themesSelected'));
         }
         return response()->json(['message' => 'working'], 200);
     }
@@ -779,32 +779,34 @@ class AdminController extends Controller
         return response()->json(['response' => 'pack Added , new  history entry created'], 202);
 
     }
-    public function addClient(Request $request){
+
+    public function addClient(Request $request)
+    {
         if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
-        return response()->json(['message' => 'bad request'], 400);
-        $admin = $this->adminServices->addClient(
-        $request->input("name"),
-        $request->input("email"),
-        $request->input("mobile"),
-        $request->input("passwordDecrypt"),
-        $request->input("valid_date")
-        );
-        $mailTypeAdmin=$this->adminServices->getMailTypeAdmin('creation');
+            return response()->json(['message' => 'bad request'], 400);
+
+        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
+
+        $mailTypeAdmin = $this->adminServices->getMailTypeAdmin('creation');
         if (!$mailTypeAdmin) {
             return response()->json(['message' => 'Mail type not found'], 400);
         }
-        $mailAdmin=$this->adminServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
+
+        $mailAdmin = $this->adminServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
         if (!$mailAdmin) {
             return response()->json(['message' => 'Mail not found'], 400);
         }
-        $linkBackOffice=UrlUtils::getUrlBackOffice();
+
+        $linkBackOffice = UrlUtils::getUrlEventizerWeb();
         $this->adminServices->sendMAil(
-            $this->adminServices->renderMail($admin->email,$admin->passwordDecrypt,$linkBackOffice,$mailAdmin->template),
+            $this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice),
             null,
             $mailAdmin->object,
             $admin,
             null,
             null
         );
+
+        return response()->json(['message' => 'Client added success']);
     }
 }
