@@ -103,7 +103,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
-Route::group(['prefix' => 'users'], function () {
+Route::group(['prefix' => 'users', 'middleware' => ['assign.guard:users']], function () {
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
@@ -117,7 +117,6 @@ Route::group(['prefix' => 'users'], function () {
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
             Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
             Route::get('send-sondage', 'UserController@sendSondage');
-            Route::get('/{accessId}/checkUserRights','UserController@checkUserRights');
         });
 
         Route::put('', 'UserController@update');
@@ -156,9 +155,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
     Route::get('file/{file_path}', 'SharedController@getFile');
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
-    Route::group(['prefix' => '{congress_id}'], function () {
+    Route::group(['prefix' => '{congress_id}' , 'middleware' => ['assign.guard:users']], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('min', 'CongressController@getMinimalCongressById');
+        Route::get('/{accessId}/checkUserRights','UserController@checkUserRights');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');

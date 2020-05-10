@@ -447,11 +447,24 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkUserRights($userId,$congressId,$accessId)
+    public function checkUserRights($congressId,$accessId)
     {
-        $user = $this->userServices->getUserWithCongressPaymentsAccess($userId,$congressId,$accessId);
+        $user = $this->userServices->retrieveUserFromToken();
+        $userId = $user->user_id;
+        $user = $this->userServices->getUserByIdWithRelations($userId, ['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id','=',$congressId);
+        },
+        'payments' => function ($query) use ($congressId){
+            $query->where('congress_id','=',$congressId);
+        },
+        'accesses' => function ($query) use ($congressId,$accessId){
+            $query->where('Access.access_id','=',$accessId)->where('congress_id','=',$congressId);
+        },
+        'user_access' => function ($query) use ($userId,$accessId){
+            $query->where('user_id','=',$userId)->where('access_id','=',$accessId);
+        }]);
         $userRight = $this->userServices->checkUserRights($user);
-        if ($userRight == 1){
+        if ($userRight == 1) {
             return response()->json(['response' => $user->user_access[0] ],200);
         }        
         if ($userRight == 2 || $userRight == 3 ) {
