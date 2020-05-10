@@ -107,6 +107,7 @@ Route::group(['prefix' => 'users', 'middleware' => ['assign.guard:users']], func
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
+    Route::get('all-access','UserController@getAllUserAccess');
     Route::group(['prefix' => '{user_id}'], function () {
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {

@@ -485,6 +485,14 @@ class UserController extends Controller
         }
     }
 
+    public function getAllUserAccess() {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user){
+            return response()->json(['no user found'],400);
+        }
+        $userId = $user->user_id;
+        return $this->userServices->getAllUserAccess($userId);
+    }
     function validateUserAccount($userId = null, $congressId = null, $token = null)
     {
         $user = $this->userServices->getUserById($userId);

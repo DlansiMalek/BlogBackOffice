@@ -450,6 +450,12 @@ class UserServices
             ->get();
     }
 
+    public function getAllUserAccess($userId){
+        return User::with('accesses')
+        ->where('user_id','=',$userId)
+        ->first();
+    }
+
     public function makePresentToAccess($user_access, $user, $accessId, $isPresent, $type)
     {
 
