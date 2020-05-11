@@ -15,7 +15,6 @@ stages:
 build:
   stage: build
   image: bitnami/laravel
-  when: manual
   only:
     - master
     - develop
@@ -31,7 +30,6 @@ docker-package:
   stage: package
   services:
     - docker:dind
-  when: manual
   only:
     - master
     - develop
@@ -52,7 +50,6 @@ docker-package:
 ansible-deploy-prod:
   stage: deploy
   image: mullnerz/ansible-playbook:2.9.1
-  when: manual
   only:
     - master
   before_script:
@@ -69,7 +66,6 @@ ansible-deploy-prod:
 ansible-deploy-dev:
   stage: deploy
   image: mullnerz/ansible-playbook:2.9.1
-  when: manual
   only:
     - develop
   before_script:
@@ -87,7 +83,6 @@ ansible-deploy-dev:
 backup-bitbucket:
   stage: backup
   image: gitlab.master.ssd.vps.vayetek.com:55555/vayetek/devops/git:master
-  when: manual
   only:
     - master
     - develop
