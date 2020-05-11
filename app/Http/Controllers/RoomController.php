@@ -54,8 +54,8 @@ class RoomController extends Controller
 
         $name = Utils::getUCWords($request->input('name'));
 
-        $moderator_token = $this->roomServices->createToken($email, $name, true);
-        $invitee_token = $this->roomServices->createToken($email, $name, false);
+        $moderator_token = $this->roomServices->createToken($email, $name, true, "Eventizer Moderator");
+        $invitee_token = $this->roomServices->createToken($email, $name, false, "Eventizer Invitee");
 
         $room = $this->roomServices->addRoom(
             $name,

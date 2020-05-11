@@ -475,52 +475,55 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkUserRights($congressId,$accessId)
+    public function checkUserRights($congressId, $accessId)
     {
         $user = $this->userServices->retrieveUserFromToken();
         $userId = $user->user_id;
         $user = $this->userServices->getUserByIdWithRelations($userId, ['user_congresses' => function ($query) use ($congressId) {
-            $query->where('congress_id','=',$congressId);
+            $query->where('congress_id', '=', $congressId);
         },
-        'payments' => function ($query) use ($congressId){
-            $query->where('congress_id','=',$congressId);
-        },
-        'accesses' => function ($query) use ($congressId,$accessId){
-            $query->where('Access.access_id','=',$accessId)->where('congress_id','=',$congressId);
-        },
-        'user_access' => function ($query) use ($userId,$accessId){
-            $query->where('user_id','=',$userId)->where('access_id','=',$accessId);
-        }]);
+            'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+            'accesses' => function ($query) use ($congressId, $accessId) {
+                $query->where('Access.access_id', '=', $accessId)->where('congress_id', '=', $congressId);
+            },
+            'user_access' => function ($query) use ($userId, $accessId) {
+                $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
+            }]);
+
+        Log::info($user);
         $userRight = $this->userServices->checkUserRights($user);
         if ($userRight == 1) {
-            return response()->json(['response' => $user->user_access[0] ],200);
-        }        
-        if ($userRight == 2 || $userRight == 3 ) {
+            return response()->json(['response' => $user->user_access[0]], 200);
+        }
+        if ($userRight == 2 || $userRight == 3) {
             $user_access = $user->user_access[0];
             $token = $this->roomServices->createToken(
                 $user->email,
-                'eventizer_room_'.$congressId .$accessId,
-                $userRight == 2 ? false : true ,
+                'eventizer_room_' . $congressId . $accessId,
+                $userRight == 2 ? false : true,
+                $user->first_name . " " . $user->last_name
             );
             $user_access->token_jitsi = $token;
             $user_access->update();
-            return response()->json(['response' => $user->user_access[0] ],200);
-          
-        }
-   
-        else {
-            return response()->json(['response'=>'not authorized'],401);
+            return response()->json(['response' => $user->user_access[0]], 200);
+
+        } else {
+            return response()->json(['response' => 'not authorized'], 401);
         }
     }
 
-    public function getAllUserAccess() {
+    public function getAllUserAccess($congressId)
+    {
         $user = $this->userServices->retrieveUserFromToken();
-        if (!$user){
-            return response()->json(['no user found'],400);
+        if (!$user) {
+            return response()->json(['message' => 'no user found'], 400);
         }
         $userId = $user->user_id;
-        return $this->userServices->getAllUserAccess($userId);
+        return $this->userServices->getAllUserAccess($congressId, $userId);
     }
+
     function validateUserAccount($userId = null, $congressId = null, $token = null)
     {
         $user = $this->userServices->getUserById($userId);
