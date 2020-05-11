@@ -289,7 +289,7 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
-                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $this->userServices->sendMail($this->congressServices
                             ->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
