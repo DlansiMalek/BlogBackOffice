@@ -68,6 +68,7 @@ class LoginController extends Controller
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 
+
     public function loginUser(Request $request)
     {
         $credentials = request(['email', 'password']);

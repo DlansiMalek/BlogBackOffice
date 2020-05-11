@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SubmissionEvaluation;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\CongressServices;
-use App\Services\ResourcesServices;
-use App\Services\SubmissionEvaluationService;
 use App\Services\SubmissionServices;
-use App\Services\ThemeServices;
 use App\Services\UserServices;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class SubmissionController extends Controller
@@ -22,13 +18,15 @@ class SubmissionController extends Controller
     protected $adminServices;
     protected $userServices;
     protected $congressServices;
+
     function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
         AdminServices $adminServices,
         UserServices $userServices,
         CongressServices $congressServices
-    ) {
+    )
+    {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
         $this->adminServices = $adminServices;
@@ -77,7 +75,7 @@ class SubmissionController extends Controller
         }
     }
 
-    public function editSubmssion(Request $request,$submission_id)
+    public function editSubmssion(Request $request, $submission_id)
     {
         try {
             if (!($submission = $this->submissionServices->getSubmissionById($submission_id))) {
@@ -107,4 +105,74 @@ class SubmissionController extends Controller
 
         return $this->submissionServices->getSubmission($submission_id);
     }
+
+    public function getCongressSubmission($congressId)
+    {
+        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        try {
+            $admin = $this->adminServices->retrieveAdminFromToken();
+            if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
+                return response()->json(['response' => 'bad request'], 400);
+            }
+            $privilege_id = $adminCongress->privilege_id;
+            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id);
+
+            return response()->json($submissions, 200);
+
+
+        } catch (Exception $e) {
+
+            Log::info($e->getMessage());
+            return response()->json(['response' => $e->getMessage()], 400);
+        }
+    }
+
+
+    public function getCongressSubmissionDetailById($submissionId)
+    {
+
+        if (!($submission = $this->submissionServices->getSubmissionById($submissionId))) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        try {
+            $congressId = $submission->congress_id;
+            $admin = $this->adminServices->retrieveAdminFromToken();
+            if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
+                return response()->json(['response' => 'bad request'], 400);
+            }
+            $privilege_id = $adminCongress->privilege_id;
+            $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
+            return response()->json($submission_detail, 200);
+
+
+        } catch (Exception $e) {
+
+            Log::info($e->getMessage());
+            return response()->json(['response' => $e->getMessage()], 400);
+        }
+    }
+
+
+    public function putEvaluationToSubmission($submissionId, Request $request)
+    {
+        $note = $request->input('note', -1);
+        if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        try {
+            $admin = $this->adminServices->retrieveAdminFromToken();
+            if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
+                return response()->json(['response' => 'bad request'], 400);
+            }
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note);
+            return response()->json($evaluation, 200);
+        } catch (Exception $e) {
+
+            Log::info($e->getMessage());
+            return response()->json(['response' => $e->getMessage()], 400);
+        }
+    }
+
 }

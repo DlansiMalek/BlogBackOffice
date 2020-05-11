@@ -107,7 +107,8 @@ Route::group(['prefix' => 'users', 'middleware' => ['assign.guard:users']], func
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
-    Route::get('all-access','UserController@getAllUserAccess');
+    Route::get('all-access', 'UserController@getAllUserAccess');
+    Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {
@@ -159,7 +160,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('min', 'CongressController@getMinimalCongressById');
-        Route::get('/{accessId}/checkUserRights','UserController@checkUserRights')->middleware('assign.guard:users');
+        Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
@@ -205,13 +206,19 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     });
 });
 //Submission API
+Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
+    Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
+    Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
+    Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
 
+});
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
-    Route::group(['prefix' => '{submission_id}'], function() {
-        Route::get('','SubmissionController@getSubmission');
-        Route::put('/edit','SubmissionController@editSubmssion');
+    Route::group(['prefix' => '{submission_id}'], function () {
+        Route::get('', 'SubmissionController@getSubmission');
+        Route::put('/edit', 'SubmissionController@editSubmssion');
     });
+
 
 });
 Route::group(['prefix' => 'theme'], function () {
@@ -297,9 +304,9 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
 
     });
-    Route::group(['prefix' => 'room'],function () {
-        Route::get('','RoomController@getAdminRooms');
-        Route::post('','RoomController@addAdminRooms');
+    Route::group(['prefix' => 'room'], function () {
+        Route::get('', 'RoomController@getAdminRooms');
+        Route::post('', 'RoomController@addAdminRooms');
     });
 
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
@@ -363,7 +370,8 @@ Route::group(['prefix' => 'access'], function () {
 
 // Super Admin API
 Route::group(['middelware' => 'marketing'], function () {
-
+    Route::get('/admin/all', 'AdminController@getClients');
+    Route::post('/admin/add', 'AdminController@addClient');
 });
 
 

@@ -583,6 +583,11 @@ class UserServices
             ->first();
     }
 
+    public function getUserByVerificationCodeAndId($code, $user_id)
+    {
+        $conditions = ['verification_code' => $code, 'user_id' => $user_id, 'email_verified' => 0];
+        return User::where($conditions)->first();
+    }
 
     public function getUsersByEmail($email)
     {
@@ -730,7 +735,6 @@ class UserServices
 
     public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
     {
-
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
@@ -741,7 +745,6 @@ class UserServices
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
                 $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-
                 if ($congress != null && $congress->config && $congress->config->replyto_mail) {
                     $message->replyTo($congress->config->replyto_mail);
                 }

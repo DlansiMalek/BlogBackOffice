@@ -99,6 +99,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
     }
 
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
