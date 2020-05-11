@@ -367,8 +367,9 @@ Route::group(['middelware' => 'marketing'], function () {
 
 //Pack API
 Route::group(['prefix' => 'pack'], function () {
-    Route::group(['prefix' => 'congress'], function () {
-        Route::get('{congress_id}/list', 'PackController@getAllPackByCongress');
+    Route::group(['prefix' => 'congress/{congress_id}'], function () {
+        Route::get('list', 'PackController@getAllPackByCongress');
+        Route::post('add', 'PackController@addPack');
     });
 
 });
@@ -440,6 +441,7 @@ Route::group(['prefix' => 'resource'], function () {
 });
 
 Route::group(['prefix' => 'access'], function () {
+    Route::get('','AccessController@getAllAccess');
     Route::get('types', 'AccessController@getAccessTypes');
     Route::get('topics', 'AccessController@getAccessTopics');
     Route::post('add/{congress_id}', 'AccessController@addAccess');

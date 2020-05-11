@@ -297,6 +297,10 @@ class AccessServices
     {
         return AccessType::all();
     }
+    public function getAllAccess() {
+        
+        return Access::all();
+    }
 
     public function getAccessTopics()
     {
