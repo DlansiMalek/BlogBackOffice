@@ -14,7 +14,7 @@ class CreateMailAdminTable extends Migration
     public function up()
     {
         Schema::create('Mail_Admin', function (Blueprint $table) {
-            $table->increments("mail_id");
+            $table->increments("mail_admin_id");
 
 
             $table->string('object');
