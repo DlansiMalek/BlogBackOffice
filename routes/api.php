@@ -103,7 +103,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::get('/testImpression', 'UserController@testImpression');
 //User API
-Route::group(['prefix' => 'users', 'middleware' => ['assign.guard:users']], function () {
+Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
