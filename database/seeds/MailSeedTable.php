@@ -21,7 +21,7 @@ class MailSeedTable extends Seeder
 
         DB::table('Mail')->insert([
             'object'=>'room',
-            'templat' => '<p>Votre room a été créer avec succés, Voici les liens pour y accéder</p><ul><li>lien pour le moderateur <a href="{{$linkModerateur}}" rel="noopener noreferrer" target="_blank">Link</a></li>
+            'template' => '<p>Votre room a été créer avec succés, Voici les liens pour y accéder</p><ul><li>lien pour le moderateur <a href="{{$linkModerateur}}" rel="noopener noreferrer" target="_blank">Link</a></li>
             <li>lien pour les invitées <a href="{{$linkInvitees}}" rel="noopener noreferrer" target="_blank">Link</a></li>
             </ul>',
             'mail_type_id'=>12
