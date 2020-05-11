@@ -96,7 +96,7 @@ class UserController extends Controller
         $user->email_verified = 1;
         $user->update();
 
-        return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "?valid_account=true");
+        return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . '/login' . "?valid_account=true");
     }
 
     public function getUserByCongressIdAndUserId($userId, $congressId)
@@ -372,7 +372,7 @@ class UserController extends Controller
                 );
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
@@ -654,7 +654,7 @@ class UserController extends Controller
             }*/
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);

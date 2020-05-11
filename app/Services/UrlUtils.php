@@ -121,15 +121,15 @@ class UrlUtils
     public static function getBaseUrlFrontOffice()
     {
         if (App::environment() == 'test') {
-            return "http://localhost:4200/#/login";
+            return "http://localhost:4200/#";
         }
         if (App::environment() == 'prod') {
-            return 'https://app.eventizer.io/#/login';
+            return 'https://app.eventizer.io/#';
         }
         if (App::environment() == 'dev') {
-            return 'https://dev.app.eventizer.io/#/login';
+            return 'https://dev.app.eventizer.io/#';
         }
 
-        return "http://localhost:4200/#/login";
+        return "http://localhost:4200/#";
     }
 }
