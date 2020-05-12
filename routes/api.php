@@ -466,7 +466,8 @@ Route::group(["prefix" => "notification"], function () {
 });
 Route::group(["prefix" => "user-app"], function () {
     Route::get('/connect/{qrCode}', 'UserController@userConnect');
-    Route::post('/user-connect', 'UserController@userConnectPost');
+    Route::post('/user-connect', 'UserController@userConnectPost')
+        ->middleware('assign.guard:users');
     Route::get('/congress', 'CongressController@getAllCongresses');
     Route::get('/congress/{congress_id}', 'CongressController@getCongressById');
     Route::get('/presence/{user_id}', 'UserController@getPresenceStatus');

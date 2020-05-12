@@ -1079,8 +1079,8 @@ class UserServices
         if ($user && sizeof($user->accesses) > 0 && $user->user_access[0]['token_jitsi']) {
             return 1;
         }
-        if ($user && sizeof($user->user_congresses) > 0  && sizeof($user->accesses) > 0) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && $user->payments[0]['isPaid'] == 1) {
+        if ($user && sizeof($user->user_congresses) > 0 && sizeof($user->accesses) > 0) {
+            if ($user->user_congresses[0]['privilege_id'] == 3 && (sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
                 return 2;
             }
             if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
