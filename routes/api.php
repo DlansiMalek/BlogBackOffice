@@ -297,6 +297,9 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
 
     });
+
+    Route::post('access/presence', 'AdminController@makeUserPresentAccess')
+        ->middleware('assign.guard:users');
 });
 //Admin API
 Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
