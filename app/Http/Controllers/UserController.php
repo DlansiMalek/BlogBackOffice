@@ -492,7 +492,6 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        Log::info($user);
         $userRight = $this->userServices->checkUserRights($user);
         if ($userRight == 1) {
             return response()->json(['response' => $user->user_access[0]], 200);
@@ -1040,23 +1039,21 @@ class UserController extends Controller
 
     function userConnectPost(Request $request)
     {
-        if ($request->qr_code) {
-            $user = $this->userServices->getUserByQrCode($request->qr_code);
-            return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+        if (!$request->has('qr_code')) {
+            return response()->json(['error' => 'bad reques'], 400);
         }
 
-        $validateData = Validator::make($request->all(), [
-            'email' => 'required',
-            'code' => 'required',
-        ]);
+        $user = $this->userServices->getUserByQrCode($request->qr_code);
 
-        if ($validateData->fails()) return response()->json(['response' => 'bad request', 'required fields' => ['email', 'code']], 400);
+        $request->merge(['email' => $user->email, 'password' => $user->passwordDecrypt]);
 
-        $user = $this->userServices->getUserByEmailAndCode($request->email, $request->code);
-        if (!$user) {
-            return response()->json(["error" => "wrong credentials"], 401);
+        $credentials = request(['email', 'password']);
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
         }
-        return response()->json($user);
+
+        return response()->json(['user' => $user, 'token' => $token], 200);
     }
 
     function getPresenceStatus($user_id)
