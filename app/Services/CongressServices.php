@@ -242,13 +242,9 @@ class CongressServices
         $configCongress->is_notif_sms_confirm = $configCongressRequest['is_notif_sms_confirm'];
         $configCongress->mobile_committee = $configCongressRequest['mobile_committee'];
         $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
-        if($configCongressRequest['has_payment']) {
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
-        } else {
-            $configCongress->lydia_api = null;
-            $configCongress->lydia_token = null;
-        }
+
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 

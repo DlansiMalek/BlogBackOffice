@@ -120,11 +120,27 @@ class UserController extends Controller
     }
     public function getUserByCongressIdAndUserIdForPayement($userId, $congressId, Request $request) {
         $verification_code = $request->query('verification_code','');
-        if (!$user = $this->userServices->getUserByUserIdAndVerificationCode($userId,$verification_code)) {
-            return response()->json(['response' => 'bad request'], 400);
+        $user = $this->userServices->getUserByIdWithRelations($userId, [
+            'accesses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('show_in_register', '=', 1);
+            }, 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type',
+            'congresses.config'=> function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+        ]);
+        if ($user->verification_code !== $verification_code ) {
+            return response()->json('bad request', 400);
         }
-        $user_payment = $this->userServices->getUserForPayment($userId,$congressId);
-        return response()->json($user_payment, 200);
+        return response()->json($user, 200);
 
     }
 
