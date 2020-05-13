@@ -118,6 +118,15 @@ class UserController extends Controller
 
         return response()->json($user);
     }
+    public function getUserByCongressIdAndUserIdForPayement($userId, $congressId, Request $request) {
+        $verification_code = $request->query('verification_code','');
+        if (!$user = $this->userServices->getUserByUserIdAndVerificationCode($userId,$verification_code)) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        $user_payment = $this->userServices->getUserForPayment($userId,$congressId);
+        return response()->json($user_payment, 200);
+
+    }
 
     public function getUserById($user_id)
     {
@@ -1126,4 +1135,5 @@ class UserController extends Controller
         if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
         return Storage::download($user->profile_pic);
     }
+
 }

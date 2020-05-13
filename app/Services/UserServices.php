@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AccessPresence;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
+use App\Models\ConfigCongress;
 use App\Models\FormInputResponse;
 use App\Models\Payment;
 use App\Models\ResponseValue;
@@ -1058,6 +1059,24 @@ class UserServices
         return User::with($relations)
             ->where('user_id', '=', $userId)
             ->first();
+    }
+    public function getUserByUserIdAndVerificationCode($userId,$verification_code) {
+        return User::where('verification_code','=',$verification_code)
+            ->where('user_id', '=', $userId)->first();
+    }
+    public function getUserForPayment($userId, $congressId) {
+        $user = User::with([
+            'payments' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+        ])->where('user_id', '=', $userId)
+            ->first();
+        $payment_config = ConfigCongress::where('congress_id','=',$congressId)->first();
+        $payment_config = $payment_config->only(['lydia_token', 'lydia_api']);
+        $user_payment = ['user'=> $user,'payment' => $payment_config];
+        return $user_payment;
     }
 
     public function getUserById($userId)
