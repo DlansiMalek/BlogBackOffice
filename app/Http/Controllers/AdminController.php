@@ -11,6 +11,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
+use App\Services\MailServices;
 use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
@@ -33,6 +34,7 @@ class AdminController extends Controller
     protected $badgeServices;
     protected $packAdminServices;
     protected $accessServices;
+    protected $mailServices;
 
     protected $client;
 
@@ -43,7 +45,8 @@ class AdminController extends Controller
                                 SharedServices $sharedServices,
                                 PackAdminServices $packAdminServices,
                                 BadgeServices $badgeServices,
-                                AccessServices $accessServices)
+                                AccessServices $accessServices,
+                                MailServices $mailServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
@@ -53,6 +56,7 @@ class AdminController extends Controller
         $this->badgeServices = $badgeServices;
         $this->packAdminServices = $packAdminServices;
         $this->accessServices = $accessServices;
+        $this->mailServices = $mailServices;
         $this->client = new Client();
     }
 
@@ -202,7 +206,7 @@ class AdminController extends Controller
      * )
      *
      */
-    public function makeUserPresentAccess(Request $request, $userId)
+    public function makeUserPresentAccess(Request $request, $userId = null)
     {
         //type : 1 : Enter Or 0 : Leave
         if (!$request->has(['isPresent', 'accessId', 'type', 'congressId'])) {
@@ -211,6 +215,11 @@ class AdminController extends Controller
         }
         $congressId = $request->input('congressId');
         $accessId = $request->input("accessId");
+
+        if (!$userId) {
+            $user = $this->userServices->retrieveUserFromToken();
+            $userId = $user->user_id;
+        }
 
         $participator = $this->userServices->getUserByIdWithRelations($userId,
             ['user_congresses' => function ($query) use ($congressId) {
@@ -221,7 +230,6 @@ class AdminController extends Controller
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
-
         if (sizeof($participator->user_congresses) == 0 || !$participator->user_congresses[0]) {
             return response()->json(['response' => 'participator not inscrit in congress']);
         }
@@ -230,15 +238,10 @@ class AdminController extends Controller
         $userCongress->isPresent = 1;
         $userCongress->update();
 
-        $access = $this->accessServices->getAccessById($accessId);
-
         $user_access = $this->userServices->getUserAccessByUser($participator->user_id, $accessId);
-        if ($access->price && !$user_access) {
-            return response()->json(["message" => "user not allowed to this access"], 401);
-        }
 
         if (!$user_access) {
-            $user_access = $this->userServices->affectAccessById($userId, $accessId);
+            return response()->json(["message" => "user not allowed to this access"], 401);
         }
 
         if ($user_access->isPresent == 0 && $request->input('type') == 0) {
@@ -438,7 +441,7 @@ class AdminController extends Controller
         }
 
         $admin = $request->input('admin');
-
+        $privilegeId = (int)$request->input('privilege_id');
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
             $admin = $this->adminServices->addPersonnel($admin);
@@ -458,8 +461,14 @@ class AdminController extends Controller
             $this->adminServices->editPersonnel($admin);
         }
 
-        $privilegeId = (int)$request->input('privilege_id');
         $congress = $this->congressService->getById($congress_id);
+
+        //create themeAdmin if privilege is "comité Scientifique"
+
+        if ($privilegeId == 11) {
+            $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
+        }
+
         //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
             $privilegeId,
@@ -496,12 +505,18 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $request->input('admin');
+        $privilegeId = (int)$request->input('privilege_id');
         $this->adminServices->editPersonnel($admin);
         $this->privilegeServices->editPrivilege(
-            (int)$request->input('privilege_id'),
+            $privilegeId,
             $admin_id,
             $congress_id);
         //message d'erreur à revoir
+
+        if ($privilegeId == 11) {
+            $themesAdmin = $this->adminServices->getThemeAdmin($admin['admin_id']);
+            $this->adminServices->modifyAdminThemes($themesAdmin, $admin['admin_id'], $request->input('themesSelected'));
+        }
         return response()->json(['message' => 'working'], 200);
     }
 
@@ -767,4 +782,39 @@ class AdminController extends Controller
         return response()->json(['response' => 'pack Added , new  history entry created'], 202);
 
     }
+
+    public function addClient(Request $request)
+    {
+        if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
+            return response()->json(['message' => 'bad request'], 400);
+
+        if ($this->adminServices->getAdminByLogin($request->input("email"))) {
+            return response()->json(['message' => 'admin exists'], 400);
+        }
+
+        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
+
+        $mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin');
+        if (!$mailTypeAdmin) {
+            return response()->json(['message' => 'Mail type not found'], 400);
+        }
+
+        $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
+        if (!$mailAdmin) {
+            return response()->json(['message' => 'Mail not found'], 400);
+        }
+
+        $linkBackOffice = UrlUtils::getUrlEventizerWeb();
+        $this->adminServices->sendMAil(
+            $this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice),
+            null,
+            $mailAdmin->object,
+            $admin,
+            null,
+            null
+        );
+
+        return response()->json(['message' => 'Client added success']);
+    }
+
 }
