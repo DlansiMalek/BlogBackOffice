@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Services\AccessServices;
 use App\Services\CongressServices;
 use App\Services\PackServices;
 use Illuminate\Http\Request;
@@ -12,13 +12,15 @@ class PackController extends Controller
 
     protected $packServices;
     protected $congressServices;
-
+    protected $accessServices;
 
     function __construct(PackServices $packServices,
-                         CongressServices $congressServices)
+                         CongressServices $congressServices,
+                         AccessServices $accessServices)
     {
         $this->packServices = $packServices;
         $this->congressServices = $congressServices;
+        $this->accessServices = $accessServices;
     }
 
 
@@ -37,13 +39,19 @@ class PackController extends Controller
             return response()->json(['response' => 'No congress found'],400);
         }
 
-        return $this->packServices->addPack(
+        $pack = $this->packServices->addPack(
                 $congressId,
                 $request->input('label'),
                 $request->input('description'),
                 $request->input('price'),
                 $request->input('accessIds')
         );
+        $acesss = $this->accessServices->getAllAccess();
+        $this->accessServices->ChangeAccessPackless(
+            $request->input('accessIds'),
+            $acesss
+        );
+        return response()->json(['responsse' => 'packed added'],200);
     }
 
 

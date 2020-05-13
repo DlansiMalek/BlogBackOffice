@@ -35,11 +35,12 @@ class PackServices
         $pack->congress_id = $congressId;
         $pack->save();
         $this->addAccessPack($pack->pack_id, $accessIds);
+        
         return $pack;
     }
 
     private function addAccessPack($pack_id , $acessIds) {
-        
+       
         foreach($acessIds as $access_id) {
             $access_pack = new AccessPack();
             $access_pack->access_id = $access_id;

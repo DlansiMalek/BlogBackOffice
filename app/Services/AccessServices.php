@@ -301,7 +301,19 @@ class AccessServices
         
         return Access::all();
     }
+    public function ChangeAccessPackless($accessIds , $accesss) {
+        
+        foreach($accessIds as $accessId) {
+            foreach ($accesss as $access) {
+                
+                if ($accessId == $access['access_id']) {
+                    $access['packless'] = 1 ;
+                    $access->update();
+                }
 
+            }
+        }
+    }
     public function getAccessTopics()
     {
         return Topic::all();

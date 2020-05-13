@@ -326,8 +326,7 @@ class UserServices
             $user_pack->save();
         }
         }
-        else if ($packs) {
-  
+        else if ($packs) {  
         foreach ($packs as $pack) {
             $user_pack = new UserPack();
             $user_pack->user_id = $user_id;
