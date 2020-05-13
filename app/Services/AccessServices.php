@@ -314,14 +314,27 @@ class AccessServices
             ->get();
     }
 
-    public function getAllAccessByRegisterParams($congress_id, $showInRegister)
+    public function getAllAccessByRegisterParams($congress_id, $showInRegister,$packless=null)
     {
         return Access::where('show_in_register', '=', $showInRegister)
+            ->when($packless === 0  || $packless === 1, function ($query) use ($packless) {
+                $query->where('packless','=',$packless);
+             }) 
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
     }
+   public function getAllAccessByPackIds($user_id,$congressId,$packIds,$packless,$show_in_register) {
 
+       return Access::join('Access_Pack', 'Access_Pack.access_id', '=', 'Access.access_id')
+       ->join('User_Pack' , 'User_Pack.pack_id' , '=', 'Access_Pack.pack_id')
+       ->whereIn('User_Pack.pack_id',$packIds)
+       ->where('User_Pack.user_id','=',$user_id)
+       ->where('congress_id','=',$congressId)
+       ->where('packless','=',$packless)
+       ->where('show_in_register','=',$show_in_register)
+       ->get();
+   }
     public function getChairAccessByAccessAndUser($accessId, $userId)
     {
         return AccessChair::where('user_id', '=', $userId)

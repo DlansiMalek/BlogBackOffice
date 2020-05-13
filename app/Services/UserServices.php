@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
+use App\Models\UserPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -314,6 +315,26 @@ class UserServices
                 $this->affectAccessById($user_id, $access->access_id);
             }
         }
+    }
+
+    public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+        if ($packIds) {
+        foreach($packIds as $packId) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $packId;
+            $user_pack->save();
+        }
+        }
+        else if ($packs) {
+  
+        foreach ($packs as $pack) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $pack['pack_id'];
+            $user_pack->save();
+        }
+    }
     }
 
     public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)

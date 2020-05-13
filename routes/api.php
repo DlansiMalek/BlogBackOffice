@@ -251,7 +251,6 @@ Route::group(['prefix' => 'packadmin'], function () {
 
 //User API
 
-
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');

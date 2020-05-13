@@ -91,7 +91,6 @@ class CongressServices
             }])
             ->get();
     }
-
     public function getMinimalCongressById($congressId)
     {
 
@@ -99,12 +98,14 @@ class CongressServices
             "mails.type",
             "attestation",
             "badges",
-            "accesss",
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "packs",
+            "accesss.packs" => function ($query) use ($congressId){
+                $query->where('congress_id','=',$congressId);                
+            },
             "accesss" => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
                 $query->where('show_in_register', '=', 1);
                 $query->whereNull('parent_id');
             },
