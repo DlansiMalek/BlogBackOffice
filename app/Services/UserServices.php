@@ -318,22 +318,31 @@ class UserServices
     }
 
     public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+
         if ($packIds) {
+            $this->AffectPacksToUserWithPackIdsArray($user_id, $packIds);
+        } else if ($packs) {
+            $this->AffectPacksToUserWithPackArray($user_id, $packs);
+        }
+    }
+
+    private function AffectPacksToUserWithPackIdsArray($user_id,$packIds) {
+        
         foreach($packIds as $packId) {
             $user_pack = new UserPack();
             $user_pack->user_id = $user_id;
             $user_pack->pack_id = $packId;
             $user_pack->save();
         }
-        }
-        else if ($packs) {  
+    }
+
+    private function AffectPacksToUserWithPackArray($user_id,$packs) {
         foreach ($packs as $pack) {
             $user_pack = new UserPack();
             $user_pack->user_id = $user_id;
             $user_pack->pack_id = $pack['pack_id'];
             $user_pack->save();
         }
-    }
     }
 
     public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)

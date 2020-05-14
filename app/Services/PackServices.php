@@ -41,15 +41,18 @@ class PackServices
 
     private function addAccessPack($pack_id , $acessIds) {
        
-        foreach($acessIds as $access_id) {
-            $access_pack = new AccessPack();
-            $access_pack->access_id = $access_id;
-            $access_pack->pack_id = $pack_id;
-            $access_pack->save();
-        }
-
-
+       $this->addItemAccesPack($pack_id,$acessIds);
     }
+
+    private function addItemAccesPack($packId, $acessIds) {
+
+        foreach($acessIds as $access_id) {
+        $access_pack = new AccessPack();
+        $access_pack->access_id = $access_id;
+        $access_pack->pack_id = $packId;
+        $access_pack->save();
+    }
+}
 
     public function addPacks($accesses, $packs, $congress)
     {

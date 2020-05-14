@@ -33,6 +33,10 @@ class CreateUserPackTable extends Migration
      */
     public function down()
     {
+        Schema::table('User_Pack', function (Blueprint $table) {
+            $table->dropForeign(['pack_id']);
+            $table->dropForeign(['user_id']);
+        });
         Schema::dropIfExists('User_Pack');
     }
 }

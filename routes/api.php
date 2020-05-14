@@ -459,7 +459,7 @@ Route::group(['prefix' => 'access'], function () {
     Route::get('topics', 'AccessController@getAccessTopics');
     Route::post('add/{congress_id}', 'AccessController@addAccess');
     Route::get('get/{access_id}', 'AccessController@getAccessById');
-    Route::get('congress/{access_id}', 'AccessController@getByCongressId');
+    Route::get('congress/{congress_id}', 'AccessController@getByCongressId');
     Route::get('congress/{access_id}/main', 'AccessController@getMainByCongressId');
     Route::delete('{access_id}', 'AccessController@deleteAccess');
     Route::put('{access_id}', 'AccessController@editAccess');

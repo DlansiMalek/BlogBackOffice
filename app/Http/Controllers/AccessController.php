@@ -195,10 +195,6 @@ class AccessController extends Controller
     {
         return $this->accessServices->getAccessTypes();
     }
-    public function getAllAccess() {
-        
-        return $this->accessServices->getAllAccess();
-    }
 
     public function getAccessTopics()
     {

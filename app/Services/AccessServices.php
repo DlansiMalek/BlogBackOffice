@@ -297,17 +297,14 @@ class AccessServices
     {
         return AccessType::all();
     }
-    public function getAllAccess() {
-        
-        return Access::all();
-    }
-    public function ChangeAccessPackless($accessIds , $accesss) {
+    
+    public function ChangeAccessPacklessZeroToOne($accessIds , $accesss) {
         
         foreach($accessIds as $accessId) {
             foreach ($accesss as $access) {
                 
-                if ($accessId == $access['access_id']) {
-                    $access['packless'] = 1 ;
+                if ($accessId == $access->access_id) {
+                    $access->packless = 1 ;
                     $access->update();
                 }
 
