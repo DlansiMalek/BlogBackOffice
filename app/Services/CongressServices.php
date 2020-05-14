@@ -390,6 +390,11 @@ class CongressServices
             $accesses = "<ul>";
             foreach ($participant->accesses as $access) {
                 if ($access->show_in_register == 1) {
+                    $accessLink = "";
+                    if ($congress && $access->is_online == 1) {
+                        $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congress->congress_id . '/access/' . $access->access_id;
+                        $accessLink = '<a href="'.$accessLink.'" target="_blank"> Lien </a>';
+                    }
                     $accesses = $accesses
                         . "<li>" . $access->name
                         . "<span class=\"bold\"> qui se déroulera le "
@@ -398,7 +403,7 @@ class CongressServices
                         . \App\Services\Utils::getTimeFromDateTime($access->start_date)
                         . " à "
                         . \App\Services\Utils::getTimeFromDateTime($access->end_date)
-                        . " </span></li>";
+                        . " </span>".$accessLink."</li>";
                 }
             }
             $accesses = $accesses . "</ul>";

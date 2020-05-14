@@ -12,6 +12,7 @@ use App\Services\MailServices;
 use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
+use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\SmsServices;
 use App\Services\UrlUtils;
@@ -35,20 +36,19 @@ class UserController extends Controller
     protected $organizationServices;
     protected $paymentServices;
     protected $mailServices;
+    protected $roomServices;
 
-    function __construct(
-        UserServices $userServices,
-        CongressServices $congressServices,
-        AdminServices $adminServices,
-        SharedServices $sharedServices,
-        BadgeServices $badgeServices,
-        AccessServices $accessServices,
-        PackServices $packServices,
-        OrganizationServices $organizationServices,
-        PaymentServices $paymentServices,
-        SmsServices $smsServices,
-        MailServices $mailServices
-    )
+    function __construct(UserServices $userServices, CongressServices $congressServices,
+                         AdminServices $adminServices,
+                         SharedServices $sharedServices,
+                         BadgeServices $badgeServices,
+                         AccessServices $accessServices,
+                         PackServices $packServices,
+                         OrganizationServices $organizationServices,
+                         PaymentServices $paymentServices,
+                         SmsServices $smsServices,
+                         RoomServices $roomServices,
+                         MailServices $mailServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -61,6 +61,7 @@ class UserController extends Controller
         $this->organizationServices = $organizationServices;
         $this->paymentServices = $paymentServices;
         $this->mailServices = $mailServices;
+        $this->roomServices = $roomServices;
     }
 
     public function getUserByTypeAndCongressId($congress_id, Request $request)
@@ -95,7 +96,7 @@ class UserController extends Controller
         $user->email_verified = 1;
         $user->update();
 
-        return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "?valid_account=true");
+        return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . '/login' . "?valid_account=true");
     }
 
     public function getUserByCongressIdAndUserId($userId, $congressId)
@@ -396,10 +397,10 @@ class UserController extends Controller
                 );
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSms($congress_id, $user, $congress);
@@ -497,6 +498,54 @@ class UserController extends Controller
         } else if ($userAccessIds && array_count_values($userAccessIds)) $this->userServices->deleteAccess($user->user_id, $userAccessIds);
 
         return response()->json($user, 200);
+    }
+
+    public function checkUserRights($congressId, $accessId)
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        $userId = $user->user_id;
+        $user = $this->userServices->getUserByIdWithRelations($userId, ['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        },
+            'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+            'accesses' => function ($query) use ($congressId, $accessId) {
+                $query->where('Access.access_id', '=', $accessId)->where('congress_id', '=', $congressId);
+            },
+            'user_access' => function ($query) use ($userId, $accessId) {
+                $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
+            }]);
+
+        $userRight = $this->userServices->checkUserRights($user);
+        if ($userRight == 1) {
+            return response()->json(['response' => $user->user_access[0]], 200);
+        }
+        if ($userRight == 2 || $userRight == 3) {
+            $user_access = $user->user_access[0];
+            $token = $this->roomServices->createToken(
+                $user->email,
+                'eventizer_room_' . $congressId . $accessId,
+                $userRight == 2 ? false : true,
+                $user->first_name . " " . $user->last_name
+            );
+            $user_access->token_jitsi = $token;
+            $user_access->update();
+            return response()->json(['response' => $user->user_access[0]], 200);
+
+        } else {
+            return response()->json(['response' => 'not authorized'], 401);
+        }
+    }
+
+    public function getAllUserAccess($congressId)
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['message' => 'no user found'], 400);
+        }
+        $userId = $user->user_id;
+        return $this->userServices->getAllUserAccess($congressId, $userId);
     }
 
     function validateUserAccount($userId = null, $congressId = null, $token = null)
@@ -629,7 +678,7 @@ class UserController extends Controller
             }*/
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
@@ -1015,23 +1064,21 @@ class UserController extends Controller
 
     function userConnectPost(Request $request)
     {
-        if ($request->qr_code) {
-            $user = $this->userServices->getUserByQrCode($request->qr_code);
-            return $user ? response()->json($user, 200, []) : response()->json(["error" => "wrong qrcode"], 404);
+        if (!$request->has('qr_code')) {
+            return response()->json(['error' => 'bad reques'], 400);
         }
 
-        $validateData = Validator::make($request->all(), [
-            'email' => 'required',
-            'code' => 'required',
-        ]);
+        $user = $this->userServices->getUserByQrCode($request->qr_code);
 
-        if ($validateData->fails()) return response()->json(['response' => 'bad request', 'required fields' => ['email', 'code']], 400);
+        $request->merge(['email' => $user->email, 'password' => $user->passwordDecrypt]);
 
-        $user = $this->userServices->getUserByEmailAndCode($request->email, $request->code);
-        if (!$user) {
-            return response()->json(["error" => "wrong credentials"], 401);
+        $credentials = request(['email', 'password']);
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
         }
-        return response()->json($user);
+
+        return response()->json(['user' => $user, 'token' => $token], 200);
     }
 
     function getPresenceStatus($user_id)
