@@ -32,7 +32,9 @@ class ConfigCongress extends Model
         'is_code_shown',
         'is_notif_register_mail',
         'is_notif_sms_confirm',
-        'token_sms'
+        'token_sms',
+        'lydia_token',
+        'lydia_api',
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

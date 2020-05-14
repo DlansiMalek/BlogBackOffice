@@ -1075,7 +1075,6 @@ class UserServices
 
     public function checkUserRights($user)
     {
-
         if ($user && sizeof($user->accesses) > 0 && $user->user_access[0]['token_jitsi']) {
             return 1;
         }
@@ -1086,11 +1085,9 @@ class UserServices
             if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
                 return 3;
             }
-        } else {
-            return -1;
         }
+        return -1;
     }
-
 
     public function getUserById($userId)
     {

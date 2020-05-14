@@ -57,6 +57,10 @@ class PaymentController extends Controller
 
         $userPayment = $this->paymentServices->getPaymentByReference($ref);
 
+        if (!$userPayment) {
+            return "";
+        }
+
         $user = $userPayment->user;
         $congress = $userPayment->congress;
 

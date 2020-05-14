@@ -118,6 +118,7 @@ Route::group(['prefix' => 'users'], function () {
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
+            Route::get('payment', 'UserController@getUserByCongressIdAndUserIdForPayement');
             Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
             Route::get('send-sondage', 'UserController@sendSondage');
         });
