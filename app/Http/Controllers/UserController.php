@@ -130,16 +130,13 @@ class UserController extends Controller
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             },
+            'user_congresses.congress.config',
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
-            'responses.form_input.type',
-            'congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
-            'congresses.config'
+            'responses.form_input.type'
         ]);
         if ($user->verification_code !== $verification_code) {
             return response()->json('bad request', 400);
