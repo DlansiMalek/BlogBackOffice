@@ -396,6 +396,10 @@ Route::group(['prefix' => 'privilege'], function () {
     Route::get('list', 'SharedController@getPrivilegesWithBadges');
 });
 
+//Currency API 
+Route::group(['prefix' => 'currency'],function () {
+    Route::get('','CurrencyController@getAllCurrencies');
+});
 
 //Geo API
 Route::group(['prefix' => 'geo'], function () {
