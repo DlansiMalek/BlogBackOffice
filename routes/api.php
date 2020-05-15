@@ -413,6 +413,8 @@ Route::group(['prefix' => 'payment'], function () {
     Route::get('notification', 'PaymentController@notification');
     Route::post('success', 'PaymentController@successPayment');
     Route::get('echec', 'PaymentController@echecPayment');
+
+    Route::post('notification-post', 'PaymentController@notification');
 });
 
 Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');
