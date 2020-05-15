@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
+use App\Models\CongressTheme;
 use App\Models\Congress;
 use App\Models\Location;
 use App\Models\Mail;
@@ -166,6 +167,13 @@ class CongressServices
             ->first();
     }
 
+    public function getCongressConfigSubmissionById($congressId)
+    {
+        return ConfigSubmission::where("congress_id", "=", $congressId)
+            ->first();
+    }
+
+
     function RemoveCongressFromAdmin($congress_id, $admin_id)
     {
         $CongressAdmin = AdminCongress::where("congress_id", "=", $congress_id)->where('admin_id', '=', $admin_id)
@@ -188,7 +196,7 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $description, $admin_id)
+    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $description, $admin_id, $is_submission_enabled)
     {
         $congress = new Congress();
         $congress->name = $name;
@@ -204,6 +212,7 @@ class CongressServices
         $config->free = $free ? $free : 0;
         $config->has_payment = $has_payment ? 1 : 0;
         $config->prise_charge_option = $prise_charge_option ? 1 : 0;
+        $config->is_submission_enabled = $is_submission_enabled ? 1 : 0;
         $config->save();
 
         $admin_congress = new AdminCongress();
@@ -244,12 +253,43 @@ class CongressServices
         $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
-
+        $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
     }
+    public function addCongressSubmission($configSubmission,$submissionData,$congressId )
+    {
+        // add congress submission
+
+        if(!$configSubmission) {
+            $configSubmission = new ConfigSubmission();}
+        $configSubmission->congress_id = $congressId;
+        $configSubmission->max_words = $submissionData['max_words'];
+        $configSubmission->num_evaluators = $submissionData['num_evaluators'];
+        $configSubmission->start_submission_date = $submissionData['start_submission_date'];
+        $configSubmission->end_submission_date = $submissionData['end_submission_date'];
+        $configSubmission->save();
+        return $configSubmission;
+
+    }
+    public function addSubmissionThemeCongress($theme_ids,$congressId )
+    {
+        $CongressThemes= array();
+        CongressTheme::where("congress_id","=",$congressId)->delete();
+        foreach ($theme_ids as $theme_id){
+
+            $CongressTheme = new CongressTheme();
+            $CongressTheme->congress_id= $congressId;
+            $CongressTheme->theme_id= (int) $theme_id;
+            $CongressTheme->save();
+            array_push($CongressThemes, $CongressTheme);
+        }
+        return $CongressThemes;
+    }
+
+
 
 
     public function editCongressLocation($configLocation, $configLocationData, $cityId, $congressId)

@@ -35,6 +35,7 @@ class ConfigCongress extends Model
         'token_sms',
         'lydia_token',
         'lydia_api',
+        'is_submission_enabled'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
