@@ -119,8 +119,10 @@ class UserController extends Controller
 
         return response()->json($user);
     }
-    public function getUserByCongressIdAndUserIdForPayement($userId, $congressId, Request $request) {
-        $verification_code = $request->query('verification_code','');
+
+    public function getUserByCongressIdAndUserIdForPayement($userId, $congressId, Request $request)
+    {
+        $verification_code = $request->query('verification_code', '');
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'accesses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -134,11 +136,12 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type',
-            'congresses.config'=> function ($query) use ($congressId) {
+            'congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             },
+            'congresses.config'
         ]);
-        if ($user->verification_code !== $verification_code ) {
+        if ($user->verification_code !== $verification_code) {
             return response()->json('bad request', 400);
         }
         return response()->json($user, 200);
