@@ -13,7 +13,16 @@ class CurrencyController extends Controller
     {
         $this->currencyServices = $currencyServices;
     }
-    public function getAllCurrencies() {
+
+    public function getAllCurrencies()
+    {
         return $this->currencyServices->getAllCurrencies();
+    }
+
+    public function getConvertCurrency(Request $request)
+    {
+        $convertFrom = $request->query('convertFrom');
+        $convertTo = $request->query('convertTo');
+        return $this->currencyServices->getConvertCurrency($convertFrom, $convertTo);
     }
 }

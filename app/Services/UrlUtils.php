@@ -133,8 +133,8 @@ class UrlUtils
         return "http://localhost:4200/#";
     }
 
-    public static function getConverCurrencyApi($convertFrom , $convertTo) {
-
-        return "https://free.currconv.com/api/v7/convert?q=" . $convertFrom . '_' . $convertTo . "&compact=ultra&apiKey=" . env('API_CURRENCY_KEY', '');
+    public static function getBaseCurrencyRates()
+    {
+        return "https://free.currconv.com/api/v7";
     }
 }

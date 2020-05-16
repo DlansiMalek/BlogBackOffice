@@ -400,6 +400,7 @@ Route::group(['prefix' => 'privilege'], function () {
 //Currency API 
 Route::group(['prefix' => 'currency'],function () {
     Route::get('','CurrencyController@getAllCurrencies');
+    Route::get('convert-rates','CurrencyController@getConvertCurrency');
 });
 
 //Geo API
