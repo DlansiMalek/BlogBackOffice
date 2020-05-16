@@ -134,7 +134,7 @@ class AccessController extends Controller
             $this->accessServices->addSubAccesses($access, $request->input('sub_accesses'));
         }
 
-        if ($access->show_in_register == 1) {
+        if ($access->show_in_register == 1 || $access->packless == 1) {
             $users = $this->userServices->getUsersByCongress($congress_id, [5, 6, 7, 8]);
         } else {
             $users = $this->userServices->getUsersByCongress($congress_id);

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
+use App\Models\UserPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -313,6 +314,34 @@ class UserServices
             if (!in_array($access->access_id, $accessIds)) {
                 $this->affectAccessById($user_id, $access->access_id);
             }
+        }
+    }
+
+    public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+
+        if ($packIds) {
+            $this->AffectPacksToUserWithPackIdsArray($user_id, $packIds);
+        } else if ($packs) {
+            $this->AffectPacksToUserWithPackArray($user_id, $packs);
+        }
+    }
+
+    private function AffectPacksToUserWithPackIdsArray($user_id,$packIds) {
+        
+        foreach($packIds as $packId) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $packId;
+            $user_pack->save();
+        }
+    }
+
+    private function AffectPacksToUserWithPackArray($user_id,$packs) {
+        foreach ($packs as $pack) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $pack['pack_id'];
+            $user_pack->save();
         }
     }
 

@@ -349,14 +349,27 @@ class UserController extends Controller
         }
 
         // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0);
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0,0);
 
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
-
         //Save Access Premium
         if ($privilegeId == 3) {
+            $this->userServices->affectPacksToUser($user->user_id , $request->input('packIds')) ;
+            $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
+                $user->user_id,
+                $congress_id,
+                $request->input('packIds'),
+                1,
+                0
+            );
+            $this->userServices->affectAccessElement($user->user_id, $accessInPackNotInRegister);
             $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
         } else {
+            $packs = $this->packServices->getAllPackByCongress($congress_id);
+            $this->userServices->affectPacksToUser($user->user_id,null,$packs);
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0,1);
+            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
+
             $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 1);
             $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
         }

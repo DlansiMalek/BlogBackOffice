@@ -132,4 +132,9 @@ class UrlUtils
 
         return "http://localhost:4200/#";
     }
+
+    public static function getBaseCurrencyRates()
+    {
+        return "https://free.currconv.com/api/v7";
+    }
 }

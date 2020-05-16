@@ -91,7 +91,6 @@ class CongressServices
         ])
             ->get();
     }
-
     public function getMinimalCongressById($congressId)
     {
 
@@ -99,12 +98,14 @@ class CongressServices
             "mails.type",
             "attestation",
             "badges",
-            "accesss",
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "packs",
+            "accesss.packs" => function ($query) use ($congressId){
+                $query->where('congress_id','=',$congressId);                
+            },
             "accesss" => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
                 $query->where('show_in_register', '=', 1);
                 $query->whereNull('parent_id');
             },
@@ -188,7 +189,7 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $description, $admin_id)
+    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $currency_code, $description, $admin_id)
     {
         $congress = new Congress();
         $congress->name = $name;
@@ -204,6 +205,7 @@ class CongressServices
         $config->free = $free ? $free : 0;
         $config->has_payment = $has_payment ? 1 : 0;
         $config->prise_charge_option = $prise_charge_option ? 1 : 0;
+        $config->currency_code = $currency_code;
         $config->save();
 
         $admin_congress = new AdminCongress();
@@ -242,9 +244,9 @@ class CongressServices
         $configCongress->is_notif_sms_confirm = $configCongressRequest['is_notif_sms_confirm'];
         $configCongress->mobile_committee = $configCongressRequest['mobile_committee'];
         $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
+        $configCongress->currency_code = $configCongressRequest['currency_code'] ;
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
-
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
