@@ -120,6 +120,31 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    public function getUserByCongressIdAndUserIdForPayement($userId, $congressId, Request $request)
+    {
+        $verification_code = $request->query('verification_code', '');
+        $user = $this->userServices->getUserByIdWithRelations($userId, [
+            'accesses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('show_in_register', '=', 1);
+            }, 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+            'user_congresses.congress.config',
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type'
+        ]);
+        if ($user->verification_code !== $verification_code) {
+            return response()->json('bad request', 400);
+        }
+        return response()->json($user, 200);
+
+    }
+
     public function getUserById($user_id)
     {
         $user = $this->userServices->getParticipatorById($user_id);
@@ -1186,4 +1211,5 @@ class UserController extends Controller
         if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
         return Storage::download($user->profile_pic);
     }
+
 }

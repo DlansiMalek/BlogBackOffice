@@ -245,11 +245,14 @@ class CongressServices
         $configCongress->mobile_committee = $configCongressRequest['mobile_committee'];
         $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
         $configCongress->currency_code = $configCongressRequest['currency_code'] ;
+        $configCongress->lydia_api = $configCongressRequest['lydia_api'];
+        $configCongress->lydia_token = $configCongressRequest['lydia_token'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
     }
+
 
     public function editCongressLocation($configLocation, $configLocationData, $cityId, $congressId)
     {
