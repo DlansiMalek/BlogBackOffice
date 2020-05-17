@@ -27,6 +27,7 @@ class UrlUtils
         }
         return "https://ws.vayetek.com";
     }
+
     public static function getMeetEventizerUrl()
     {
         return "https://meet.eventizer.io";
@@ -99,7 +100,7 @@ class UrlUtils
         if (App::environment() == 'dev') {
             return "https://dev.api.eventizer.io/api";
         }
-        return "http://localhost:8888";
+        return "http://localhost:8888/api";
     }
 
     public static function getBaseImgUrl()
@@ -120,16 +121,20 @@ class UrlUtils
     public static function getBaseUrlFrontOffice()
     {
         if (App::environment() == 'test') {
-            return "http://localhost:4200/#/login";
+            return "http://localhost:4200/#";
         }
         if (App::environment() == 'prod') {
-            return 'https://app.eventizer.io/#/login';
+            return 'https://app.eventizer.io/#';
         }
         if (App::environment() == 'dev') {
-            return 'https://dev.app.eventizer.io/#/login';
+            return 'https://dev.app.eventizer.io/#';
         }
 
-        return "http://localhost:4200/#/login";
+        return "http://localhost:4200/#";
     }
 
+    public static function getBaseCurrencyRates()
+    {
+        return "https://free.currconv.com/api/v7";
+    }
 }

@@ -91,6 +91,7 @@ class CustomSmsServices
         if (!$sms = $this->getSmsById($request->input('customSmsId'))) {
             $sms = new CustomSMS();
             $sms->title = $request->input('title');
+            $sms->senderName = $request->input('senderName');
             $sms->content = $request->input('content');
             $sms->save();
 
@@ -101,6 +102,7 @@ class CustomSmsServices
             return $sms;
         } else {
             $sms->title = $request->input('title');
+            $sms->senderName = $request->input('senderName');
             $sms->content = $request->input('content');
             $sms->update();
 

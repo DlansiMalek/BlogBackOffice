@@ -85,6 +85,7 @@ class CongressController extends Controller
             $request->input('config')['has_payment'],
             $request->input('config')['free'],
             $request->input('config')['prise_charge_option'],
+            $request->input('config')['currency_code'],
             $request->input('description'),
             $admin->admin_id);
     }
@@ -289,9 +290,9 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
-                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice),
+                            ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }
@@ -657,6 +658,7 @@ class CongressController extends Controller
                 }]);
 
         return response()->json($access);
+
 
 
     }
