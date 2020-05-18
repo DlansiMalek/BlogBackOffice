@@ -100,7 +100,7 @@ class MailServices
     public function getMailAdminById($mailId)
     {
         return MailAdmin::with(['type'])
-            ->where('mail_id', '=', $mailId)
+            ->where('mail_admin_id', '=', $mailId)
             ->first();
     }
 
@@ -114,15 +114,43 @@ class MailServices
         return MailAdmin::where('mail_type_admin_id', '=', $mailTypeAdminId)->first();
     }
 
-    public function updateMailAdmin($request, $mail)
+    public function getMailTypeAdminById($mailTypeAdminId)
+    {
+        return MailTypeAdmin::find($mailTypeAdminId);
+    }
+
+    public function getMailAdminByMailTypeAdminId($mailTypeAdminId)
+    {
+        return MailAdmin::where('mail_type_admin_id', '=', $mailTypeAdminId)
+            ->first();
+    }
+
+    public function getMailTypeAdminByMailTypeAdminId($mailTypeAdminId)
+    {
+        return MailTypeAdmin::where('mail_type_admin_id', '=', $mailTypeAdminId)
+            ->first();
+    }
+
+    public function saveMailAdmin($mailTypeAdminId, $object, $template)
+    {
+
+        $mail = new MailAdmin();
+
+        $mail->object = $object;
+        $mail->template = $template;
+        $mail->mail_type_admin_id = $mailTypeAdminId;
+        $mail->save();
+        return $mail;
+    }
+
+    public function updateMailAdmin($mail,$objet,$template,$mail_type_admin_id)
     {
         if (!$mail) {
             return null;
         }
-        $mail->mail_id = $request->input('mail_id');
-        $mail->object = $request->input('object');
-        $mail->template = $request->input('template');
-        $mail->mail_type_id = $request->input('mail_type_id');
+        $mail->object = $objet;
+        $mail->template = $template;
+        $mail->mail_type_admin_id =$mail_type_admin_id;
         $mail->update();
         return $mail;
     }
@@ -135,5 +163,38 @@ class MailServices
         $mail->mail_type_id = $request->input('mail_type_id');
         $mail->save();
         return $mail;
+    }
+    public function sendMailAdmin($view, $congress, $objectMail, $admin, $user,$fileAttached, $customEmail = null)
+    {
+
+        $email = $admin ? $admin->email : $customEmail;
+        $pathToFile = storage_path() . "/app/badge.png";
+
+        try {
+            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
+                $message->subject($objectMail);
+                $message->setBody($view, 'text/html');
+                if ($fileAttached)
+                    $message->attach($pathToFile);
+                $message->to($email)->subject($objectMail);
+            });
+        } catch (\Exception $exception) {
+            Storage::delete('app/badge.png');
+            return 1;
+        }
+        Storage::delete('app/badge.png');
+        return 1;
+    }
+
+    public function renderMailAdmin($template, $admin = null,$user=null, $activationLink = null, $backOfficeLink = null)
+    {
+        $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
+        $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+        $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
+        $template = str_replace('{{$admin-&gt;last_name}}', '{{$useer->last_name}}', $template);
+        $template = str_replace('{{$admin-&gt;first_name}}', '{{$useer->first_name}}', $template);
+
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin,'user'=>$user,'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
 }

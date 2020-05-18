@@ -376,6 +376,10 @@ Route::group(['prefix' => 'access'], function () {
 Route::group(['middelware' => 'marketing'], function () {
     Route::get('/admin/all', 'AdminController@getClients');
     Route::post('/admin/add', 'AdminController@addClient');
+    Route::get('/admin/mailtype','MailController@getAllMailTypesAdmin');
+    Route::get('/admin/mail/{mailTypeAdminId}', 'MailController@getMailAdminByMailTypeAdminId');
+    Route::get('/admin/mailtype/{mailTypeAdminId}', 'MailController@getMailTypeAdminByMailTypeAdminId');
+    Route::post('/admin/mail/{mailTypeAdminId}', 'MailController@saveMailAdmin');
 });
 
 

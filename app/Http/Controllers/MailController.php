@@ -17,6 +17,7 @@ use App\Services\PackServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\UrlUtils;
 use http\Env\Response;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -45,7 +46,10 @@ class MailController extends Controller
     {
         return $this->mailService->getMailTypeById($mailTypeId);
     }
-
+    public function getMailTypeAdminById($mailTypeAdminId)
+    {
+        return $this->mailService->getMailTypeAdminById($mailTypeAdminId);
+    }
     public function getById($mail_id)
     {
         return $this->mailService->getMailById($mail_id);
@@ -61,6 +65,15 @@ class MailController extends Controller
         return $this->mailService->getMailByTypeAndCongress($mailTypeId, $congressId);
     }
 
+    public function getMailAdminByMailTypeAdminId($mailTypeAdminId)
+    {
+        return $this->mailService->getMailAdminByMailTypeAdminId($mailTypeAdminId);
+    }
+
+    public function getMailTypeAdminByMailTypeAdminId($mailTypeAdminId)
+    {
+        return $this->mailService->getMailTypeAdminByMailTypeAdminId($mailTypeAdminId);
+    }
 
     public function saveMail(Request $request, $congress_id, $mailTypeId)
     {
@@ -82,7 +95,37 @@ class MailController extends Controller
         return $mail;
     }
 
+    public function saveMailAdmin(Request $request, $mailTypeAdminId)
+    {
+        if (!$request->has(['object', 'template']))
+            return response()->json(['resposne' => 'bad request', 'required fields' => ['object', 'template']], 400);
 
+        $mail = null;
+        if ($request->has('mailAdminId')) {
+            $mail = $this->mailService->getMailAdminById($request->input('mailAdminId'));
+        }
+
+        if ($mail || ($mailTypeAdminId != 4 && $mail = $this->mailService->getMailAdminByMailTypeAdminId($mailTypeAdminId))) {
+            $mail = $this->mailService->updateMailAdmin($mail, $request->input('object'), $request->input('template'),$mailTypeAdminId);
+            // return response()->json(['response' => 'mail exist']);
+        } else {
+            $mail = $this->mailService->saveMailAdmin($mailTypeAdminId, $request->input('object'), $request->input('template'));
+        }
+        // traitement pour récupérer l'admin et le user à faire
+        //envoi du mail
+        $linkBackOffice = UrlUtils::getUrlEventizerWeb();
+        $this->mailService->sendMailAdmin(
+            $this->mailService->renderMailAdmin($mailAdmin->template, $admin,$user, null, $linkBackOffice),
+            null,
+            $mailAdmin->object,
+            $admin,
+            $user,
+            null,
+            null
+        );
+
+        return $mail;
+    }
     public function uploadMailImage(Request $request)
     {
         $file = $request->file('image');
