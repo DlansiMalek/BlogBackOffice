@@ -18,15 +18,18 @@ class PaymentServices
 
     public function affectPaymentToUser($user_id, $congress_id, $price, $free)
     {
-        $payment = new Payment();
+        if ($price && $price > 0) {
+            $payment = new Payment();
 
-        $payment->user_id = $user_id;
-        $payment->congress_id = $congress_id;
-        $payment->free = $free;
-        $payment->price = $price ? $price : 0;
-        $payment->save();
+            $payment->user_id = $user_id;
+            $payment->congress_id = $congress_id;
+            $payment->free = $free;
+            $payment->price = $price;
+            $payment->save();
 
-        return $payment;
+            return $payment;
+        }
+        return null;
     }
 
     public function getFreeUserByCongressId($congress_id)
