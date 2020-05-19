@@ -531,9 +531,7 @@ class UserController extends Controller
             }]);
 
         $userRight = $this->userServices->checkUserRights($user);
-        if ($userRight == 1) {
-            return response()->json(['response' => $user->user_access[0]], 200);
-        }
+        
         if ($userRight == 2 || $userRight == 3) {
             $user_access = $user->user_access[0];
             $token = $this->roomServices->createToken(

@@ -391,7 +391,7 @@ class CongressServices
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "<ul>";
             foreach ($participant->accesses as $access) {
-                if ($access->show_in_register == 1) {
+                if ($access->show_in_register == 1 || $access->is_online == 1) {
                     $accessLink = "";
                     if ($congress && $access->is_online == 1) {
                         $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congress->congress_id . '/access/' . $access->access_id;
