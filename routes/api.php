@@ -105,12 +105,16 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
+
+    Route::post('password/reset', 'UserController@forgetPassword');
+    Route::post('password/reset/{userId}', 'UserController@resetUserPassword');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
+        Route::get('', 'UserController@getMailUserForPasswordReset');
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::delete('delete', 'UserController@delete');
