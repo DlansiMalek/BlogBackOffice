@@ -345,11 +345,12 @@ class UserServices
         }
     }
 
-    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)
+    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
         return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', $showInRegister);
+            if($showInRegister)
+                $query->where('show_in_register', '=', $showInRegister);
         }])
             ->where("user_id", "=", $userId)
             ->first();
