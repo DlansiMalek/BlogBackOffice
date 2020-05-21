@@ -166,7 +166,11 @@ class AccessController extends Controller
         if (!$access = $this->accessServices->getAccessById($access_id))
             return response()->json(['message' => 'access not found'], 404);
 
-        $this->accessServices->editAccess($access, $request);
+        $access = $this->accessServices->editAccess($access, $request);
+
+        if($request->has('is_recorder')) {
+            $this->accessServices->editVideoUrl($access, $request->input('is_recorder'));
+        }
 
         if ($request->has('chair_ids') && count($request->input('chair_ids'))) {
             $this->accessServices->editChairs($access_id, $request->input('chair_ids'));

@@ -46,7 +46,9 @@ class NotificationServices
 
     public function sendNotification($message, $tokens)
     {
-        $optionBuilder = new OptionsBuilder();
+        // TODO Activate ...
+
+        /*$optionBuilder = new OptionsBuilder();
         $optionBuilder->setTimeToLive(60 * 20);
 
         $notificationBuilder = new PayloadNotificationBuilder();
@@ -60,7 +62,7 @@ class NotificationServices
         $notification = $notificationBuilder->build();
         $data = $dataBuilder->build();
 
-        FCM::sendTo($tokens, $option, $notification, $data);
+        FCM::sendTo($tokens, $option, $notification, $data);*/
     }
 
     public function sendNotificationToCongress(string $message, $congress_id)
