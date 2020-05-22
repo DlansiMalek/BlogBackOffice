@@ -387,7 +387,7 @@ class UserController extends Controller
         }
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
+        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
         if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $request->input("price") == 0) || $isFree) {
             //Free Mail
@@ -531,9 +531,7 @@ class UserController extends Controller
             }]);
 
         $userRight = $this->userServices->checkUserRights($user);
-        if ($userRight == 1) {
-            return response()->json(['response' => $user->user_access[0]], 200);
-        }
+        
         if ($userRight == 2 || $userRight == 3) {
             $user_access = $user->user_access[0];
             $token = $this->roomServices->createToken(
@@ -662,7 +660,6 @@ class UserController extends Controller
         $congressId = $userPayement->congress_id;
         if (!$user = $this->userServices->getUserByIdWithRelations($userPayement->user_id, ['accesses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', 1);
         }])) {
             return response()->json(['error' => 'user not found'], 404);
         }

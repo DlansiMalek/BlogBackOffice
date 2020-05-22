@@ -432,4 +432,23 @@ class AccessServices
         return $old;
 
     }
+
+    public function editVideoUrl($access, $isRecorder){
+        if(!$isRecorder){
+            $access->recorder_url = null;
+        }else {
+
+            $roomName = Utils::getRoomName($access->congress_id, $access->access_id);
+            $client = new \GuzzleHttp\Client(['http_errors' => false]);
+            $res = $client->request('GET',
+            
+            UrlUtils::getBaseUrlDiscoveryRecording() . '/room/'.$roomName.'/discover') ;
+
+            if($res->getStatusCode() === 200){
+                $access->recorder_url  = json_decode($res->getBody(),true)['recording'];
+            }
+        }
+
+        $access->update();
+    }
 }

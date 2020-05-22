@@ -57,3 +57,19 @@ SELECT ASS.attestation_generator_id , 8 , ASS.access_id  FROM `Attestation_Acces
 INNER JOIN Access as A on A.access_id = ASS.access_id
 WHERE A.congress_id = 126 And ASS.privilege_id = 5
  */
+
+
+ /* Affectation à tous les utilisateurs les accées manquant
+
+
+
+ 1- Add to all sans exception
+ 2- Delete doublons
+
+ DELETE UA1
+
+FROM `User_Access` UA1 , `User_Access` UA2
+
+Where UA1.user_access_id > UA2.user_access_id 
+And UA1.user_id = UA2.user_id
+And UA1.access_id = UA2.access_id
