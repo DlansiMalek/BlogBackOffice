@@ -647,7 +647,7 @@ class CongressController extends Controller
     {
         //Cette stats concerne les participants et les ateliers qui ont choisit.
 
-        $access = $this->accessServices->getAllAccessByCongress($congressId, 1,
+        $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
