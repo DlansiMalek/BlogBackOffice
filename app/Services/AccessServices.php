@@ -370,10 +370,8 @@ class AccessServices
     {
         return Access::with($relations)
             ->where("congress_id", "=", $congressId)
-            ->where(function ($query) use ($showInRegister) {
-                if ($showInRegister != null) {
-                    $query->where('show_in_register', '=', $showInRegister);
-                }
+            ->when($showInRegister!=null, function ($query) use ($showInRegister) {
+                return $query->where('show_in_register', '=', $showInRegister); 
             })
             ->get();
     }
