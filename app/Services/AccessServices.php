@@ -368,12 +368,24 @@ class AccessServices
 
     public function getAllAccessByCongress($congressId, $showInRegister, $relations)
     {
-        return Access::with($relations)
+        $accesses =  Access::with($relations)
             ->where("congress_id", "=", $congressId)
             ->when($showInRegister!=null, function ($query) use ($showInRegister) {
                 return $query->where('show_in_register', '=', $showInRegister); 
             })
             ->get();
+
+
+        foreach ($accesses as $accesss) {
+            $accesss->nb_participants = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                return sizeof($item['user_congresses']) > 0;
+            }));
+            $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
+            }));
+            $accesss->unsetRelation('participants');
+        }
+        return $accesses    ;
     }
 
     private function addSubAccess(Access $access, $sub)
