@@ -174,9 +174,9 @@ class UserController extends Controller
         return response()->json($this->userServices->updateUser($request, $user), 202);
     }
 
-    public function delete($userId, $congressId)
+    public function delete($userId, $congressId=null)
     {
-
+        if ($congressId) {
         $this->userServices->deleteUserAccesses($userId, $congressId);
         $this->userServices->deleteFormInputUser($userId, $congressId);
         $userCongress = $this->userServices->getUserCongress($congressId, $userId);
@@ -188,6 +188,11 @@ class UserController extends Controller
             $payment->delete();
         }
         return response()->json(['response' => 'user disaffected to congress'], 202);
+        }
+        else {
+            $this->userServices->deleteById($userId);
+            return response()->json(['response' => 'user deleted'], 202);
+        }
     }
 
     public function validateUser($user_id, $validation_code)
@@ -416,7 +421,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSms($congress_id, $user, $congress);
+           $this->smsServices->sendSmsToUsers($user,null,$congress_id,$congress);
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne

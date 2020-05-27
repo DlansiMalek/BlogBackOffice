@@ -111,7 +111,7 @@ Route::group(['prefix' => 'users'], function () {
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
-
+        Route::delete('deleteUserOutOfCongress', 'UserController@delete');
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::delete('delete', 'UserController@delete');
             Route::post('upload-payement', 'UserController@uploadPayement');
