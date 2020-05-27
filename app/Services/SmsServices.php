@@ -71,7 +71,7 @@ class SmsServices
     
     public function sendSmsToUsers($user,$sms=null,$congressId=null, $congress=null)
     {
-        if ( $congress && $congress->config->is_notif_sms_confirm || $sms) {
+        if ( ($congress && $congress->config->is_notif_sms_confirm) || $sms) {
             while ($this->maxRequest <= 3) {
                 try {
                     if ($sms) {
