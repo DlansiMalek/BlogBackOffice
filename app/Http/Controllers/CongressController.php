@@ -85,6 +85,7 @@ class CongressController extends Controller
             $request->input('config')['has_payment'],
             $request->input('config')['free'],
             $request->input('config')['prise_charge_option'],
+            $request->input('config')['currency_code'],
             $request->input('description'),
             $admin->admin_id);
     }
@@ -289,9 +290,9 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
-                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $this->userServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null, $linkFrontOffice),
+                            ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice),
                             $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
                 }
@@ -646,7 +647,7 @@ class CongressController extends Controller
     {
         //Cette stats concerne les participants et les ateliers qui ont choisit.
 
-        $access = $this->accessServices->getAllAccessByCongress($congressId, 1,
+        $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
@@ -657,6 +658,7 @@ class CongressController extends Controller
                 }]);
 
         return response()->json($access);
+
 
 
     }

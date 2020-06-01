@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
+use App\Models\UserPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -257,9 +258,9 @@ class UserServices
             $query->where("Congress_User . id_Congress", "=", $congressId)
                 ->where("Congress_User . isPresent", "=", 1);
         }])->withCount(['congresses as isPaid' => function ($query) use ($congressId) {
-                $query->where("Congress_User . id_Congress", "=", $congressId)
-                    ->where("Congress_User . isPaid", "=", 1);;
-            }])->where("id_User", "=", $userId)
+            $query->where("Congress_User . id_Congress", "=", $congressId)
+                ->where("Congress_User . isPaid", "=", 1);;
+        }])->where("id_User", "=", $userId)
             ->first();
     }
 
@@ -316,11 +317,40 @@ class UserServices
         }
     }
 
-    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)
+    public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+
+        if ($packIds) {
+            $this->AffectPacksToUserWithPackIdsArray($user_id, $packIds);
+        } else if ($packs) {
+            $this->AffectPacksToUserWithPackArray($user_id, $packs);
+        }
+    }
+
+    private function AffectPacksToUserWithPackIdsArray($user_id,$packIds) {
+        
+        foreach($packIds as $packId) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $packId;
+            $user_pack->save();
+        }
+    }
+
+    private function AffectPacksToUserWithPackArray($user_id,$packs) {
+        foreach ($packs as $pack) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $pack['pack_id'];
+            $user_pack->save();
+        }
+    }
+
+    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
         return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', $showInRegister);
+            if($showInRegister)
+                $query->where('show_in_register', '=', $showInRegister);
         }])
             ->where("user_id", "=", $userId)
             ->first();
@@ -385,7 +415,7 @@ class UserServices
             });
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-            || $tri == 'mobile' || $tri = 'country_id')) {
+                || $tri == 'mobile' || $tri = 'country_id')) {
             $users = $users->orderBy($tri, $order);
         }
         if ($order && ($tri == 'type' || $tri == 'date')) {
@@ -448,6 +478,19 @@ class UserServices
             ->where("access_id", '=', $accessId)
             ->where("User_Access.isPresent", "=", 1)
             ->get();
+    }
+
+    public function getAllUserAccess($congressId, $userId)
+    {
+        return User::with([
+            'accesses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+            'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->where('user_id', '=', $userId)
+            ->first();
     }
 
     public function makePresentToAccess($user_access, $user, $accessId, $isPresent, $type)
@@ -577,6 +620,11 @@ class UserServices
             ->first();
     }
 
+    public function getUserByVerificationCodeAndId($code, $user_id)
+    {
+        $conditions = ['verification_code' => $code, 'user_id' => $user_id, 'email_verified' => 0];
+        return User::where($conditions)->first();
+    }
 
     public function getUsersByEmail($email)
     {
@@ -722,21 +770,19 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
     {
-
         //TODO detect email sended user
-        $email = $user->email;
+        $email = $toSendEmail ? $toSendEmail : $user->email;
         $pathToFile = storage_path() . "/app/badge.png";
 
-        if ($congress->username_mail)
+        if ($congress != null && $congress->username_mail)
             config(['mail.from.name', $congress->username_mail]);
 
         try {
             Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-
-                if ($congress->config && $congress->config->replyto_mail) {
+                $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+                if ($congress != null && $congress->config && $congress->config->replyto_mail) {
                     $message->replyTo($congress->config->replyto_mail);
                 }
 
@@ -1055,6 +1101,19 @@ class UserServices
         return User::with($relations)
             ->where('user_id', '=', $userId)
             ->first();
+    }
+
+    public function checkUserRights($user)
+    {
+        if ($user && sizeof($user->user_congresses) > 0 && sizeof($user->accesses) > 0) {
+            if ($user->user_congresses[0]['privilege_id'] == 3 && (sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
+                return 2;
+            }
+            if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
+                return 3;
+            }
+        }
+        return -1;
     }
 
     public function getUserById($userId)

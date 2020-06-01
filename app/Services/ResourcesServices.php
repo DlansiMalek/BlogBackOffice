@@ -18,6 +18,9 @@ class ResourcesServices
         return $resource;
     }
 
+    public function getResourceByPath($path){
+        return Resource::where('path','=',$path)->first();
+    }
 
     private $path = 'resources/';
 

@@ -27,6 +27,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
     }
+    function user_access()
+    {
+        return $this->hasMany('App\Models\UserAccess','user_id','user_id');
+    }
 
     //Speaker Access
     function speaker_access()
@@ -94,6 +98,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
     }
+
 
     public function getJWTIdentifier()
     {

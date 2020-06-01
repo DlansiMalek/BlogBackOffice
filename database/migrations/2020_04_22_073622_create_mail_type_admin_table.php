@@ -14,7 +14,7 @@ class CreateMailTypeAdminTable extends Migration
     public function up()
     {
         Schema::create('Mail_Type_Admin', function (Blueprint $table) {
-            $table->increments("mail_type_id");
+            $table->increments("mail_type_admin_id");
             $table->string("name");
             $table->string("display_name");
             $table->softDeletes();
