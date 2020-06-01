@@ -30,6 +30,10 @@ class CreateBadgeParamsTable extends Migration
      */
     public function down()
     {
+        Schema::table('Badge_Params', function ($table) {
+            $table->dropForeign(['badge_id']);
+        });
         Schema::dropIfExists('Badge_Params');
+
     }
 }

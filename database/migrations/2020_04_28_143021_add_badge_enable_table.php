@@ -15,8 +15,6 @@ class AddBadgeEnableTable extends Migration
     {
         Schema::table('Badge', function (Blueprint $table) {
             $table->unsignedTinyInteger('enable')->default(0)->after('badge_id_generator');
-
-
         });
     }
 
@@ -28,7 +26,7 @@ class AddBadgeEnableTable extends Migration
     public function down()
     {
         Schema::table('Badge', function (Blueprint $table) {
-            //
+            $table->dropColumn(['enable']);
         });
     }
 }
