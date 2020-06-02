@@ -85,12 +85,12 @@ class CustomSmsServices
         }
     }
 
-    public function saveCustomSMS(Request $request)
+    public function saveCustomSMS(Request $request,$admin_id)
     {
 
         if (!$sms = $this->getSmsById($request->input('customSmsId'))) {
             $sms = new CustomSMS();
-            $sms->admin_id = $request->input('admin_id');
+            $sms->admin_id = $admin_id;
             $sms->title = $request->input('title');
             $sms->senderName = $request->input('senderName');
             $sms->content = $request->input('content');
@@ -102,7 +102,6 @@ class CustomSmsServices
 
             return $sms;
         } else {
-            $sms->admin_id = $request->input('admin_id');
             $sms->title = $request->input('title');
             $sms->senderName = $request->input('senderName');
             $sms->content = $request->input('content');

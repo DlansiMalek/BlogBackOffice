@@ -14,7 +14,7 @@ class AddAdminIdToCustomSms extends Migration
     public function up()
     {
         Schema::table('Custom_SMS', function (Blueprint $table) {
-            $table->Integer('admin_id')->after('custom_sms_id')->unsigned();
+            $table->Integer('admin_id')->after('custom_sms_id')->unsigned()->nullable();
             $table->foreign('admin_id')->references('admin_id')->on('Admin')->onDelete('cascade');
         });
     }

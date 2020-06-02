@@ -46,6 +46,9 @@ class CustomSMSController extends Controller
 
     public function saveCustomSMS(Request $request)
     {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'content' => 'required',
@@ -54,7 +57,7 @@ class CustomSMSController extends Controller
         if ($validator->fails())
             return $validator->errors();
 
-        return $this->customSmsServices->saveCustomSMS($request);
+        return $this->customSmsServices->saveCustomSMS($request,$admin->admin_id);
     }
 
     public function filterUsersBySmsStatus($smsId, Request $request)
