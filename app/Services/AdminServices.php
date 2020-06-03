@@ -442,11 +442,15 @@ class AdminServices
         return $admin;
     }
 
-    public function renderMail($template, $admin = null, $activationLink = null, $backOfficeLink = null)
+    public function renderMail($template, $admin = null, $user=null ,$activationLink = null, $backOfficeLink = null)
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+        $template = str_replace('{{$admin-&gt;first_name}}', '{{$admin->first_name}}', $template);
+        $template = str_replace('{{$admin-&gt;last_name}}', '{{$admin->last_name}}', $template);
+        $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
+        $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
 
-        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
 }

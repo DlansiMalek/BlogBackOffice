@@ -122,6 +122,7 @@ class MailServices
     public function getMailAdminByMailTypeAdminId($mailTypeAdminId)
     {
         return MailAdmin::where('mail_type_admin_id', '=', $mailTypeAdminId)
+            ->with(['type'])
             ->first();
     }
 
@@ -164,37 +165,5 @@ class MailServices
         $mail->save();
         return $mail;
     }
-    public function sendMailAdmin($view, $congress, $objectMail, $admin, $user,$fileAttached, $customEmail = null)
-    {
 
-        $email = $admin ? $admin->email : $customEmail;
-        $pathToFile = storage_path() . "/app/badge.png";
-
-        try {
-            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
-                $message->subject($objectMail);
-                $message->setBody($view, 'text/html');
-                if ($fileAttached)
-                    $message->attach($pathToFile);
-                $message->to($email)->subject($objectMail);
-            });
-        } catch (\Exception $exception) {
-            Storage::delete('app/badge.png');
-            return 1;
-        }
-        Storage::delete('app/badge.png');
-        return 1;
-    }
-
-    public function renderMailAdmin($template, $admin = null,$user=null, $activationLink = null, $backOfficeLink = null)
-    {
-        $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
-        $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
-        $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
-        $template = str_replace('{{$admin-&gt;last_name}}', '{{$useer->last_name}}', $template);
-        $template = str_replace('{{$admin-&gt;first_name}}', '{{$useer->first_name}}', $template);
-
-        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin,'user'=>$user,'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
-    }
 }

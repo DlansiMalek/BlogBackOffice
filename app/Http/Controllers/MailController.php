@@ -111,18 +111,6 @@ class MailController extends Controller
         } else {
             $mail = $this->mailService->saveMailAdmin($mailTypeAdminId, $request->input('object'), $request->input('template'));
         }
-        // traitement pour récupérer l'admin et le user à faire
-        //envoi du mail
-        $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-        $this->mailService->sendMailAdmin(
-            $this->mailService->renderMailAdmin($mailAdmin->template, $admin,$user, null, $linkBackOffice),
-            null,
-            $mailAdmin->object,
-            $admin,
-            $user,
-            null,
-            null
-        );
 
         return $mail;
     }
