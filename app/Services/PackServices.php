@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Models\AccessPack;
 use App\Models\Pack;
+use App\Models\UserPack;
 
 class PackServices
 {
@@ -72,6 +73,14 @@ class PackServices
             }
         }
 
+    }
+
+    public function checkIfHasRelation($packId)
+    {
+        $user_pack=UserPack::where('pack_id','=',$packId);
+        if($user_pack)
+        {return 1;}
+        else return 0;
     }
 
 }

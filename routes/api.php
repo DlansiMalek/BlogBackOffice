@@ -385,6 +385,7 @@ Route::group(['prefix' => 'pack'], function () {
         Route::get('list', 'PackController@getAllPackByCongress');
         Route::post('add', 'PackController@addPack');
     });
+    Route::delete('delete/{packId}', 'PackController@deletePack');
 
 });
 //Organisation API
