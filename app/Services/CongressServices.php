@@ -92,7 +92,6 @@ class CongressServices
         ])
             ->get();
     }
-
     public function getMinimalCongressById($congressId)
     {
 
@@ -100,12 +99,14 @@ class CongressServices
             "mails.type",
             "attestation",
             "badges",
-            "accesss",
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "packs",
+            "accesss.packs" => function ($query) use ($congressId){
+                $query->where('congress_id','=',$congressId);                
+            },
             "accesss" => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
                 $query->where('show_in_register', '=', 1);
                 $query->whereNull('parent_id');
             },
@@ -196,7 +197,7 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $description, $admin_id, $is_submission_enabled)
+    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $currency_code, $description, $admin_id, $is_submission_enabled)
     {
         $congress = new Congress();
         $congress->name = $name;
@@ -213,6 +214,7 @@ class CongressServices
         $config->has_payment = $has_payment ? 1 : 0;
         $config->prise_charge_option = $prise_charge_option ? 1 : 0;
         $config->is_submission_enabled = $is_submission_enabled ? 1 : 0;
+        $config->currency_code = $currency_code;
         $config->save();
 
         $admin_congress = new AdminCongress();
@@ -251,6 +253,7 @@ class CongressServices
         $configCongress->is_notif_sms_confirm = $configCongressRequest['is_notif_sms_confirm'];
         $configCongress->mobile_committee = $configCongressRequest['mobile_committee'];
         $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
+        $configCongress->currency_code = $configCongressRequest['currency_code'] ;
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
         $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
@@ -429,7 +432,7 @@ class CongressServices
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "<ul>";
             foreach ($participant->accesses as $access) {
-                if ($access->show_in_register == 1) {
+                if ($access->show_in_register == 1 || $access->is_online == 1) {
                     $accessLink = "";
                     if ($congress && $access->is_online == 1) {
                         $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congress->congress_id . '/access/' . $access->access_id;

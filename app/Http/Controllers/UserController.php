@@ -130,16 +130,13 @@ class UserController extends Controller
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             },
+            'user_congresses.congress.config',
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
-            'responses.form_input.type',
-            'congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
-            'congresses.config'
+            'responses.form_input.type'
         ]);
         if ($user->verification_code !== $verification_code) {
             return response()->json('bad request', 400);
@@ -352,14 +349,27 @@ class UserController extends Controller
         }
 
         // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0);
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
 
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
-
         //Save Access Premium
         if ($privilegeId == 3) {
+            $this->userServices->affectPacksToUser($user->user_id, $request->input('packIds'));
+            $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
+                $user->user_id,
+                $congress_id,
+                $request->input('packIds'),
+                1,
+                0
+            );
+            $this->userServices->affectAccessElement($user->user_id, $accessInPackNotInRegister);
             $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
         } else {
+            $packs = $this->packServices->getAllPackByCongress($congress_id);
+            $this->userServices->affectPacksToUser($user->user_id, null, $packs);
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 1);
+            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
+
             $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 1);
             $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
         }
@@ -377,9 +387,9 @@ class UserController extends Controller
         }
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
+        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
-        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && !$congress->config->has_payment) || $isFree) {
+        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $request->input("price") == 0) || $isFree) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -468,7 +478,7 @@ class UserController extends Controller
             $user->payments[0]->price = $request->input("price");
             $user->payments[0]->update();
         } else {
-            if ($privilegeId == 3)
+            if ($privilegeId == 3 && $request->input("price") != 0)
                 $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $request->input("price"), false);
         }
 
@@ -521,9 +531,7 @@ class UserController extends Controller
             }]);
 
         $userRight = $this->userServices->checkUserRights($user);
-        if ($userRight == 1) {
-            return response()->json(['response' => $user->user_access[0]], 200);
-        }
+        
         if ($userRight == 2 || $userRight == 3) {
             $user_access = $user->user_access[0];
             $token = $this->roomServices->createToken(
@@ -652,7 +660,6 @@ class UserController extends Controller
         $congressId = $userPayement->congress_id;
         if (!$user = $this->userServices->getUserByIdWithRelations($userPayement->user_id, ['accesses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', 1);
         }])) {
             return response()->json(['error' => 'user not found'], 404);
         }

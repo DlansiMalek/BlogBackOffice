@@ -85,6 +85,7 @@ class CongressController extends Controller
             $request->input('config')['has_payment'],
             $request->input('config')['free'],
             $request->input('config')['prise_charge_option'],
+            $request->input('config')['currency_code'],
             $request->input('description'),
             $admin->admin_id,
             $request->input('config')['is_submission_enabled']
@@ -665,7 +666,7 @@ class CongressController extends Controller
     {
         //Cette stats concerne les participants et les ateliers qui ont choisit.
 
-        $access = $this->accessServices->getAllAccessByCongress($congressId, 1,
+        $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);

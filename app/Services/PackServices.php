@@ -26,6 +26,33 @@ class PackServices
         return Pack::where('pack_id', '=', $packId)
             ->first();
     }
+    public function addPack($congressId, $label , $description, $price , $accessIds) {
+        
+        $pack = new Pack();
+        $pack->label = $label;
+        $pack->description = $description;
+        $pack->price = $price ;
+        $pack->congress_id = $congressId;
+        $pack->save();
+        $this->addAccessPack($pack->pack_id, $accessIds);
+        
+        return $pack;
+    }
+
+    private function addAccessPack($pack_id , $acessIds) {
+       
+       $this->addItemAccesPack($pack_id,$acessIds);
+    }
+
+    private function addItemAccesPack($packId, $acessIds) {
+
+        foreach($acessIds as $access_id) {
+        $access_pack = new AccessPack();
+        $access_pack->access_id = $access_id;
+        $access_pack->pack_id = $packId;
+        $access_pack->save();
+    }
+}
 
     public function addPacks($accesses, $packs, $congress)
     {

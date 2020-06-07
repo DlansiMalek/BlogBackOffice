@@ -263,7 +263,6 @@ Route::group(['prefix' => 'packadmin'], function () {
 
 //User API
 
-
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
@@ -383,8 +382,9 @@ Route::group(['middelware' => 'marketing'], function () {
 
 //Pack API
 Route::group(['prefix' => 'pack'], function () {
-    Route::group(['prefix' => 'congress'], function () {
-        Route::get('{congress_id}/list', 'PackController@getAllPackByCongress');
+    Route::group(['prefix' => 'congress/{congress_id}'], function () {
+        Route::get('list', 'PackController@getAllPackByCongress');
+        Route::post('add', 'PackController@addPack');
     });
 
 });
@@ -398,6 +398,11 @@ Route::group(['prefix' => 'privilege'], function () {
     Route::get('list', 'SharedController@getPrivilegesWithBadges');
 });
 
+//Currency API 
+Route::group(['prefix' => 'currency'],function () {
+    Route::get('','CurrencyController@getAllCurrencies');
+    Route::get('convert-rates','CurrencyController@getConvertCurrency');
+});
 
 //Geo API
 Route::group(['prefix' => 'geo'], function () {
@@ -414,6 +419,8 @@ Route::group(['prefix' => 'payment'], function () {
     Route::get('notification', 'PaymentController@notification');
     Route::post('success', 'PaymentController@successPayment');
     Route::get('echec', 'PaymentController@echecPayment');
+
+    Route::post('notification-post', 'PaymentController@notification');
 });
 
 Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');
@@ -456,11 +463,12 @@ Route::group(['prefix' => 'resource'], function () {
 });
 
 Route::group(['prefix' => 'access'], function () {
+    Route::get('','AccessController@getAllAccess');
     Route::get('types', 'AccessController@getAccessTypes');
     Route::get('topics', 'AccessController@getAccessTopics');
     Route::post('add/{congress_id}', 'AccessController@addAccess');
     Route::get('get/{access_id}', 'AccessController@getAccessById');
-    Route::get('congress/{access_id}', 'AccessController@getByCongressId');
+    Route::get('congress/{congress_id}', 'AccessController@getByCongressId');
     Route::get('congress/{access_id}/main', 'AccessController@getMainByCongressId');
     Route::delete('{access_id}', 'AccessController@deleteAccess');
     Route::put('{access_id}', 'AccessController@editAccess');

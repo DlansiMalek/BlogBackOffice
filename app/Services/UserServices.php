@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
+use App\Models\UserPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -316,11 +317,40 @@ class UserServices
         }
     }
 
-    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)
+    public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+
+        if ($packIds) {
+            $this->AffectPacksToUserWithPackIdsArray($user_id, $packIds);
+        } else if ($packs) {
+            $this->AffectPacksToUserWithPackArray($user_id, $packs);
+        }
+    }
+
+    private function AffectPacksToUserWithPackIdsArray($user_id,$packIds) {
+        
+        foreach($packIds as $packId) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $packId;
+            $user_pack->save();
+        }
+    }
+
+    private function AffectPacksToUserWithPackArray($user_id,$packs) {
+        foreach ($packs as $pack) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $pack['pack_id'];
+            $user_pack->save();
+        }
+    }
+
+    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
         return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', $showInRegister);
+            if($showInRegister)
+                $query->where('show_in_register', '=', $showInRegister);
         }])
             ->where("user_id", "=", $userId)
             ->first();
@@ -1075,9 +1105,6 @@ class UserServices
 
     public function checkUserRights($user)
     {
-        if ($user && sizeof($user->accesses) > 0 && $user->user_access[0]['token_jitsi']) {
-            return 1;
-        }
         if ($user && sizeof($user->user_congresses) > 0 && sizeof($user->accesses) > 0) {
             if ($user->user_congresses[0]['privilege_id'] == 3 && (sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
                 return 2;
