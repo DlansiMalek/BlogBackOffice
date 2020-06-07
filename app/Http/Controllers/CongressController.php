@@ -76,20 +76,7 @@ class CongressController extends Controller
         if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return $this->congressServices->addCongress(
-            $request->input("name"),
-            $request->input("start_date"),
-            $request->input("end_date"),
-            $request->input('price'),
-            $request->input('congress_type_id'),
-            $request->input('config')['has_payment'],
-            $request->input('config')['free'],
-            $request->input('config')['prise_charge_option'],
-            $request->input('config')['currency_code'],
-            $request->input('description'),
-            $admin->admin_id,
-            $request->input('config')['is_submission_enabled']
-            );
+        return $this->congressServices->addCongress($request, $request->input('config'), $admin->admin_id);
     }
 
     public function editStatus(Request $request, $congressId, $status)

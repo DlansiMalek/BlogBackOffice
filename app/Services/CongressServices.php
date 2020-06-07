@@ -197,28 +197,27 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $currency_code, $description, $admin_id, $is_submission_enabled)
+    public function addCongress($congressRequest, $configRequest, $adminId)
     {
         $congress = new Congress();
-        $congress->name = $name;
-        $congress->start_date = $start_date;
-        $congress->end_date = $end_date;
-        $congress->price = $price && $congressTypeId === '1' ? $price : 0;
-        $congress->description = $description;
-        $congress->congress_type_id = $congressTypeId;
+        $congress->name = $congressRequest->input('name');
+        $congress->start_date = $congressRequest->input("start_date");
+        $congress->end_date = $congressRequest->input("end_date");
+        $congress->price = $congressRequest->input('price') && $congressRequest->input('congress_type_id') === '1' ? $congressRequest->input('price') : 0;
+        $congress->description = $congressRequest->input('description');
+        $congress->congress_type_id = $congressRequest->input('congress_type_id');
         $congress->save();
 
         $config = new ConfigCongress();
         $config->congress_id = $congress->congress_id;
-        $config->free = $free ? $free : 0;
-        $config->has_payment = $has_payment ? 1 : 0;
-        $config->prise_charge_option = $prise_charge_option ? 1 : 0;
-        $config->is_submission_enabled = $is_submission_enabled ? 1 : 0;
-        $config->currency_code = $currency_code;
+        $config->free = $configRequest['free'] ? $configRequest['free'] : 0;
+        $config->access_system = $configRequest['access_system'] ? $configRequest['access_system'] : 'Workshop';
+        $config->is_submission_enabled = $configRequest['is_submission_enabled'] ? 1 : 0;
+        $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
         $admin_congress = new AdminCongress();
-        $admin_congress->admin_id = $admin_id;
+        $admin_congress->admin_id = $adminId;
         $admin_congress->congress_id = $congress->congress_id;
         $admin_congress->privilege_id = 1;
         $admin_congress->save();
@@ -342,7 +341,7 @@ class CongressServices
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
-        $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Ateliers';
+        $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
         $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
         $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->update();
