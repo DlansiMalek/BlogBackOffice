@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
+use App\Models\CongressTheme;
 use App\Models\Congress;
 use App\Models\Location;
 use App\Models\Mail;
@@ -167,6 +168,13 @@ class CongressServices
             ->first();
     }
 
+    public function getCongressConfigSubmissionById($congressId)
+    {
+        return ConfigSubmission::where("congress_id", "=", $congressId)
+            ->first();
+    }
+
+
     function RemoveCongressFromAdmin($congress_id, $admin_id)
     {
         $CongressAdmin = AdminCongress::where("congress_id", "=", $congress_id)->where('admin_id', '=', $admin_id)
@@ -189,27 +197,27 @@ class CongressServices
         }
     }
 
-    public function addCongress($name, $start_date, $end_date, $price, $congressTypeId, $has_payment, $free, $prise_charge_option, $currency_code, $description, $admin_id)
+    public function addCongress($congressRequest, $configRequest, $adminId)
     {
         $congress = new Congress();
-        $congress->name = $name;
-        $congress->start_date = $start_date;
-        $congress->end_date = $end_date;
-        $congress->price = $price && $congressTypeId === '1' ? $price : 0;
-        $congress->description = $description;
-        $congress->congress_type_id = $congressTypeId;
+        $congress->name = $congressRequest->input('name');
+        $congress->start_date = $congressRequest->input("start_date");
+        $congress->end_date = $congressRequest->input("end_date");
+        $congress->price = $congressRequest->input('price') && $congressRequest->input('congress_type_id') === '1' ? $congressRequest->input('price') : 0;
+        $congress->description = $congressRequest->input('description');
+        $congress->congress_type_id = $congressRequest->input('congress_type_id');
         $congress->save();
 
         $config = new ConfigCongress();
         $config->congress_id = $congress->congress_id;
-        $config->free = $free ? $free : 0;
-        $config->has_payment = $has_payment ? 1 : 0;
-        $config->prise_charge_option = $prise_charge_option ? 1 : 0;
-        $config->currency_code = $currency_code;
+        $config->free = $configRequest['free'] ? $configRequest['free'] : 0;
+        $config->access_system = $configRequest['access_system'] ? $configRequest['access_system'] : 'Workshop';
+        $config->is_submission_enabled = $configRequest['is_submission_enabled'] ? 1 : 0;
+        $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
         $admin_congress = new AdminCongress();
-        $admin_congress->admin_id = $admin_id;
+        $admin_congress->admin_id = $adminId;
         $admin_congress->congress_id = $congress->congress_id;
         $admin_congress->privilege_id = 1;
         $admin_congress->save();
@@ -247,11 +255,43 @@ class CongressServices
         $configCongress->currency_code = $configCongressRequest['currency_code'] ;
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
+        $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
     }
+    public function addCongressSubmission($configSubmission,$submissionData,$congressId )
+    {
+        // add congress submission
+
+        if(!$configSubmission) {
+            $configSubmission = new ConfigSubmission();}
+        $configSubmission->congress_id = $congressId;
+        $configSubmission->max_words = $submissionData['max_words'];
+        $configSubmission->num_evaluators = $submissionData['num_evaluators'];
+        $configSubmission->start_submission_date = $submissionData['start_submission_date'];
+        $configSubmission->end_submission_date = $submissionData['end_submission_date'];
+        $configSubmission->save();
+        return $configSubmission;
+
+    }
+    public function addSubmissionThemeCongress($theme_ids,$congressId )
+    {
+        $CongressThemes= array();
+        CongressTheme::where("congress_id","=",$congressId)->delete();
+        foreach ($theme_ids as $theme_id){
+
+            $CongressTheme = new CongressTheme();
+            $CongressTheme->congress_id= $congressId;
+            $CongressTheme->theme_id= (int) $theme_id;
+            $CongressTheme->save();
+            array_push($CongressThemes, $CongressTheme);
+        }
+        return $CongressThemes;
+    }
+
+
 
 
     public function editCongressLocation($configLocation, $configLocationData, $cityId, $congressId)
@@ -301,7 +341,7 @@ class CongressServices
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
-        $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Ateliers';
+        $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
         $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
         $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->update();

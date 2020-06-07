@@ -223,8 +223,9 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
 
 
 });
-Route::group(['prefix' => 'theme'], function () {
-    Route::get('all', 'ThemeController@getAllThemes');
+Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], function () {
+    Route::get('all/{congressId}', 'ThemeController@getAllThemes');
+    Route::post('add/{congressId}', 'ThemeController@addExternalTheme');
     Route::get('congress/{congressId}', 'ThemeController@getThemesByCongressId');
 });
 //PackAdmin API
