@@ -46,21 +46,25 @@ class NotificationServices
 
     public function sendNotification($message, $tokens)
     {
-        $optionBuilder = new OptionsBuilder();
-        $optionBuilder->setTimeToLive(60 * 20);
 
-        $notificationBuilder = new PayloadNotificationBuilder();
-        $notificationBuilder->setBody($message)
-            ->setSound('default');
+        if(sizeof($tokens)>0) {
 
-        $dataBuilder = new PayloadDataBuilder();
-        $dataBuilder->addData(['data_1' => 'value data 1']);
+            $optionBuilder = new OptionsBuilder();
+            $optionBuilder->setTimeToLive(60 * 20);
 
-        $option = $optionBuilder->build();
-        $notification = $notificationBuilder->build();
-        $data = $dataBuilder->build();
+            $notificationBuilder = new PayloadNotificationBuilder();
+            $notificationBuilder->setBody($message)
+                ->setSound('default');
 
-        FCM::sendTo($tokens, $option, $notification, $data);
+            $dataBuilder = new PayloadDataBuilder();
+            $dataBuilder->addData(['data_1' => 'value data 1']);
+
+            $option = $optionBuilder->build();
+            $notification = $notificationBuilder->build();
+            $data = $dataBuilder->build();
+
+            FCM::sendTo($tokens, $option, $notification, $data);
+        }
     }
 
     public function sendNotificationToCongress(string $message, $congress_id)

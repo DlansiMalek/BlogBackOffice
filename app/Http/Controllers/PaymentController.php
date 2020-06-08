@@ -57,6 +57,10 @@ class PaymentController extends Controller
 
         $userPayment = $this->paymentServices->getPaymentByReference($ref);
 
+        if (!$userPayment) {
+            return "";
+        }
+
         $user = $userPayment->user;
         $congress = $userPayment->congress;
 
@@ -91,7 +95,7 @@ class PaymentController extends Controller
                     }
                 }
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                    $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+                    $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                         $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
@@ -124,5 +128,4 @@ class PaymentController extends Controller
 
         return "";
     }
-
 }

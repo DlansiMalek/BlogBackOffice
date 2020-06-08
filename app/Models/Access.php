@@ -83,6 +83,11 @@ class Access extends Model
     {
         return $this->hasOne('App\Models\AccessType', 'access_type_id', 'access_type_id');
     }
+    
+    function packs()
+    {
+        return $this->belongsToMany('App\Models\Pack', 'Access_Pack', 'access_id', 'pack_id');
+    }
 
 
 }

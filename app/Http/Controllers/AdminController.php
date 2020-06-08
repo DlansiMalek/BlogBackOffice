@@ -206,7 +206,7 @@ class AdminController extends Controller
      * )
      *
      */
-    public function makeUserPresentAccess(Request $request, $userId)
+    public function makeUserPresentAccess(Request $request, $userId = null)
     {
         //type : 1 : Enter Or 0 : Leave
         if (!$request->has(['isPresent', 'accessId', 'type', 'congressId'])) {
@@ -215,6 +215,11 @@ class AdminController extends Controller
         }
         $congressId = $request->input('congressId');
         $accessId = $request->input("accessId");
+
+        if (!$userId) {
+            $user = $this->userServices->retrieveUserFromToken();
+            $userId = $user->user_id;
+        }
 
         $participator = $this->userServices->getUserByIdWithRelations($userId,
             ['user_congresses' => function ($query) use ($congressId) {
@@ -225,7 +230,6 @@ class AdminController extends Controller
             return response()->json(['resposne' => 'participator not found'], 404);
         }
 
-
         if (sizeof($participator->user_congresses) == 0 || !$participator->user_congresses[0]) {
             return response()->json(['response' => 'participator not inscrit in congress']);
         }
@@ -234,15 +238,10 @@ class AdminController extends Controller
         $userCongress->isPresent = 1;
         $userCongress->update();
 
-        $access = $this->accessServices->getAccessById($accessId);
-
         $user_access = $this->userServices->getUserAccessByUser($participator->user_id, $accessId);
-        if ($access->price && !$user_access) {
-            return response()->json(["message" => "user not allowed to this access"], 401);
-        }
 
         if (!$user_access) {
-            $user_access = $this->userServices->affectAccessById($userId, $accessId);
+            return response()->json(["message" => "user not allowed to this access"], 401);
         }
 
         if ($user_access->isPresent == 0 && $request->input('type') == 0) {
