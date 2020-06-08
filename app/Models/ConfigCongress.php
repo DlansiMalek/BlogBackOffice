@@ -29,6 +29,7 @@ class ConfigCongress extends Model
         'access_system',
         'congress_id',
         'status',
+        'is_online',
         'is_code_shown',
         'is_notif_register_mail',
         'is_notif_sms_confirm',
