@@ -238,6 +238,7 @@ class CongressServices
         $configCongress->banner = $configCongressRequest['banner'];
         $configCongress->free = $configCongressRequest['free'];
         $configCongress->has_payment = $configCongressRequest['has_payment'];
+        $configCongress->is_online = $configCongressRequest['is_online'];
         $configCongress->program_link = $configCongressRequest['program_link'];
         $configCongress->voting_token = $configCongressRequest['voting_token'];
         $configCongress->prise_charge_option = $configCongressRequest['prise_charge_option'];
