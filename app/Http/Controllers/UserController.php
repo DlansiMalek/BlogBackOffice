@@ -533,33 +533,22 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        $userRight = $this->userServices->checkUserRights($user);
+        $userRight = $this->userServices->checkUserRights($user, $accessId);
         
-        if ($accessId && ( $userRight == 2 || $userRight == 3 ) ) {
-            $user_access = $user->user_access[0];
+        if ($userRight == 2 || $userRight == 3) {
+            $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
+            $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
             $token = $this->roomServices->createToken(
                 $user->email,
-                'eventizer_room_' . $congressId . $accessId,
+                $roomName,
                 $userRight == 2 ? false : true,
                 $user->first_name . " " . $user->last_name
             );
-            $user_access->token_jitsi = $token;
-            $user_access->update();
-            return response()->json(['response' => $user->user_access[0]], 200);
+            $userToUpdate->token_jitsi = $token;
+            $userToUpdate->update();
+            return response()->json(['response' => $userToUpdate], 200);
 
-        } if (!$accessId && ( $userRight == 4 || $userRight == 5 ) ) {
-            $user_congress = $user->user_congresses[0];
-            $token = $this->roomServices->createToken(
-                $user->email,
-                'eventizer_room_' . $congressId,
-                $userRight == 2 ? false : true,
-                $user->first_name . " " . $user->last_name
-            );
-            $user_congress->token_jitsi = $token;
-            $user_congress->update();
-            return response()->json(['response' => $user_congress], 200);
-        }
-         else {
+        } else {
             return response()->json(['response' => 'not authorized'], 401);
         }
     }
