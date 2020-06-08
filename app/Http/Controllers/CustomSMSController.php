@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CustomSmsServices;
+use App\Services\AdminServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,15 +12,20 @@ class CustomSMSController extends Controller
 
     protected $customSmsServices;
 
-    function __construct(CustomSmsServices $customSmsServices)
+    function __construct(CustomSmsServices $customSmsServices,AdminServices $adminServices)
     {
         $this->customSmsServices = $customSmsServices;
-
+        $this->adminServices=$adminServices;
     }
 
     public function getListSMS()
     {
-        return $this->customSmsServices->getSMSList();
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $sms = $this->customSmsServices->getSMSList($admin->admin_id);
+
+        return response()->json($sms, 200);
     }
 
     public function deleteSMS($smsId)
@@ -40,6 +46,9 @@ class CustomSMSController extends Controller
 
     public function saveCustomSMS(Request $request)
     {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'content' => 'required',
@@ -48,7 +57,7 @@ class CustomSMSController extends Controller
         if ($validator->fails())
             return $validator->errors();
 
-        return $this->customSmsServices->saveCustomSMS($request);
+        return $this->customSmsServices->saveCustomSMS($request,$admin->admin_id);
     }
 
     public function filterUsersBySmsStatus($smsId, Request $request)
