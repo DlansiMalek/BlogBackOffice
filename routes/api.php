@@ -375,11 +375,11 @@ Route::group(['prefix' => 'access'], function () {
 });
 
 // Super Admin API
-Route::group(['middelware' => 'marketing'], function () {
-    Route::get('/admin/all', 'AdminController@getClients');
-    Route::post('/admin/add', 'AdminController@addClient');
-    Route::get('/admin/{admin_id}', "AdminController@getClientById");
-    Route::put('/admin/{admin_id}', "AdminController@editClient");
+Route::group(['prefix'=> 'admin', 'middleware' => 'marketing'], function () {
+    Route::get('all', 'AdminController@getClients');
+    Route::post('add', 'AdminController@addClient');
+    Route::get('{admin_id}', "AdminController@getClientById");
+    Route::put('{admin_id}', "AdminController@editClient");
 });
 
 

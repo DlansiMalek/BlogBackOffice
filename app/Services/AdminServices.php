@@ -462,7 +462,7 @@ class AdminServices
         $admin->name = $request->input('name');
         $admin->mobile = $request->input('mobile');
         $admin->valid_date = $request->input('valid_date');
-        $admin->update($request->all());
+        $admin->update();
         return $admin;
     }
 
