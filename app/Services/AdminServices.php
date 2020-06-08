@@ -449,4 +449,21 @@ class AdminServices
 
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
+    public function  getClientById($admin_id){
+        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=',1)
+        ->first();
+    }
+
+    public function editClient($request, $admin)
+    {
+        if (!$admin) {
+            return null;
+        }
+        $admin->name = $request->input('name');
+        $admin->mobile = $request->input('mobile');
+        $admin->valid_date = $request->input('valid_date');
+        $admin->update();
+        return $admin;
+    }
+
 }
