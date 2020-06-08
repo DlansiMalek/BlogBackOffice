@@ -1105,12 +1105,18 @@ class UserServices
 
     public function checkUserRights($user)
     {
-        if ($user && sizeof($user->user_congresses) > 0 && sizeof($user->accesses) > 0) {
+        if ($user && sizeof($user->user_congresses) > 0 ) {
             if ($user->user_congresses[0]['privilege_id'] == 3 && (sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
+                if (sizeof($user->accesses) > 0) {
                 return 2;
+                }
+                return 4 ;
             }
             if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
-                return 3;
+                if (sizeof($user->accesses) > 0) {
+                    return 3;
+                    }
+                return 5;
             }
         }
         return -1;
