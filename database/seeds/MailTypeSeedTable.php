@@ -79,5 +79,35 @@ class MailTypeSeedTable extends Seeder
             'name' => 'room',
             'display_name' => "Creation d\'une room",
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 13,
+            'name' => 'save_submission',
+            'display_name' => "Enregistrer une soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 14,
+            'name' => 'accept_submission',
+            'display_name' => "Accepter la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 15,
+            'name' => 'refuse_submission',
+            'display_name' => "Refuser la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 16,
+            'name' => 'edit_submission',
+            'display_name' => "Modification de la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 17,
+            'name' => 'bloc_edit_submission',
+            'display_name' => "Blocage de la modification de la soumission",
+            'type' => "submission",
+        ]);
     }
 }

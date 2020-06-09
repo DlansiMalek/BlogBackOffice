@@ -211,4 +211,10 @@ class SubmissionServices
         return SubmissionEvaluation::where('admin_id', '=', $admin->admin_id)
             ->where('submission_id', '=', $submissionId)->first();
     }
+
+    public function updateSubmissionStatus($submission,$new_status)
+    {
+        return $submission->update(['status' => $new_status]);
+    }
+    
 }
