@@ -274,13 +274,16 @@ class CongressController extends Controller
                     }], null);
             foreach ($users as $user) {
                 if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
-                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                    $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
+                    $badgeIdGenerator = $badge['badge_id_generator'];
+
                     $fileAttached = false;
                     if ($badgeIdGenerator != null) {
-                        $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                            $user->qr_code);
+                        $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                            $user,
+                            $user->qr_code,
+                            $user->user_congresses[0]->privilege_id);
                     }
 
                     $userMail = null;

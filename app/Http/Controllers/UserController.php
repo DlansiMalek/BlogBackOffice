@@ -400,13 +400,15 @@ class UserController extends Controller
                 }
             }
             //Confirm Direct
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $privilegeId
                 );
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
@@ -669,13 +671,15 @@ class UserController extends Controller
         $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
 
         if ($userPayement->isPaid != 1 && $isPaid == 1) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $userCongress->privilege_id
                 );
             }
 

@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 //Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
@@ -34,6 +33,8 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+
+
 });
 //SMS API
 
