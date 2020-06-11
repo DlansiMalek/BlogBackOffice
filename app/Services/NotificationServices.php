@@ -23,18 +23,26 @@ class NotificationServices
 
     }
 
-    public function getKeyByCongressId($congressId, ?string $firebaseKey)
+    public function getKeyByCongressId($congressId,?string $firebaseKey,$userId,$source)
     {
+        //mon but est de comparer entre le token que j'ai deja avec celui dans request
+        // j'ai pas idée sur l'utilisation de l'autre cas c'est pour cela que j'ai procédé ainsi 
         return UserNotifCongress::where('congress_id', '=', $congressId)
-            ->where('firebase_key_user', '=', $firebaseKey)
+            ->where('user_id','=',$userId)
+            ->where('source','=',$source)
+            ->when($firebaseKey !=null, function($query) use ($firebaseKey) {
+                $query->where('firebase_key_user','=',$firebaseKey);
+            })
             ->first();
     }
 
-    public function saveKeyByCongress($congressId, ?string $firebaseKey)
+    public function saveKeyByCongress($congressId, ?string $firebaseKey, $userId = null, $source = null)
     {
         $userNotifCongress = new UserNotifCongress();
         $userNotifCongress->congress_id = $congressId;
         $userNotifCongress->firebase_key_user = $firebaseKey;
+        $userNotifCongress->user_id = $userId;
+        $userNotifCongress->source = $source;
         $userNotifCongress->save();
     }
 
@@ -43,35 +51,46 @@ class NotificationServices
         return UserNotifCongress::where('congress_id', '=', $congressId)
             ->get();
     }
+    public function getAllKeysByCongressIdAndSource($congressId, $source)
+    {
+        return UserNotifCongress::where('congress_id', '=', $congressId)
+            ->where('source','=',$source)
+            ->get();
+    }
 
-    public function sendNotification($message, $tokens)
+    public function sendNotification($data, $tokens,$withNotification)
     {
 
         if(sizeof($tokens)>0) {
 
             $optionBuilder = new OptionsBuilder();
             $optionBuilder->setTimeToLive(60 * 20);
-
             $notificationBuilder = new PayloadNotificationBuilder();
-            $notificationBuilder->setBody($message)
+            $notificationBuilder->setBody($data)
                 ->setSound('default');
 
             $dataBuilder = new PayloadDataBuilder();
-            $dataBuilder->addData(['data_1' => 'value data 1']);
-
+            if (gettype($data) == 'array')
+            $dataBuilder->addData($data);
+            else {
+                $dataBuilder->addData(['data_1' => 'value data 1']);
+            }
             $option = $optionBuilder->build();
             $notification = $notificationBuilder->build();
             $data = $dataBuilder->build();
+            if ($withNotification) 
+             FCM::sendTo($tokens, $option, $notification, $data);
+             else
+             FCM::sendTo($tokens, $option, null, $data);
 
-            FCM::sendTo($tokens, $option, $notification, $data);
         }
     }
 
     public function sendNotificationToCongress(string $message, $congress_id)
     {
         $tokens = Utils::mapDataByKey($this->getAllKeysByCongressId($congress_id), 'firebase_key_user');
-
-        $this->sendNotification($message, $tokens);
+        $withNotification = true ;
+        $this->sendNotification($message, $tokens,$withNotification);
     }
 
 }

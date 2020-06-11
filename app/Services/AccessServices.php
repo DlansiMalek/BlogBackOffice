@@ -350,6 +350,16 @@ class AccessServices
             ->where('access_id', '=', $accessId)
             ->first();
     }
+    public function getClosestAccess($userId,$congressId) {
+        $date = date('Y-m-d H:i:s');
+        return Access::whereHas('participants',function($query) use ($userId) {
+            $query->where('User.user_id','=',$userId);
+        })
+        ->where('congress_id','=',$congressId)
+        ->where('start_date','>=',$date)
+        ->orderBy('start_date','asc')
+        ->first();
+    }
 
     public function getSpeakerAccessByAccessAndUser($accessId, $userId)
     {
