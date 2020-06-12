@@ -51,8 +51,7 @@ class AuthorServices
                 $author['rank'],
                 $submission_id,
                 $author['service_id'],
-                $author['etablissement_id'],
-
+                $author['etablissement_id']
             );
         }
     }
