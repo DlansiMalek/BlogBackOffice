@@ -14,7 +14,7 @@ stages:
 # Build stage
 build:
   stage: build
-  image: bitnami/laravel
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
   only:
     - master
     - develop
