@@ -35,14 +35,11 @@ class NotificationController extends Controller
         }
 
         $deleteParam = $request->has('deleted') && $request->query('deleted') === 'true';
-        $firebaseKey = $request->input('token');
-        $user_id =  $request->input('userId');
         $source = $request->input('source');
+        $firebaseKey =  $source == 'frontOffice' ? null : $request->input('token') ;
+        $user_id =  $request->input('userId');   
         //mon but est de comparer entre le token que j'ai deja avec celui dans request
         // j'ai pas idée sur l'utilisation de l'autre cas c'est pour cela que j'ai procédé ainsi 
-        if ($source == 'frontOffice')
-          $userKey = $this->notificationService->getKeyByCongressId($congressId, null,$user_id,$source);
-        else 
           $userKey = $this->notificationService->getKeyByCongressId($congressId, $firebaseKey,$user_id,$source);
         
         if ($deleteParam || $userKey) {
@@ -70,14 +67,13 @@ class NotificationController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-        $withNotification = true ;
         $message = $request->input("message");
 
         $usersToken = $this->notificationService->getAllKeysByCongressId($congressId);
 
         $tokens = Utils::mapDataByKey($usersToken, 'firebase_key_user');
 
-        $this->notificationService->sendNotification($message, $tokens , $withNotification);
+        $this->notificationService->sendNotification($message, $tokens , true);
 
         return response()->json(['message' => 'success send']);
     }

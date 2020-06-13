@@ -36,7 +36,7 @@ class NotificationServices
             ->first();
     }
 
-    public function saveKeyByCongress($congressId, ?string $firebaseKey, $userId = null, $source = null)
+    public function saveKeyByCongress($congressId, ?string $firebaseKey, $userId = null, $source)
     {
         $userNotifCongress = new UserNotifCongress();
         $userNotifCongress->congress_id = $congressId;
@@ -68,7 +68,7 @@ class NotificationServices
             $notificationBuilder = new PayloadNotificationBuilder();
             $notificationBuilder->setBody($data)
                 ->setSound('default');
-
+            $notification = null ;
             $dataBuilder = new PayloadDataBuilder();
             if (gettype($data) == 'array')
             $dataBuilder->addData($data);
@@ -76,12 +76,12 @@ class NotificationServices
                 $dataBuilder->addData(['data_1' => 'value data 1']);
             }
             $option = $optionBuilder->build();
+            if ($withNotification)  {
             $notification = $notificationBuilder->build();
+            }
             $data = $dataBuilder->build();
-            if ($withNotification) 
+           
              FCM::sendTo($tokens, $option, $notification, $data);
-             else
-             FCM::sendTo($tokens, $option, null, $data);
 
         }
     }
@@ -89,8 +89,7 @@ class NotificationServices
     public function sendNotificationToCongress(string $message, $congress_id)
     {
         $tokens = Utils::mapDataByKey($this->getAllKeysByCongressId($congress_id), 'firebase_key_user');
-        $withNotification = true ;
-        $this->sendNotification($message, $tokens,$withNotification);
+        $this->sendNotification($message, $tokens,true);
     }
 
 }

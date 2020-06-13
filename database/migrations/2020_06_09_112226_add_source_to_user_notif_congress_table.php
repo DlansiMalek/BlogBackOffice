@@ -14,7 +14,7 @@ class AddSourceToUserNotifCongressTable extends Migration
     public function up()
     {
         Schema::table('User_Notif_Congress', function (Blueprint $table) {
-            $table->string('source')->after('user_id')->nullable()->default(null);
+            $table->string('source')->after('user_id');
         });
     }
 

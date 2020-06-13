@@ -15,6 +15,7 @@ use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
+use App\Models\UserAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -352,13 +353,12 @@ class AccessServices
     }
     public function getClosestAccess($userId,$congressId) {
         $date = date('Y-m-d H:i:s');
-        return Access::whereHas('participants',function($query) use ($userId) {
-            $query->where('User.user_id','=',$userId);
-        })
-        ->where('congress_id','=',$congressId)
-        ->where('start_date','>=',$date)
-        ->orderBy('start_date','asc')
-        ->first();
+        return UserAccess::where('user_id','=',$userId)
+                ->join('Access','Access.access_id','=','User_Access.access_id')
+                ->where('Access.congress_id','=',$congressId)
+                ->where('Access.start_date','>=',$date)
+                ->orderBy('Access.start_date','asc')
+                ->first();
     }
 
     public function getSpeakerAccessByAccessAndUser($accessId, $userId)

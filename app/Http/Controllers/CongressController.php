@@ -106,7 +106,6 @@ class CongressController extends Controller
             return response()->json(['response' => 'congress not found'], 404);
         }
      
-        $withNotification = false ;
         $event = $request->input('event');
         $usersToken = $this->notificationService->getAllKeysByCongressIdAndSource($congressId,'frontOffice');
         foreach ($usersToken as $userToken) {
@@ -125,7 +124,7 @@ class CongressController extends Controller
                       UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId . '/access/' . $access->access_id
             ];
             
-            $this->notificationService->sendNotification($data, [$userToken->firebase_key_user],$withNotification);
+            $this->notificationService->sendNotification($data, [$userToken->firebase_key_user],false);
         } 
 
 
