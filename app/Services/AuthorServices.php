@@ -68,11 +68,7 @@ class AuthorServices
                     if (isset($author['author_id'])) {
                         if ($existingAuthor['author_id'] == $author['author_id']) {
                             $isExist = true;
-                            $this->editAuthor(
-                                $existingAuthor,
-                                $author['rank'],
-
-                            );
+                            $this->editAuthor($existingAuthor, $author['rank']);
                         }
                     } 
                 }
@@ -89,8 +85,7 @@ class AuthorServices
                         $authors[$i]['rank'],
                         $submission_id,
                         $authors[$i]['service_id'],
-                        $authors[$i]['etablissement_id'],
-                    );
+                        $authors[$i]['etablissement_id']);
                  }
              }
 
