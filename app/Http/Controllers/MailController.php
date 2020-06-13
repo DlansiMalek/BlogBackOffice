@@ -35,7 +35,8 @@ class MailController extends Controller
 
     public function getAllMailTypes($congressId,Request $request)
     {
-        return $this->mailService->getAllMailTypes($congressId,$request);
+        $type = $request->query('type');
+        return $this->mailService->getAllMailTypes($congressId, $type);
     }
     public function getAllMailTypesAdmin()
     {

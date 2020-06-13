@@ -220,7 +220,6 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
     Route::group(['prefix' => '{submission_id}'], function () {
         Route::get('/detail', 'SubmissionController@getSubmission');
         Route::put('/edit', 'SubmissionController@editSubmssion');
-        Route::put('/modify-status/in-progress', 'SubmissionController@changeSubmissionStatusToInProgress');
     });
 
 

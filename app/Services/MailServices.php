@@ -13,9 +13,8 @@ use App\Models\UserMailAdmin;
 class MailServices
 {
 
-    public function getAllMailTypes($congressId = null,$request)
+    public function getAllMailTypes($congressId = null, $type)
     {
-        $type=$request->query('type');
         return MailType::where('type','=',$type)
         ->with(['mails' => function ($query) use ($congressId) {
             if ($congressId)
