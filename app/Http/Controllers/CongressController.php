@@ -112,7 +112,7 @@ class CongressController extends Controller
             if ($event == 'distribute') {
             $access = $this->accessServices->getClosestAccess($userToken->user_id,$congressId);
             if (!$access)
-                break ;
+                return response()->json(['message' => 'no access found '],400);
             }
             $data = [
                 'title' => $event,

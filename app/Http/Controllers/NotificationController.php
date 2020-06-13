@@ -56,7 +56,7 @@ class NotificationController extends Controller
                 return response(['message' => 'user exist'], 200);
             }
         }
-
+        $firebaseKey =  $request->input('token') ;
         $this->notificationService->saveKeyByCongress($congressId, $firebaseKey,$user_id,$source);
 
         return response()->json(['message' => 'save with success']);
