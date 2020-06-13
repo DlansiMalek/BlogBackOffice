@@ -49,7 +49,6 @@ class SubmissionController extends Controller
 
         try {
             $user = $this->userServices->retrieveUserFromToken();
-            Log::info($user);
             $submission = $this->submissionServices->addSubmission(
                 $request->input('submission.title'),
                 $request->input('submission.type'),
@@ -70,33 +69,25 @@ class SubmissionController extends Controller
             );
 
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
-            if($user->gender==1){$gender="Monsieur ";}
-            else {$gender="Madame ";}
-            $congress=$this->congressServices->getCongressById($submission->congress_id);
+        
+            $congress = $this->congressServices->getCongressById($submission->congress_id);
 
-            if (!$mailtype= $this->congressServices->getMailType('save_submission'))
-            {response()->json(['response' => "mail type not found !"], 400);}
+            $mailtype = $this->congressServices->getMailType('save_submission');
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
-            if (!$mail= $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $mail = new Mail();
-                $mail->template = "";
-                $mail->object = "Enregistrement de soumission";
-                $mail->template = $mail->template . "<br>" .$gender ." " .$user->last_name .",";
-                $mail->template = $mail->template . "<br>Votre soumission ".$submission->title ." a été ajoutée avec succés !";
+            if ($mail)
+            {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                }
+
+                $this->userServices->sendMail(
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+                );
             }
-            $this->userServices->sendMail(
-            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
-            $user,
-            $congress,
-            $mail->object,
-            null,
-            null,
-            $user->email
-            );
-        return response()->json(['response' => 'Enregistrement avec succes'], 200); 
+            return response()->json(['response' => 'Enregistrement avec succes'], 200); 
         } catch (Exception $e) {
-
-            Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
@@ -120,39 +111,47 @@ class SubmissionController extends Controller
             $this->authorServices->editAuthors($existingAuthors, $request->input('authors'), $submission->submission_id);
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
 
-            if($user->gender==1){$gender="Monsieur ";}
-            else {$gender="Madame ";}
             $congress=$this->congressServices->getCongressById($submission->congress_id);
 
-            if (!$mailtype= $this->congressServices->getMailType('edit_submission'))
-            {response()->json(['response' => "mail type not found !"], 400);}
+            $mailtype = $this->congressServices->getMailType('edit_submission');
+            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
-            if (!$mail= $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $mail = new Mail();
-                $mail->template = "";
-                $mail->object = "Modification de soumission";
-                $mail->template = $mail->template . "<br>" .$gender ." " .$user->last_name .",";
-                $mail->template = $mail->template . "<br>La modification appliquée sur votre soumission ".$submission->title ." a été ajoutée avec succés !";
+            if ($mail)
+            {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                }
+
+                $this->userServices->sendMail(
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+                );
             }
-            $this->userServices->sendMail(
-            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
-            $user,
-            $congress,
-            $mail->object,
-            null,
-            null,
-            $user->email
-            );
             return response()->json(['response' => 'modification avec success'], 200);
         } catch (Exception $e) {
-
-            Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
 
     public function getSubmission($submission_id)
     {
+
+        /* TODO Send Mail When params = evalutor */
+        /*$mailtype = $this->congressServices->getMailType('eval_progress_submission');
+        $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
+        if ($mail)
+        {
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+            if (!$userMail) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+            }
+
+            $this->userServices->sendMail(
+                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+            );
+        }*/
+
 
         return $this->submissionServices->getSubmission($submission_id);
     }
@@ -224,41 +223,6 @@ class SubmissionController extends Controller
             Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
-    }
-
-    public function changeSubmissionStatusToInProgress($submissionId)
-    {
-        if (!$submission=$this->submissionServices->getSubmissionById($submissionId))
-        {return response()->json(['response' => "submission not found !"], 400);}
-
-        $this->submissionServices->updateSubmissionStatus($submission,3);
-        
-        $user = $this->userServices->getUserById($submission->user_id);
-        if($user->gender==1){$gender="Monsieur ";}
-        else {$gender="Madame ";}
-        $congress=$this->congressServices->getCongressById($submission->congress_id);
-
-        if(!$mailtype= $this->congressServices->getMailType('bloc_edit_submission'))
-        {response()->json(['response' => "mail type not found !"], 400);}
-
-        if (!$mail= $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-            $mail = new Mail();
-            $mail->template = "";
-            $mail->object = "Soumission en cours de validation";
-            $mail->template = $mail->template . "<br>" .$gender ." " .$user->last_name .",";
-            $mail->template = $mail->template . "<br>Votre soumission ".$submission->title ." est en cours de validation, merci de ne pas la modifier.";
-        }
-        $this->userServices->sendMail(
-        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
-        $user,
-        $congress,
-        $mail->object,
-        null,
-        null,
-        $user->email
-        );
-
-        return response()->json(['response' => 'blocage de modification avec success'], 200);
     }
 
 }
