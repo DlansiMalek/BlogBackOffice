@@ -219,7 +219,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
     Route::group(['prefix' => '{submission_id}'], function () {
-        Route::get('', 'SubmissionController@getSubmission');
+        Route::get('/detail', 'SubmissionController@getSubmission');
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
     Route::get('user/all', 'SubmissionController@getSubmissionByUserId');
