@@ -49,4 +49,11 @@ class PaymentServices
         return Payment::where('reference', '=', $ref)
             ->first();
     }
+
+    public function changeIsPaidStatus($user_id,$congress_id,$status)
+    {
+        return Payment::where('user_id', '=', $user_id)
+        ->where('congress_id', '=', $congress_id)
+        ->update(['isPaid' => $status]);
+    }
 }

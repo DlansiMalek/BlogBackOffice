@@ -79,5 +79,10 @@ class MailTypeSeedTable extends Seeder
             'name' => 'room',
             'display_name' => "Creation d\'une room",
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 18,
+            'name' => 'refus',
+            'display_name' => "Refus d\'inscription",
+        ]);
     }
 }

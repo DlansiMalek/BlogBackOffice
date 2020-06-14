@@ -461,4 +461,11 @@ class AccessServices
 
         $access->update();
     }
+
+    // la fonction existante getUserAccessByUser  nécessite accessId comme paramètre que je ne veux pas
+    public function getAllAccessByUserId($userId){
+        return Access::whereHas('participants', function ($query) use ($userId) {
+            $query->where('User.user_id', '=', $userId);
+        })->get();
+    }
 }
