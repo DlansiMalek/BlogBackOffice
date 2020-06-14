@@ -103,8 +103,7 @@ class SubmissionController extends Controller
 
     public function getSubmission($submission_id)
     {
-        return response()->json(['msg'=> 1], 200);
-    //    return $this->submissionServices->getSubmission($submission_id);
+       return $this->submissionServices->getSubmission($submission_id);
     }
 
     public function getCongressSubmission($congressId)
