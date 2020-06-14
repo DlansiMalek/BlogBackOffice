@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\CongressServices;
@@ -102,8 +103,8 @@ class SubmissionController extends Controller
 
     public function getSubmission($submission_id)
     {
-
-        return $this->submissionServices->getSubmission($submission_id);
+        return response()->json(['msg'=> 1], 200);
+    //    return $this->submissionServices->getSubmission($submission_id);
     }
 
     public function getCongressSubmission($congressId)
@@ -173,6 +174,17 @@ class SubmissionController extends Controller
             Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
+    }
+
+    public function getSubmissionByUserId()
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'],401);
+        }
+         $submissions = $this->submissionServices->getSubmissionsByUserId($user);
+        return response()->json( $submissions, 200);
+
     }
 
 }

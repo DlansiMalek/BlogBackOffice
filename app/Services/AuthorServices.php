@@ -51,7 +51,7 @@ class AuthorServices
                 $author['rank'],
                 $submission_id,
                 $author['service_id'],
-                $author['etablissement_id'],
+                $author['etablissement_id']
 
             );
         }
@@ -71,7 +71,7 @@ class AuthorServices
                             $isExist = true;
                             $this->editAuthor(
                                 $existingAuthor,
-                                $author['rank'],
+                                $author['rank']
 
                             );
                         }
@@ -90,7 +90,7 @@ class AuthorServices
                         $authors[$i]['rank'],
                         $submission_id,
                         $authors[$i]['service_id'],
-                        $authors[$i]['etablissement_id'],
+                        $authors[$i]['etablissement_id']
                     );
                  }
              }
