@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 //Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
@@ -221,9 +222,12 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
         Route::get('/detail', 'SubmissionController@getSubmission');
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
+    Route::get('user/all', 'SubmissionController@getSubmissionByUserId');
 
 
 });
+
+
 Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], function () {
     Route::get('all/{congressId}', 'ThemeController@getAllThemes');
     Route::post('add/{congressId}', 'ThemeController@addExternalTheme');

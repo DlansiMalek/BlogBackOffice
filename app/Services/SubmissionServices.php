@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Author;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
@@ -210,6 +211,11 @@ class SubmissionServices
     {
         return SubmissionEvaluation::where('admin_id', '=', $admin->admin_id)
             ->where('submission_id', '=', $submissionId)->first();
+    }
+
+    public function getSubmissionsByUserId($user)
+    {
+        return Submission::where('user_id', '=' , $user->user_id)->with('authors','congress')->get();
     }
 
 }

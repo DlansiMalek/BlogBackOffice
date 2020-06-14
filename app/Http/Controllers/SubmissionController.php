@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Models\Mail;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
@@ -151,8 +152,6 @@ class SubmissionController extends Controller
                 $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
             );
         }*/
-
-
         return $this->submissionServices->getSubmission($submission_id);
     }
 
@@ -173,8 +172,6 @@ class SubmissionController extends Controller
 
 
         } catch (Exception $e) {
-
-            Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
@@ -198,8 +195,6 @@ class SubmissionController extends Controller
 
 
         } catch (Exception $e) {
-
-            Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
@@ -219,10 +214,18 @@ class SubmissionController extends Controller
             $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note);
             return response()->json($evaluation, 200);
         } catch (Exception $e) {
-
-            Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
+    }
+
+    public function getSubmissionByUserId()
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'],401);
+        }
+        $submissions = $this->submissionServices->getSubmissionsByUserId($user);
+        return response()->json($submissions, 200);
     }
 
 }
