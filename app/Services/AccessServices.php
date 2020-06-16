@@ -362,8 +362,8 @@ class AccessServices
     }
     public function getClosestAccess($userId,$congressId) {
     
-         $date = new DateTime(date('Y-m-d H:i:s'));
-         $maxDate = mktime(0,0,0,0,0,3000);
+         $date = new DateTime(date('Y-m-d H:i:s')); 
+         $maxDate = mktime(0,0,0,0,0,3000); // creation d'une date supperieur à la date actuelle ;
          $diff = $date->diff(new DateTime(date('Y-m-d H:i:s',$maxDate)));
          $closestAccess = new Access();
          $accesss = $this->getUserAccessByUserId($userId,$congressId) ;
