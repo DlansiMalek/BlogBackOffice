@@ -16,6 +16,7 @@ use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
 use App\Models\UserAccess;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -351,16 +352,37 @@ class AccessServices
             ->where('access_id', '=', $accessId)
             ->first();
     }
-    public function getClosestAccess($userId,$congressId) {
-        $date = date('Y-m-d H:i:s');
+    public function getUserAccessByUserId($userId,$congressId) {;
         return UserAccess::where('user_id','=',$userId)
                 ->join('Access','Access.access_id','=','User_Access.access_id')
                 ->where('Access.congress_id','=',$congressId)
-                ->where('Access.start_date','>=',$date)
                 ->orderBy('Access.start_date','asc')
-                ->first();
-    }
+                ->get();
 
+    }
+    public function getClosestAccess($userId,$congressId) {
+    
+         $date = new DateTime(date('Y-m-d H:i:s'));
+         $maxDate = mktime(0,0,0,0,0,3000);
+         $diff = $date->diff(new DateTime(date('Y-m-d H:i:s',$maxDate)));
+         $closestAccess = new Access();
+         $accesss = $this->getUserAccessByUserId($userId,$congressId) ;
+         foreach($accesss as $access ) {
+            $accessDate = new DateTime($access->start_date);
+            if (
+                $diff->days > ($date->diff($accessDate))->days || 
+                $diff->h > ($date->diff($accessDate))->h ||
+                $diff->s > ($date->diff($accessDate))->s
+            
+            ) {
+                $diff =  $date->diff($accessDate);
+                $closestAccess = $access;
+             } 
+                    
+              
+         }
+         return $closestAccess ;
+    }
     public function getSpeakerAccessByAccessAndUser($accessId, $userId)
     {
         return AccessSpeaker::where("user_id", '=', $userId)

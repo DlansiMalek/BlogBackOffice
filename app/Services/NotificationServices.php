@@ -65,9 +65,6 @@ class NotificationServices
 
             $optionBuilder = new OptionsBuilder();
             $optionBuilder->setTimeToLive(60 * 20);
-            $notificationBuilder = new PayloadNotificationBuilder();
-            $notificationBuilder->setBody($data)
-                ->setSound('default');
             $notification = null ;
             $dataBuilder = new PayloadDataBuilder();
             if (gettype($data) == 'array')
@@ -77,7 +74,11 @@ class NotificationServices
             }
             $option = $optionBuilder->build();
             if ($withNotification)  {
-            $notification = $notificationBuilder->build();
+                
+                $notificationBuilder = new PayloadNotificationBuilder();
+                $notificationBuilder->setBody($data)
+                    ->setSound('default');
+                $notification = $notificationBuilder->build();
             }
             $data = $dataBuilder->build();
            
