@@ -173,10 +173,11 @@ class SubmissionServices
                 $query->where('admin_id', '=', $admin->admin_id);
             })
                 ->with([
+                    'resources',
                     'theme:theme_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
-                            ->with(['evaluator:admin_id,name,email','congress', 'resources'])->where('admin_id', '=', $admin->admin_id);
+                            ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     }
                 ])->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {

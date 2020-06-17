@@ -216,6 +216,9 @@ class SubmissionController extends Controller
             if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
                 return response()->json(['response' => 'bad request'], 400);
             }
+            if ($evaluation->note){
+                return response()->json(['response' => 'bad request'], 400);
+            }
             $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note);
             return response()->json($evaluation, 200);
         } catch (Exception $e) {
