@@ -203,13 +203,6 @@ class UserServices
             ->get();
     }
 
-    public function getAllParticipatorByCongress($congressId)
-    {
-        return User::join("user_congress", "user_congress.user_id", "=", "User.user_id")
-            ->where("congress_id", "=", $congressId)
-            ->get();
-    }
-
     public function getParticipatorByQrCode($qr_code, $congressId)
     {
         return User::where('qr_code', '=', $qr_code)->with(['accesses' => function ($query) use ($congressId) {
@@ -1381,5 +1374,15 @@ class UserServices
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return null;
         }
+    }
+
+    public function getRefusedParticipants($congressId,$emails_array)
+    {
+        //users id who are registred in the congress
+        $accepted_user_id_array= UserCongress::select('user_id')->where('congress_id','=',$congressId)
+        ->where('privilege_id','=',3);
+        //users who got refused with mails refused
+        return User::whereIn('user_id',$accepted_user_id_array)
+        ->whereNotIn('email', $emails_array)->get();
     }
 }

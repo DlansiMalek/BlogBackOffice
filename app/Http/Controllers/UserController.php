@@ -751,8 +751,10 @@ class UserController extends Controller
         $accessIdTable[]=$e["accessIdTable"];  //get accessId array array (from excel doc)
         }
 
-        // cas congrès gratuit avec selection 
-        if($congress->congress_type_id==2){
+        // Affect All Access Free (To All Users)
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
+        $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
+        $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
             foreach ($users as $userData) {
                 if ($userData['EMAIL']) {
 
@@ -762,7 +764,20 @@ class UserController extends Controller
                         'email' => $userData['EMAIL']
                     ]);
                     // Get User per mail
-                    if (!$user = $this->userServices->getUserByEmail($userData['EMAIL'])) {
+                    if($user_by_mail=$this->userServices->getUserByEmail($userData['EMAIL']))
+                    {   $user_id= $user_by_mail->user_id;
+                    $user = $this->userServices->getUserByIdWithRelations($user_id, [
+                    'accesses' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                        $query->where('show_in_register', '=', 1);
+                    }, 'payments' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    },
+                    'user_congresses' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    }
+                    ]);
+                    }else{
                         $user = $this->userServices->saveUser($request);
                     }
                     // Check if User already registed to congress
@@ -774,9 +789,10 @@ class UserController extends Controller
                         $user_congress->update();
                     }
                 
+
                     $new_access_array=null;
-                    $old_access_array=$this->accessServices->getAllAccessByUserId($user->user_id);// arrray of Access already exists
-                    
+                    $old_access_id_array=[];
+                    $old_access_array =$user->accesses;
                     for ($i=0 ; $i< sizeof($emails) ; $i++)
                     {   
                         //if statement to get the right index i of accessIdTable corresponding to our user 
@@ -785,15 +801,21 @@ class UserController extends Controller
                             //put all new accesses ID in the new access array 
                             $new_access_array=$accessIdTable[$i];
                         };
+                    }
+                    if($accessNotInRegister){$this->userServices->affectAccessIds($user->user_id,$accessNotInRegister);}
                         if ($new_access_array)
                         {
                             //add new accesses if not already existant 
                             for ($j=0 ; $j< sizeof($new_access_array) ; $j++)
                             {
+                                $exists=false;
                                 //check if the user already has this access_id  
-                                $user_access=$this->userServices->getUserAccessByUser($user->user_id,$new_access_array[$j]);
-                                if (!$user_access)
+                                foreach ($old_access_array as $old_access)
                                 {
+                                if($old_access->access_id==$new_access_array[$j])
+                                {$exists=true;}
+                                }
+                                if(!$exists){
                                     // this means we have a new access to add 
                                     // add the new access 
                                     $access_added=$this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
@@ -808,7 +830,6 @@ class UserController extends Controller
                                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
                                 }
-                            }
                             //delete the access if no longer exists on the excel sheet
                             // we loop in the old access aray
                             for ($j=0 ; $j< sizeof($old_access_array) ; $j++)
@@ -835,97 +856,26 @@ class UserController extends Controller
                             for($k=0 ; $k< sizeof($old_access_array) ; $k++){
                                 $this->userServices->deleteAccessById($user->user_id,$old_access_array[$k]->access_id);
                             }
-                        }
-                    }   
+                        }   
                 }
             }
         }
 
-        else {
-        // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
-        $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
-        $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
-        foreach ($users as $userData) {
-            if ($userData['email'] && $userData['first_name'] && $userData['last_name']) {
-
-                $request->merge([
-                    'privilege_id' => $privilegeId, 'first_name' => $userData['first_name'],
-                    'last_name' => $userData['last_name'],
-                    'email' => $userData['email']
-                ]);
-                // Get User per mail
-                if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
-                    $user = $this->userServices->saveUser($request);
-                }
-                // Check if User already registed to congress
-                $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
-                if (!$user_congress) {
-                    $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
-                } else {
-                    $user_congress->privilege_id = $privilegeId;
-                    $user_congress->update();
-                }
-
-                if ($organizationId != null) {
-                    $user_congress->organization_id = $organizationId;
-                    $user_congress->organization_accepted = true;
-                    $user_congress->update();
-                }
-
-                $this->userServices->deleteAccess($user->user_id, $accessIds);
-                $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
-
-                if ($privilegeId != 3) {
-                    $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
-                }
-
-                if ($privilegeId == 3 && !$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($user->user_id, $congressId)) {
-                    $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $congress->price, false);
-                    $sum += $userPayment->price;
-                }
-            }
-        }
-        }
-        if($refused)
+        if($refused && $congress->congress_type_id==2)
         {
         // partie gestion des participants refusés !
-        $all_congress_participants=$this->userServices->getAllUsersByCongress($congressId,3);
-        
-            // for each participant in the congress check if he exists on the excel sheet
-            // if not, a mail of refutation will be sent to him
-            foreach($all_congress_participants as $congress_participant)
+        $all_refused_participants=$this->userServices->getRefusedParticipants($congressId,$emails);       
+            foreach($all_refused_participants as $refused_participant) 
             {
-                $participant=$this->userServices->getUserByEmail($congress_participant->email);
-                //add to payement table eventhough he won't pay because i need to change his status to -1 after 
-                // If his payement doesn't exist I can't change his status
-                if ($privilegeId == 3 && !$userPayment = $this->userServices->getPaymentInfoByUserAndCongress($participant->user_id, $congressId)) {
-                    $userPayment = $this->paymentServices->affectPaymentToUser($participant->user_id, $congressId, $congress->price, false);
-                    $sum += $userPayment->price;
-                }
-
-                $exists=false;
-                for ($i=0 ; $i< sizeof($emails) ; $i++)
-                {   
-                    $congress_participant->email;
-                    if($congress_participant->email==$emails[$i])
-                    {$exists=true;} // email of the user exists in our excel sheet
-                }
-                if(!$exists){ //changement de status et envoi de mail
-                    //if( event gratuit sans selection)
-                    if($congress->congress_type_id==2)
-                    {
-                    $this->paymentServices->changeIsPaidStatus($congress_participant->user_id,$congressId,-1);
-                    }
-                    else{ $this->paymentServices->changeIsPaidStatus($congress_participant->user_id,$congressId,0);}
+                    $this->paymentServices->changeIsPaidStatus($refused_participant->user_id,$congressId,-1);
                     //envoi de mail de refus
                     if ($mailtype = $this->congressServices->getMailType('refus')) {
                         if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) 
                         {
-                            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $participant->user_id);
+                            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $refused_participant->user_id);
                             $this->userServices->sendMail(
-                            $this->congressServices->renderMail($mail->template, $congress, $participant, null, null, null),
-                            $participant,
+                            $this->congressServices->renderMail($mail->template, $congress, $refused_participant, null, null, null),
+                            $refused_participant,
                             $congress,
                             $mail->object,
                             null,
@@ -933,7 +883,6 @@ class UserController extends Controller
                             );
                         }
                     }
-                }
             }
         }
 
