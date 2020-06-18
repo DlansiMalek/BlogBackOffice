@@ -792,29 +792,41 @@ class AdminController extends Controller
             return response()->json(['message' => 'admin exists'], 400);
         }
 
-        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
-
-        $mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin');
-        if (!$mailTypeAdmin) {
+        if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin')) {
             return response()->json(['message' => 'Mail type not found'], 400);
         }
 
         $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
+
         if (!$mailAdmin) {
             return response()->json(['message' => 'Mail not found'], 400);
         }
 
+        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
+
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-        $this->adminServices->sendMAil(
-            $this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice),
-            null,
-            $mailAdmin->object,
-            $admin,
-            null,
-            null
-        );
+        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
 
         return response()->json(['message' => 'Client added success']);
     }
 
+    public function getClientById($admin_id)
+    {
+        if (!$admin = $this->adminServices->getClientById($admin_id)) {
+            return response()->json(["error" => "client not found"], 404);
+        }
+        return response()->json($admin);
+    }
+
+    public function editClient(Request $request, $clientId)
+    {
+        if (!$request->has(['name', 'email', 'mobile', 'passwordDecrypt']))
+            return response()->json(['message' => 'bad request'], 400);
+        if (!$updatedAdmin= $this->adminServices->getClientById($clientId)) {
+            return response()->json(["message" => "client not found"], 404);
+        }
+        $admin = $this->adminServices->editClient($request,$updatedAdmin);
+        return response()->json($admin);
+    }
 }
+

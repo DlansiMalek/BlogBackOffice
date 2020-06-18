@@ -14,7 +14,7 @@ stages:
 # Build stage
 build:
   stage: build
-  image: bitnami/laravel
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
   only:
     - master
     - develop
@@ -82,7 +82,7 @@ ansible-deploy-dev:
 # Backup stages
 backup-bitbucket:
   stage: backup
-  image: gitlab.master.ssd.vps.vayetek.com:55555/vayetek/devops/git:master
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/git:master
   only:
     - master
     - develop

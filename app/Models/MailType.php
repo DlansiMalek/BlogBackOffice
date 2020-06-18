@@ -15,7 +15,7 @@ class MailType extends Model
     public $timestamps = true;
     protected $table = 'Mail_Type';
     protected $primaryKey = 'mail_type_id';
-    protected $fillable = ['name', 'display_name'];
+    protected $fillable = ['name', 'display_name','type'];
 
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 

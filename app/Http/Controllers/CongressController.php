@@ -76,18 +76,7 @@ class CongressController extends Controller
         if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return $this->congressServices->addCongress(
-            $request->input("name"),
-            $request->input("start_date"),
-            $request->input("end_date"),
-            $request->input('price'),
-            $request->input('congress_type_id'),
-            $request->input('config')['has_payment'],
-            $request->input('config')['free'],
-            $request->input('config')['prise_charge_option'],
-            $request->input('config')['currency_code'],
-            $request->input('description'),
-            $admin->admin_id);
+        return $this->congressServices->addCongress($request, $request->input('config'), $admin->admin_id);
     }
 
     public function editStatus(Request $request, $congressId, $status)
@@ -119,8 +108,25 @@ class CongressController extends Controller
 
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
 
+        $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
+
         $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId);
 
+        $submissionData = $request->input("submission");
+        $theme_ids = $request->input("themes_id_selected");
+
+        if (sizeof($submissionData) > 0) {
+        $this->congressServices->addCongressSubmission(
+            $configSubmission,
+            $submissionData,
+            $congressId
+        );
+    }
+        if($theme_ids){
+            $this->congressServices->addSubmissionThemeCongress(
+                $theme_ids,
+                $congressId   );
+        }
 
         $eventLocation = $request->input("eventLocation");
 
@@ -205,8 +211,9 @@ class CongressController extends Controller
         if (!$configCongress = $this->congressServices->getCongressConfigById($congress_id)) {
             return response()->json(["error" => "congress not found"], 404);
         }
+        $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congress_id);
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
-        return response()->json([$configCongress, $location]);
+        return response()->json([$configCongress, $location, $configSubmission]);
     }
 
     public function getStatsChartByCongressId($congressId)
