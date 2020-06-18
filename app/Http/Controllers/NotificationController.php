@@ -38,8 +38,6 @@ class NotificationController extends Controller
         $source = $request->input('source');
         $firebaseKey =  $source == 'frontOffice' ? null : $request->input('token') ;
         $user_id =  $request->input('userId');   
-        //mon but est de comparer entre le token que j'ai deja avec celui dans request
-        // j'ai pas idée sur l'utilisation de l'autre cas c'est pour cela que j'ai procédé ainsi 
           $userKey = $this->notificationService->getKeyByCongressId($congressId, $firebaseKey,$user_id,$source);
         
         if ($deleteParam || $userKey) {

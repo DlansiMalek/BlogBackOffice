@@ -25,8 +25,6 @@ class NotificationServices
 
     public function getKeyByCongressId($congressId,?string $firebaseKey,$userId,$source)
     {
-        //mon but est de comparer entre le token que j'ai deja avec celui dans request
-        // j'ai pas idée sur l'utilisation de l'autre cas c'est pour cela que j'ai procédé ainsi 
         return UserNotifCongress::where('congress_id', '=', $congressId)
             ->where('user_id','=',$userId)
             ->where('source','=',$source)
