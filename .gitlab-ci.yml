@@ -6,10 +6,48 @@ variables:
   DOCKER_DRIVER: overlay
 
 stages:
+  - deploy-manual
   - build
   - package
   - deploy
   - backup
+
+
+# Deploy stage
+ansible-deploy-prod-manual:
+  stage: deploy-manual
+  image: mullnerz/ansible-playbook:2.9.1
+  when: manual
+  only:
+    - master
+  before_script:
+    - chmod 600 $SSH_KEY
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
+    - export DEPLOY_TARGET=prod
+    - cd ansible
+  after_script:
+    - cd ..
+  script:
+    - ansible-playbook --key-file $SSH_KEY playbook.yml
+
+ansible-deploy-dev-manual:
+  stage: deploy-manual
+  image: mullnerz/ansible-playbook:2.9.1
+  when: manual
+  only:
+    - develop
+  before_script:
+    - chmod 600 $SSH_KEY
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
+    - export DEPLOY_TARGET=dev
+    - cd ansible
+  after_script:
+    - cd ..
+  script:
+    - ansible-playbook --key-file $SSH_KEY playbook.yml
+
 
 # Build stage
 build:
@@ -78,6 +116,7 @@ ansible-deploy-dev:
     - cd ..
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
+    
 
 # Backup stages
 backup-bitbucket:
