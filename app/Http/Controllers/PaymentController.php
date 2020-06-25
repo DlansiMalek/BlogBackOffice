@@ -77,13 +77,15 @@ class PaymentController extends Controller
                 $userPayment->authorization = $param;
                 $userPayment->update();
                 $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
-                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                     $userCongress->privilege_id);
+                $badgeIdGenerator = $badge['badge_id_generator'];
                 $fileAttached = false;
                 if ($badgeIdGenerator != null) {
-                    $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                        $user->qr_code);
+                    $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                        $user,
+                        $user->qr_code,
+                        $userCongress->privilege_id);
                 }
 
 

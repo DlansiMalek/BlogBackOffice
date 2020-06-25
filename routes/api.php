@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-//Functional API
+// Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
 Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
@@ -34,6 +33,8 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+
+
 });
 //SMS API
 
@@ -167,6 +168,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
+        Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
@@ -180,6 +182,11 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
+
+        Route::get('badge/list', 'BadgeController@getBadgesByCongress');
+        Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+
+
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
 
@@ -221,14 +228,18 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
     Route::group(['prefix' => '{submission_id}'], function () {
-        Route::get('', 'SubmissionController@getSubmission');
+        Route::get('/detail', 'SubmissionController@getSubmission');
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
+    Route::get('user/all', 'SubmissionController@getSubmissionByUserId');
 
 
 });
-Route::group(['prefix' => 'theme'], function () {
-    Route::get('all', 'ThemeController@getAllThemes');
+
+
+Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], function () {
+    Route::get('all/{congressId}', 'ThemeController@getAllThemes');
+    Route::post('add/{congressId}', 'ThemeController@addExternalTheme');
     Route::get('congress/{congressId}', 'ThemeController@getThemesByCongressId');
 });
 //PackAdmin API
@@ -377,9 +388,11 @@ Route::group(['prefix' => 'access'], function () {
 });
 
 // Super Admin API
-Route::group(['middelware' => 'marketing'], function () {
-    Route::get('/admin/all', 'AdminController@getClients');
-    Route::post('/admin/add', 'AdminController@addClient');
+Route::group(['prefix'=> 'admin', 'middleware' => 'marketing'], function () {
+    Route::get('all', 'AdminController@getClients');
+    Route::post('add', 'AdminController@addClient');
+    Route::get('{admin_id}', "AdminController@getClientById");
+    Route::put('{admin_id}', "AdminController@editClient");
 });
 
 

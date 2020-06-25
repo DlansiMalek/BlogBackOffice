@@ -137,4 +137,16 @@ class UrlUtils
     {
         return "https://free.currconv.com/api/v7";
     }
+
+    public static function getBaseUrlDiscoveryRecording()
+    {
+        if (App::environment() == 'prod') {
+            return 'https://discovery.recordings.meet.eventizer.io';
+        }
+        if (App::environment() == 'dev') {
+            return 'https://dev.discovery.recordings.meet.eventizer.io';
+        }
+
+        return "https://discovery.recordings.meet.eventizer.io";
+    }
 }

@@ -184,5 +184,9 @@ class Utils
         return $result;
     }
 
+    public static function getRoomName($congressId, $accessId){
+        return 'eventizer_room_' . $congressId . $accessId;
+    }
+
 
 }
