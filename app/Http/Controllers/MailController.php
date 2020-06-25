@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use App\MailAdmin;
+use App\Models\MailAdmin;
 use App\Models\AttestationRequest;
 use App\Models\User;
 use App\Models\UserCongress;
