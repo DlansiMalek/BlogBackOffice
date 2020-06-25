@@ -98,10 +98,12 @@ class CongressServices
         return Congress::with([
             "mails.type",
             "attestation",
-            "badges",
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "badges" => function ($query) use ($congressId) {
+                $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
+            },
             "packs",
             "accesss.packs" => function ($query) use ($congressId){
                 $query->where('congress_id','=',$congressId);                
@@ -397,8 +399,12 @@ class CongressServices
     public function getBadgeByPrivilegeId($congress, $privilege_id)
     {
         for ($i = 0; $i < sizeof($congress->badges); $i++) {
-            if ($congress->badges[$i]->privilege_id == $privilege_id) {
-                return $congress->badges[$i]->badge_id_generator;
+            if ($congress->badges[$i]->privilege_id == $privilege_id && $congress->badges[$i]->enable ==1 ) {
+                return $array = [
+                    "badge_id_generator" => $congress->badges[$i]->badge_id_generator,
+                    "badge_param" => $congress->badges[$i]->badge_param,
+                ];
+
             }
         }
         return null;

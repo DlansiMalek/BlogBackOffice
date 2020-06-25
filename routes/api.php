@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-
-//Functional API
+// Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
 Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
@@ -35,6 +33,8 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+
+
 });
 //SMS API
 
@@ -178,6 +178,11 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
+
+        Route::get('badge/list', 'BadgeController@getBadgesByCongress');
+        Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+
+
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
 

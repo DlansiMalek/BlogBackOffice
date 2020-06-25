@@ -483,12 +483,14 @@ class AdminController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
             }
 
-            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge= $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    $admin->name,
-                    $admin->passwordDecrypt);
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                    $admin,
+                    $admin->passwordDecrypt,
+                    $privilegeId);
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -613,12 +615,14 @@ class AdminController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
             }
 
-            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+            $badge = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    $admin->name,
-                    $admin->passwordDecrypt);
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                    $admin,
+                    $admin->passwordDecrypt,
+                    $admin_congress->privilege_id);
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
