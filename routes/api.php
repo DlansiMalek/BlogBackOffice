@@ -115,7 +115,7 @@ Route::group(['prefix' => 'users'], function () {
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
-        Route::get('', 'UserController@getMailUserForPasswordReset');
+        Route::get('', 'UserController@getUserById');
 
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::delete('delete', 'UserController@delete');

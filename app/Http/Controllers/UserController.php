@@ -145,16 +145,6 @@ class UserController extends Controller
 
     }
 
-    public function getUserById($user_id)
-    {
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-
-        return response()->json($user, 200);
-    }
-
     public function update(Request $request, $user_id)
     {
         if (!$request->has(['first_name', 'last_name'])) {
@@ -1239,14 +1229,16 @@ class UserController extends Controller
 
     }
 
-    public function getMailUserForPasswordReset($user_id , Request $request )  {
+    public function getUserById($user_id ,Request $request)  {
+        
         $verification_code = $request->query('verification_code', '');
         if (!$user = $this->userServices->getUserById($user_id)) {
             return response()->json(['response' => 'user not found'], 404);}
         if ($user->verification_code !== $verification_code) {
             return response()->json('bad request', 400);
         }
-        return response()->json(['email' => $user->email], 200);
+
+        return response()->json($user, 200);
     }
 
     public function resetUserPassword($userId , Request $request )  {
