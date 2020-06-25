@@ -15,15 +15,15 @@ class CreateConfigSubmissionTable extends Migration
     {
 
         Schema::create('Config_Submission', function (Blueprint $table) {
-            $table->increments('config_sumbission_id');
+            $table->increments('config_submission_id');
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
 
-            $table->integer('max_words');
-            $table->integer('num_evaluators');
-            $table->dateTime('start_submission_date');
-            $table->dateTime('end_submission_date');
+            $table->integer('max_words')->nullable();
+            $table->integer('num_evaluators')->nullable();
+            $table->dateTime('start_submission_date')->nullable();
+            $table->dateTime('end_submission_date')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

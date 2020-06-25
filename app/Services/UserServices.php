@@ -1103,10 +1103,10 @@ class UserServices
             ->first();
     }
 
-    public function checkUserRights($user)
+    public function checkUserRights($user, $accessId = null)
     {
-        if ($user && sizeof($user->user_congresses) > 0 && sizeof($user->accesses) > 0) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && (sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
+        if ($user && sizeof($user->user_congresses) > 0 && (!$accessId || sizeof($user->accesses) > 0)) {
+            if ($user->user_congresses[0]['privilege_id'] == 3 && (!$accessId || sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
                 return 2;
             }
             if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
