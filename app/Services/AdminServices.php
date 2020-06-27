@@ -388,16 +388,18 @@ class AdminServices
         return 1;
     }
 
-    public function addClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
+    public function addClient($admin, Request $request)
     {
-        $admin = new Admin();
-        $admin->name = $name;
-        $admin->email = $email;
-        $admin->mobile = $mobile;
-        $admin->passwordDecrypt = $passwordDecrypt;
+        if(!$admin)
+            $admin = new Admin();
+        
+        $admin->name = $request->input("name");
+        $admin->email = $request->input("email");
+        $admin->mobile = $request->input("mobile");
+        $admin->passwordDecrypt = $request->input("passwordDecrypt");
         $admin->password = bcrypt($admin->passwordDecrypt);
-        if ($valid_date) {
-            $admin->valid_date = $valid_date;
+        if ($request->has("valid_date")) {
+            $admin->valid_date = $request->input("valid_date");
         }
         $admin->privilege_id = 1;
         $admin->save();

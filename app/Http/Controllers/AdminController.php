@@ -707,7 +707,8 @@ class AdminController extends Controller
         if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
             return response()->json(['message' => 'bad request'], 400);
 
-        if ($this->adminServices->getAdminByLogin($request->input("email"))) {
+        if ($admin = $this->adminServices->getAdminByLogin($request->input("email"))) {
+            if($admin->privilege_id)
             return response()->json(['message' => 'admin exists'], 400);
         }
 
@@ -721,7 +722,7 @@ class AdminController extends Controller
             return response()->json(['message' => 'Mail not found'], 400);
         }
 
-        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
+        $admin = $this->adminServices->addClient($admin, $request);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
         $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
