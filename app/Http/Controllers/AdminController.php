@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
-use App\Models\HistoryPack;
 use App\Models\Mail;
 use App\Models\PaymentAdmin;
 use App\Models\User;
@@ -12,7 +11,6 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
-use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UrlUtils;
@@ -32,7 +30,6 @@ class AdminController extends Controller
     protected $privilegeServices;
     protected $sharedServices;
     protected $badgeServices;
-    protected $packAdminServices;
     protected $accessServices;
     protected $mailServices;
 
@@ -43,7 +40,6 @@ class AdminController extends Controller
                                 CongressServices $congressService,
                                 PrivilegeServices $privilegeServices,
                                 SharedServices $sharedServices,
-                                PackAdminServices $packAdminServices,
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
                                 MailServices $mailServices)
@@ -54,7 +50,6 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
-        $this->packAdminServices = $packAdminServices;
         $this->accessServices = $accessServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();

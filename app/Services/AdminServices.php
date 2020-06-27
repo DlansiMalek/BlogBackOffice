@@ -65,7 +65,6 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
-            ->with(['AdminHistories.pack'])
             ->get();
     }
 
