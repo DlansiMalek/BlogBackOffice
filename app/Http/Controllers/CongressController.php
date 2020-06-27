@@ -524,12 +524,6 @@ class CongressController extends Controller
         return $congress;
     }
 
-    public function getAll()
-    {
-        return $this->congressServices->getAll();
-
-    }
-
     function getParticipantsCounts(Request $request)
     {
         $result = [];
@@ -604,30 +598,6 @@ class CongressController extends Controller
         $this->mailServices->saveMail($congress->congress_id, 5, "Confirmation", "Voullez vous vraiment confirmer Cette action");
 
         return response()->json(["status" => "success added demo congress"], 200);
-    }
-
-    public function delete($congressId)
-    {
-        $congress = $this->congressServices->getCongressById($congressId);
-        if (!$congress) {
-            return response()->json(['response' => 'conrgess not found'], 404);
-        } elseif ($congress) {
-            $congress->delete();
-        }
-        return response()->json(['response' => 'congress deleted'], 202);
-    }
-
-    public function RemoveCongressFromAdmin($admin_id, $congressId)
-    {
-        $congress = $this->congressServices->getCongressById($congressId);
-        $admin = $this->adminServices->getAdminById($admin_id);
-        if (!($congress && $admin)) {
-            return response()->json(['response' => 'congress or admin not found'], 404);
-        } else {
-            $this->congressServices->RemoveCongressFromAdmin($congressId, $admin_id);
-            return response()->json(['response' => 'congress Removed from Admin'], 202);
-        }
-
     }
 
     public function getStatsByCongressId($congressId)

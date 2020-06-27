@@ -12,7 +12,6 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
-use App\Models\HistoryPack;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
 use App\Models\ThemeAdmin;
@@ -67,26 +66,6 @@ class AdminServices
     {
         return Admin::where("privilege_id", "=", 1)
             ->with(['AdminHistories.pack'])
-            ->get();
-    }
-
-    public function getClienthistoriesbyId($id)
-    {
-        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=', $id)
-            ->with(['AdminHistories.pack'])
-            ->get();
-    }
-
-    public function gethistorybyId($id)
-    {
-        return HistoryPack::where("history_id", "=", $id)
-            ->first();
-    }
-
-    public function getClientcongressesbyId($id)
-    {
-        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=', $id)
-            ->with(['congresses'])
             ->get();
     }
 
@@ -369,22 +348,6 @@ class AdminServices
 
         $updateAdmin->update();
         return $updateAdmin;
-    }
-
-    public function addPackToAdmin(Request $request, HistoryPack $history)
-    {
-        $history->admin_id = $request->admin_id;
-        $history->pack_admin_id = $request->pack_admin_id;
-        $history->status = $request->status;
-        $history->start_date = $request->start_date;
-        $history->end_date = $request->end_date;
-        $history->nbr_events = $request->nbr_events;
-        if ($request->nbr_events) {
-            $date = new DateTime();
-            $history->start_date = $date->format('Y-m-d H:i:s');
-            $history->end_date = $date->format('Y-m-d H:i:s');
-        }
-        $history->save();
     }
 
     public function checkHasPrivilegeByCongress($admin_id, $congress_id)
