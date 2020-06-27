@@ -388,7 +388,7 @@ Route::group(['prefix' => 'access'], function () {
 });
 
 // Super Admin API
-Route::group(['prefix'=> 'admin', 'middelware' => 'marketing'], function () {
+Route::group(['prefix'=> 'admin', 'middleware' => 'marketing'], function () {
     Route::get('all', 'AdminController@getClients');
     Route::get('{admin_id}', "AdminController@getClientById")
         ->where('admin_id', '[0-9]+');
