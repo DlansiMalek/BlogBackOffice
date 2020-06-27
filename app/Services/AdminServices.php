@@ -53,7 +53,7 @@ class AdminServices
     public function getAdminById($admin_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(['admin_congresses.congress.badges', 'admin_congresses.congress.config', 'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'])
+            ->with(['admin_congresses.congress.config', 'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'])
             ->first();
     }
 
@@ -453,4 +453,21 @@ class AdminServices
 
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
     }
+    public function  getClientById($admin_id){
+        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=',1)
+        ->first();
+    }
+
+    public function editClient($request, $admin)
+    {
+        if (!$admin) {
+            return null;
+        }
+        $admin->name = $request->input('name');
+        $admin->mobile = $request->input('mobile');
+        $admin->valid_date = $request->input('valid_date');
+        $admin->update();
+        return $admin;
+    }
+
 }

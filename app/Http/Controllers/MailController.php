@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use App\MailAdmin;
+use App\Models\MailAdmin;
 use App\Models\AttestationRequest;
 use App\Models\User;
 use App\Models\UserCongress;
@@ -34,9 +34,10 @@ class MailController extends Controller
     }
 
 
-    public function getAllMailTypes($congressId)
+    public function getAllMailTypes($congressId,Request $request)
     {
-        return $this->mailService->getAllMailTypes($congressId);
+        $type = $request->query('type');
+        return $this->mailService->getAllMailTypes($congressId, $type);
     }
     public function getAllMailTypesAdmin()
     {
