@@ -725,7 +725,7 @@ class AdminController extends Controller
         $admin = $this->adminServices->addClient($admin, $request);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
+        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
 
         return response()->json(['message' => 'Client added success']);
     }
