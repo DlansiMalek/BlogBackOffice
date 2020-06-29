@@ -218,6 +218,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
     });
 });
+
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
@@ -232,51 +233,15 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
     Route::get('user/all', 'SubmissionController@getSubmissionByUserId');
-
-
 });
-
 
 Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], function () {
     Route::get('all/{congressId}', 'ThemeController@getAllThemes');
     Route::post('add/{congressId}', 'ThemeController@addExternalTheme');
     Route::get('congress/{congressId}', 'ThemeController@getThemesByCongressId');
 });
-//PackAdmin API
-Route::group(['prefix' => 'packadmin'], function () {
-    Route::get('list', 'PackAdminController@index');
-    Route::get('{pack_id}', 'PackAdminController@getPackById');
-    Route::delete('{pack_id}/delete', 'PackAdminController@delete');
-    Route::post('add', 'PackAdminController@store');
-    Route::put('{pack_id}/update', 'PackAdminController@update');
-    Route::get('{pack_id}/modules', 'PackAdminController@getpackmodules');
-    Route::get('modules/list', 'PackAdminController@getmodules');
-    Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
-    Route::get('mails/admin/{mail_id}', 'MailController@getMailAdminById');
-
-    Route::get('clients/all', 'AdminController@getClients');
-    Route::get('clients/{adminId}/histories', 'AdminController@getClienthistoriesbyId');
-    Route::get('clients/{adminId}/congresses', 'AdminController@getClientcongressesbyId');
-    Route::delete('admins/{adminId}/delete', 'AdminController@delete');
-
-    Route::post('admins/{admin_id}/{pack_id}/validate/{history_id}', 'AdminController@ActivatePackForAdmin');
-    Route::post('histories/add', 'AdminController@addHistoryToAdmin');
-
-    Route::post('admins/add/{pack_id}', 'AdminController@store');
-    Route::get('admins/{adminId}', 'AdminController@getAdminById');
-    Route::get('packs/{packId}', 'PackAdminController@getPackById');
-    Route::put('admins/{admin_id}/update', 'AdminController@update');
-    Route::post('Demo/{admin_id}', 'CongressController@addDemo');
-    Route::get('congress/all', 'CongressController@getAll');
-    Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
-    Route::delete('admins/{admin_id}/{congressId}', 'CongressController@RemoveCongressFromAdmin');
-    Route::get('mailtypes/all', 'MailController@getAllMailTypesAdmin');
-    Route::put('mails/{mail_id}/update', 'MailController@updateMailAdmin');
-    Route::post('mails/add', 'MailController@storeMailAdmin');
-});
 
 //User API
-
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
@@ -390,8 +355,13 @@ Route::group(['prefix' => 'access'], function () {
 // Super Admin API
 Route::group(['prefix'=> 'admin', 'middleware' => 'marketing'], function () {
     Route::get('all', 'AdminController@getClients');
+    Route::get('{admin_id}', "AdminController@getClientById")
+        ->where('admin_id', '[0-9]+');
     Route::post('add', 'AdminController@addClient');
-    Route::get('{admin_id}', "AdminController@getClientById");
+    Route::get('mailtype','MailController@getAllMailTypesAdmin');
+    Route::get('mail/{mailTypeAdminId}', 'MailController@getMailAdminByMailTypeAdminId');
+    Route::get('mailtype/{mailTypeAdminId}', 'MailController@getMailTypeAdminByMailTypeAdminId');
+    Route::post('mail/{mailTypeAdminId}', 'MailController@saveMailAdmin');
     Route::put('{admin_id}', "AdminController@editClient");
 });
 

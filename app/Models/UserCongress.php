@@ -36,8 +36,4 @@ class UserCongress extends Model
     {
         return $this->belongsTo('App\Models\Pack', 'pack_id', 'pack_id');
     }
-    public function packAdmin()
-    {
-        return $this->belongsTo('App\Models\PackAdmin', 'pack_admin_id', 'pack_admin_id');
-    }
 }

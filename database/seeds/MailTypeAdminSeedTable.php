@@ -22,17 +22,26 @@ class MailTypeAdminSeedTable extends Seeder
         DB::table('Mail_Type_Admin')->insert([
             'mail_type_admin_id' => 2,
             'name' => 'creation_admin',
-            'display_name' => 'Création de compte Admin',
+            'display_name' => 'Création de compte Admin'
         ]);
+
         DB::table('Mail_Type_Admin')->insert([
             'mail_type_admin_id' => 3,
             'name' => 'forget_password',
-            'display_name' => 'Réinitialiser le Mot de passe',
+            'display_name' => 'Réinitialiser le Mot de passe'
         ]);
+
         DB::table('Mail_Type_Admin')->insert([
             'mail_type_admin_id' => 4,
             'name' => 'reset_password_success',
-            'display_name' => 'Mot de passe Réinitialiser avec succès ',
+            'display_name' => 'Mot de passe Réinitialiser avec succès'
         ]);
+
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 5,
+            'name' => 'custom',
+            'display_name' => 'Personalisé'
+        ]);
+
     }
 }
