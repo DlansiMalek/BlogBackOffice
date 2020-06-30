@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
-use App\Models\HistoryPack;
 use App\Models\Mail;
 use App\Models\PaymentAdmin;
 use App\Models\User;
@@ -12,7 +11,6 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
-use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\UrlUtils;
@@ -32,7 +30,6 @@ class AdminController extends Controller
     protected $privilegeServices;
     protected $sharedServices;
     protected $badgeServices;
-    protected $packAdminServices;
     protected $accessServices;
     protected $mailServices;
 
@@ -43,7 +40,6 @@ class AdminController extends Controller
                                 CongressServices $congressService,
                                 PrivilegeServices $privilegeServices,
                                 SharedServices $sharedServices,
-                                PackAdminServices $packAdminServices,
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
                                 MailServices $mailServices)
@@ -54,7 +50,6 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
-        $this->packAdminServices = $packAdminServices;
         $this->accessServices = $accessServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();
@@ -707,92 +702,13 @@ class AdminController extends Controller
         return $this->adminServices->getClients();
     }
 
-    public function getAdminById($adminId)
-    {
-        $admin = $this->adminServices->getAdminById($adminId);
-        if (!$admin) {
-            return response()->json(['response' => 'admin not found'], 404);
-        } else {
-            return $admin;
-        }
-    }
-
-    public function getClienthistoriesbyId($adminId)
-    {
-        return $this->adminServices->getClienthistoriesbyId($adminId);
-    }
-
-    public function getClientcongressesbyId($adminId)
-    {
-        return $this->adminServices->getClientcongressesbyId($adminId);
-    }
-
-    public function delete($adminId)
-    {
-        $admin = $this->adminServices->getAdminById($adminId);
-        if (!$admin) {
-            return response()->json(['response' => 'admin not found'], 404);
-        } elseif ($admin) {
-            $admin->delete();
-        }
-        return response()->json(['response' => 'admin deleted'], 202);
-    }
-
-    public function store(Request $request, $pack_id)
-    {
-        if (!$request->has(['name', 'mobile', 'email'])) {
-            return response()->json(['response' => 'invalid request',
-                'content' => ['name', 'mobile', 'email']], 400);
-        }
-
-        $admin = $this->adminServices->getAdminByMail($request->input('email'));
-        if ($admin) {
-            return response()->json(['response' => 'admin with same mail found'], 404);
-        } else {
-            $admin = new Admin();
-            $pack = $this->packAdminServices->getPackById($pack_id);
-            $history = new HistoryPack();
-            $payment = new PaymentAdmin();
-            $admin = $this->adminServices->AddAdmin($request, $admin);
-            $this->adminServices->addPayment($payment, $admin, $pack);
-            $this->adminServices->addHistory($history, $admin, $pack);
-            return response()->json(['response' => 'admin added with payment and history'], 202);
-        }
-    }
-
-    public function update(Request $request, $admin_id)
-    {
-        $admin = $this->adminServices->getAdminById($admin_id);
-        if (!$admin) {
-            return response()->json(['response' => 'Admin not found'], 404);
-        }
-        return response()->json($this->adminServices->updateAdmin($request, $admin), 202);
-    }
-
-    public function ActivatePackForAdmin($admin_id, $pack_id, $history_id)
-    {
-        $newhistory = new HistoryPack();
-        $previoushistory = $this->adminServices->gethistorybyId($history_id);
-        $pack = $this->packAdminServices->getPackById($pack_id);
-        $admin = $this->adminServices->getAdminById($admin_id);
-        $this->adminServices->addValidatedHistory($newhistory, $admin, $pack, $previoushistory);
-        return response()->json(['response' => 'pack Activated , new  history entry created'], 202);
-    }
-
-    public function addHistoryToAdmin(Request $request)
-    {
-        $newhistory = new HistoryPack();
-        $this->adminServices->addPackToAdmin($request, $newhistory);
-        return response()->json(['response' => 'pack Added , new  history entry created'], 202);
-
-    }
-
     public function addClient(Request $request)
     {
         if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
             return response()->json(['message' => 'bad request'], 400);
 
-        if ($this->adminServices->getAdminByLogin($request->input("email"))) {
+        if ($admin = $this->adminServices->getAdminByLogin($request->input("email"))) {
+            if($admin->privilege_id)
             return response()->json(['message' => 'admin exists'], 400);
         }
 
@@ -806,10 +722,10 @@ class AdminController extends Controller
             return response()->json(['message' => 'Mail not found'], 400);
         }
 
-        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
+        $admin = $this->adminServices->addClient($admin, $request);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
+        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
 
         return response()->json(['message' => 'Client added success']);
     }

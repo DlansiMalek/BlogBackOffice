@@ -12,7 +12,6 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
-use App\Models\HistoryPack;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
 use App\Models\ThemeAdmin;
@@ -66,27 +65,6 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
-            ->with(['AdminHistories.pack'])
-            ->get();
-    }
-
-    public function getClienthistoriesbyId($id)
-    {
-        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=', $id)
-            ->with(['AdminHistories.pack'])
-            ->get();
-    }
-
-    public function gethistorybyId($id)
-    {
-        return HistoryPack::where("history_id", "=", $id)
-            ->first();
-    }
-
-    public function getClientcongressesbyId($id)
-    {
-        return Admin::where("privilege_id", "=", 1)->where('admin_id', '=', $id)
-            ->with(['congresses'])
             ->get();
     }
 
@@ -371,22 +349,6 @@ class AdminServices
         return $updateAdmin;
     }
 
-    public function addPackToAdmin(Request $request, HistoryPack $history)
-    {
-        $history->admin_id = $request->admin_id;
-        $history->pack_admin_id = $request->pack_admin_id;
-        $history->status = $request->status;
-        $history->start_date = $request->start_date;
-        $history->end_date = $request->end_date;
-        $history->nbr_events = $request->nbr_events;
-        if ($request->nbr_events) {
-            $date = new DateTime();
-            $history->start_date = $date->format('Y-m-d H:i:s');
-            $history->end_date = $date->format('Y-m-d H:i:s');
-        }
-        $history->save();
-    }
-
     public function checkHasPrivilegeByCongress($admin_id, $congress_id)
     {
         return AdminCongress::where('admin_id', '=', $admin_id)
@@ -426,28 +388,34 @@ class AdminServices
         return 1;
     }
 
-    public function addClient($name, $email, $mobile, $passwordDecrypt, $valid_date)
+    public function addClient($admin, Request $request)
     {
-        $admin = new Admin();
-        $admin->name = $name;
-        $admin->email = $email;
-        $admin->mobile = $mobile;
-        $admin->passwordDecrypt = $passwordDecrypt;
+        if(!$admin)
+            $admin = new Admin();
+        
+        $admin->name = $request->input("name");
+        $admin->email = $request->input("email");
+        $admin->mobile = $request->input("mobile");
+        $admin->passwordDecrypt = $request->input("passwordDecrypt");
         $admin->password = bcrypt($admin->passwordDecrypt);
-        if ($valid_date) {
-            $admin->valid_date = $valid_date;
+        if ($request->has("valid_date")) {
+            $admin->valid_date = $request->input("valid_date");
         }
         $admin->privilege_id = 1;
         $admin->save();
         return $admin;
     }
 
-    public function renderMail($template, $admin = null, $activationLink = null, $backOfficeLink = null)
+    public function renderMail($template, $admin = null, $user=null ,$activationLink = null, $linkBackOffice = null)
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+        $template = str_replace('{{$admin-&gt;first_name}}', '{{$admin->first_name}}', $template);
+        $template = str_replace('{{$admin-&gt;last_name}}', '{{$admin->last_name}}', $template);
+        $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
+        $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
 
-        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'backOfficeLink' => $backOfficeLink, 'activationLink' => $activationLink]);
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink]);
     }
     public function  getClientById($admin_id){
         return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=',1)
