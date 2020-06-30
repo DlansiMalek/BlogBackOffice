@@ -191,12 +191,50 @@ class SubmissionController extends Controller
             }
             $privilege_id = $adminCongress->privilege_id;
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
+            $user = $submission_detail['user'];
+            $mail_type = $this->congressServices->getMailType('blocage');
+            $mail = $this->congressServices->getMail($congressId,$mail_type->mail_type_id);
+            if ($mail)
+            {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail(
+                        $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
+                    );
+                }
+            }
             return response()->json($submission_detail, 200);
 
 
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
         }
+    }
+    public function changeSubmissionStatus($submission_id, $congress_id, Request $request){
+
+        if (!($submission = $this->submissionServices->getSubmissionById($submission_id))) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        $user = $this->userServices->getUserById($submission->user_id);
+        $submission->status = $request->input('status');
+        $mail_type = $request->input('status') == 1 ? 
+            $this->congressServices->getMailType('acceptation') :
+            $this->congressServices->getMailType('refus');
+        $submission->update();
+        $mail = $this->congressServices->getMail($congress_id,$mail_type->mail_type_id);
+        if ($mail)
+        {
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+            if (!$userMail) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                $this->userServices->sendMail(
+                    $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
+                );
+            }
+        }
+        
+        return response()->json(['response' => 'Submission status changed'],201);
     }
 
 

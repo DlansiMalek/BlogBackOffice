@@ -223,6 +223,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
     Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
+    Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {

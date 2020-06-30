@@ -181,9 +181,11 @@ class SubmissionServices
                     }
                 ])->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
+                $submissionById->status = 2;
+                $submissionById->update();
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type',
-                        'prez_type', 'description', 'global_note',
+                        'prez_type','user','description', 'global_note',
                         'status', 'theme', 'submissions_evaluations',
                         'congress_id', 'created_at']);
 
@@ -199,8 +201,15 @@ class SubmissionServices
         $evaluation = $this->getSubmissionEvaluationByAdminId($admin, $submissionId);
         $evaluation->note = $note;
         $evaluation->save();
-        $global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
-            ->where('note', '>=', 0)->average('note');
+        // supposons seulement un seul utilisateur a fait la correction 
+        // dans ce cas on doit pas faire la moyenne
+        if (!$global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
+            ->where('note', '>', 0)->average('note')) {
+                $global_note = 0 ;
+            } 
+        // si !$global_note cela veut dire qu'un aucun correcteur a mis une note > 0 
+        // don cla note_globable sera 0 
+     
         $submissionUpdated = Submission::where('submission_id', '=', $submissionId)->first();
         $submissionUpdated->global_note = $global_note;
         $submissionUpdated->save();
