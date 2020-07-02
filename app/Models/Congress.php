@@ -79,6 +79,10 @@ class Congress extends Model
     {
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id")->whereNull('parent_id')->orderBy('start_date');
     }
+    public function submissions()
+    {
+        return $this->hasMany('App\Models\Submission', "congress_id", "congress_id");
+    }
 
     public function packs()
     {
@@ -93,5 +97,9 @@ class Congress extends Model
     public function location()
     {
         return $this->hasOne('App\Models\Location', 'congress_id', 'congress_id');
+    }
+    function user_congresses()
+    {
+        return $this->hasMany('App\Models\UserCongress', 'congress_id', 'congress_id');
     }
 }
