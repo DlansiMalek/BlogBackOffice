@@ -222,9 +222,13 @@ class SubmissionServices
             ->where('submission_id', '=', $submissionId)->first();
     }
 
-    public function getSubmissionsByUserId($user)
+    public function getSubmissionsByUserId($user,$offset,$perPage,$search)
     {
-        return Submission::where('user_id', '=' , $user->user_id)->with('authors','congress')->get();
+        return Submission::where('user_id', '=' , $user->user_id)
+        ->with('authors','congress')
+        ->offset($offset)->limit($perPage)
+        ->where('title', 'LIKE', '%' . $search . '%')
+        ->get();
     }
 
 }

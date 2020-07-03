@@ -107,7 +107,13 @@ class SubmissionController extends Controller
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
-
+    public function deleteSubmission($submission_id) {
+        if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
+            return response()->json(['response' => 'no submission found'],400);
+            $submission->delete();
+            return response()->json(['response' => 'submssion deleted successfully']);
+        }
+    }
     public function editSubmssion(Request $request, $submission_id)
     {
         try {
@@ -279,13 +285,16 @@ class SubmissionController extends Controller
         }
     }
 
-    public function getSubmissionByUserId()
+    public function getSubmissionByUserId(Request $request)
     {
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = $request->query('search', '');
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
             return response()->json(['response' => 'No user found'],401);
         }
-        $submissions = $this->submissionServices->getSubmissionsByUserId($user);
+        $submissions = $this->submissionServices->getSubmissionsByUserId($user,$offset,$perPage,$search);
         return response()->json($submissions, 200);
     }
 
