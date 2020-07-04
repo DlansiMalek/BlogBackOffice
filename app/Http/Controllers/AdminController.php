@@ -13,6 +13,7 @@ use App\Services\CongressServices;
 use App\Services\MailServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
+use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -32,7 +33,7 @@ class AdminController extends Controller
     protected $badgeServices;
     protected $accessServices;
     protected $mailServices;
-
+    protected $submissionServices;
     protected $client;
 
     public function __construct(UserServices $userServices,
@@ -42,6 +43,7 @@ class AdminController extends Controller
                                 SharedServices $sharedServices,
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
+                                SubmissionServices $submissionServices,
                                 MailServices $mailServices)
     {
         $this->userServices = $userServices;
@@ -51,6 +53,7 @@ class AdminController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->accessServices = $accessServices;
+        $this->submissionServices = $submissionServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();
     }
@@ -462,6 +465,9 @@ class AdminController extends Controller
 
         if ($privilegeId == 11) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
+            $submissions = $this->submissionServices->getAllSubmissions();
+              $this->adminServices->affectEvaluatorToSubmissions(
+                 $submissions,$admin_id,$request->input("themesSelected"),$congress_id);
         }
 
         //create admin congress bind privilege admin and congress

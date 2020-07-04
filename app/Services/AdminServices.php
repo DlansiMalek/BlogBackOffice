@@ -15,6 +15,7 @@ use App\Models\Congress;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
 use App\Models\ThemeAdmin;
+use App\Models\SubmissionEvaluation;
 use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
@@ -84,6 +85,40 @@ class AdminServices
     {
 
         return Admin::where("privilege_id", "=", 11)->get();
+    }
+    public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
+        $evalutors = $this->getEvaluatorsByCongress($congress_id,11);
+        $max = $evalutors[sizeof($evalutors) - 1]['submission_count'];
+        $count = 0;
+        foreach($submissions as $submission) {
+            $isThemeExists = false;
+            foreach ($themeIds as $themeId) {
+                if ($submission->theme_id == $themeId) {
+                    $isThemeExists = true ;
+                    $congress = json_decode($submission['congress'],true);
+                    if (sizeof($submission['submissions_evaluations']) <  $congress['config_submission']['num_evaluators']) {
+                            $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
+                    }
+                break;
+                }
+            }
+            if (!$isThemeExists && $count < $max && (sizeof($submission['submissions_evaluations']) == 0) ) {
+              $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
+              $count++;
+            } 
+        
+        }
+        
+        return 1;
+    }
+
+    public function addSubmissionEvaluation($admin_id, $submission_id)
+    {
+        $submissionEvaluation = new SubmissionEvaluation();
+        $submissionEvaluation->submission_id = $submission_id;
+        $submissionEvaluation->admin_id = $admin_id;
+        $submissionEvaluation->save();
+        return $submissionEvaluation;
     }
 
     public function getEvaluatorsByCongress($congressId, $privilegeId)

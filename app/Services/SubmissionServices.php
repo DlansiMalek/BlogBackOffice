@@ -47,6 +47,9 @@ class SubmissionServices
             ->where('submission_id', '=', $submission_id)
             ->first();
     }
+    public function getAllSubmissions() {
+        return Submission::with(['submissions_evaluations','congress.configSubmission'])->get();
+    }
 
     public function getSubmissionById($submission_id)
     {
@@ -118,7 +121,7 @@ class SubmissionServices
 
     public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id)
     {
-        if ($privilege_id == 1) {
+        if ($privilege_id == 1 || $privilege_id == 12) {
             $allSubmission = $this->renderSubmissionForAdmin()
                 ->where('congress_id', '=', $congress_id)->get();
             $allSubmissionToRender = $allSubmission->map(function ($submission) {
@@ -157,7 +160,7 @@ class SubmissionServices
 
     public function getSubmissionDetailById($admin, $submission_id, $privilege_id)
     {
-        if ($privilege_id == 1) {
+        if ($privilege_id == 1 || $privilege_id == 12) {
             $submissionById = $this->renderSubmissionForAdmin()
                 ->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
@@ -222,11 +225,17 @@ class SubmissionServices
             ->where('submission_id', '=', $submissionId)->first();
     }
 
-    public function getSubmissionsByUserId($user,$offset,$perPage,$search)
+    public function getSubmissionsByUserId($user,$offset,$perPage,$search,$perCongressId,$status)
     {
         return Submission::where('user_id', '=' , $user->user_id)
         ->with('authors','congress')
         ->offset($offset)->limit($perPage)
+        ->when($perCongressId !== "null",function($query) use ($perCongressId) {
+            $query->where('congress_id','=',$perCongressId);
+        })
+        ->when($status!=="null" , function($query) use ($status) {
+            $query->where('status','=',$status);
+        })
         ->where('title', 'LIKE', '%' . $search . '%')
         ->get();
     }

@@ -221,6 +221,7 @@ class SubmissionController extends Controller
             $privilege_id = $adminCongress->privilege_id;
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
+            if ($privilege_id == 11) {
             $mail_type = $this->congressServices->getMailType('blocage');
             $mail = $this->congressServices->getMail($congressId,$mail_type->mail_type_id);
             if ($mail)
@@ -233,8 +234,8 @@ class SubmissionController extends Controller
                     );
                 }
             }
+        }
             return response()->json($submission_detail, 200);
-
 
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
@@ -247,10 +248,10 @@ class SubmissionController extends Controller
         }
         $user = $this->userServices->getUserById($submission->user_id);
         $submission->status = $request->input('status');
+        $submission->update();
         $mail_type = $request->input('status') == 1 ? 
             $this->congressServices->getMailType('acceptation') :
             $this->congressServices->getMailType('refus');
-        $submission->update();
         $mail = $this->congressServices->getMail($congress_id,$mail_type->mail_type_id);
         if ($mail)
         {
@@ -289,12 +290,21 @@ class SubmissionController extends Controller
     {
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 6);
+        $perCongressId = $request->query('congress_id');
+        $perStatus = $request->query('status');
         $search = $request->query('search', '');
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
             return response()->json(['response' => 'No user found'],401);
         }
-        $submissions = $this->submissionServices->getSubmissionsByUserId($user,$offset,$perPage,$search);
+        $submissions = $this->submissionServices->getSubmissionsByUserId(
+            $user,
+            $offset,
+            $perPage,
+            $search,
+            $perCongressId,
+            $perStatus
+        );
         return response()->json($submissions, 200);
     }
 
