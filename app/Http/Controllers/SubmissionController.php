@@ -45,9 +45,6 @@ class SubmissionController extends Controller
         $this->serviceServices = $serviceServices ;
         $this->mailServices = $mailServices;
     }
-    public function getEvaluators() {
-        return $this->adminServices->getEvaluatorsByCongress(1,11);
-    }
     public function addSubmission(Request $request)
     {
 
