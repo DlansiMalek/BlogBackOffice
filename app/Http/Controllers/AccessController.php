@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 
 use App\Models\UserAccess;
 use App\Services\AccessServices;
+use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\NotificationServices;
 use App\Services\ResourcesServices;
+use App\Services\RoomServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 
@@ -15,22 +17,28 @@ class AccessController extends Controller
 {
 
     protected $accessServices;
+    protected $adminServices;
     protected $userServices;
     protected $congressServices;
     protected $resourcesServices;
+    protected $roomServices;
     protected $notificationServices;
 
 
     function __construct(AccessServices $accessServices,
+                         AdminServices $adminServices,
                          UserServices $userServices,
                          CongressServices $congressServices,
                          ResourcesServices $resourcesServices,
+                         RoomServices $roomServices,
                          NotificationServices $notificationServices)
     {
         $this->accessServices = $accessServices;
+        $this->adminServices = $adminServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
         $this->resourcesServices = $resourcesServices;
+        $this->roomServices = $roomServices;
         $this->notificationServices = $notificationServices;
     }
 
@@ -116,7 +124,13 @@ class AccessController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id))
             return response()->json(['response' => 'congress not found'], 404);
 
+        if (!$admin=$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['response' => 'admin not found'], 404);
+
         $access = $this->accessServices->addAccess($congress_id, $request);
+        $token_jitsi = $this->roomServices->createToken($admin->email, 'eventizer_room_' .$congress_id  .$access->access_id, true,  $admin->name);
+        $access->token_jitsi=$token_jitsi;
+        $access->update();
 
         if ($request->has('chair_ids') && count($request->input('chair_ids'))) {
             $this->accessServices->addChairs($access, $request->input('chair_ids'));
