@@ -127,11 +127,13 @@ class AdminServices
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('privilege_id', '=', $privilegeId);
+           
         })
             ->withCount(['submission' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }])
             ->orderBy('submission_count', 'asc')
+            ->where('privilege_id','=',$privilegeId)
             ->get();
     }
 
@@ -146,6 +148,7 @@ class AdminServices
                 $query->where('congress_id', '=', $congressId);
             }])
             ->orderBy('submission_count', 'asc')
+            ->where('privilege_id','=',$privilegeId)
             ->get();
     }
 

@@ -45,7 +45,9 @@ class SubmissionController extends Controller
         $this->serviceServices = $serviceServices ;
         $this->mailServices = $mailServices;
     }
-
+    public function getEvaluators() {
+        return $this->adminServices->getEvaluatorsByCongress(1,11);
+    }
     public function addSubmission(Request $request)
     {
 
@@ -222,6 +224,8 @@ class SubmissionController extends Controller
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
             if ($privilege_id == 11) {
+                //cet email ne sera envoyé qu'une seule fois, c'est à dire si j'ai plusieurs soumission 
+                //je receverai un email qu'une seule fois, il faut donc qu'on voit une autre approche 
             $mail_type = $this->congressServices->getMailType('blocage');
             $mail = $this->congressServices->getMail($congressId,$mail_type->mail_type_id);
             if ($mail)

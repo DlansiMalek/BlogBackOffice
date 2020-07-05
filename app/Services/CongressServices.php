@@ -43,7 +43,10 @@ class CongressServices
     {
         return Congress::all();
     }
-
+    
+    public function getMinCongressData() {
+        return Congress::select('congress_id','name')->get();
+    }
     public function getConfigSubmission($congress_id)
     {
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();

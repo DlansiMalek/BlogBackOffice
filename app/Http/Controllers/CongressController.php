@@ -166,6 +166,10 @@ class CongressController extends Controller
 
         return response()->json($congress);
     }
+    
+    public function getMinCongressData(){
+        return $this->congressServices->getMinCongressData();
+    }
 
     public function getCongressPagination(Request $request)
     {
