@@ -166,6 +166,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::post('switchRoom','CongressController@switchUsersRoom');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');

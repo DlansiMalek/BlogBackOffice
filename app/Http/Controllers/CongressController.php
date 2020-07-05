@@ -14,6 +14,7 @@ use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\GeoServices;
 use App\Services\MailServices;
+use App\Services\NotificationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
@@ -42,7 +43,7 @@ class CongressController extends Controller
     protected $geoServices;
     protected $mailServices;
     protected $paymentServices;
-
+    protected $notificationService;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -53,12 +54,14 @@ class CongressController extends Controller
                          PackServices $packService,
                          GeoServices $geoServices,
                          MailServices $mailServices,
+                         NotificationServices $notificationService,
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices)
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
         $this->adminServices = $adminServices;
+        $this->notificationService = $notificationService ;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
@@ -97,6 +100,35 @@ class CongressController extends Controller
         return response()->json(['message' => 'auto presence updating']);
     }
 
+    public function switchUsersRoom($congressId,Request $request) {
+
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+     
+        $event = $request->input('event');
+        $usersToken = $this->notificationService->getAllKeysByCongressIdAndSource($congressId,'frontOffice');
+        foreach ($usersToken as $userToken) {
+            if ($event == 'distribute') {
+            $access = $this->accessServices->getClosestAccess($userToken->user_id,$congressId);
+            if (!$access)
+                return response()->json(['message' => 'no access found '],400);
+            }
+            $data = [
+                'title' => $event,
+                'body' => $event == 'collect' ? 
+                         '/congress/room/'.$congressId :
+                         '/congress/room/'.$congressId . '/access/' . $access->access_id ,
+                'link' =>  $event == 'collect' ? 
+                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId :
+                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId . '/access/' . $access->access_id
+            ];
+            
+            $this->notificationService->sendNotification($data, [$userToken->firebase_key_user],false);
+        } 
+
+
+    }
     public function editConfigCongress(Request $request, $congressId)
     {
 
@@ -480,7 +512,6 @@ class CongressController extends Controller
     {
         return $this->congressServices->getAllCongresses();
     }
-
 
     public function sendCustomMailToAllUsers($mail_id)
     {
