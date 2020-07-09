@@ -263,20 +263,6 @@ class CongressController extends Controller
         return response()->json([$configCongress, $location, $configSubmission]);
     }
 
-    public function updateTokenAdmin($congress_id) {
-        if (!$admin=$this->userServices->retrieveUserFromToken()) {
-            return response()->json(['response' => 'admin not found'], 404);
-        }
-        $configCongress = $this->congressServices->getCongressConfigById($congress_id);
-        $configCongress->token_admin = $this->roomServices->createToken(
-            $admin->email, 
-            'eventizer_room_' .$congress_id,
-            true,  
-            $admin->name
-        );
-        $configCongress->update();
-        return response()->json($configCongress->token_admin);
-    }
 
     public function getStatsChartByCongressId($congressId)
     {
