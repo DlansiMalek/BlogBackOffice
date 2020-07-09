@@ -19,6 +19,7 @@ use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
+use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
@@ -44,7 +45,7 @@ class CongressController extends Controller
     protected $mailServices;
     protected $paymentServices;
     protected $notificationService;
-
+    protected $roomServices; 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
@@ -54,6 +55,7 @@ class CongressController extends Controller
                          PackServices $packService,
                          GeoServices $geoServices,
                          MailServices $mailServices,
+                         RoomServices $roomServices,
                          NotificationServices $notificationService,
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices)
@@ -67,6 +69,7 @@ class CongressController extends Controller
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->roomServices = $roomServices ;
         $this->packService = $packService;
         $this->resourceService = $resourceService;
         $this->mailServices = $mailServices;
@@ -142,7 +145,19 @@ class CongressController extends Controller
 
         $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
 
-        $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId);
+        $newConfig = $request->input("congress");
+
+        $token = null ;
+
+        if ($newConfig['is_online']) {
+        $token =  $this->roomServices->createToken(
+            $loggedadmin->email, 
+            'eventizer_room_' .$congressId,
+            true,  
+            $loggedadmin->name
+        );
+    }
+        $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId,$token);
 
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
@@ -169,7 +184,7 @@ class CongressController extends Controller
             $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
         }
 
-        return response()->json(['message' => 'edit configs success']);
+        return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
     }
 
@@ -247,6 +262,7 @@ class CongressController extends Controller
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
         return response()->json([$configCongress, $location, $configSubmission]);
     }
+
 
     public function getStatsChartByCongressId($congressId)
     {
