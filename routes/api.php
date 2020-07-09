@@ -314,6 +314,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
                     Route::get('send-mail-all-sondage', 'CongressController@sendMailAllParticipantsSondage');
                 });
+                Route::put('updateTokenAdmin','CongressController@updateTokenAdmin');
                 Route::post('edit-config', 'CongressController@editConfigCongress');
                 Route::get('edit-status/{status}', 'CongressController@editStatus');
                 Route::post('edit', 'CongressController@editCongress');

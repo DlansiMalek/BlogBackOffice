@@ -19,6 +19,7 @@ use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
+use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
@@ -44,7 +45,7 @@ class CongressController extends Controller
     protected $mailServices;
     protected $paymentServices;
     protected $notificationService;
-
+    protected $roomServices; 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
@@ -54,6 +55,7 @@ class CongressController extends Controller
                          PackServices $packService,
                          GeoServices $geoServices,
                          MailServices $mailServices,
+                         RoomServices $roomServices,
                          NotificationServices $notificationService,
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices)
@@ -67,6 +69,7 @@ class CongressController extends Controller
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->roomServices = $roomServices ;
         $this->packService = $packService;
         $this->resourceService = $resourceService;
         $this->mailServices = $mailServices;
@@ -246,6 +249,21 @@ class CongressController extends Controller
         $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congress_id);
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
         return response()->json([$configCongress, $location, $configSubmission]);
+    }
+
+    public function updateTokenAdmin($congress_id) {
+        if (!$admin=$this->userServices->retrieveUserFromToken()) {
+            return response()->json(['response' => 'admin not found'], 404);
+        }
+        $configCongress = $this->congressServices->getCongressConfigById($congress_id);
+        $configCongress->token_admin = $this->roomServices->createToken(
+            $admin->email, 
+            'eventizer_room_' .$congress_id,
+            true,  
+            $admin->name
+        );
+        $configCongress->update();
+        return response()->json($configCongress->token_admin);
     }
 
     public function getStatsChartByCongressId($congressId)
