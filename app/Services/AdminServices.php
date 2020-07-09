@@ -275,13 +275,13 @@ class AdminServices
     {
     }
 
-    public function addPersonnel($admin)
+    public function addPersonnel($admin,$privilegeId)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
-
+        $personnel->privilege_id = $privilegeId;
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
