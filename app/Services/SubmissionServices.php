@@ -165,7 +165,7 @@ class SubmissionServices
                     ->only(['submission_id', 'title', 'type',
                         'prez_type', 'description', 'global_note',
                         'status', 'theme', 'user', 'authors', 'submissions_evaluations',
-                        'congress_id', 'created_at']);
+                        'congress_id', 'created_at','congress','resources']);
                 return $submissionToRender;
             }
 
@@ -174,6 +174,7 @@ class SubmissionServices
                 $query->where('admin_id', '=', $admin->admin_id);
             })
                 ->with([
+                    'resources',
                     'theme:theme_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
@@ -185,7 +186,7 @@ class SubmissionServices
                     ->only(['submission_id', 'title', 'type',
                         'prez_type', 'description', 'global_note',
                         'status', 'theme', 'submissions_evaluations',
-                        'congress_id', 'created_at']);
+                        'congress_id', 'created_at', 'resources']);
 
                 return $submissionToRender;
             }
