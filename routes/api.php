@@ -261,6 +261,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');
+            Route::post('registerV2', 'UserController@saveUserInscription')->middleware('assign.guard:users');
             Route::put('edit/{userId}', 'UserController@editerUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');

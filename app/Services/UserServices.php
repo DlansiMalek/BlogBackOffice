@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AccessPack;
 use App\Models\AccessPresence;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
@@ -1379,6 +1380,31 @@ class UserServices
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return null;
         }
+    }
+
+    public function calculateCongressFees($congress, $pack, $accesses) {
+        $price = 0;
+        if ($congress->price) {
+            $price += $congress->price;
+        }
+        if ($pack) {
+            $price += $pack->price;
+        }
+        if ($accesses) {
+            foreach ($accesses as $access) {
+                if ($pack) {
+                    if (!$accessInPack = AccessPack::where('pack_id', '=', $pack->pack_id)->where('access_id', '=', $access->access_id)->first()) {
+                        $price += $access->price;
+                    }
+                } else {
+                    $price += $access->price;
+                }
+
+            }
+        }
+
+        return $price;
+
     }
 
 }
