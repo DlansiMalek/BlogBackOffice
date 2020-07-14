@@ -22,7 +22,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class UserController extends Controller
 {
     protected $smsServices;
@@ -143,16 +143,6 @@ class UserController extends Controller
         }
         return response()->json($user, 200);
 
-    }
-
-    public function getUserById($user_id)
-    {
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-
-        return response()->json($user, 200);
     }
 
     public function update(Request $request, $user_id)
@@ -349,7 +339,7 @@ class UserController extends Controller
         }
 
         // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0,0);
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
 
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
         //Save Access Premium
@@ -388,9 +378,9 @@ class UserController extends Controller
         }
         // Sending Mail
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id, true);
+        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
-        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && !$congress->config->has_payment) || $isFree) {
+        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $request->input("price") == 0) || $isFree) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -401,13 +391,15 @@ class UserController extends Controller
                 }
             }
             //Confirm Direct
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $privilegeId
                 );
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
@@ -479,7 +471,7 @@ class UserController extends Controller
             $user->payments[0]->price = $request->input("price");
             $user->payments[0]->update();
         } else {
-            if ($privilegeId == 3)
+            if ($privilegeId == 3 && $request->input("price") != 0)
                 $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $request->input("price"), false);
         }
 
@@ -533,9 +525,12 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkUserRights($congressId, $accessId)
+    public function checkUserRights($congressId, $accessId=null)
     {
         $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'],401);
+        }
         $userId = $user->user_id;
         $user = $this->userServices->getUserByIdWithRelations($userId, ['user_congresses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
@@ -550,21 +545,20 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        $userRight = $this->userServices->checkUserRights($user);
-        if ($userRight == 1) {
-            return response()->json(['response' => $user->user_access[0]], 200);
-        }
+        $userRight = $this->userServices->checkUserRights($user, $accessId);
+        
         if ($userRight == 2 || $userRight == 3) {
-            $user_access = $user->user_access[0];
+            $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
+            $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
             $token = $this->roomServices->createToken(
                 $user->email,
-                'eventizer_room_' . $congressId . $accessId,
+                $roomName,
                 $userRight == 2 ? false : true,
                 $user->first_name . " " . $user->last_name
             );
-            $user_access->token_jitsi = $token;
-            $user_access->update();
-            return response()->json(['response' => $user->user_access[0]], 200);
+            $userToUpdate->token_jitsi = $token;
+            $userToUpdate->update();
+            return response()->json(['response' => $userToUpdate], 200);
 
         } else {
             return response()->json(['response' => 'not authorized'], 401);
@@ -682,7 +676,6 @@ class UserController extends Controller
         $congressId = $userPayement->congress_id;
         if (!$user = $this->userServices->getUserByIdWithRelations($userPayement->user_id, ['accesses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', 1);
         }])) {
             return response()->json(['error' => 'user not found'], 404);
         }
@@ -692,13 +685,15 @@ class UserController extends Controller
         $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
 
         if ($userPayement->isPaid != 1 && $isPaid == 1) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $userCongress->privilege_id
                 );
             }
 
@@ -1231,5 +1226,64 @@ class UserController extends Controller
         if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
         return Storage::download($user->profile_pic);
     }
+    public function forgetPassword(Request $request )  {
+        if (!$request->has(['email']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
+
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+            return response()->json(['response' => 'email not found'], 404);}
+
+        if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('forget_password')) {
+            return response()->json(['response' => 'bad request'], 400);}
+
+        if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
+            return response()->json(['response' => 'bad request'], 400);}
+        $user->verification_code = Str::random(40);
+        $user->update();
+
+        $activationLink = $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/'. $user->user_id  . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id ;
+        $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
+        $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $activationLink), $user, null, $mail->object, null, $userMail);
+
+        return response()->json(['response' => 'Check your mail to reset password !'], 200);
+
+    }
+
+    public function getUserById($user_id ,Request $request)  {
+        
+        $verification_code = $request->query('verification_code', '');
+        if (!$user = $this->userServices->getUserById($user_id)) {
+            return response()->json(['response' => 'user not found'], 404);}
+        if ($user->verification_code !== $verification_code) {
+            return response()->json('bad request', 400);
+        }
+
+        return response()->json($user, 200);
+    }
+
+    public function resetUserPassword($userId , Request $request )  {
+        if (!$request->has(['verification_code', 'password']))
+            return response()->json(['response' => 'bad request'], 400);
+        $verification_code = $request->input('verification_code');
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['response' => 'user not found'], 404);}
+        if ($user->verification_code !== $verification_code) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('reset_password_success')) {
+            return response()->json(['response' => 'bad request'], 400);}
+
+        if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
+            return response()->json(['response' => 'bad request'], 400);}
+        $password = $request->input('password');
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
+        $user->update();
+        $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
+        $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
+
+        return response()->json(['response' => 'password successfully updated'], 200);
+    }
+
 
 }
