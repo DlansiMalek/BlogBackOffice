@@ -13,7 +13,7 @@ class UpdateIsPaidColumnPaymentTable extends Migration
      */
     public function up()
     {
-        Schema::table('payment', function (Blueprint $table) {
+        Schema::table('Payment', function (Blueprint $table) {
             $table->smallInteger('isPaid')->default(0)->change();
         });
     }
@@ -25,8 +25,5 @@ class UpdateIsPaidColumnPaymentTable extends Migration
      */
     public function down()
     {
-        Schema::table('Payment', function (Blueprint $table) {
-            //
-        });
     }
 }
