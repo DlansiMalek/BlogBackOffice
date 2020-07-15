@@ -98,10 +98,12 @@ class CongressServices
         return Congress::with([
             "mails.type",
             "attestation",
-            "badges",
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "badges" => function ($query) use ($congressId) {
+                $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
+            },
             "packs",
             "accesss.packs" => function ($query) use ($congressId){
                 $query->where('congress_id','=',$congressId);                
@@ -174,14 +176,6 @@ class CongressServices
             ->first();
     }
 
-
-    function RemoveCongressFromAdmin($congress_id, $admin_id)
-    {
-        $CongressAdmin = AdminCongress::where("congress_id", "=", $congress_id)->where('admin_id', '=', $admin_id)
-            ->first();
-        $CongressAdmin->delete();
-    }
-
     function retrieveCongressFromToken()
     {
         Config::set('jwt.user', 'App\Models\Congress');
@@ -225,7 +219,7 @@ class CongressServices
     }
 
 
-    public function editConfigCongress($configCongress, $configCongressRequest, $congressId)
+    public function editConfigCongress($configCongress, $configCongressRequest, $congressId,$token)
     {
 
         //$config_congress = ConfigCongress::where("congress_id", '=', $congressId)->first();
@@ -239,6 +233,7 @@ class CongressServices
         $configCongress->free = $configCongressRequest['free'];
         $configCongress->has_payment = $configCongressRequest['has_payment'];
         $configCongress->is_online = $configCongressRequest['is_online'];
+        $configCongress->token_admin = $token ;
         $configCongress->program_link = $configCongressRequest['program_link'];
         $configCongress->voting_token = $configCongressRequest['voting_token'];
         $configCongress->prise_charge_option = $configCongressRequest['prise_charge_option'];
@@ -397,8 +392,12 @@ class CongressServices
     public function getBadgeByPrivilegeId($congress, $privilege_id)
     {
         for ($i = 0; $i < sizeof($congress->badges); $i++) {
-            if ($congress->badges[$i]->privilege_id == $privilege_id) {
-                return $congress->badges[$i]->badge_id_generator;
+            if ($congress->badges[$i]->privilege_id == $privilege_id && $congress->badges[$i]->enable ==1 ) {
+                return $array = [
+                    "badge_id_generator" => $congress->badges[$i]->badge_id_generator,
+                    "badge_param" => $congress->badges[$i]->badge_param,
+                ];
+
             }
         }
         return null;

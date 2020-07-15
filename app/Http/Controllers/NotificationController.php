@@ -35,19 +35,27 @@ class NotificationController extends Controller
         }
 
         $deleteParam = $request->has('deleted') && $request->query('deleted') === 'true';
-        $firebaseKey = $request->input('token');
-
-        $userKey = $this->notificationService->getKeyByCongressId($congressId, $firebaseKey);
-
+        $source = $request->input('source');
+        $firebaseKey =  $source == 'frontOffice' ? null : $request->input('token') ;
+        $user_id =  $request->input('userId');   
+          $userKey = $this->notificationService->getKeyByCongressId($congressId, $firebaseKey,$user_id,$source);
+        
         if ($deleteParam || $userKey) {
             if ($deleteParam && $userKey) {
                 $userKey->delete();
                 return response(['message' => 'user deleted'], 200);
             }
-            return response(['message' => 'user exist'], 200);
+            //si le token qui exist deja est different que celui envoyé dans la requête
+            // on supprime puis on ajoute le nouveau
+            if ($userKey->firebase_key_user != $firebaseKey) {
+                $userKey->delete();
+            }
+            else {
+                return response(['message' => 'user exist'], 200);
+            }
         }
-
-        $this->notificationService->saveKeyByCongress($congressId, $firebaseKey);
+        $firebaseKey =  $request->input('token') ;
+        $this->notificationService->saveKeyByCongress($congressId, $firebaseKey,$user_id,$source);
 
         return response()->json(['message' => 'save with success']);
     }
@@ -57,14 +65,13 @@ class NotificationController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-
         $message = $request->input("message");
 
         $usersToken = $this->notificationService->getAllKeysByCongressId($congressId);
 
         $tokens = Utils::mapDataByKey($usersToken, 'firebase_key_user');
 
-        $this->notificationService->sendNotification($message, $tokens);
+        $this->notificationService->sendNotification($message, $tokens , true);
 
         return response()->json(['message' => 'success send']);
     }

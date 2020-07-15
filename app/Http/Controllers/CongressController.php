@@ -14,10 +14,12 @@ use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\GeoServices;
 use App\Services\MailServices;
+use App\Services\NotificationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
 use App\Services\PrivilegeServices;
 use App\Services\ResourcesServices;
+use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
@@ -42,8 +44,8 @@ class CongressController extends Controller
     protected $geoServices;
     protected $mailServices;
     protected $paymentServices;
-
-
+    protected $notificationService;
+    protected $roomServices; 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
@@ -53,17 +55,21 @@ class CongressController extends Controller
                          PackServices $packService,
                          GeoServices $geoServices,
                          MailServices $mailServices,
+                         RoomServices $roomServices,
+                         NotificationServices $notificationService,
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices)
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
         $this->adminServices = $adminServices;
+        $this->notificationService = $notificationService ;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
+        $this->roomServices = $roomServices ;
         $this->packService = $packService;
         $this->resourceService = $resourceService;
         $this->mailServices = $mailServices;
@@ -97,6 +103,35 @@ class CongressController extends Controller
         return response()->json(['message' => 'auto presence updating']);
     }
 
+    public function switchUsersRoom($congressId,Request $request) {
+
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+     
+        $event = $request->input('event');
+        $usersToken = $this->notificationService->getAllKeysByCongressIdAndSource($congressId,'frontOffice');
+        foreach ($usersToken as $userToken) {
+            if ($event == 'distribute') {
+            $access = $this->accessServices->getClosestAccess($userToken->user_id,$congressId);
+            if (!$access)
+                return response()->json(['message' => 'no access found '],400);
+            }
+            $data = [
+                'title' => $event,
+                'body' => $event == 'collect' ? 
+                         '/congress/room/'.$congressId :
+                         '/congress/room/'.$congressId . '/access/' . $access->access_id ,
+                'link' =>  $event == 'collect' ? 
+                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId :
+                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId . '/access/' . $access->access_id
+            ];
+            
+            $this->notificationService->sendNotification($data, [$userToken->firebase_key_user],false);
+        } 
+
+
+    }
     public function editConfigCongress(Request $request, $congressId)
     {
 
@@ -110,7 +145,19 @@ class CongressController extends Controller
 
         $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
 
-        $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId);
+        $newConfig = $request->input("congress");
+
+        $token = null ;
+
+        if ($newConfig['is_online']) {
+        $token =  $this->roomServices->createToken(
+            $loggedadmin->email, 
+            'eventizer_room_' .$congressId,
+            true,  
+            $loggedadmin->name
+        );
+    }
+        $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId,$token);
 
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
@@ -137,7 +184,7 @@ class CongressController extends Controller
             $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
         }
 
-        return response()->json(['message' => 'edit configs success']);
+        return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
     }
 
@@ -216,6 +263,7 @@ class CongressController extends Controller
         return response()->json([$configCongress, $location, $configSubmission]);
     }
 
+
     public function getStatsChartByCongressId($congressId)
     {
         $congress = $this->congressServices->getCongressByIdAndRelations($congressId, [
@@ -281,13 +329,16 @@ class CongressController extends Controller
                     }], null);
             foreach ($users as $user) {
                 if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
-                    $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                    $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
+                    $badgeIdGenerator = $badge['badge_id_generator'];
+
                     $fileAttached = false;
                     if ($badgeIdGenerator != null) {
-                        $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                            ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                            $user->qr_code);
+                        $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                            $user,
+                            $user->qr_code,
+                            $user->user_congresses[0]->privilege_id);
                     }
 
                     $userMail = null;
@@ -478,7 +529,6 @@ class CongressController extends Controller
         return $this->congressServices->getAllCongresses();
     }
 
-
     public function sendCustomMailToAllUsers($mail_id)
     {
         if (!$mail = $this->congressServices->getEmailById($mail_id))
@@ -519,12 +569,6 @@ class CongressController extends Controller
         $congress->program_link = $request->input('programLink');
         $congress->update();
         return $congress;
-    }
-
-    public function getAll()
-    {
-        return $this->congressServices->getAll();
-
     }
 
     function getParticipantsCounts(Request $request)
@@ -601,30 +645,6 @@ class CongressController extends Controller
         $this->mailServices->saveMail($congress->congress_id, 5, "Confirmation", "Voullez vous vraiment confirmer Cette action");
 
         return response()->json(["status" => "success added demo congress"], 200);
-    }
-
-    public function delete($congressId)
-    {
-        $congress = $this->congressServices->getCongressById($congressId);
-        if (!$congress) {
-            return response()->json(['response' => 'conrgess not found'], 404);
-        } elseif ($congress) {
-            $congress->delete();
-        }
-        return response()->json(['response' => 'congress deleted'], 202);
-    }
-
-    public function RemoveCongressFromAdmin($admin_id, $congressId)
-    {
-        $congress = $this->congressServices->getCongressById($congressId);
-        $admin = $this->adminServices->getAdminById($admin_id);
-        if (!($congress && $admin)) {
-            return response()->json(['response' => 'congress or admin not found'], 404);
-        } else {
-            $this->congressServices->RemoveCongressFromAdmin($congressId, $admin_id);
-            return response()->json(['response' => 'congress Removed from Admin'], 202);
-        }
-
     }
 
     public function getStatsByCongressId($congressId)

@@ -22,7 +22,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class UserController extends Controller
 {
     protected $smsServices;
@@ -143,16 +143,6 @@ class UserController extends Controller
         }
         return response()->json($user, 200);
 
-    }
-
-    public function getUserById($user_id)
-    {
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-
-        return response()->json($user, 200);
     }
 
     public function update(Request $request, $user_id)
@@ -400,13 +390,15 @@ class UserController extends Controller
                 }
             }
             //Confirm Direct
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $privilegeId
                 );
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
@@ -673,13 +665,15 @@ class UserController extends Controller
         $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
 
         if ($userPayement->isPaid != 1 && $isPaid == 1) {
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badgeIdGenerator,
-                    ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                    $user->qr_code
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $userCongress->privilege_id
                 );
             }
 
@@ -1311,5 +1305,64 @@ class UserController extends Controller
         if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
         return Storage::download($user->profile_pic);
     }
+    public function forgetPassword(Request $request )  {
+        if (!$request->has(['email']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
+
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+            return response()->json(['response' => 'email not found'], 404);}
+
+        if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('forget_password')) {
+            return response()->json(['response' => 'bad request'], 400);}
+
+        if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
+            return response()->json(['response' => 'bad request'], 400);}
+        $user->verification_code = Str::random(40);
+        $user->update();
+
+        $activationLink = $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/'. $user->user_id  . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id ;
+        $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
+        $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $activationLink), $user, null, $mail->object, null, $userMail);
+
+        return response()->json(['response' => 'Check your mail to reset password !'], 200);
+
+    }
+
+    public function getUserById($user_id ,Request $request)  {
+        
+        $verification_code = $request->query('verification_code', '');
+        if (!$user = $this->userServices->getUserById($user_id)) {
+            return response()->json(['response' => 'user not found'], 404);}
+        if ($user->verification_code !== $verification_code) {
+            return response()->json('bad request', 400);
+        }
+
+        return response()->json($user, 200);
+    }
+
+    public function resetUserPassword($userId , Request $request )  {
+        if (!$request->has(['verification_code', 'password']))
+            return response()->json(['response' => 'bad request'], 400);
+        $verification_code = $request->input('verification_code');
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['response' => 'user not found'], 404);}
+        if ($user->verification_code !== $verification_code) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('reset_password_success')) {
+            return response()->json(['response' => 'bad request'], 400);}
+
+        if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
+            return response()->json(['response' => 'bad request'], 400);}
+        $password = $request->input('password');
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
+        $user->update();
+        $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
+        $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
+
+        return response()->json(['response' => 'password successfully updated'], 200);
+    }
+
 
 }

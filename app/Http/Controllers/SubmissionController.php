@@ -7,7 +7,9 @@ use App\Models\Mail;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\CongressServices;
+use App\Services\EstablishmentServices;
 use App\Services\MailServices;
+use App\Services\ServiceServices;
 use App\Services\SubmissionServices;
 use App\Services\UserServices;
 use Exception;
@@ -21,12 +23,15 @@ class SubmissionController extends Controller
     protected $adminServices;
     protected $userServices;
     protected $congressServices;
-
+    protected $establishmentServices;
+    protected $serviceServices;
     function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
         AdminServices $adminServices,
         UserServices $userServices,
+        ServiceServices $serviceServices,
+        EstablishmentServices $establishmentServices,
         CongressServices $congressServices,
         MailServices $mailServices
     )
@@ -36,6 +41,8 @@ class SubmissionController extends Controller
         $this->adminServices = $adminServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
+        $this->establishmentServices = $establishmentServices ;
+        $this->serviceServices = $serviceServices ;
         $this->mailServices = $mailServices;
     }
 
@@ -59,7 +66,15 @@ class SubmissionController extends Controller
                 $request->input('submission.theme_id'),
                 $user->user_id
             );
-            $this->authorServices->saveAuthorsBySubmission($request->input('authors'), $submission->submission_id);
+            $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
+            $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
+            $this->authorServices->saveAuthorsBySubmission(
+                $request->input('authors'), 
+                $submission->submission_id,
+                $etablissements,
+                $services
+            
+            );
 
             $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
 
@@ -108,8 +123,16 @@ class SubmissionController extends Controller
                 $request->input('submission.description'),
                 $request->input('submission.theme_id')
             );
+            $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
+            $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
             $existingAuthors = $this->authorServices->getAuthorsBySubmissionId($submission->submission_id);
-            $this->authorServices->editAuthors($existingAuthors, $request->input('authors'), $submission->submission_id);
+            $this->authorServices->editAuthors(
+                $existingAuthors, 
+                $request->input('authors'), 
+                $submission->submission_id,
+                $services,
+                $etablissements
+            );
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
 
             $congress=$this->congressServices->getCongressById($submission->congress_id);
