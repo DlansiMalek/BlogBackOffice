@@ -442,7 +442,7 @@ class AdminController extends Controller
         $privilegeId = (int)$request->input('privilege_id');
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin,$privilegeId);
+            $admin = $this->adminServices->addPersonnel($admin);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;

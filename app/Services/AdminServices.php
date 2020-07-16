@@ -133,7 +133,6 @@ class AdminServices
                 $query->where('congress_id', '=', $congressId);
             }])
             ->orderBy('submission_count', 'asc')
-            ->where('privilege_id','=',$privilegeId)
             ->get();
     }
 
@@ -148,7 +147,6 @@ class AdminServices
                 $query->where('congress_id', '=', $congressId);
             }])
             ->orderBy('submission_count', 'asc')
-            ->where('privilege_id','=',$privilegeId)
             ->get();
     }
 
@@ -275,13 +273,12 @@ class AdminServices
     {
     }
 
-    public function addPersonnel($admin,$privilegeId)
+    public function addPersonnel($admin)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
-        $personnel->privilege_id = $privilegeId;
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
