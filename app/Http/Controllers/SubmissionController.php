@@ -191,8 +191,9 @@ class SubmissionController extends Controller
         return $this->submissionServices->getSubmission($submission_id);
     }
 
-    public function getCongressSubmission($congressId)
+    public function getCongressSubmission(Request $request,$congressId)
     {
+        $status = $request->query('status');
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
         }
@@ -202,7 +203,7 @@ class SubmissionController extends Controller
                 return response()->json(['response' => 'bad request'], 400);
             }
             $privilege_id = $adminCongress->privilege_id;
-            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id);
+            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id,$status);
 
             return response()->json($submissions, 200);
 

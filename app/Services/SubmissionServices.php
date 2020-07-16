@@ -127,10 +127,11 @@ class SubmissionServices
         ]);
     }
 
-    public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id)
+    public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id,$status)
     {
         if ($privilege_id == 1) {
             $allSubmission = $this->renderSubmissionForAdmin()
+                ->where('status','=',$status)
                 ->where('congress_id', '=', $congress_id)->get();
             $allSubmissionToRender = $allSubmission->map(function ($submission) {
                 return collect($submission->toArray())
@@ -152,7 +153,8 @@ class SubmissionServices
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     }
-                ])->where('congress_id', '=', $congress_id)->get();
+                ])->where('status','=',$status)
+                  ->where('congress_id', '=', $congress_id)->get();
             $allSubmissionToRender = $allSubmission->map(function ($submission) {
                 return collect($submission->toArray())
                     ->only(['submission_id', 'title', 'type',
@@ -188,7 +190,7 @@ class SubmissionServices
                     'resources',
                     'theme:theme_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
-                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note','communication_type_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     }
                 ])->where('submission_id', '=', $submission_id)->first();
