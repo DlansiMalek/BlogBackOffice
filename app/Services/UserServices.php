@@ -1064,6 +1064,14 @@ class UserServices
             ->delete();
     }
 
+    public function deleteUserAccessOnly($user_id, $congress_id){
+        return UserAccess::whereHas('access', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        })
+        ->where('user_id', '=', $user_id)
+        ->delete();
+    }
+
     public function getMinUserByQrCode($qrCode)
     {
         return User::where("qr_code", "=", $qrCode)

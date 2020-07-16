@@ -732,6 +732,8 @@ class UserController extends Controller
         $congress = $this->congressServices->getById($congressId);
         $users = $request->input("data");
         $refused= $request->query('refused');
+        if($refused=="false"){$refused=false;}
+        else{$refused=true;}
         //PrivilegeId = 3
         $sum = 0;
         $privilegeId = $request->input("privilegeId");
@@ -773,6 +775,8 @@ class UserController extends Controller
                     ]);
                     }else{
                         $user = $this->userServices->saveUser($request);
+                        $this->paymentServices->affectPaymentToUser($user->user_id,$congressId,0,false);
+                        $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
                     }
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
@@ -861,7 +865,9 @@ class UserController extends Controller
         $all_refused_participants=$this->userServices->getRefusedParticipants($congressId,$emails);       
             foreach($all_refused_participants as $refused_participant) 
             {
+                    //delete refused user user_access relations
                     $this->paymentServices->changeIsPaidStatus($refused_participant->user_id,$congressId,-1);
+                    $this->userServices->deleteUserAccessOnly($refused_participant->user_id,$congressId);
                     //envoi de mail de refus
                     if ($mailtype = $this->congressServices->getMailType('refus')) {
                         if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) 
