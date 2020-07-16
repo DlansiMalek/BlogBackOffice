@@ -10,12 +10,12 @@ use App\Models\SubmissionEvaluation;
 class SubmissionServices
 {
 
-    public function addSubmission($title, $type, $prez_type, $description, $congress_id, $theme_id, $user_id)
+    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id)
     {
         $submission = new Submission();
         $submission->title = $title;
         $submission->type = $type;
-        $submission->prez_type = $prez_type;
+        $submission->communication_type_id = $communication_type_id;
         $submission->description = $description;
         $submission->congress_id = $congress_id;
         $submission->theme_id = $theme_id;
@@ -24,11 +24,11 @@ class SubmissionServices
         return $submission;
     }
 
-    public function editSubmission($submission, $title, $type, $prez_type, $description, $theme_id)
+    public function editSubmission($submission, $title, $type, $communication_type_id, $description, $theme_id)
     {
         $submission->title = $title;
         $submission->type = $type;
-        $submission->prez_type = $prez_type;
+        $submission->communication_type_id = $communication_type_id;
         $submission->description = $description;
         $submission->theme_id = $theme_id;
         $submission->update();
@@ -50,7 +50,18 @@ class SubmissionServices
 
     public function getSubmissionById($submission_id)
     {
-        return Submission::where('submission_id', '=', $submission_id)->first();
+        return Submission::where('submission_id', '=', $submission_id)
+        ->first();
+    }
+
+    public function generateSubmissionCode($abrv) {
+        $count = (string) Submission::count();
+        $diff= 4 - strlen($count);
+        $code = '';
+        for ($i=0 ; $i<$diff ; $i++) {
+            $code = $code . '0';
+        }
+        return $code = $abrv . $code . $count;
     }
 
     public function saveResourceSubmission($resourceIds, $submission_id)
@@ -195,9 +206,8 @@ class SubmissionServices
     }
 
 
-    public function putEvaluationToSubmission($admin, $submissionId, $note)
+    public function putEvaluationToSubmission($admin, $submissionId, $note,$evaluation)
     {
-        $evaluation = $this->getSubmissionEvaluationByAdminId($admin, $submissionId);
         $evaluation->note = $note;
         $evaluation->save();
         $global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)

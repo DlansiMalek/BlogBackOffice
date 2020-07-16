@@ -4,16 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Author;
 use App\Models\Mail;
+use App\Models\Submission;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
+use App\Services\CommunicationTypeService;
 use App\Services\CongressServices;
 use App\Services\EstablishmentServices;
 use App\Services\MailServices;
 use App\Services\ServiceServices;
 use App\Services\SubmissionServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
+use DateTime;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 
 class SubmissionController extends Controller
@@ -25,6 +30,7 @@ class SubmissionController extends Controller
     protected $congressServices;
     protected $establishmentServices;
     protected $serviceServices;
+    protected $communicationTypeService;
     function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
@@ -33,7 +39,8 @@ class SubmissionController extends Controller
         ServiceServices $serviceServices,
         EstablishmentServices $establishmentServices,
         CongressServices $congressServices,
-        MailServices $mailServices
+        MailServices $mailServices,
+        CommunicationTypeService $communicationTypeService
     )
     {
         $this->submissionServices = $submissionServices;
@@ -44,23 +51,29 @@ class SubmissionController extends Controller
         $this->establishmentServices = $establishmentServices ;
         $this->serviceServices = $serviceServices ;
         $this->mailServices = $mailServices;
+        $this->communicationTypeService = $communicationTypeService;
     }
 
     public function addSubmission(Request $request)
     {
 
-        if (!($request->has('submission.title') && $request->has('submission.type') && $request->has('submission.prez_type')
+        if (!($request->has('submission.title') && $request->has('submission.type') && $request->has('submission.communication_type_id')
             && $request->has('submission.description') && $request->has('submission.congress_id') && $request->has('submission.theme_id')
             && $request->has('authors'))) {
             return response()->json(['response' => 'bad request'], 400);
         }
 
         try {
+            $configSubmission = $this->congressServices->getConfigSubmission(
+                $request->input('submission.congress_id'));
+            if ($configSubmission->end_submission_date < date('Y-m-d H:i:s')) {
+                return response()->json('deadline has been passed',400);
+            }
             $user = $this->userServices->retrieveUserFromToken();
             $submission = $this->submissionServices->addSubmission(
                 $request->input('submission.title'),
                 $request->input('submission.type'),
-                $request->input('submission.prez_type'),
+                $request->input('submission.communication_type_id'),
                 $request->input('submission.description'),
                 $request->input('submission.congress_id'),
                 $request->input('submission.theme_id'),
@@ -119,7 +132,7 @@ class SubmissionController extends Controller
                 $submission,
                 $request->input('submission.title'),
                 $request->input('submission.type'),
-                $request->input('submission.prez_type'),
+                $request->input('submission.communication_type_id'),
                 $request->input('submission.description'),
                 $request->input('submission.theme_id')
             );
@@ -199,7 +212,17 @@ class SubmissionController extends Controller
         }
     }
 
+    public function test(){
 
+        $var = (string) Submission::count();
+        $diff= 4 - strlen($var);
+        $finalString = '';
+        for ($i=0 ; $i<$diff ; $i++) {
+            $finalString = $finalString . '0';
+        }
+        return $finalString = $finalString . $var;
+
+    }
     public function getCongressSubmissionDetailById($submissionId)
     {
 
@@ -222,7 +245,65 @@ class SubmissionController extends Controller
         }
     }
 
+    public function finalDecisionOnSubmission(Request $request, $submission_id) {
+        //get submission by id
+        if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
+            return response()->json(['no submission found'],404);
+        }
+           // update status,type_id,limit_date
+        $submission->status = $request->input('status');
+        $submission->communication_type_id = $request->input('communication_type_id');
+        $submission->limit_date = $request->input('limit_date');
 
+     
+
+        // generate code 
+
+        if ($request->has('communication_type_id')) {
+            $type = $this->communicationTypeService->getCommunicationTypeById($request->input('communication_type_id'));
+            $code = $this->submissionServices->generateSubmissionCode($type->abrv);
+            $submission->code = $code ;
+        }
+
+        $submission->update();
+        //send email
+
+            $areFiles = $request->input('areFiles') ? 1 : 0 ;
+            $mailName = $request->input('status') == 3  ? 'Refus' : 
+            ($request->input('status') == 4 ? 'Attente_de_fichier' : 'Acceptation') ;
+            $mailtype = $this->congressServices->getMailType($mailName);
+            $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+
+            if ($mail)
+            {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                }
+                $link = '';
+                if ($areFiles && ($request->input('status')!== 3 )) {
+                    $link = UrlUtils::getBaseUrlFrontOffice() 
+                    .'/user-profile/submission/submit-resources/'.$submission->submission_id ;
+                }
+                $user = $this->userServices->getUserById($submission->user_id);
+                $this->userServices->sendMail(
+                    $this->congressServices->renderMail(
+                        $mail->template,
+                        null,
+                        null,
+                        $link,
+                        null,
+                        null
+                    ),
+                    $user, 
+                    null,
+                    $mail->object,
+                     null, 
+                     $userMail
+                );
+            }
+        
+    }
     public function putEvaluationToSubmission($submissionId, Request $request)
     {
         $note = $request->input('note', -1);
@@ -234,7 +315,9 @@ class SubmissionController extends Controller
             if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
                 return response()->json(['response' => 'bad request'], 400);
             }
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note);
+            $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
+            $evaluation->communication_type_id = $request->input('communication_type_id');
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note,$evaluation);
             return response()->json($evaluation, 200);
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
