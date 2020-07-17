@@ -45,7 +45,7 @@ class CongressController extends Controller
     protected $mailServices;
     protected $paymentServices;
     protected $notificationService;
-    protected $roomServices; 
+    protected $roomServices;
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
@@ -108,27 +108,27 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-     
+
         $event = $request->input('event');
         $usersToken = $this->notificationService->getAllKeysByCongressIdAndSource($congressId,'frontOffice');
         foreach ($usersToken as $userToken) {
             if ($event == 'distribute') {
-            $access = $this->accessServices->getClosestAccess($userToken->user_id,$congressId);
-            if (!$access)
-                return response()->json(['message' => 'no access found '],400);
+                $access = $this->accessServices->getClosestAccess($userToken->user_id,$congressId);
+                if (!$access)
+                    return response()->json(['message' => 'no access found '],400);
             }
             $data = [
                 'title' => $event,
-                'body' => $event == 'collect' ? 
-                         '/congress/room/'.$congressId :
-                         '/congress/room/'.$congressId . '/access/' . $access->access_id ,
-                'link' =>  $event == 'collect' ? 
-                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId :
-                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId . '/access/' . $access->access_id
+                'body' => $event == 'collect' ?
+                    '/congress/room/'.$congressId :
+                    '/congress/room/'.$congressId . '/access/' . $access->access_id ,
+                'link' =>  $event == 'collect' ?
+                    UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId :
+                    UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId . '/access/' . $access->access_id
             ];
-            
+
             $this->notificationService->sendNotification($data, [$userToken->firebase_key_user],false);
-        } 
+        }
 
 
     }
@@ -150,25 +150,25 @@ class CongressController extends Controller
         $token = null ;
 
         if ($newConfig['is_online']) {
-        $token =  $this->roomServices->createToken(
-            $loggedadmin->email, 
-            'eventizer_room_' .$congressId,
-            true,  
-            $loggedadmin->name
-        );
-    }
+            $token =  $this->roomServices->createToken(
+                $loggedadmin->email,
+                'eventizer_room_' .$congressId,
+                true,
+                $loggedadmin->name
+            );
+        }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId,$token);
 
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
         if (sizeof($submissionData) > 0) {
-        $this->congressServices->addCongressSubmission(
-            $configSubmission,
-            $submissionData,
-            $congressId
-        );
-    }
+            $this->congressServices->addCongressSubmission(
+                $configSubmission,
+                $submissionData,
+                $congressId
+            );
+        }
         if($theme_ids){
             $this->congressServices->addSubmissionThemeCongress(
                 $theme_ids,

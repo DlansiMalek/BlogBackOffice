@@ -114,6 +114,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
+    Route::get('payments','PaymentController@getPaymentsPagination');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
 
@@ -134,6 +135,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
         Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
+
     });
 
     //API PER CONGRESS
@@ -485,3 +487,6 @@ Route::group(["prefix" => "user-app"], function () {
     Route::get('/profile-pic/{user_id}', 'UserController@getProfilePic');
     Route::post('/send-firebase-key/{congress_id}', 'NotificationController@sendFirebaseKey');
 });
+
+
+

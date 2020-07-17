@@ -55,6 +55,7 @@
       "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     ],
     "post-create-project-cmd": [
+      "php -r \"copy('.env.example', '.env');\"",
       "php artisan key:generate"
     ],
     "post-install-cmd": [
@@ -66,6 +67,9 @@
   },
   "config": {
     "preferred-install": "dist",
+    "platform": {
+      "php": "7.2.0"
+    },
     "sort-packages": true,
     "optimize-autoloader": true
   }
