@@ -738,13 +738,11 @@ class UserController extends Controller
         $sum = 0;
         $privilegeId = $request->input("privilegeId");
         $organizationId = $request->input("organisationId");
-
-        $usersAccessIdTable=$request->input("usersAccessIdTable");
         $emails=[];
         $accessIdTable=[];
-        foreach ($usersAccessIdTable as $e){
-        $emails[]=$e["email_user"]; //get emails array (from excel doc)
-        $accessIdTable[]=$e["accessIdTable"];  //get accessId array array (from excel doc)
+        foreach($users as $e){
+            $emails[]=$e["EMAIL"];
+            $accessIdTable[]=$e["accessIdTable"];
         }
 
         // Affect All Access Free (To All Users)
@@ -754,9 +752,7 @@ class UserController extends Controller
             foreach ($users as $userData) {
                 if ($userData['EMAIL']) {
 
-                    $request->merge([
-                        'privilege_id' => $privilegeId, 'first_name' => $userData['NOM'],
-                        'last_name' => $userData['PRENOM'],
+                    $request->merge(['privilege_id' => $privilegeId,
                         'email' => $userData['EMAIL']
                     ]);
                     // Get User per mail
@@ -773,20 +769,17 @@ class UserController extends Controller
                         $query->where('congress_id', '=', $congressId);
                     }
                     ]);
-                    }else{
-                        $user = $this->userServices->saveUser($request);
-                        $this->paymentServices->affectPaymentToUser($user->user_id,$congressId,0,false);
-                        $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
-                    }
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
                     if (!$user_congress) {
                         $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
+                        $this->paymentServices->affectPaymentToUser($user->user_id,$congressId,0,false);
+                        $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
                     } else {
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->update();
+                        $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
                     }
-                
 
                     $new_access_array=null;
                     $old_access_id_array=[];
@@ -846,6 +839,7 @@ class UserController extends Controller
                                 }
                             }
                         }
+                        }
                         else
                         {
                             //new access_array empty
@@ -855,9 +849,10 @@ class UserController extends Controller
                                 $this->userServices->deleteAccessById($user->user_id,$old_access_array[$k]->access_id);
                             }
                         }   
+                        
+                    }
                 }
             }
-        }
 
         if($refused && $congress->congress_type_id==2)
         {
