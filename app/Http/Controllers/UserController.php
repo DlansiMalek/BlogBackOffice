@@ -860,9 +860,8 @@ class UserController extends Controller
         $all_refused_participants=$this->userServices->getRefusedParticipants($congressId,$emails);       
             foreach($all_refused_participants as $refused_participant) 
             {
-                    //delete refused user user_access relations
+                    //change user payment status
                     $this->paymentServices->changeIsPaidStatus($refused_participant->user_id,$congressId,-1);
-                    $this->userServices->deleteUserAccessOnly($refused_participant->user_id,$congressId);
                     //envoi de mail de refus
                     if ($mailtype = $this->congressServices->getMailType('refus')) {
                         if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) 
