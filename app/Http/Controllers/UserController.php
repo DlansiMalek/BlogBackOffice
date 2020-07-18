@@ -821,6 +821,7 @@ class UserController extends Controller
                                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
                                 }
+                            }
                             //delete the access if no longer exists on the excel sheet
                             // we loop in the old access aray
                             for ($j=0 ; $j< sizeof($old_access_array) ; $j++)
@@ -838,7 +839,6 @@ class UserController extends Controller
                                     $this->userServices->deleteAccessById($user->user_id,$old_access_array[$j]->access_id);
                                 }
                             }
-                        }
                         }
                         else
                         {
