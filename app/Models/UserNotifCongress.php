@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserNotifCongress extends Model
 {
-    use SoftDeletes;
 
     public $timestamps = true;
     protected $table = 'User_Notif_Congress';
