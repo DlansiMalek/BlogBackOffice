@@ -116,20 +116,25 @@ class SubmissionServices
         ]);
     }
 
-    public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id)
+    public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id ,$perPage = null, $search = null, $tri = null, $order = null)
     {
         if ($privilege_id == 1) {
             $allSubmission = $this->renderSubmissionForAdmin()
-                ->where('congress_id', '=', $congress_id)->get();
-            $allSubmissionToRender = $allSubmission->map(function ($submission) {
-                return collect($submission->toArray())
-                    ->only(['submission_id', 'title', 'type',
-                        'prez_type', 'description', 'global_note',
-                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
-                        'congress_id', 'created_at'])
-                    ->all();
-            });
-            return $allSubmissionToRender;
+                ->where('congress_id', '=', $congress_id)
+                ->where(function ($query) use ($search) {
+                    if ($search != "") {
+                        $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
+                    }
+                });
+            if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
+                || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id' 
+                || $tri == 'theme_id' || $tri == 'congress_id'))
+            {$allSubmission = $allSubmission->orderBy($tri, $order);}
+
+            $allSubmission=$perPage ? $allSubmission->paginate($perPage) : $allSubmission->get();
+            
+            return $allSubmission;
 
         } elseif ($privilege_id == 11) {
             $allSubmission = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
@@ -141,16 +146,19 @@ class SubmissionServices
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     }
-                ])->where('congress_id', '=', $congress_id)->get();
-            $allSubmissionToRender = $allSubmission->map(function ($submission) {
-                return collect($submission->toArray())
-                    ->only(['submission_id', 'title', 'type',
-                        'prez_type', 'description', 'global_note',
-                        'status', 'theme', 'submissions_evaluations',
-                        'congress_id', 'created_at'])
-                    ->all();
-            });
-            return $allSubmissionToRender;
+                ])->where('congress_id', '=', $congress_id)
+                ->where(function ($query) use ($search) {
+                    if ($search != "") {
+                        $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
+                    }
+                });
+            if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
+                || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id' 
+                || $tri == 'theme_id' || $tri == 'congress_id'))
+            {$allSubmission = $allSubmission->orderBy($tri, $order);}
+
+            return $allSubmission;
         }
     }
 
