@@ -184,8 +184,10 @@ class SubmissionServices
                     }
                 ])->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
+                if ($submissionById->status === 0) {
                 $submissionById->status = 2;
                 $submissionById->update();
+                }
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type',
                         'prez_type','user','description', 'global_note',
