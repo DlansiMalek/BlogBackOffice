@@ -10,6 +10,8 @@ namespace App\Services;
 
 use App\Models\AccessPack;
 use App\Models\Pack;
+use App\Models\UserPack;
+use Illuminate\Http\Request;
 
 class PackServices
 {
@@ -39,14 +41,14 @@ class PackServices
         return $pack;
     }
 
-    private function addAccessPack($pack_id , $acessIds) {
+    private function addAccessPack($pack_id , $accessIds) {
        
-       $this->addItemAccesPack($pack_id,$acessIds);
+       $this->addItemAccesPack($pack_id,$accessIds);
     }
 
-    private function addItemAccesPack($packId, $acessIds) {
+    private function addItemAccesPack($packId, $accessIds) {
 
-        foreach($acessIds as $access_id) {
+        foreach($accessIds as $access_id) {
         $access_pack = new AccessPack();
         $access_pack->access_id = $access_id;
         $access_pack->pack_id = $packId;
@@ -72,6 +74,48 @@ class PackServices
             }
         }
 
+    }
+
+    public function getUserPacksByPackId($pack_id){
+        return UserPack::where('pack_id','=',$pack_id)->get();
+    }
+
+    public function getAllAccessPackByPackId($pack_id)
+    {
+        return AccessPack::where('pack_id','=',$pack_id)->get();
+    }
+
+    public function deleteAccessPack($access_id,$pack_id)
+    {
+        AccessPack::where('access_id', '=', $access_id)
+        ->where('pack_id','=',$pack_id)
+        ->delete();
+    }
+
+    public function editpack($pack, Request $request)
+    {
+        
+        if ($request->has('label')) $pack->label = $request->input("label");
+        if ($request->has('description')) $pack->description = $request->input("description");
+        // problème mel kazi hedhi ( l condition)
+        // if( !($this->getUserPacksByPackId($pack->pack_id)) )
+        // {
+            if ($request->has('price')) $pack->price = $request->input("price");
+            if ($request->has('accessIds')) 
+            {
+                //delete all old access_packs
+                $old_access_packs=$this->getAllAccessPackByPackId($pack->pack_id);
+
+                foreach ($old_access_packs as $access_pack)
+                {
+                    $this->deleteAccessPack($access_pack->access_id,$pack->pack_id);
+                }
+                //add all new access_packs
+                $this->addAccessPack($pack->pack_id , $request->accessIds);
+            }
+        // }
+        $pack->update();
+        return $pack;
     }
 
 }
