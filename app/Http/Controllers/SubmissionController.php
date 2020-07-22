@@ -128,10 +128,14 @@ class SubmissionController extends Controller
                 return response()->json(['response' => 'no submission found'], 400);
             }
             $user = $this->userServices->retrieveUserFromToken();
+            $status =  $request->input('addExternalFiles') ? '5' : $submission->status ;
+                
+            
             $submission = $this->submissionServices->editSubmission(
                 $submission,
                 $request->input('submission.title'),
                 $request->input('submission.type'),
+                $status,
                 $request->input('submission.communication_type_id'),
                 $request->input('submission.description'),
                 $request->input('submission.theme_id')
@@ -146,8 +150,9 @@ class SubmissionController extends Controller
                 $services,
                 $etablissements
             );
+            if ( (!$submission->limit_date) || ( ($submission->limit_date > date('Y-m-d H:i:s')) && $submission->status === 4)) {
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
-
+            }
             $congress=$this->congressServices->getCongressById($submission->congress_id);
 
             $mailtype = $this->congressServices->getMailType('edit_submission');
@@ -213,17 +218,6 @@ class SubmissionController extends Controller
         }
     }
 
-    public function test(){
-
-        $var = (string) Submission::count();
-        $diff= 4 - strlen($var);
-        $finalString = '';
-        for ($i=0 ; $i<$diff ; $i++) {
-            $finalString = $finalString . '0';
-        }
-        return $finalString = $finalString . $var;
-
-    }
     public function getCongressSubmissionDetailById($submissionId)
     {
 
@@ -256,8 +250,6 @@ class SubmissionController extends Controller
         $submission->communication_type_id = $request->input('communication_type_id');
         $submission->limit_date = $request->input('limit_date');
 
-     
-
         // generate code 
 
         if ($request->has('communication_type_id')) {
@@ -268,8 +260,7 @@ class SubmissionController extends Controller
 
         $submission->update();
         //send email
-
-            $areFiles = $request->input('areFiles') ? 1 : 0 ;
+            $areFiles = $request->has('areFiles') ? 1 : 0 ;
             $mailName = $request->input('status') == 3  ? 'Refus' : 
             ($request->input('status') == 4 ? 'Attente_de_fichier' : 'Acceptation') ;
             $mailtype = $this->congressServices->getMailType($mailName);
@@ -303,6 +294,7 @@ class SubmissionController extends Controller
                      $userMail
                 );
             }
+            return response()->json(['final desicision made successfully'],200);
         
     }
     public function putEvaluationToSubmission($submissionId, Request $request)

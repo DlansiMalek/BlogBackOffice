@@ -24,10 +24,11 @@ class SubmissionServices
         return $submission;
     }
 
-    public function editSubmission($submission, $title, $type, $communication_type_id, $description, $theme_id)
+    public function editSubmission($submission, $title, $type, $status, $communication_type_id, $description, $theme_id)
     {
         $submission->title = $title;
         $submission->type = $type;
+        $submission->status = $status;
         $submission->communication_type_id = $communication_type_id;
         $submission->description = $description;
         $submission->theme_id = $theme_id;
@@ -121,7 +122,7 @@ class SubmissionServices
             'authors:submission_id,author_id,first_name,last_name',
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
-                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
+                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note','communication_type_id')
                     ->with(['evaluator:admin_id,name,email']);
             }
         ]);
@@ -131,7 +132,9 @@ class SubmissionServices
     {
         if ($privilege_id == 1) {
             $allSubmission = $this->renderSubmissionForAdmin()
-                ->where('status','=',$status)
+                ->when($status!=='null', function($query) use ($status) {
+                    $query->where('status','=',$status);
+                })
                 ->where('congress_id', '=', $congress_id)->get();
             $allSubmissionToRender = $allSubmission->map(function ($submission) {
                 return collect($submission->toArray())
@@ -153,7 +156,9 @@ class SubmissionServices
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     }
-                ])->where('status','=',$status)
+                ])->when($status!=='null', function($query) use ($status) {
+                    $query->where('status','=',$status);
+                })
                   ->where('congress_id', '=', $congress_id)->get();
             $allSubmissionToRender = $allSubmission->map(function ($submission) {
                 return collect($submission->toArray())
@@ -175,7 +180,7 @@ class SubmissionServices
                 ->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
                 $submissionToRender = $submissionById
-                    ->only(['submission_id', 'title', 'type',
+                    ->only(['submission_id', 'title', 'type','communication_type_id','limit_date',
                         'prez_type', 'description', 'global_note',
                         'status', 'theme', 'user', 'authors', 'submissions_evaluations',
                         'congress_id', 'created_at','congress','resources']);
