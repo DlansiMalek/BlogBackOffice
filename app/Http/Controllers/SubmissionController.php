@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Author;
 use App\Models\Mail;
-use App\Models\Submission;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\CommunicationTypeService;
