@@ -63,14 +63,10 @@ class PackController extends Controller
     {
         if (!$pack = $this->packServices->getPackById($pack_id))
         {return response()->json(['message' => 'pack not found'], 404);}
-        
+
         $pack=$this->packServices->editPack($pack, $request);
 
-        // return $this->packServices->getPackById($pack->pack_id);
         return $pack;
         
-        
-        // return $this->packServices->getUserPacksByPackId($pack_id);
-        // else return response()->json(['message' => 'pack already picked by users'], 404);
     }
 }

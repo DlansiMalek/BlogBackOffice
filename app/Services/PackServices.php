@@ -25,7 +25,7 @@ class PackServices
 
     public function getPackById($packId)
     {
-        return Pack::where('pack_id', '=', $packId)
+        return Pack::where('pack_id', '=', $packId)->with(['users'])
             ->first();
     }
     public function addPack($congressId, $label , $description, $price , $accessIds) {
@@ -97,10 +97,10 @@ class PackServices
         
         if ($request->has('label')) $pack->label = $request->input("label");
         if ($request->has('description')) $pack->description = $request->input("description");
-        // problème mel kazi hedhi ( l condition)
-        // if( !($this->getUserPacksByPackId($pack->pack_id)) )
-        // {
-            if ($request->has('price')) $pack->price = $request->input("price");
+        $user_packs=$this->getUserPacksByPackId($pack->pack_id);
+        if( count($user_packs)==0)
+        {
+            if ($request->has('price')) {$pack->price = $request->input("price");}
             if ($request->has('accessIds')) 
             {
                 //delete all old access_packs
@@ -113,7 +113,7 @@ class PackServices
                 //add all new access_packs
                 $this->addAccessPack($pack->pack_id , $request->accessIds);
             }
-        // }
+        }
         $pack->update();
         return $pack;
     }
