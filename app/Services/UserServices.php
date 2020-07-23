@@ -554,6 +554,17 @@ class UserServices
             ->get();
     }
 
+    public function getUsersSubmissionWithRelations($congressId, $relations)
+    {
+        return User::whereHas('submissions', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('status', '=', 1);
+        })
+            ->with($relations)
+            ->get();
+    }
+
+
     public function getUserByEmailAndCode($email, $code)
     {
         return User::with([
@@ -833,6 +844,67 @@ class UserServices
             $userMail->status = 1;
         } catch (\Exception $exception) {
             Storage::delete('app/badge.png');
+            $userMail->status = -1;
+        }
+        $userMail->update();
+        return $user;
+    }
+
+    public function sendMailAttesationSubmissionToUser($user, $congress, $userMail, $object, $view)
+    {
+        $email = $user->email;
+
+        $pathToFile = storage_path() . "/app/attestationSubmission.png";
+
+        try {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+
+                if ($congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
+                $message->attach($pathToFile);
+                $message->to($email)->subject($object);
+            });
+//            $userMail->status = 1;
+        } catch (\Exception $exception) {
+            Storage::delete('app/attestationSubmission.png');
+//            $userMail->status = -1;
+        }
+//        $userMail->update();
+        return $user;
+    }
+
+    public function sendMailAttesationSubmissionZipToUser($user, $congress, $userMail, $object, $view)
+    {
+        $email = $user->email;
+
+        $pathToFile1 = storage_path() . "/app/attestationsEposter.zip";
+        $pathToFile2 = storage_path() . "/app/attestationsCommunication_Orale.zip";
+
+        try {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile1, $pathToFile2) {
+                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+
+                if ($congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
+                $message->attach($pathToFile1);
+                $message->attach($pathToFile2);
+                $message->to($email)->subject($object);
+            });
+            $userMail->status = 1;
+        } catch (\Exception $exception) {
+            Storage::delete('app/attestationsEposter.zip');
+            Storage::delete('app/attestationsCommunication_Orale.zip');
             $userMail->status = -1;
         }
         $userMail->update();

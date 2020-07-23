@@ -9,7 +9,7 @@ class Submission extends Model
     protected $table = 'Submission';
     protected $primaryKey = 'submission_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
-    protected $fillable = ['title', 'type', 'prez_type', 'description', 'global_note', 'status'];
+    protected $fillable = ['title', 'type', 'communication_type_id', 'description', 'global_note', 'status'];
 
 
     public function user()

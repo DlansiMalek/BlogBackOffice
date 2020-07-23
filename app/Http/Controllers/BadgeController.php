@@ -77,7 +77,7 @@ class BadgeController extends Controller
             }
             $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $request->input('privilegeId'));
             $this->badgeServices->activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator);
-            return response()->json($this->congressServices->getMinimalCongress($congressId));
+            return response()->json($this->congressServices->getMinimalCongressById($congressId));
         }
         catch (Exception $e) {
             Log::info($e->getMessage());

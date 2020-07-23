@@ -115,5 +115,26 @@ class SharedServices
         return $val;
     }
 
+    public function submissionMapping($submission_title, $principal_author, $co_authors,$paramsSubmission)
+    {
+        $authors = "";
+        foreach ($co_authors as $author) {
+            $authors.= $author->first_name.' '.$author->last_name.' ,';
+        }
+        $authors = substr($authors, 0, -1);
+        $mappingList = ['principal_author' => $principal_author,
+            'submission_title' => $submission_title,
+            'co-authors' => $authors,];
+        $params = [];
+        foreach ($paramsSubmission as $param) {
+
+            $params[] =
+                ["key" => $param['key'], "value" => $this->mappingBadgeKey($param['key'], $mappingList)];
+
+        }
+        return ['qrCode' => false, 'texts' => $params];
+
+    }
+
 
 }

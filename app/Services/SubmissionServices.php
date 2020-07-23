@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\AttestationParams;
+use App\Models\AttestationSubmission;
 use App\Models\Author;
+use App\Models\CommunicationType;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionServices
 {
@@ -218,5 +222,147 @@ class SubmissionServices
     {
         return Submission::where('user_id', '=' , $user->user_id)->with('authors','congress')->get();
     }
+
+
+
+
+
+
+
+    public function  getAttestationSubmissionById($attestationSubmissionId) {
+        return AttestationSubmission::where('attestation_submission_id','=',$attestationSubmissionId)->first();
+    }
+
+    public function getAttestationsSubmissionsByCongressAndType($congressId, $communication_type_id) {
+        return AttestationSubmission::where('congress_id','=',$congressId)
+            ->where('communication_type_id','=',$communication_type_id)->get();
+    }
+
+    public function activateAttestationSubmission($attestationsSubmissions,$attestationSubmissionId) {
+        foreach($attestationsSubmissions as $a) {
+            if ($a->attestation_submission_id == $attestationSubmissionId) {
+                $a->enable = 1;
+                $a->update();
+            }
+            else {
+                $a->enable = 0;
+                $a->update();
+            }
+        }
+        return "activated successfully";
+    }
+    public function getAttestationSubmissionByCongress($congressId) {
+        return AttestationSubmission::with([
+            'communicationType',
+            'attestation_param',
+            'attestation_blanc_param'
+        ])->where('congress_id','=',$congressId)
+            ->orderBy('communication_type_id')
+            ->get();
+    }
+
+    public function  getCommunicationTypeById($communication_type_id) {
+        return CommunicationType::where('communication_type_id','=',$communication_type_id)->first();
+    }
+
+    public function getAttestationByGeneratorId($generatorId) {
+        return AttestationSubmission::where('attestation_generator_id','=',$generatorId)
+            ->first();
+    }
+    public function getAttestationByGeneratorBlankId($generatorId) {
+        return AttestationSubmission::where('attestation_generator_id_blank','=',$generatorId)
+            ->first();
+    }
+
+
+    public function updateOrCreateAttestationParams($generatorId,$keys,$update)
+    {
+        if ($update) {
+            AttestationParams::where('generator_id', '=', $generatorId)->delete();
+        }
+        foreach ($keys as $key) {
+            $attestationParam = new AttestationParams();
+            $attestationParam->generator_id = $generatorId;
+            $attestationParam->key = $key;
+            $attestationParam->save();
+        }
+    }
+
+    public function validerAttestation($congressId, $idGenerator, $communicationTypeId, $blank=false)
+    {
+        $attestationSubmission = new AttestationSubmission();
+        $attestationSubmission->congress_id = $congressId;
+
+        if ($blank) {
+            $attestationSubmission->attestation_generator_id_blank = $idGenerator;
+            $attestationSubmission->attestation_generator_id = null;
+
+        } else {
+            $attestationSubmission->attestation_generator_id = $idGenerator;
+            $attestationSubmission->attestation_generator_id_blank = null;
+
+        }
+        $attestationSubmission->communication_type_id = $communicationTypeId;
+        $attestationSubmission->enable = 1;
+        $attestationSubmission->save();
+
+        return $attestationSubmission;
+    }
+    public function getSubmissionType() {
+        return CommunicationType::get();
+    }
+    public function getSubmissionAcceptedByCongressByCommunicationType($congressId,$communicationTypeId) {
+        $submissionAccepted = Submission::with([
+            'user:user_id,first_name,last_name,email',
+            'authors:submission_id,author_id,first_name,last_name'])
+            ->where('congress_id','=',$congressId)
+            ->where('communication_type_id','=',$communicationTypeId)
+            ->where('status','=',1)->get();
+        return $submissionAccepted;
+    }
+    public function getAttestationSubmissionEnabled($congressId,$communicationTypeId) {
+        return AttestationSubmission::with([
+            'attestation_param',
+            'attestation_blanc_param'
+        ])
+            ->where('congress_id','=',$congressId)
+            ->where('communication_type_id','=',$communicationTypeId)
+            ->where('enable','=',1)->first();
+    }
+
+    public function saveAttestationsSubmissionsInPublic(array $request, $name)
+    {   if ($request) {
+        $zipName =  'attestations'.$name.'.zip';
+        $client = new \GuzzleHttp\Client();
+        $res = $client->request('POST',
+            UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro', [
+                'json' => $request
+            ]);
+        Storage::put($zipName, $res->getBody(), 'public');
+        return $zipName;
+    }}
+    public function saveAttestationSubmissionInPublic(array $request, $IdGenerator)
+    {   if ($request) {
+        try {
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('POST',
+                UrlUtils::getUrlBadge() . '/badge/generateParticipantPro', [
+                    'json' => [
+                        'badgeIdGenerator' => $IdGenerator,
+                        'fill' => $request
+                    ]
+                ]);
+            Storage::put('attestationSubmission.png', $res->getBody(), 'public');
+            return true;
+        } catch (ClientException $e) {
+            return false;
+        }
+    }}
+    public function getSubmissionByIdWithRelation($relations,$submissionId) {
+        return Submission::with($relations)
+            ->where('submission_id','=',$submissionId)->first();
+
+}
+
 
 }

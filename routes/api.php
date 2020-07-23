@@ -186,6 +186,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+        Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
+        Route::post('attestation-submission/activate', 'SubmissionController@activateAttestationByCongressByType')->middleware("admin");
+        Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
+        Route::get('attestation-submission/enabled/{communicationTypeId}', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
 
 
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
@@ -222,9 +226,15 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
+    Route::get('types', 'SubmissionController@getSubmissionType');
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
+    Route::get('accepted/{congressId}/{communicationTypeId}', 'SubmissionController@getSubmissionAccepted');
+    Route::get('send_mail_attestation/all/{congressId}', 'SubmissionController@senMailAttestationAllSubmission');
+    Route::get('{submissionId}/send_mail_attestation/{congressId}', 'SubmissionController@sendMailAttestationById');
+
     Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
+
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
