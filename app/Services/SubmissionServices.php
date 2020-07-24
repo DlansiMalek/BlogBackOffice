@@ -108,7 +108,8 @@ class SubmissionServices
         return Submission::with([
             'user:user_id,first_name,last_name,email',
             'authors' =>  function($query) {
-                $query->select('submission_id','author_id','first_name','last_name')
+                $query->select('submission_id','author_id','first_name','last_name','service_id',
+                'etablissement_id')
                 ->with(['service','etablissment']);
             },
             'theme:theme_id,label',
@@ -121,6 +122,7 @@ class SubmissionServices
 
     public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id)
     {
+      
         if ($privilege_id == 1) {
             $allSubmission = $this->renderSubmissionForAdmin()
                 ->where('congress_id', '=', $congress_id)->get();
