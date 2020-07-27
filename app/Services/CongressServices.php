@@ -352,43 +352,6 @@ class CongressServices
             ->get();
     }
 
-    public function getLabsByCongress($congressId)
-    {
-        return Organization::with(['users' => function ($q) use ($congressId) {
-            $q->where('User.congress_id', '=', $congressId);
-        }])->whereHas('users', function ($q) use ($congressId) {
-            $q->where('User.congress_id', '=', $congressId);
-        })->get();
-    }
-
-    public function getOrganizationInvoiceByCongress($labId, $congress)
-    {
-        $lab = $this->organizationServices->getOrganizationById($labId);
-        $totalPrice = 0;
-        $packs = Pack::whereCongressId($congress->congress_id)->with(['participants' => function ($q) use ($labId) {
-            $q->where('User.organization_id', '=', $labId);
-        }])->get();
-        foreach ($packs as $pack) {
-            $packPrice = $pack->price;
-            $pack->price = 0;
-            foreach ($pack->participants as $participant) {
-                $pack->price += $packPrice;
-            }
-            $totalPrice += $pack->price;
-        }
-        $today = date('d-m-Y');
-        $data = [
-            'packs' => $packs,
-            'congress' => $congress,
-            'today' => $today,
-            'lab' => $lab,
-            'totalPrice' => $totalPrice,
-            'displayTaxes' => false
-        ];
-        $pdf = PDF::loadView('pdf.invoice.invoice', $data);
-        return $pdf->download($lab->name . '_facture_' . $today . '.pdf');
-    }
-
     public function getBadgeByPrivilegeId($congress, $privilege_id)
     {
         for ($i = 0; $i < sizeof($congress->badges); $i++) {

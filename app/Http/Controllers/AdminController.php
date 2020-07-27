@@ -557,34 +557,6 @@ class AdminController extends Controller
         }
     }
 
-    public
-    function eliminateInscription($congressId)
-    {
-        $users = $this->userServices->getUsersByCongressWithAccess($congressId);
-        Log::info($users);
-        foreach ($users as $user) {
-            $access1 = 0;
-            $access2 = 0;
-            foreach ($user->accesss as $access) {
-                if ($access->access_id == 2 || $access->access_id == 3 || $access->access_id == 4) {
-                    if ($access1 != 0) {
-                        $access->delete();
-                    }
-                    $access1 = 1;
-
-                }
-                if ($access->access_id == 5 || $access->access_id == 6 || $access->access_id == 7) {
-                    if ($access2 != 0) {
-                        $access->delete();
-                    }
-                    $access2 = 1;
-                }
-            }
-        }
-        return response()->json(['message' => 'success']);
-
-    }
-
     public function sendCredentialsViaEmailToOrganizer($adminId, Request $request)
     {
 

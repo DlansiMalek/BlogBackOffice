@@ -378,21 +378,6 @@ class CongressController extends Controller
         return sizeof($users) == 0;
     }
 
-    public function getLabsByCongress($congress_id)
-    {
-        $labs = $this->congressServices->getLabsByCongress($congress_id);
-        return $labs;
-    }
-
-    public function getOrganizationInvoice($congressId, $labId)
-    {
-
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(['error' => 'congres not found'], 404);
-        }
-        return $this->congressServices->getOrganizationInvoiceByCongress($labId, $congress);
-    }
-
     public function sendMailAllParticipantsSondage($congressId)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {

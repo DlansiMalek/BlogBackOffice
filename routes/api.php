@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-// Functional API
-Route::get('/synchroData', 'SharedController@synchroData');
-Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
-Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
 
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
@@ -25,7 +21,6 @@ Route::get('/services', 'SharedController@getAllServices');
 Route::get('/etablissements', 'SharedController@getAllEtablissements');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
-Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 
@@ -45,18 +40,9 @@ Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
     Route::get('{id}/send-sms', 'CustomSMSController@sendSmsToUsers');
     Route::post('/configure', 'CustomSMSController@saveCustomSMS');
     Route::delete('/{id}/delete', 'CustomSMSController@deleteSMS');
-    Route::delete('/{id}/user/{userId}/delete', 'CustomSMSController@deleteUserSms');
 });
 /* Files API */
-Route::group(['prefix' => 'congress-logo/{path}'], function () {
-    Route::get('', 'FileController@getLogoCongress');
-    Route::post('delete', 'FileController@deleteLogoCongress');
-});
 
-Route::group(['prefix' => 'congress-banner/{path}'], function () {
-    Route::get('', 'FileController@getBannerCongress');
-    Route::post('delete', 'FileController@deleteBannerCongress');
-});
 Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
     Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
@@ -102,7 +88,6 @@ Route::group(['prefix' => 'auth'], function () {
 
 });
 
-Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
@@ -121,19 +106,14 @@ Route::group(['prefix' => 'users'], function () {
             Route::delete('delete', 'UserController@delete');
             Route::post('upload-payement', 'UserController@uploadPayement');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
-            Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
             Route::get('payment', 'UserController@getUserByCongressIdAndUserIdForPayement');
             Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
             Route::get('send-sondage', 'UserController@sendSondage');
         });
 
-        Route::put('', 'UserController@update');
-        Route::get('sendConfirmationEmail', 'UserController@resendConfirmationMail');
-        Route::get('sendingMailWithAttachement', 'UserController@sendingMailWithAttachement');
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
-        Route::put('set-qr', 'UserController@changeQrCode')->middleware('organisateur');
     });
 
     //API PER CONGRESS
@@ -162,7 +142,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
     });
     Route::post('upload-mail-image', 'CongressController@uploadMailImage');
-    Route::get('file/{file_path}', 'SharedController@getFile');
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
@@ -175,8 +154,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
         Route::get('config', 'CongressController@getCongressConfigById');
-        Route::get('/eliminateInscription', 'AdminController@eliminateInscription');
-        Route::post('badge/upload', 'BadgeController@uploadBadgeToCongress');
         Route::post('/upload-logo', 'FileController@uploadLogo');
         Route::post('/upload-banner', 'FileController@uploadBanner');
         Route::post('/upload-cv/{userId}', 'FileController@uploadCV');
@@ -188,7 +165,6 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
 
 
-        Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
@@ -198,14 +174,7 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
                 ->where('accessId', '[0-9]+');
             Route::post('affect/divers', 'BadgeController@affectAttestationDivers');
         });
-        Route::group(['prefix' => 'invoices'], function () {
-            Route::group(['prefix' => 'organization'], function () {
-                Route::get('', 'CongressController@getLabsByCongress');
-                Route::group(['prefix' => '{labId}'], function () {
-                    Route::get('', 'CongressController@getOrganizationInvoice');
-                });
-            });
-        });
+
         Route::get('mail/types', 'MailController@getAllMailTypes');
         Route::post('mail/type/{mailTypeId}', 'MailController@saveMail');
         Route::post('organization', 'OrganizationController@addOrganization');
@@ -246,9 +215,6 @@ Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], func
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
-
-    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
-
 
     Route::post('/register', 'UserController@registerUser');
 

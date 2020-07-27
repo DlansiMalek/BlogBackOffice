@@ -127,18 +127,6 @@ class UserServices
         return $this->getUserById($newUser->user_id);
     }
 
-    public function sendConfirmationMail($user, $congress_name)
-    {
-        $link = "https://congress-api.vayetek.com/api/users/" . $user->user_id . "/validate/" . $user->verification_code;
-        $email = $user->email;
-        Mail::send('verificationMail', [
-            'congress_name' => $congress_name, 'last_name' => $user->last_name,
-            'first_name' => $user->first_name, 'link' => $link
-        ], function ($message) use ($email) {
-            $message->to($email)->subject('Validation du compte');
-        });
-    }
-
     public function getParticipatorById($user_id)
     {
         $user = User::with([
@@ -163,17 +151,6 @@ class UserServices
         $updateUser->update();
         return $updateUser;
     }
-
-    public function impressionBadge($user)
-    {
-
-        $data = [
-            "name" => $user->first_name . " " . $user->last_name
-        ];
-        $pdf = PDF::loadView('pdf.badge', $data);
-        return $pdf->save(public_path() . "/badge/invitation.pdf");
-    }
-
 
     public function sendCredentialsOrganizerMail(Admin $admin)
     {
@@ -633,13 +610,6 @@ class UserServices
             $user->voting_token = $admin->voting_token;
         }
         return $users;
-    }
-
-    public function getUsersByCongressWithAccess($congressId)
-    {
-        return User::with(['accesss'])
-            ->where('congress_id', '=', $congressId)
-            ->get();
     }
 
     public function getUsersEmailNotSendedByCongress($congressId)
