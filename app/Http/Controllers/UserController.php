@@ -209,30 +209,6 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function getUsersByPrivilegeByCongress(Request $request, $congressId)
-    {
-        if (!$request->has(['privileges'])) {
-            return response()->json(["error" => "privileges is required"], 400);
-        }
-        $privileges = $request->input('privileges');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(["error" => "congress not found"], 404);
-        }
-        $users = $this->userServices->getUsersByCongressByPrivileges($congressId, $privileges);
-
-        foreach ($users as $user) {
-            foreach ($user->accesss as $access) {
-                if ($access->pivot->isPresent == 1) {
-                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                    $access->attestation_status = $infoPresence['enabled'];
-                    $access->time_in_access = $infoPresence['time'];
-                } else
-                    $access->attestation_status = 0;
-            }
-        }
-        return response()->json($users);
-    }
-
     public function addUserToCongress(Request $request, $congressId)
     {
 

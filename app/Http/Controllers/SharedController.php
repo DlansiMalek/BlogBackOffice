@@ -43,11 +43,6 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getAllCountries());
     }
 
-    public function encrypt($password)
-    {
-        return bcrypt($password);
-    }
-
     function randomPassword()
     {
         $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';

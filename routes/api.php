@@ -224,14 +224,12 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
             Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');
-            Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');
             Route::put('edit/{userId}', 'UserController@editerUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
             Route::post('status-presence', 'UserController@getUserStatusPresences');
-            Route::get('mailTest', 'CongressController@sendMailTest');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
 
             Route::group(['prefix' => 'access'], function () {
@@ -302,7 +300,6 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
             Route::post('status/update', 'AdminController@makeUserPresentCongress');
             Route::post('status/update/access', 'AdminController@makeUserPresentAccess');
             Route::post('set-refpayement', 'AdminController@setRefPayment');
-            //Route::post('paied-status', 'AdminController@updatePaiedParticipator');
         });
     });
 
@@ -311,12 +308,6 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
 //Access API
 Route::group(['prefix' => 'access'], function () {
     Route::get('{accessId}/user/{userId}/verify-privilege', 'AccessController@verifyPrivilegeByAccess');
-    Route::post('/grant-access-country/{countryId}', 'AccessController@grantAccessByCountry');
-    Route::post("/grant-access-participant/{participantTypeId}", 'AccessController@grantAccessByParticipantType');
-    Route::group(['prefix' => 'congress'], function () {
-        Route::get('{congress_id}/list', 'AccessController@getAllAccessByCongress');
-    });
-
 });
 
 // Super Admin API
@@ -357,29 +348,9 @@ Route::group(['prefix' => 'currency'],function () {
     Route::get('convert-rates','CurrencyController@getConvertCurrency');
 });
 
-//Geo API
-Route::group(['prefix' => 'geo'], function () {
-    Route::group(['prefix' => 'countries'], function () {
-        Route::get('', 'GeoController@getAllCountries');
-        Route::get('{country_id}/cities', 'GeoController@getCitiesByCountry');
-    });
-    Route::group(['prefix' => 'cities'], function () {
-        Route::get('', 'GeoController@getAllCities');
-    });
-});
-
 Route::group(['prefix' => 'payment'], function () {
-    Route::get('notification', 'PaymentController@notification');
-    Route::post('success', 'PaymentController@successPayment');
-    Route::get('echec', 'PaymentController@echecPayment');
-
     Route::post('notification-post', 'PaymentController@notification');
 });
-
-Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');
-Route::get('generateTickets', 'AdminController@generateTickets');
-Route::get('updateUsers', 'AdminController@updateUsers');
-Route::get('generateUserQrCode', 'AdminController@generateUserQrCode');
 
 Route::group(['prefix' => 'payement'], function () {
     Route::get('/types', 'UserController@getAllPayementTypes');
@@ -404,12 +375,8 @@ Route::group(['prefix' => 'voting', 'middleware' => 'admin'], function () {
 });
 Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
-    Route::post("polls", "VotingController@getMultipleListPolls");
-    Route::post("send-scores", "VotingController@sendScores");
 });
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
-
-Route::get('encrypt/{password}', 'SharedController@encrypt');
 
 Route::group(['prefix' => 'resource'], function () {
     Route::post('', 'ResourcesController@uploadResource')->middleware('admin');

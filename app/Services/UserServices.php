@@ -713,14 +713,6 @@ class UserServices
         }
     }
 
-    public function getUsersByCongressByPrivileges($congressId, $privileges)
-    {
-        return User::whereIn('privilege_id', $privileges)
-            ->where("congress_id", "=", $congressId)
-            ->with(['accesss.attestations', 'organization', 'privilege'])
-            ->get();
-    }
-
     public function saveUsersFromExcel($congress_id, $users)
     {
         foreach ($users as $user) {
@@ -834,13 +826,6 @@ class UserServices
             ->first();
     }
 
-    public function getUsersByContry($congressId, $countryId)
-    {
-        return User::where('congress_id', '=', $congressId)
-            ->where('country_id', '=', $countryId)
-            ->get();
-    }
-
     public function saveUserResponses($responses, $userId)
     {
         foreach ($responses ? $responses : [] as $req) {
@@ -901,13 +886,6 @@ class UserServices
     {
         $users = User::where("qr_code", '=', $qr)->get();
         return count($users) > 0;
-    }
-
-    public function getUsersByParticipantTypeId($congressId, $participantTypeId)
-    {
-        return User::where('privilege_id', '=', $participantTypeId)
-            ->where('congress_id', '=', $congressId)
-            ->get();
     }
 
     public function affectAllAccess($user_id, $accesss)

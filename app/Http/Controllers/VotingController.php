@@ -104,34 +104,6 @@ class VotingController extends Controller
         return $this->votingService->getListPolls($userResponse['token']);
     }
 
-    public function getMultipleListPolls(Request $request)
-    {
-        $res = [];
-        foreach ($request->all() as $token) {
-            $userResponse = $this->votingService->signinUser($token);
-
-            $temp = $this->votingService->getListPolls($userResponse['token']);
-            if ($temp && count($temp)) {
-                $res = array_merge($res, $temp);
-            }
-        }
-        return $res;
-    }
-
-    public function sendScores(Request $request)
-    {
-        $scoreVotes = $request->all();
-        foreach ($scoreVotes as $scoreVote) {
-            if ($this->userService->getUserById($scoreVote['userId']) && $this->votingService->getAccessVoteById($scoreVote['accessVoteId'])) {
-                if (!$oldVoteScore = $this->votingService->getByUserIdAndAccessVote($scoreVote['userId'], $scoreVote['accessVoteId']))
-                    $this->votingService->addScore($scoreVote);
-                else
-                    $this->votingService->updateScore($oldVoteScore, $scoreVote);
-            }
-        }
-        return response()->json(["message" => "adding successs"], 200);
-    }
-
     public function getQuiz(Request $request)
     {
         $tokens = [];
