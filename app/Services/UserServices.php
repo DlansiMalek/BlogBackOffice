@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AccessPresence;
+use App\Models\Access;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
@@ -201,13 +202,6 @@ class UserServices
             ->get();
     }
 
-    public function getAllParticipatorByCongress($congressId)
-    {
-        return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
-            ->where("id_Congress", "=", $congressId)
-            ->get();
-    }
-
     public function getParticipatorByQrCode($qr_code, $congressId)
     {
         return User::where('qr_code', '=', $qr_code)->with(['accesses' => function ($query) use ($congressId) {
@@ -316,11 +310,40 @@ class UserServices
         }
     }
 
-    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister)
+    public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+
+        if ($packIds) {
+            $this->AffectPacksToUserWithPackIdsArray($user_id, $packIds);
+        } else if ($packs) {
+            $this->AffectPacksToUserWithPackArray($user_id, $packs);
+        }
+    }
+
+    private function AffectPacksToUserWithPackIdsArray($user_id,$packIds) {
+        
+        foreach($packIds as $packId) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $packId;
+            $user_pack->save();
+        }
+    }
+
+    private function AffectPacksToUserWithPackArray($user_id,$packs) {
+        foreach ($packs as $pack) {
+            $user_pack = new UserPack();
+            $user_pack->user_id = $user_id;
+            $user_pack->pack_id = $pack['pack_id'];
+            $user_pack->save();
+        }
+    }
+
+    public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
         return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
             $query->where('congress_id', '=', $congressId);
-            $query->where('show_in_register', '=', $showInRegister);
+            if($showInRegister)
+                $query->where('show_in_register', '=', $showInRegister);
         }])
             ->where("user_id", "=", $userId)
             ->first();
@@ -421,6 +444,7 @@ class UserServices
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'country'])
+            ->with(['accesses'])
             ->get();
         return $users;
     }
@@ -1073,13 +1097,10 @@ class UserServices
             ->first();
     }
 
-    public function checkUserRights($user)
+    public function checkUserRights($user, $accessId = null)
     {
-        if ($user && sizeof($user->accesses) > 0 && $user->user_access[0]['token_jitsi']) {
-            return 1;
-        }
-        if ($user && sizeof($user->user_congresses) > 0 && sizeof($user->accesses) > 0) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && (sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
+        if ($user && sizeof($user->user_congresses) > 0 && (!$accessId || sizeof($user->accesses) > 0)) {
+            if ($user->user_congresses[0]['privilege_id'] == 3 && (!$accessId || sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
                 return 2;
             }
             if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
@@ -1233,7 +1254,7 @@ class UserServices
         return $user_access;
     }
 
-    private function deleteAccessById($user_id, $accessId)
+    public function deleteAccessById($user_id, $accessId)
     {
         return UserAccess::where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
@@ -1352,5 +1373,15 @@ class UserServices
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return null;
         }
+    }
+
+    public function getRefusedParticipants($congressId,$emails_array)
+    {
+        //users id who are registred in the congress
+        $accepted_user_id_array= UserCongress::select('user_id')->where('congress_id','=',$congressId)
+        ->where('privilege_id','=',3);
+        //users who got refused with mails refused
+        return User::whereIn('user_id',$accepted_user_id_array)
+        ->whereNotIn('email', $emails_array)->get();
     }
 }

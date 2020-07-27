@@ -9,7 +9,7 @@ class UserCongress extends Model
     public $timestamps = true;
     protected $table = 'User_Congress';
     protected $primaryKey = 'user_congress_id';
-    protected $fillable = ['user_id', 'congress_id', 'isPresent', 'organization_accepted', 'privilege_id', 'organization_id', 'pack_id', 'pack_admin_id'];
+    protected $fillable = ['user_id', 'congress_id', 'isPresent', 'token_jitsi', 'organization_accepted', 'privilege_id', 'organization_id', 'pack_id', 'pack_admin_id'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     public function user()
@@ -35,9 +35,5 @@ class UserCongress extends Model
     public function pack()
     {
         return $this->belongsTo('App\Models\Pack', 'pack_id', 'pack_id');
-    }
-    public function packAdmin()
-    {
-        return $this->belongsTo('App\Models\PackAdmin', 'pack_admin_id', 'pack_admin_id');
     }
 }

@@ -70,11 +70,6 @@ class Admin extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\PaymentAdmin', 'admin_id', 'admin_id');
     }
 
-    public function AdminHistories()
-    {
-        return $this->hasMany('App\Models\HistoryPack', 'admin_id', 'admin_id');
-    }
-
     public function getJWTIdentifier()
     {
         return $this->getKey();

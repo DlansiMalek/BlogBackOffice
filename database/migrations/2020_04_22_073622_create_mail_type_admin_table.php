@@ -17,7 +17,6 @@ class CreateMailTypeAdminTable extends Migration
             $table->increments("mail_type_admin_id");
             $table->string("name");
             $table->string("display_name");
-
             $table->softDeletes();
             $table->timestamps();
         });
@@ -30,8 +29,6 @@ class CreateMailTypeAdminTable extends Migration
      */
     public function down()
     {
-
-
         Schema::dropIfExists('Mail_Type_Admin');
     }
 }
