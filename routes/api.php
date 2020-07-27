@@ -280,9 +280,15 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
 
     });
-
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
         ->middleware('assign.guard:users');
+});
+Route::group(['prefix' => 'user/participator'], function () {
+
+    Route::group(['prefix' => '{id_Participator}'], function () {
+        Route::post('set-refpayement', 'UserController@setRefPayment');
+
+    });
 });
 //Admin API
 Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
@@ -410,6 +416,8 @@ Route::group(['prefix' => 'payment'], function () {
     Route::get('echec', 'PaymentController@echecPayment');
 
     Route::post('notification-post', 'PaymentController@notification');
+    Route::get('{id}','PaymentController@getPaymentByID');
+    Route::get('{congressID}/{userID}', 'PaymentController@getPaymentByUserAndCongressID');
 });
 
 Route::get('updateUserWithCongress', 'AdminController@updateUserWithCongress');

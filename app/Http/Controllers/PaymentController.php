@@ -146,8 +146,13 @@ class PaymentController extends Controller
         $method = $request->query('method');
         $min = $request->query('min',0);
         $max = $request->query('max',9999999999);
-//        return response()->json(["response" => $request->all()],200);
         return $this->paymentServices->getPaymentPagination($user_id, $offset, $perPage, $search, $status, $method, $min, $max);
+    }
+    public function getPaymentByID(Request $request, $paymentID){
+        return $this->paymentServices->getPaymentByID($request, $paymentID);
+    }
+    public function getPaymentByUserAndCongressID(Request $request, $congressID, $userID){
+        return $this->paymentServices->getPaymentByUserAndCongressID($request, $congressID, $userID);
     }
 
 

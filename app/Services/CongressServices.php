@@ -460,8 +460,8 @@ class CongressServices
 
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
-        $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
-        $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
+        //$template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
+       // $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
