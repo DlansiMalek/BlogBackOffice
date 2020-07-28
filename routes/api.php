@@ -127,7 +127,7 @@ Route::group(['prefix' => 'users'], function () {
 });
 
 //Congress API
-Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
+Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], function () {
 
     Route::get('/all', 'CongressController@getAllCongresses');
 
@@ -212,7 +212,7 @@ Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], func
 });
 
 //User API
-Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
+Route::group(['prefix' => 'user', "middleware" => ['assign.guard:users']], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
@@ -247,7 +247,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
         ->middleware('assign.guard:users');
 });
 //Admin API
-Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
+Route::group(['prefix' => 'admin', "middleware" => "admin"], function () {
     Route::group(['prefix' => 'rfid'], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
