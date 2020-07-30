@@ -227,6 +227,15 @@ class BadgeServices
         return "activated successfully";
     }
 
+    public function getBadgeByIdGenerator($badgeIdGenerator) {
+        return Badge::where('badge_id_generator','=',$badgeIdGenerator)->first();
+    }
+    public function deleteBadge($badge) {
+       BadgeParams::where('badge_id','=',$badge->badge_id)->delete();
+        $badge->delete();
+        return 'Badge deleted successfully';
+    }
+
 
 
 }

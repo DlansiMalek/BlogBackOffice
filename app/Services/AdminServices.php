@@ -434,4 +434,15 @@ class AdminServices
         return $admin;
     }
 
+    public function getAdminByCongressByAdminIdByPrivilegeId($congressId, $adminId, $privilegeId=null) {
+
+        if ($privilegeId)
+        {return AdminCongress::where('congress_id', '=', $congressId)
+            ->where('admin_id', '=', $adminId)->where('privilege_id','=',$privilegeId)->first();}
+        else {
+            return AdminCongress::where('congress_id', '=', $congressId)
+                ->where('admin_id', '=', $adminId)->first();
+        }
+    }
+
 }

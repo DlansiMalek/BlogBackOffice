@@ -186,10 +186,12 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+        Route::post('badge/delete', 'BadgeController@deleteBadgeByCongress');
         Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
         Route::post('attestation-submission/activate', 'SubmissionController@activateAttestationByCongressByType')->middleware("admin");
+        Route::post('attestation-submission/delete', 'SubmissionController@deleteAttestationByCongress')->middleware("admin");
         Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
-        Route::get('attestation-submission/enabled/{communicationTypeId}', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
+        Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
 
 
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
@@ -228,9 +230,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('types', 'SubmissionController@getSubmissionType');
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
-    Route::get('accepted/{congressId}/{communicationTypeId}', 'SubmissionController@getSubmissionAccepted');
+    Route::get('accepted/{congressId}', 'SubmissionController@getSubmissionAccepted');
     Route::get('send_mail_attestation/all/{congressId}', 'SubmissionController@senMailAttestationAllSubmission');
     Route::get('{submissionId}/send_mail_attestation/{congressId}', 'SubmissionController@sendMailAttestationById');
+    Route::get('{submissionId}/make_eligible/{congressId}', 'SubmissionController@makeSubmissionEligible');
 
     Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');

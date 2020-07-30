@@ -110,7 +110,7 @@ class MailTypeSeedTable extends Seeder
             'type' => "submission",
         ]);
         DB::table('Mail_Type')->insert([
-            'mail_type_id' => 18,
+            'mail_type_id' => 19,
             'name' => 'attestation',
             'display_name' => 'Attestation',
             'type' => "submission",

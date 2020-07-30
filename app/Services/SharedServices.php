@@ -36,6 +36,42 @@ class SharedServices
         return Etablissement::all();
     }
 
+    public function saveAttestationsSubmissionsInPublic(array $request)
+    {   if ($request) {
+        $zipName =  'attestationsSubmission.zip';
+        $client = new \GuzzleHttp\Client();
+
+        $res = $client->request('POST',
+//            'http://127.0.0.1:8000'
+            UrlUtils::getUrlBadge(). '/badge/generateParticipantsPro/multiple', [
+                'json' =>
+                    [
+                        'participants' => $request,
+                    ]
+
+            ]);
+        Storage::put($zipName, $res->getBody(), 'public');
+        return $zipName;
+    }}
+    public function saveAttestationSubmissionInPublic(array $request, $IdGenerator)
+    {   if ($request) {
+        try {
+            //'http://127.0.0.1:8000'
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('POST',
+                UrlUtils::getUrlBadge() . '/badge/generateParticipantPro', [
+                    'json' => [
+                        'badgeIdGenerator' => $IdGenerator,
+                        'fill' => $request
+                    ]
+                ]);
+            Storage::put('attestationSubmission.png', $res->getBody(), 'public');
+            return true;
+        } catch (ClientException $e) {
+            return false;
+        }
+    }}
+
     public function saveBadgeInPublic($badge, $user, $qrCode, $privilegeId)
     {
         try {

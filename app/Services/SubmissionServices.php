@@ -251,6 +251,19 @@ class SubmissionServices
         }
         return "activated successfully";
     }
+
+    public function makeSubmissionEligible($submission) {
+        $submission->eligible = 1;
+        $submission->update();
+        return 'submission is eligible';
+    }
+    public function deleteAttestationSubmission($attestationSubmission) {
+
+        AttestationParams::where('generator_id', '=', $attestationSubmission->attestation_generator_id)->delete();
+        AttestationParams::where('generator_id', '=', $attestationSubmission->attestation_generator_id_blank)->delete();
+        $attestationSubmission->delete();
+        return "deleted successfully";
+    }
     public function getAttestationSubmissionByCongress($congressId) {
         return AttestationSubmission::with([
             'communicationType',
@@ -311,53 +324,25 @@ class SubmissionServices
     public function getSubmissionType() {
         return CommunicationType::get();
     }
-    public function getSubmissionAcceptedByCongressByCommunicationType($congressId,$communicationTypeId) {
+    public function getSubmissionAcceptedByCongress($congressId) {
         $submissionAccepted = Submission::with([
             'user:user_id,first_name,last_name,email',
             'authors:submission_id,author_id,first_name,last_name'])
             ->where('congress_id','=',$congressId)
-            ->where('communication_type_id','=',$communicationTypeId)
-            ->where('status','=',1)->get();
+            ->where('status','=',1)
+            ->where('eligible','=','1')
+            ->get();
         return $submissionAccepted;
     }
-    public function getAttestationSubmissionEnabled($congressId,$communicationTypeId) {
+    public function getAttestationSubmissionEnabled($congressId) {
         return AttestationSubmission::with([
             'attestation_param',
             'attestation_blanc_param'
         ])
             ->where('congress_id','=',$congressId)
-            ->where('communication_type_id','=',$communicationTypeId)
-            ->where('enable','=',1)->first();
+            ->where('enable','=',1)->get();
     }
 
-    public function saveAttestationsSubmissionsInPublic(array $request, $name)
-    {   if ($request) {
-        $zipName =  'attestations'.$name.'.zip';
-        $client = new \GuzzleHttp\Client();
-        $res = $client->request('POST',
-            UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro', [
-                'json' => $request
-            ]);
-        Storage::put($zipName, $res->getBody(), 'public');
-        return $zipName;
-    }}
-    public function saveAttestationSubmissionInPublic(array $request, $IdGenerator)
-    {   if ($request) {
-        try {
-            $client = new \GuzzleHttp\Client();
-            $res = $client->request('POST',
-                UrlUtils::getUrlBadge() . '/badge/generateParticipantPro', [
-                    'json' => [
-                        'badgeIdGenerator' => $IdGenerator,
-                        'fill' => $request
-                    ]
-                ]);
-            Storage::put('attestationSubmission.png', $res->getBody(), 'public');
-            return true;
-        } catch (ClientException $e) {
-            return false;
-        }
-    }}
     public function getSubmissionByIdWithRelation($relations,$submissionId) {
         return Submission::with($relations)
             ->where('submission_id','=',$submissionId)->first();

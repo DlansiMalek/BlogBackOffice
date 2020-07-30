@@ -24,6 +24,10 @@ class UserServices
 
     private $path = 'profile-pic/';
 
+    public function __construct()
+    {
+        ini_set('max_execution_time', 300);
+    }
     public function getAllUsers()
     {
         return User::orderBy('updated_at', 'asc')
@@ -883,11 +887,10 @@ class UserServices
     {
         $email = $user->email;
 
-        $pathToFile1 = storage_path() . "/app/attestationsEposter.zip";
-        $pathToFile2 = storage_path() . "/app/attestationsCommunication_Orale.zip";
+        $pathToFile = storage_path() . "/app/attestationsSubmission.zip";
 
         try {
-            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile1, $pathToFile2) {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
                 $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
 
                 if ($congress->config && $congress->config->replyto_mail) {
@@ -897,14 +900,12 @@ class UserServices
                 $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
                 $message->subject($object);
                 $message->setBody($view, 'text/html');
-                $message->attach($pathToFile1);
-                $message->attach($pathToFile2);
+                $message->attach($pathToFile);
                 $message->to($email)->subject($object);
             });
             $userMail->status = 1;
         } catch (\Exception $exception) {
-            Storage::delete('app/attestationsEposter.zip');
-            Storage::delete('app/attestationsCommunication_Orale.zip');
+            Storage::delete('app/attestationsSubmission.zip');
             $userMail->status = -1;
         }
         $userMail->update();
