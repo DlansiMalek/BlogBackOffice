@@ -596,4 +596,39 @@ class CongressServices
             ->where('admin_id', '=', $admin->admin_id)->first();
     }
 
+    public function getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user) {
+        $congresses = Congress::withCount([
+            'submissions' => function($query) use($user) {
+            $query->whereHas('user', function($q) use($user){
+                $q->where('user_id', '=', $user->user_id);});
+            },
+            'accesss' => function($query) use($user) {
+                $query->whereHas('user_accesss', function($q) use($user){
+                    $q->where('user_id', '=', $user->user_id)->where('isPresent','=',1);});
+            },
+        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,program_link,status,free")->whereHas('user_congresses', function($q) use($user){
+            $q->where('user_id', '=', $user->user_id);})->orderBy('start_date', 'desc');
+        if ($startDate) {
+            $congresses = $congresses->where('start_date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $congresses = $congresses->where('end_date', '<=', $endDate);
+        }
+        $todayDate = date("Y-m-d");
+        if ($status == "0") {
+            $congresses = $congresses->where('end_date', '<=', $todayDate);
+        }
+        if ($status == "1") {
+            $congresses = $congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate);;
+        }
+        if ($status == "2") {
+            $congresses = $congresses->where('start_date', '>', $todayDate);
+        }
+        $congresses_filter = $congresses->where('name', 'LIKE', '%' . $search . '%')
+            ->orWhere('description', 'LIKE', '%' . $search . '%')
+            ->offset($offset)->limit($perPage)
+            ->get();
+        return $congresses_filter;
+
+    }
 }

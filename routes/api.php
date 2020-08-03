@@ -281,6 +281,8 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
         ->middleware('assign.guard:users');
+    Route::get('me/events', 'CongressController@getUserCongress')
+        ->middleware('assign.guard:users');
 });
 //Admin API
 Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
