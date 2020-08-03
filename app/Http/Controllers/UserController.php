@@ -108,7 +108,7 @@ class UserController extends Controller
                 $query->where('show_in_register', '=', 1);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            },
+            }, 'packs',
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
@@ -344,7 +344,7 @@ class UserController extends Controller
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
         //Save Access Premium
         if ($privilegeId == 3) {
-            $this->userServices->affectPacksToUser($user->user_id, $request->input('packIds'));
+            $this->packServices->affectPacksToUser($user->user_id , $request->input('packIds'),0) ;
             $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
                 $user->user_id,
                 $congress_id,
@@ -356,8 +356,9 @@ class UserController extends Controller
             $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
         } else {
             $packs = $this->packServices->getAllPackByCongress($congress_id);
-            $this->userServices->affectPacksToUser($user->user_id, null, $packs);
-            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 1);
+            $packIds = $this->packServices->getPackIdsByPacks($packs);
+            $this->packServices->affectPacksToUser($user->user_id,$packIds,0);
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0,1);
             $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
 
             $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 1);
@@ -446,8 +447,8 @@ class UserController extends Controller
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'accesses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-                $query->where('show_in_register', '=', 1);
-            }, 'payments' => function ($query) use ($congressId) {
+            }, 'user_packs'
+            , 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -490,8 +491,27 @@ class UserController extends Controller
         $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesses);
 
         if ($privilegeId != 3) {
-            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
-            $accessIds = $this->accessServices->getAccessIdsByAccess($accessInRegister);
+            $packs = $this->packServices->getAllPackByCongress($congressId);
+            $packIds = $this->packServices->getPackIdsByPacks($packs);
+            $this->packServices->editUserPacksWithPackId($userId,$user->user_packs,$packIds);
+            $allAccess = $this->accessServices->getMainByCongressId($congressId);
+            $accessIds = $this->accessServices->getAccessIdsByAccess($allAccess);
+        }
+        else {
+            
+            $this->packServices->editUserPacksWithPackId($userId,$user->user_packs,$request->input('packIds'));
+            $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0,0);
+            $accessNotInRegisterIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
+            $accessIds = array_merge($accessIds,$accessNotInRegisterIds);
+            $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
+                $user->user_id,
+                $congressId,
+                $request->input('packIds'),
+                1,
+                0
+            );
+            $accessInPackNotInRegisterIds = $this->accessServices->getAccessIdsByAccess($accessInPackNotInRegister);
+            $accessIds = array_merge($accessIds,$accessInPackNotInRegisterIds);
         }
 
         if ($accessIds && array_count_values($accessIds)) {
