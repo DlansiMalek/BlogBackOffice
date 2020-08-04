@@ -82,9 +82,13 @@ class CongressController extends Controller
         if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return $this->congressServices->addCongress($request, $request->input('config'), $admin->admin_id);
+        return $this->congressServices->addCongress(
+        $request, 
+        $request->input('config'), 
+        $admin->admin_id,
+        $request->input('config_selection')
+    );
     }
-
     public function editStatus(Request $request, $congressId, $status)
     {
         $presence = $request->query('presence');
@@ -244,6 +248,9 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function getById($congress_id) {
+        return response()->json($this->congressServices->getById($congress_id));
+    }
     public function getCongressById($congress_id)
     {
         ini_set('memory_limit', '-1');

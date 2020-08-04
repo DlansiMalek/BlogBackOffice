@@ -78,6 +78,13 @@ class AdminController extends Controller
      * )
      *
      */
+    public function getEvaluators($congress_id) {
+        return $this->adminServices->getEvaluatorsByCongress(
+            $congress_id,
+            13,
+            'user'
+        );
+    }
     public function scanParticipatorQrCode(Request $request)
     {
         if (!$request->has(['qrcode'])) {
@@ -440,7 +447,9 @@ class AdminController extends Controller
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
             $admin = $this->adminServices->addPersonnel($admin);
+            //affect users to personnel
             $admin_id = $admin->admin_id;
+
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress
@@ -462,6 +471,18 @@ class AdminController extends Controller
 
         if ($privilegeId == 11) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
+        }
+        if ($privilegeId == 13 && 
+        $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1)
+        ) {
+            
+                $this->adminServices->affectUsersToEvaluator(
+                    $congress->users,
+                    $congress->config_selection->num_evaluators,
+                    $admin_id,
+                    $congress_id
+                );
+            
         }
 
         //create admin congress bind privilege admin and congress

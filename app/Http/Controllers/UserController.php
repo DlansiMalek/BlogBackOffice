@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
+use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -114,7 +115,7 @@ class UserController extends Controller
             }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
-            'responses.form_input.type'
+            'responses.form_input.type','packs'
         ]);
 
         return response()->json($user);
@@ -206,6 +207,35 @@ class UserController extends Controller
         return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
+    public function getInscriptionDetails($congressId,$userId) {
+        if (!$user = $this->userServices->getUserByIdWithRelations($userId, [
+            'accesses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('show_in_register', '=', 1);
+            }, 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 
+            'inscription_evaluation' => function($query) use($congressId) {
+                $query->select(['user_id','note','admin_id'])->where('congress_id', '=', $congressId);
+            },
+            'inscription_evaluation.admin' => function($query)  {
+                $query->select(['admin_id','name']);
+            },
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.values', 'responses.form_input.values',
+            'responses.form_input.type','packs'
+        ])) {
+            return response()->json('no user found',404);
+        }
+       
+        $avg_note = $this->userServices->getAverageNote($userId,$congressId);
+        $avg_note = bcdiv($avg_note,1,2);
+        $user['avg_note'] = $avg_note;
+        return response()->json($user,200);
+    }
     public function getUsersByCongressPagination($congressId, Request $request)
     {
 
@@ -213,7 +243,8 @@ class UserController extends Controller
         $search = $request->query('search', '');
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
-        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order);
+        $admin_id = $request->query('admin_id',null);
+        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order,$admin_id);
 
 
         foreach ($users as $user) {
@@ -240,6 +271,105 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function affectScoreToUser($congress_id,$user_id,Request $request) {
+        if (!($request->has('note') && $request->has('admin_id') )) {
+            return response()->json('some fields are missing',400);
+        }
+        if (!$evaluation = $this->userServices->getEvaluationInscriptionByUserId(
+            $user_id,
+            $congress_id,
+            $request->input('admin_id'))){
+            return response()->json('evaluation not found',404);
+        }
+       
+        $this->userServices->affectNoteToUser(
+            $evaluation,
+            $request->input('note'),
+            $request->has('commentaire') ?  $request->input('commentaire') : null
+        );
+
+        return response()->json('Evaluation has been updated successfully',200);
+
+    }
+    public function getUserCongress($congress_id) {
+       $users =  User::whereHas('user_congresses', function ($query) use ($congress_id) {
+                  $query->where('congress_id', '=', $congress_id);
+        })
+        ->with(['inscription_evaluation' => function($query) {
+            $query->select(['user_id','note']);
+        }]);
+
+        return $users->get();
+        
+    } //à  effacer
+
+
+    // public function getUserDetails($user_id) {
+    //     $this->userServices->getUserByIdWithRelations($user_id,
+    //         ['accesses' => function ($query) use ($congressId) {
+    //             $query->where('congress_id', '=', $congressId);
+    //         }, ''
+            
+    //         ]
+        
+    //     );
+    // }
+    public function affectGlobaleScoreTouser($congress_id,$user_id,Request $request) {
+        // if selection avant payment => ajout ligne payment + envoi de mail
+
+        if (!($request->has('global_score') && $request->has('isSelected'))) {
+            return response()->json('some fields are missing',400);
+        }
+
+        $user_congress = $this->userServices->getUserCongress($congress_id,$user_id);
+        $user_congress->globale_score = $request->input('global_score');
+        $user_congress->isSelected = $request->input('isSelected');
+        $user_congress->update();
+        if ($request->input('isSelected') === 1 && 
+            $user_congress->congress->congress_type_id == 1 && 
+            $user_congress->congress->config_selection && 
+            $user_congress->congress->config_selection->selection_type == 1  
+            ) {
+                $this->addPaymentToUser(
+                    $request->root(),
+                    $user_congress->user,
+                    $user_congress->congress,
+                    $user_congress->congress->price
+                );
+             
+
+        }
+        $name = $request->input('isSelected') === 1 ?  'Inscription accecpted': 'Inscription refused';
+        //envoi de mail selon selected
+        if ($mailtype = $this->congressServices->getMailType($name)) {
+            if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_id);
+                $this->userServices->sendMail(
+                    $this->congressServices->renderMail(
+                        $mail->template, $user_congress->congress, $user_congress->user, null, null, null),
+                         $user_congress->user, 
+                         $user_congress->congress, 
+                         $mail->object, 
+                         false, 
+                         $userMail);
+            }
+        }
+
+        return response()->json('success',200);
+    
+    }
+
+    public function addPaymentToUser($root,$user,$congress,$price) {
+        $link = $root . "/api/users/" . $user->user_id . '/congress/' . $congress->congress_id . '/validate/' . $user->verification_code;
+                $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id , $congress->congress_id, $price, false);
+
+                if ($mailtype = $this->congressServices->getMailType('inscription')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                    }
+                }
+    }
     public function getUsersByPrivilegeByCongress(Request $request, $congressId)
     {
         if (!$request->has(['privileges'])) {
@@ -305,7 +435,8 @@ class UserController extends Controller
             }
         } else
             $user = $this->userServices->editUser($request, $user);
-
+           
+            // affect to user to evalutor 
         return response()->json($user);
     }
 
@@ -320,8 +451,11 @@ class UserController extends Controller
         }
 
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+        
             $user = $this->userServices->saveUser($request);
+       
+        }
         else
             $user = $this->userServices->editUser($request, $user);
 
@@ -379,7 +513,7 @@ class UserController extends Controller
         $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
-        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $request->input("price") == 0) || $isFree) {
+        if ($privilegeId != 3 || $congress->congress_type_id == 2 || $congress->congress_type_id == 3 ||  ($congress->congress_type_id == 1 && $request->input("price") == 0) || $isFree) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -389,6 +523,7 @@ class UserController extends Controller
                     }
                 }
             }
+            
             //Confirm Direct
             $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
             $badgeIdGenerator = $badge['badge_id_generator'];
@@ -409,17 +544,36 @@ class UserController extends Controller
                 }
             }
             $this->smsServices->sendSms($congress_id, $user, $congress);
-        } else {
+        } else  {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
-            $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), false);
+            if ( ($congress->congress_type_id == 1 && (!$congress->config_selection))||
+             ( $congress->congress_type_id == 1 && $congress->config_selection && 
+              ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3 )) ) { 
+            $this->addPaymentToUser(
+                $request->root(),
+                $user,
+                $congress,
+                $request->input('price')
+            );
+           
+        }
+    }
+        if (
+            $privilegeId == 3 &&
+             ($congress->congress_type_id == 2 ||
+            ($congress->congress_type_id == 1 &&
+             ($congress->config_selection)
+             ))) {
+               
+            $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id,13,'user');
+            $this->adminServices->affectEvaluatorsToUser(
+                $evalutors,
+                $congress->config_selection->num_evaluators,
+                $congress_id,
+                $user->user_id
 
-            if ($mailtype = $this->congressServices->getMailType('inscription')) {
-                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
-                }
-            }
+            );
         }
 
         // Notify Organizer Mail Rule (privilege ==3 & configCongress Activated & form user-register not backoffice add)
@@ -615,7 +769,7 @@ class UserController extends Controller
         return response()->json($this->paymentServices->getAllPaymentTypes());
     }
 
-
+  
     public function getUserStatusPresences($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {

@@ -58,7 +58,10 @@ class Admin extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany('App\Models\Submission', 'Submission_Evaluation', 'admin_id', 'submission_id');
     }
-
+    public function user()
+    {
+        return $this->belongsToMany('App\Models\User',  'Evaluation_Inscription', 'admin_id', 'user_id');
+    }
     
     public function payments()
     {

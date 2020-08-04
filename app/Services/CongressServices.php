@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
+use App\Models\ConfigSelection;
 use App\Models\CongressTheme;
 use App\Models\Congress;
 use App\Models\Location;
@@ -36,7 +37,12 @@ class CongressServices
 
     public function getById($congressId)
     {
-        return Congress::find($congressId);
+        return Congress::where('congress_id','=',$congressId)
+        ->with( ['config_selection','users' => function($query) {
+            $query->select('User.user_id');
+        }])
+        ->first();
+        
     }
 
     public function getAll()
@@ -49,7 +55,9 @@ class CongressServices
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
 
-
+  public function getCongressByIdWithoutRelations($congress_id) {
+      return Congress::where('congress_id','=',$congress_id)->first();
+  }
     public function getCongressPagination($offset, $perPage, $search)
     {
 
@@ -101,6 +109,7 @@ class CongressServices
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "config_selection",
             "badges" => function ($query) use ($congressId) {
                 $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
             },
@@ -127,6 +136,7 @@ class CongressServices
             ->with([
                 'users.responses.form_input',
                 'config',
+                'config_selection',
                 "badges",
                 "attestation",
                 "packs.accesses",
@@ -190,8 +200,10 @@ class CongressServices
             return null;
         }
     }
+  
+    
 
-    public function addCongress($congressRequest, $configRequest, $adminId)
+    public function addCongress($congressRequest, $configRequest, $adminId,$configSelectionRequest)
     {
         $congress = new Congress();
         $congress->name = $congressRequest->input('name');
@@ -210,6 +222,19 @@ class CongressServices
         $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
+         if ( 
+         $congressRequest->input('congress_type_id') == 2  || 
+         ($congressRequest->input('congress_type_id') == 1  &&   $congressRequest->input('withSelection') ) ) {
+
+        $config_selection = new ConfigSelection();
+        $config_selection->congress_id = $congress->congress_id;
+        $config_selection->num_evaluators = $configSelectionRequest['num_evalutors'];
+        $config_selection->selection_type = $configSelectionRequest['selection_type'];
+        $config_selection->start_date = $configSelectionRequest['start_date'];
+        $config_selection->end_date = $configSelectionRequest['end_date'];
+        $config_selection->save();        
+
+        }
         $admin_congress = new AdminCongress();
         $admin_congress->admin_id = $adminId;
         $admin_congress->congress_id = $congress->congress_id;
