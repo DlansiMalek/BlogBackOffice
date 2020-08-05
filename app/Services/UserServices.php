@@ -880,11 +880,11 @@ class UserServices
     public function saveUserResponses($responses, $userId)
     {
         foreach ($responses ? $responses : [] as $req) {
-
             $reponse = new FormInputResponse();
             if (!array_key_exists("response", $req)) {
 
                 $reponse->user_id = $userId;
+
                 $reponse->form_input_id = $req['form_input_id'];
                 $reponse->response = null;
                 $reponse->save();
@@ -1056,6 +1056,18 @@ class UserServices
             $user_congress->organization_id = $request->input('organization_id');
         if ($request->has('pack_id'))
             $user_congress->pack_id = $request->input("pack_id");
+
+        $user_congress->save();
+        return $user_congress;
+    }
+    public function saveParticipantToCongress($congress_id, $user_id, $privilegeId, $pack_id)
+    {
+        $user_congress = new UserCongress();
+        $user_congress->user_id = $user_id;
+        $user_congress->congress_id = $congress_id;
+
+        $user_congress->privilege_id = $privilegeId;
+        $user_congress->pack_id = $pack_id;
 
         $user_congress->save();
         return $user_congress;
