@@ -73,3 +73,5 @@ FROM `User_Access` UA1 , `User_Access` UA2
 Where UA1.user_access_id > UA2.user_access_id 
 And UA1.user_id = UA2.user_id
 And UA1.access_id = UA2.access_id
+
+*/

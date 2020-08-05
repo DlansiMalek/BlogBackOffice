@@ -23,18 +23,24 @@ class NotificationServices
 
     }
 
-    public function getKeyByCongressId($congressId, ?string $firebaseKey)
+    public function getKeyByCongressId($congressId,?string $firebaseKey,$userId,$source)
     {
         return UserNotifCongress::where('congress_id', '=', $congressId)
-            ->where('firebase_key_user', '=', $firebaseKey)
+            ->where('user_id','=',$userId)
+            ->where('source','=',$source)
+            ->when($firebaseKey !=null, function($query) use ($firebaseKey) {
+                $query->where('firebase_key_user','=',$firebaseKey);
+            })
             ->first();
     }
 
-    public function saveKeyByCongress($congressId, ?string $firebaseKey)
+    public function saveKeyByCongress($congressId, ?string $firebaseKey, $userId = null, $source)
     {
         $userNotifCongress = new UserNotifCongress();
         $userNotifCongress->congress_id = $congressId;
         $userNotifCongress->firebase_key_user = $firebaseKey;
+        $userNotifCongress->user_id = $userId;
+        $userNotifCongress->source = $source;
         $userNotifCongress->save();
     }
 
@@ -43,33 +49,46 @@ class NotificationServices
         return UserNotifCongress::where('congress_id', '=', $congressId)
             ->get();
     }
-
-    public function sendNotification($message, $tokens)
+    public function getAllKeysByCongressIdAndSource($congressId, $source)
     {
-        // TODO Activate ...
+        return UserNotifCongress::where('congress_id', '=', $congressId)
+            ->where('source','=',$source)
+            ->get();
+    }
 
-        /*$optionBuilder = new OptionsBuilder();
-        $optionBuilder->setTimeToLive(60 * 20);
+    public function sendNotification($data, $tokens,$withNotification)
+    {
 
-        $notificationBuilder = new PayloadNotificationBuilder();
-        $notificationBuilder->setBody($message)
-            ->setSound('default');
+        if(sizeof($tokens)>0) {
 
-        $dataBuilder = new PayloadDataBuilder();
-        $dataBuilder->addData(['data_1' => 'value data 1']);
+            $optionBuilder = new OptionsBuilder();
+            $optionBuilder->setTimeToLive(60 * 20);
+            $notification = null ;
+            $dataBuilder = new PayloadDataBuilder();
+            if (gettype($data) == 'array')
+            $dataBuilder->addData($data);
+            else {
+                $dataBuilder->addData(['data_1' => 'value data 1']);
+            }
+            $option = $optionBuilder->build();
+            if ($withNotification)  {
+                
+                $notificationBuilder = new PayloadNotificationBuilder();
+                $notificationBuilder->setBody($data)
+                    ->setSound('default');
+                $notification = $notificationBuilder->build();
+            }
+            $data = $dataBuilder->build();
+           
+             FCM::sendTo($tokens, $option, $notification, $data);
 
-        $option = $optionBuilder->build();
-        $notification = $notificationBuilder->build();
-        $data = $dataBuilder->build();
-
-        FCM::sendTo($tokens, $option, $notification, $data);*/
+        }
     }
 
     public function sendNotificationToCongress(string $message, $congress_id)
     {
         $tokens = Utils::mapDataByKey($this->getAllKeysByCongressId($congress_id), 'firebase_key_user');
-
-        $this->sendNotification($message, $tokens);
+        $this->sendNotification($message, $tokens,true);
     }
 
 }

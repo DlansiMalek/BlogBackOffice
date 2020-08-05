@@ -26,9 +26,9 @@ class SmsServices
     public function __construct()
     {
     }
-    public function getCustomSmsList()
+    public function getSMSList($admin_id)
     {
-        return CustomSMS::all();
+        return CustomSMS::where('admin_id', '=', $admin_id)->get();
     }
 
     public function getCustomSmsById($smsId)
@@ -105,11 +105,12 @@ class SmsServices
         $user_sms->update();
     }
 
-    public function saveCustomSMS(Request $request)
+    public function saveCustomSMS(Request $request,$admin_id)
     {
 
         if (!$sms = $this->getCustomSmsById($request->input('customSmsId'))) {
             $sms = new CustomSMS();
+            $sms->admin_id = $admin_id;
             $sms->title = $request->input('title');
             $sms->senderName = $request->input('senderName');
             $sms->content = $request->input('content');
