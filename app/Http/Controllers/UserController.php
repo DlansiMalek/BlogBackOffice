@@ -207,7 +207,8 @@ class UserController extends Controller
         return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
-    public function getInscriptionDetails($congressId,$userId) {
+    public function getInscriptionDetails(Request $request, $congressId, $userId) {
+            $admin_id = $request->query('admin_id');
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, [
             'accesses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -215,8 +216,12 @@ class UserController extends Controller
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 
-            'inscription_evaluation' => function($query) use($congressId) {
-                $query->select(['user_id','note','admin_id'])->where('congress_id', '=', $congressId);
+            'inscription_evaluation' => function($query) use($congressId,$admin_id) {
+                
+                $query->select(['user_id','note','admin_id','commentaire'])->where('congress_id', '=', $congressId)
+                ->when($admin_id!=='null', function($q) use ($admin_id) {
+                    return $q->where('admin_id','=',$admin_id);
+                });
             },
             'inscription_evaluation.admin' => function($query)  {
                 $query->select(['admin_id','name']);
@@ -285,7 +290,7 @@ class UserController extends Controller
         $this->userServices->affectNoteToUser(
             $evaluation,
             $request->input('note'),
-            $request->has('commentaire') ?  $request->input('commentaire') : null
+            $request->input('commentaire')
         );
 
         return response()->json('Evaluation has been updated successfully',200);
