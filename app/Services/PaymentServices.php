@@ -53,4 +53,13 @@ class PaymentServices
         ->where('congress_id', '=', $congress_id)
         ->update(['isPaid' => $status]);
     }
+    public function getPaymentByUserIdAndCongressId($user_id,$congress_id) {
+        return Payment::where('user_id', '=', $user_id)
+        ->where('congress_id', '=', $congress_id)
+        ->first();
+    }
+    public function getAllPaymentsByCongressId($congress_id) {
+        return Payment::where('congress_id', '=', $congress_id)
+        ->get();
+    }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Access;
 use App\Models\Badge;
 use App\Models\ConfigCongress;
+use App\Models\ConfigSelection;
 use App\Models\User;
 use App\Models\UserMail;
 use App\Services\AccessServices;
@@ -192,6 +193,18 @@ class CongressController extends Controller
 
     }
 
+    public function addPaymentToUser($root,$user,$congress,$price) {
+        $link = $root . "/api/users/" . $user->user_id . '/congress/' . $congress->congress_id . '/validate/' . $user->verification_code;
+                $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id , $congress->congress_id, $price, false);
+
+                if ($mailtype = $this->congressServices->getMailType('inscription')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                    }
+                }
+    }
+
     public function editCongress(Request $request, $congressId)
     {
         if (!$request->has(['name', 'start_date']))
@@ -201,9 +214,43 @@ class CongressController extends Controller
         }
         if (!$config = ConfigCongress::where('congress_id', '=', $congressId)->first())
             $config = new ConfigCongress();
+        if (!$config_selection = $this->congressServices->getConfigSelection($congressId)) {
+            $config_selection = new ConfigSelection();
+        } 
+     
+            
+        
 
-        $congress = $this->congressServices->editCongress($congress, $config, $request);
-
+        $congress = $this->congressServices->editCongress($congress, $config, $config_selection, $request);
+        //update the payment table
+        if ( $congress->congress_type_id != 1   ||
+          ($congress->config_selection && $congress->config_selection->selection_type == 1) )
+        {
+            $payments = $this->paymentServices->getAllPaymentsByCongressId($congressId);
+            foreach($payments as $payment) {
+                $payment->delete();
+            }
+        } else {
+          
+                
+                $users = $this->userServices->getUsersCongress(
+                    $congressId,
+                    null
+                );
+                foreach($users as $user ) {
+                    if (!$user_payment = $this->paymentServices->getPaymentByUserIdAndCongressId(
+                        $user->user_id,
+                        $congressId
+                    ))
+                    $this->addPaymentToUser(
+                        $request->root(),
+                        $user,
+                        $congress,
+                        $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0
+                    );
+                }
+            
+        }
         return response()->json($congress);
     }
 

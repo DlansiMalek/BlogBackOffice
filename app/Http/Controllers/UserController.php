@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
+use App\Models\Evaluation_Inscription;
 use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -309,21 +310,31 @@ class UserController extends Controller
         $user_congress->globale_score = $request->input('globale_score');
         $user_congress->isSelected = $request->input('isSelected');
         $user_congress->update();
-        if ($request->input('isSelected') === 1 && 
-            $user_congress->congress->congress_type_id == 1 && 
-            $user_congress->congress->config_selection && 
-            $user_congress->congress->config_selection->selection_type == 1  
-            ) {
-                $this->addPaymentToUser(
+        if ($user_congress->congress->congress_type_id == 1) {
+            if (!$user_payment = $this->paymentServices->getPaymentByUserIdAndCongressId($user_id,$congress_id)) { 
+                 if ($request->input('isSelected') == 1 && 
+                    $user_congress->congress->config_selection && 
+                    $user_congress->congress->config_selection->selection_type == 1  ) {
+                 
+                    $this->addPaymentToUser(
                     $request->root(),
                     $user_congress->user,
                     $user_congress->congress,
                     $user_congress->congress->price
                 );
-             
+        }
+    
+    }
+    else {
+        //le cas ou l'admin modifie le status d'accepter vers refuser (ou cas ou il s'est trompé);
+        if ($request->input('isSelected') == -1  && $user_congress->congress->config_selection && 
+         $user_congress->congress->config_selection->selection_type == 1 ) {
+            $user_payment->delete();
 
         }
-        $name = $request->input('isSelected') === 1 ?  'Inscription accecpted': 'Inscription refused';
+}
+}
+      $name = $request->input('isSelected') == 1 ?  'Inscription accecpted': 'Inscription refused';
         //envoi de mail selon selected
         if ($mailtype = $this->congressServices->getMailType($name)) {
             if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {

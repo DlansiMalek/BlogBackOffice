@@ -54,6 +54,11 @@ class CongressServices
     {
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
+    
+    public function getConfigSelection($congress_id)
+    {
+        return configSelection::where('congress_id', '=', $congress_id)->first();
+    }
 
   public function getCongressByIdWithoutRelations($congress_id) {
       return Congress::where('congress_id','=',$congress_id)->first();
@@ -228,7 +233,7 @@ class CongressServices
 
         $config_selection = new ConfigSelection();
         $config_selection->congress_id = $congress->congress_id;
-        $config_selection->num_evaluators = $configSelectionRequest['num_evalutors'];
+        $config_selection->num_evaluators = $configSelectionRequest['num_evaluators'];
         $config_selection->selection_type = $configSelectionRequest['selection_type'];
         $config_selection->start_date = $configSelectionRequest['start_date'];
         $config_selection->end_date = $configSelectionRequest['end_date'];
@@ -351,7 +356,7 @@ class CongressServices
         return $congress;
     }
 
-    public function editCongress($congress, $config, $request)
+    public function editCongress($congress, $config, $config_selection , $request)
     {
         $congress->name = $request->input('name');
         $congress->start_date = $request->input('start_date');
@@ -366,6 +371,12 @@ class CongressServices
         $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
         $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->update();
+
+        $config_selection->num_evaluators = $request->input('config_selection')['num_evaluators'] ;
+        $config_selection->selection_type = $request->input('config_selection')['selection_type'] ;
+        $config_selection->start_date = $request->input('config_selection')['start_date'] ;
+        $config_selection->end_date = $request->input('config_selection')['end_date'] ;
+        $config_selection->update();
 
         return $this->getCongressById($congress->congress_id);
     }

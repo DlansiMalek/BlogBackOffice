@@ -380,7 +380,14 @@ class UserServices
             }
         })->get();
     }
-
+    public function getUsersCongress($congress_id,$privilegeIds = null){
+        return User::whereHas('user_congresses', function ($query) use ($congress_id,$privilegeIds) {
+            $query->where('congress_id', '=', $congress_id);
+            if ($privilegeIds != null) {
+                $query->whereIn('privilege_id', $privilegeIds);
+            }
+        })->get();
+    }
     public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null,$admin_id = null)
     {
         
@@ -1118,6 +1125,7 @@ class UserServices
             ->where('user_id', '=', $userId)
             ->first();
     }
+  
 
     public function checkUserRights($user, $accessId = null)
     {
@@ -1135,6 +1143,10 @@ class UserServices
     public function getEvaluationInscriptionByUserId($user_id,$congress_id,$admin_id) {
        $conditionsToMatch = ['user_id'=>$user_id,'congress_id'=>$congress_id,'admin_id' => $admin_id];
         return Evaluation_Inscription::where($conditionsToMatch)->first();
+    }
+    public function getAllEvaluationInscriptionByUserId($user_id,$congress_id) {
+        return Evaluation_Inscription::where('user_id','=',$user_id)->where('congress_id','=',$congress_id)
+        ->get();
     }
 
     public function getUserById($userId)
