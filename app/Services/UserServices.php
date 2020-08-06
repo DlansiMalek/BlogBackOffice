@@ -1041,10 +1041,10 @@ class UserServices
     public function getUserCongress($congress_id, $user_id)
     {
         return UserCongress::where('user_id', '=', $user_id)
+        ->where('congress_id', '=', $congress_id)
         ->with(['congress','congress.config_selection' => function ($query) {
             $query->select(['congress_id','selection_type']);
         },'user'])
-        ->where('congress_id', '=', $congress_id)
         ->first();
     }
 

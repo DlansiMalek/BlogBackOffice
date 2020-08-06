@@ -304,25 +304,17 @@ class UserController extends Controller
     } //à  effacer
 
 
-    // public function getUserDetails($user_id) {
-    //     $this->userServices->getUserByIdWithRelations($user_id,
-    //         ['accesses' => function ($query) use ($congressId) {
-    //             $query->where('congress_id', '=', $congressId);
-    //         }, ''
-            
-    //         ]
-        
-    //     );
-    // }
+    
     public function affectGlobaleScoreTouser($congress_id,$user_id,Request $request) {
         // if selection avant payment => ajout ligne payment + envoi de mail
-
-        if (!($request->has('global_score') && $request->has('isSelected'))) {
+        
+        if (!($request->has('globale_score') && $request->has('isSelected'))) {
             return response()->json('some fields are missing',400);
         }
-
-        $user_congress = $this->userServices->getUserCongress($congress_id,$user_id);
-        $user_congress->globale_score = $request->input('global_score');
+        if (!$user_congress = $this->userServices->getUserCongress($congress_id,$user_id)) {
+            return response()->json('error',400);
+        }
+        $user_congress->globale_score = $request->input('globale_score');
         $user_congress->isSelected = $request->input('isSelected');
         $user_congress->update();
         if ($request->input('isSelected') === 1 && 
