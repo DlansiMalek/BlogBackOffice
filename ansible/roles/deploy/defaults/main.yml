@@ -1,4 +1,4 @@
 project_version: develop
 project_name: eventizer-api
-project_dir: "/data/eventizer-api/{{ project_version }}"
+project_dir: "/data/{{ project_name }}/{{ project_version }}"
 host_name: dev.api.eventizer.io
