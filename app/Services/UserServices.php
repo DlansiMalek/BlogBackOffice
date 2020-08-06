@@ -1395,6 +1395,9 @@ class UserServices
     }
 
     public function calculateCongressFees($congress, $pack, $accesses) {
+        if ($congress->congress_type_id == 2 || $congress->congress_type_id == 3 ) {
+            return 0;
+        } else {
         $price = 0;
         if ($congress->price) {
             $price += $congress->price;
@@ -1416,6 +1419,7 @@ class UserServices
         }
 
         return $price;
+        }
 
     }
 
