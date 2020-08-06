@@ -202,7 +202,7 @@ class SmsServices
                 ]
             ]
         ] ;
-        if ($sms && $sms->senderName == 'Ecozone') {
+        if ($sms && $sms->senderName) {
         $body['json']['outboundSMSMessageRequest']['senderName'] = $sms->senderName;
         }
         $res = $this->client->post('/smsmessaging/v1/outbound/tel%3A%2B21653780474/requests', $body);
