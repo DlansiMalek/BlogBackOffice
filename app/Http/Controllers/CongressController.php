@@ -248,9 +248,7 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
-    public function getById($congress_id) {
-        return response()->json($this->congressServices->getById($congress_id));
-    }
+    
     public function getCongressById($congress_id)
     {
         ini_set('memory_limit', '-1');

@@ -78,13 +78,6 @@ class AdminController extends Controller
      * )
      *
      */
-    public function getEvaluators($congress_id) {
-        return $this->adminServices->getEvaluatorsByCongress(
-            $congress_id,
-            13,
-            'user'
-        );
-    }
     public function scanParticipatorQrCode(Request $request)
     {
         if (!$request->has(['qrcode'])) {
@@ -447,9 +440,7 @@ class AdminController extends Controller
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
             $admin = $this->adminServices->addPersonnel($admin);
-            //affect users to personnel
             $admin_id = $admin->admin_id;
-
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress

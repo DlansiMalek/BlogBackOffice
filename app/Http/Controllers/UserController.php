@@ -248,7 +248,7 @@ class UserController extends Controller
         $search = $request->query('search', '');
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
-        $admin_id = $request->query('admin_id',null);
+        $admin_id = $request->query('admin_id',null); //si admin_id ça veut dire c'est un evaluateur
         $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order,$admin_id);
 
 
@@ -296,20 +296,7 @@ class UserController extends Controller
         return response()->json('Evaluation has been updated successfully',200);
 
     }
-    public function getUserCongress($congress_id) {
-       $users =  User::whereHas('user_congresses', function ($query) use ($congress_id) {
-                  $query->where('congress_id', '=', $congress_id);
-        })
-        ->with(['inscription_evaluation' => function($query) {
-            $query->select(['user_id','note']);
-        }]);
 
-        return $users->get();
-        
-    } //à  effacer
-
-
-    
     public function affectGlobaleScoreTouser($congress_id,$user_id,Request $request) {
         // if selection avant payment => ajout ligne payment + envoi de mail
         
@@ -432,8 +419,6 @@ class UserController extends Controller
             }
         } else
             $user = $this->userServices->editUser($request, $user);
-           
-            // affect to user to evalutor 
         return response()->json($user);
     }
 
@@ -448,11 +433,8 @@ class UserController extends Controller
         }
 
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
-        
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))) 
             $user = $this->userServices->saveUser($request);
-       
-        }
         else
             $user = $this->userServices->editUser($request, $user);
 
@@ -541,7 +523,7 @@ class UserController extends Controller
                 }
             }
             $this->smsServices->sendSms($congress_id, $user, $congress);
-        } else  {
+        } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
             if ( ($congress->congress_type_id == 1 && (!$congress->config_selection))||
