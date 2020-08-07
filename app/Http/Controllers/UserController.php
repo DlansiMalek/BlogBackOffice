@@ -15,6 +15,7 @@ use App\Services\PaymentServices;
 use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\SmsServices;
+use App\Services\ResourcesServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -37,6 +38,7 @@ class UserController extends Controller
     protected $paymentServices;
     protected $mailServices;
     protected $roomServices;
+    protected $resourcesServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -48,7 +50,8 @@ class UserController extends Controller
                          PaymentServices $paymentServices,
                          SmsServices $smsServices,
                          RoomServices $roomServices,
-                         MailServices $mailServices)
+                         MailServices $mailServices,
+                         ResourcesServices $resourcesServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -62,6 +65,7 @@ class UserController extends Controller
         $this->paymentServices = $paymentServices;
         $this->mailServices = $mailServices;
         $this->roomServices = $roomServices;
+        $this->resourcesServices = $resourcesServices;
     }
 
     public function getUserByTypeAndCongressId($congress_id, Request $request)
@@ -1384,5 +1388,31 @@ class UserController extends Controller
         return response()->json(['response' => 'password successfully updated'], 200);
     }
 
+    public function editUserProfile(Request $request){
+        if (!$request->has(['email', 'first_name', 'last_name']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'first_name', 'last_name']], 400);
+        
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'],401);
+        }
 
+        $user=$this->userServices->editUser($request, $user);
+        if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('update_profile')) {
+            return response()->json(['response' => 'mail type admin not found'], 400);}
+
+        if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
+            return response()->json(['response' => 'mail not found'], 400);}
+        $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
+        $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
+
+        return response()->json($user, 200);
+    }
+
+    public function getResourceByResourceId($resourceId){
+        $chemin = config('media.resource');
+        $resource=$this->resourcesServices->getResourceByResourceId($resourceId);
+        
+        return response()->download(storage_path('app/' . $chemin . "/" . $resource->path));
+    }
 }

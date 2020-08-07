@@ -1022,6 +1022,7 @@ class UserServices
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
+        if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
 
         $user->update();
         return $user;

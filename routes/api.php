@@ -248,7 +248,9 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
-
+    Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
+    
+    Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
 
     Route::post('/register', 'UserController@registerUser');
 
