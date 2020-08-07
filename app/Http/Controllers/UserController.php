@@ -326,7 +326,7 @@ class UserController extends Controller
     
     }
     else {
-        //le cas ou l'admin modifie le status d'accepter vers refuser (ou cas ou il s'est trompé);
+        //le cas ou l'admin modifie le status  accepter vers refuser (ou cas ou il s'est trompé);
         if ($request->input('isSelected') == -1  && $user_congress->congress->config_selection && 
          $user_congress->congress->config_selection->selection_type == 1 ) {
             $user_payment->delete();
