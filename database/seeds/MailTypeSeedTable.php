@@ -80,6 +80,9 @@ class MailTypeSeedTable extends Seeder
             'display_name' => "Creation d\'une room",
         ]);
         DB::table('Mail_Type')->insert([
+            'mail_type_id' => 18,
+            'name' => 'refus',
+            'display_name' => "Refus d\'inscription",
             'mail_type_id' => 13,
             'name' => 'save_submission',
             'display_name' => "Enregistrer une soumission",
@@ -108,6 +111,11 @@ class MailTypeSeedTable extends Seeder
             'name' => 'bloc_edit_submission',
             'display_name' => "Blocage de la modification de la soumission",
             'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 18,
+            'name' => 'refus',
+            'display_name' => "Refus d\'inscription"
         ]);
     }
 }
