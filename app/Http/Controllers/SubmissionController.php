@@ -31,6 +31,8 @@ class SubmissionController extends Controller
     protected $establishmentServices;
     protected $serviceServices;
     protected $communicationTypeService;
+    protected $mailServices;
+
     function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
@@ -48,11 +50,12 @@ class SubmissionController extends Controller
         $this->adminServices = $adminServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
-        $this->establishmentServices = $establishmentServices ;
-        $this->serviceServices = $serviceServices ;
+        $this->establishmentServices = $establishmentServices;
+        $this->serviceServices = $serviceServices;
         $this->mailServices = $mailServices;
         $this->communicationTypeService = $communicationTypeService;
     }
+
     public function addSubmission(Request $request)
     {
 
@@ -66,7 +69,7 @@ class SubmissionController extends Controller
             $configSubmission = $this->congressServices->getConfigSubmission(
                 $request->input('submission.congress_id'));
             if ($configSubmission->end_submission_date < date('Y-m-d H:i:s')) {
-                return response()->json('deadline has been passed',400);
+                return response()->json('deadline has been passed', 400);
             }
             $user = $this->userServices->retrieveUserFromToken();
             $submission = $this->submissionServices->addSubmission(
@@ -81,11 +84,11 @@ class SubmissionController extends Controller
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
             $this->authorServices->saveAuthorsBySubmission(
-                $request->input('authors'), 
+                $request->input('authors'),
                 $submission->submission_id,
                 $etablissements,
                 $services
-            
+
             );
 
             $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
@@ -97,14 +100,13 @@ class SubmissionController extends Controller
             );
 
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
-        
+
             $congress = $this->congressServices->getCongressById($submission->congress_id);
 
             $mailtype = $this->congressServices->getMailType('save_submission',$this->type);
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
-            if ($mail)
-            {
+            if ($mail) {
                 $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
                 if (!$userMail) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
@@ -114,26 +116,29 @@ class SubmissionController extends Controller
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
                 );
             }
-            return response()->json(['response' => 'Enregistrement avec succes'], 200); 
+            return response()->json(['response' => 'Enregistrement avec succes'], 200);
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
-    public function deleteSubmission($submission_id) {
+
+    public function deleteSubmission($submission_id)
+    {
         if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
-            return response()->json(['response' => 'no submission found'],400);
+            return response()->json(['response' => 'no submission found'], 400);
             $submission->delete();
             return response()->json(['response' => 'submssion deleted successfully']);
         }
     }
+
     public function editSubmssion(Request $request, $submission_id)
     {
         try {
             if (!($submission = $this->submissionServices->getSubmissionById($submission_id))) {
                 return response()->json(['response' => 'no submission found'], 400);
             }
-            if ($submission->status != 0 && !$request->has('addExternalFiles') ) {
-                return response()->json('you don\'t have the right to modify the submission',404);
+            if ($submission->status != 0 && !$request->has('addExternalFiles')) {
+                return response()->json('you don\'t have the right to modify the submission', 404);
             }
             $changedTheme = $submission->theme_id == $request->input('submission.theme_id') ? false : true;
             $user = $this->userServices->retrieveUserFromToken();
@@ -153,15 +158,15 @@ class SubmissionController extends Controller
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
             $existingAuthors = $this->authorServices->getAuthorsBySubmissionId($submission->submission_id);
             $this->authorServices->editAuthors(
-                $existingAuthors, 
-                $request->input('authors'), 
+                $existingAuthors,
+                $request->input('authors'),
                 $submission->submission_id,
                 $services,
                 $etablissements
             );
             if ($changedTheme) { // le cas ou  il n'ya pas eu d'évaluation et le utilisateur veut changer le theme de sa soumission
                 $evaluators = $this->adminServices->getEvaluatorsBySubmissionId($submission_id);
-                foreach($evaluators as $evaluator) {
+                foreach ($evaluators as $evaluator) {
                     $evaluator->delete();
                 }
                 $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
@@ -171,18 +176,17 @@ class SubmissionController extends Controller
                     $submission->submission_id,
                     $admins
                 );
-    
+
             }
             if ($submission->limit_date > date('Y-m-d H:i:s') && $submission->status == 5) {
-            $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
+                $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
             }
             $congress=$this->congressServices->getCongressById($submission->congress_id);
             $
             $mailtype = $this->congressServices->getMailType($name,$this->type);
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
-            if ($mail)
-            {
+            if ($mail) {
                 $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
                 if (!$userMail) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
@@ -219,7 +223,7 @@ class SubmissionController extends Controller
         return $this->submissionServices->getSubmission($submission_id);
     }
 
-    public function getCongressSubmission(Request $request,$congressId)
+    public function getCongressSubmission(Request $request, $congressId)
     {
         $status = $request->query('status');
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
@@ -231,7 +235,7 @@ class SubmissionController extends Controller
                 return response()->json(['response' => 'bad request'], 400);
             }
             $privilege_id = $adminCongress->privilege_id;
-            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id,$status);
+            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id, $status);
 
             return response()->json($submissions, 200);
 
@@ -269,14 +273,16 @@ class SubmissionController extends Controller
                     );
                 }
             }
-        }
             return response()->json($submission_detail, 200);
 
-        } catch (Exception $e) {
+        }} catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
         }
-    }
-    public function changeSubmissionStatus($submission_id, $congress_id, Request $request){
+    
+}
+
+    public function changeSubmissionStatus($submission_id, $congress_id, Request $request)
+    {
 
         if (!($submission = $this->submissionServices->getSubmissionById($submission_id))) {
             return response()->json(['response' => 'bad request'], 400);
@@ -298,18 +304,17 @@ class SubmissionController extends Controller
                 );
             }
         }
-        
-        return response()->json(['response' => 'Submission status changed'],201);
+
+        return response()->json(['response' => 'Submission status changed'], 201);
     }
 
-    public function finalDecisionOnSubmission(Request $request, $submission_id) {
+    public function finalDecisionOnSubmission(Request $request, $submission_id)
+    {
         //get submission by id
         if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
-            return response()->json(['no submission found'],404);
+            return response()->json(['no submission found'], 404);
         }
-
-    
-           // update status,type_id,limit_date
+          // update status,type_id,limit_date
         $submission->status = $request->input('status');
         $submission->communication_type_id = $request->input('communication_type_id');
         $submission->limit_date = $request->input('limit_date');
@@ -367,9 +372,32 @@ class SubmissionController extends Controller
                      $userMail
                 );
             }
-            return response()->json(['final desicision made successfully'],200);
+            $link = '';
+            if ($areFiles && ($request->input('status') !== 3)) {
+                $link = UrlUtils::getBaseUrlFrontOffice()
+                    . '/user-profile/submission/submit-resources/' . $submission->submission_id;
+            }
+            $user = $this->userServices->getUserById($submission->user_id);
+            $this->userServices->sendMail(
+                $this->congressServices->renderMail(
+                    $mail->template,
+                    null,
+                    null,
+                    $link,
+                    null,
+                    null
+                ),
+                $user,
+                null,
+                $mail->object,
+                null,
+                $userMail
+            );
         
+        return response()->json(['final decision made successfully'], 200);
+
     }
+
     public function putEvaluationToSubmission($submissionId, Request $request)
     {
         $note = $request->input('note', -1);
@@ -383,7 +411,7 @@ class SubmissionController extends Controller
             }
             $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
             $evaluation->communication_type_id = $request->input('communication_type_id');
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note,$evaluation);
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
             return response()->json($evaluation, 200);
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
@@ -399,7 +427,7 @@ class SubmissionController extends Controller
         $search = $request->query('search', '');
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
-            return response()->json(['response' => 'No user found'],401);
+            return response()->json(['response' => 'No user found'], 401);
         }
         $submissions = $this->submissionServices->getSubmissionsByUserId(
             $user,
