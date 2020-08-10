@@ -14,6 +14,7 @@ use App\Models\AdminCongress;
 use App\Models\Congress;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
+use App\Models\SubmissionEvaluation;
 use App\Models\ThemeAdmin;
 use DateInterval;
 use DateTime;
@@ -86,6 +87,10 @@ class AdminServices
         return Admin::where("privilege_id", "=", 11)->get();
     }
 
+    public function getEvaluatorsBySubmissionId($submission_id) {
+        return SubmissionEvaluation::where('submission_id','=',$submission_id)->get();
+    }   
+
     public function getEvaluatorsByCongress($congressId, $privilegeId)
     {
 
@@ -104,8 +109,12 @@ class AdminServices
     {
 
         return Admin::whereHas('themeAdmin', function ($query) use ($privilegeId, $themeId) {
-            $query->where('privilege_id', '=', $privilegeId);
+           
             $query->where('theme_id', '=', $themeId);
+        })
+        ->whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('privilege_id', '=', $privilegeId);
         })
             ->withCount(['submission' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);

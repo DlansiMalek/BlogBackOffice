@@ -126,6 +126,10 @@ class SubmissionController extends Controller
             if (!($submission = $this->submissionServices->getSubmissionById($submission_id))) {
                 return response()->json(['response' => 'no submission found'], 400);
             }
+            if ($submission->status != 0 && !$request->has('addExternalFiles') ) {
+                return response()->json('you don\'t have the right to modify the submission',404);
+            }
+            $changedTheme = $submission->theme_id == $request->input('submission.theme_id') ? false : true;
             $user = $this->userServices->retrieveUserFromToken();
             $status =  $request->input('addExternalFiles') ? '5' : $submission->status ;
                 
@@ -149,7 +153,21 @@ class SubmissionController extends Controller
                 $services,
                 $etablissements
             );
-            if ( (!$submission->limit_date) || ( ($submission->limit_date > date('Y-m-d H:i:s')) && $submission->status === 4)) {
+            if ($changedTheme) { // le cas ou  il n'ya pas eu d'évaluation et le utilisateur veut changer le theme de sa soumission
+                $evaluators = $this->adminServices->getEvaluatorsBySubmissionId($submission_id);
+                foreach($evaluators as $evaluator) {
+                    $evaluator->delete();
+                }
+                $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
+
+                $this->submissionServices->affectSubmissionToEvaluators(
+                    $this->congressServices->getConfigSubmission($submission->congress_id),
+                    $submission->submission_id,
+                    $admins
+                );
+    
+            }
+            if ($submission->limit_date > date('Y-m-d H:i:s') && $submission->status == 5) {
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
             }
             $congress=$this->congressServices->getCongressById($submission->congress_id);
