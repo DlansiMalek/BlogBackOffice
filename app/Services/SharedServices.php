@@ -42,8 +42,8 @@ class SharedServices
         $client = new \GuzzleHttp\Client();
 
         $res = $client->request('POST',
-//            'http://127.0.0.1:8000'
-            UrlUtils::getUrlBadge(). '/badge/generateParticipantsPro/multiple', [
+//         UrlUtils::getUrlBadge()   
+          'http://127.0.0.1:8000'  . '/badge/generateParticipantsPro/multiple', [
                 'json' =>
                     [
                         'participants' => $request,
@@ -56,10 +56,10 @@ class SharedServices
     public function saveAttestationSubmissionInPublic(array $request, $IdGenerator)
     {   if ($request) {
         try {
-            //'http://127.0.0.1:8000'
+            //UrlUtils::getUrlBadge()
             $client = new \GuzzleHttp\Client();
             $res = $client->request('POST',
-                UrlUtils::getUrlBadge() . '/badge/generateParticipantPro', [
+                'http://127.0.0.1:8000' . '/badge/generateParticipantPro', [
                     'json' => [
                         'badgeIdGenerator' => $IdGenerator,
                         'fill' => $request
