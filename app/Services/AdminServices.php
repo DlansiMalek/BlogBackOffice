@@ -86,6 +86,40 @@ class AdminServices
 
         return Admin::where("privilege_id", "=", 11)->get();
     }
+    public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
+        $evalutors = $this->getEvaluatorsByCongress($congress_id,11);
+        $max = sizeof($evalutors) > 0 ? $evalutors[sizeof($evalutors) - 1]['submission_count'] : 0;
+        $count = 0;
+        foreach($submissions as $submission) {
+            $isThemeExists = false;
+            foreach ($themeIds as $themeId) {
+                if (($submission->theme_id == $themeId) &&  ($count <= $max)) {
+                    $isThemeExists = true ;
+                    $congress = json_decode($submission['congress'],true);
+                    if (sizeof($submission['submissions_evaluations']) <  $congress['config_submission']['num_evaluators']) {
+                            $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
+                    }
+                break;
+                }
+            }
+            if (!$isThemeExists && $count <= $max && (sizeof($submission['submissions_evaluations']) == 0) ) {
+              $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
+              $count++;
+            } 
+        
+        }
+        
+        return 1;
+    }
+
+    public function addSubmissionEvaluation($admin_id, $submission_id)
+    {
+        $submissionEvaluation = new SubmissionEvaluation();
+        $submissionEvaluation->submission_id = $submission_id;
+        $submissionEvaluation->admin_id = $admin_id;
+        $submissionEvaluation->save();
+        return $submissionEvaluation;
+    }
 
     public function getEvaluatorsBySubmissionId($submission_id) {
         return SubmissionEvaluation::where('submission_id','=',$submission_id)->get();
@@ -97,6 +131,7 @@ class AdminServices
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('privilege_id', '=', $privilegeId);
+           
         })
             ->withCount(['submission' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -252,7 +287,6 @@ class AdminServices
         $personnel->name = $admin["name"];
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
-
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);

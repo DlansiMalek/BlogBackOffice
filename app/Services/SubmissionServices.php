@@ -48,6 +48,11 @@ class SubmissionServices
             ->where('submission_id', '=', $submission_id)
             ->first();
     }
+    public function getSubmissionsByCongressId($congress_id) {
+        return Submission::with(['submissions_evaluations','congress.configSubmission'])
+        ->where('congress_id','=',$congress_id)
+        ->get();
+    }
 
     public function getSubmissionById($submission_id)
     {
@@ -131,7 +136,7 @@ class SubmissionServices
 
     public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id,$status)
     {
-        if ($privilege_id == 1) {
+        if ($privilege_id == 1 || $privilege_id == 12) {
             $allSubmission = $this->renderSubmissionForAdmin()
                 ->when($status!=='null', function($query) use ($status) {
                     $query->where('status','=',$status);
@@ -176,7 +181,7 @@ class SubmissionServices
 
     public function getSubmissionDetailById($admin, $submission_id, $privilege_id)
     {
-        if ($privilege_id == 1) {
+        if ($privilege_id == 1 || $privilege_id == 12) {
             $submissionById = $this->renderSubmissionForAdmin()
                 ->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
@@ -194,6 +199,7 @@ class SubmissionServices
             })
                 ->with([
                     'resources',
+                    'user:user_id,first_name,last_name,email',
                     'theme:theme_id,label',
                     'communicationType:communication_type_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
@@ -202,9 +208,13 @@ class SubmissionServices
                     }
                 ])->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
+                if ($submissionById->status === 0) {
+                $submissionById->status = 2;
+                $submissionById->update();
+                }
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type',
-                        'prez_type', 'description', 'global_note','communicationType',
+                        'prez_type', 'user', 'description', 'global_note','communicationType',
                         'status', 'theme', 'submissions_evaluations',
                         'congress_id', 'created_at', 'resources']);
 
@@ -219,8 +229,15 @@ class SubmissionServices
     {
         $evaluation->note = $note;
         $evaluation->save();
-        $global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
-            ->where('note', '>=', 0)->average('note');
+        // supposons seulement un seul utilisateur a fait la correction 
+        // dans ce cas on doit pas faire la moyenne
+        if (!$global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
+            ->where('note', '>', 0)->average('note')) {
+                $global_note = 0 ;
+            } 
+        // si !$global_note cela veut dire qu'un aucun correcteur a mis une note > 0 
+        // don cla note_globable sera 0 
+     
         $submissionUpdated = Submission::where('submission_id', '=', $submissionId)->first();
         $submissionUpdated->global_note = $global_note;
         $submissionUpdated->save();
@@ -233,9 +250,19 @@ class SubmissionServices
             ->where('submission_id', '=', $submissionId)->first();
     }
 
-    public function getSubmissionsByUserId($user)
+    public function getSubmissionsByUserId($user,$offset,$perPage,$search,$perCongressId,$status)
     {
-        return Submission::where('user_id', '=' , $user->user_id)->with('authors','congress')->get();
+        return Submission::where('user_id', '=' , $user->user_id)
+        ->with('authors','congress')
+        ->offset($offset)->limit($perPage)
+        ->when($perCongressId !== "null",function($query) use ($perCongressId) {
+            $query->where('congress_id','=',$perCongressId);
+        })
+        ->when($status!=="null" , function($query) use ($status) {
+            $query->where('status','=',$status);
+        })
+        ->where('title', 'LIKE', '%' . $search . '%')
+        ->get();
     }
 
 }
