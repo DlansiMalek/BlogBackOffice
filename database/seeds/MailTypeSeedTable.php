@@ -109,5 +109,17 @@ class MailTypeSeedTable extends Seeder
             'display_name' => "Blocage de la modification de la soumission",
             'type' => "submission",
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 18,
+            'name' => 'Attente_de_fichier',
+            'display_name' => "Attente de fichiers",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 19,
+            'name' => 'file_submitted',
+            'display_name' => "Fichiers soumis",
+            'type' => "submission",
+        ]);
     }
 }

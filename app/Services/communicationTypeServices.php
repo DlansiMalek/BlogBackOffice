@@ -3,16 +3,16 @@
 
 namespace App\Services;
 
-use App\Models\communicationType;
+use App\Models\CommunicationType;
 
 class CommunicationTypeService {
 
     public function getAllCommunicationType() {
-        return communicationType::all();
+        return CommunicationType::all();
     }
     
     public function getCommunicationTypeById($communication_type_id) {
-        return communicationType::where('communication_type_id','=',$communication_type_id)
+        return CommunicationType::where('communication_type_id','=',$communication_type_id)
         ->first();
     }
 }

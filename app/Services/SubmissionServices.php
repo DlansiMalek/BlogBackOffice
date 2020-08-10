@@ -60,15 +60,7 @@ class SubmissionServices
         ->first();
     }
 
-    public function generateSubmissionCode($abrv) {
-        $count = (string) Submission::count();
-        $diff= 4 - strlen($count);
-        $code = '';
-        for ($i=0 ; $i<$diff ; $i++) {
-            $code = $code . '0';
-        }
-        return $code = $abrv . $code . $count;
-    }
+   
 
     public function saveResourceSubmission($resourceIds, $submission_id)
     {

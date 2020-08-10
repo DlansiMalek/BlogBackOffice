@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class communication_type_seeder extends Seeder
+class CommunicationTypeSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -19,7 +19,7 @@ class communication_type_seeder extends Seeder
 
         DB::table('Communication_Type')->insert([
             'label' => 'communication affichée',
-            'abrv' => 'CO'
+            'abrv' => 'CA'
         ]);
     }
 }

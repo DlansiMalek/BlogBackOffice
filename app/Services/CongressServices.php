@@ -487,9 +487,11 @@ class CongressServices
     }
 
     public
-    function getMailType($name)
+    function getMailType($name,$type = 'event')
     {
-        return MailType::where("name", "=", $name)->first();
+        return MailType::where("name", "=", $name)
+        ->where('type','=',$type)
+        ->first();
     }
 
     public

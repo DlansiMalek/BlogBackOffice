@@ -87,7 +87,7 @@ class AdminServices
         return Admin::where("privilege_id", "=", 11)->get();
     }
     public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
-        $evalutors = $this->getEvaluatorsByCongress($congress_id,11);
+        $evalutors = $this->getEvaluatorsByCongress($congress_id,11); //get by theme or all admin congress
         $max = sizeof($evalutors) > 0 ? $evalutors[sizeof($evalutors) - 1]['submission_count'] : 0;
         $count = 0;
         foreach($submissions as $submission) {
