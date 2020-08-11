@@ -261,7 +261,7 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::post('{user_id}/globale_score','UserController@affectGlobaleScoreTouser'); 
             Route::post('{user_id}/changeScore','UserController@affectScoreToUser'); 
-            Route::get('{user_id}/getInscriptionDetails','UserController@getInscriptionDetails'); 
+            Route::get('{user_id}/getInscriptionDetails','UserController@getInscriptionDetails');  // change the api
             Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');

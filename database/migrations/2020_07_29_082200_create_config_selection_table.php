@@ -18,7 +18,7 @@ class CreateConfigSelectionTable extends Migration
             $table->unsignedInteger('congress_id')->unique();
             $table->foreign('congress_id')->references('congress_id')->on('Congress');
             $table->integer('num_evaluators');
-            $table->integer('selection_type');
+            $table->integer('selection_type')->nullable()->default(0);
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->timestamps();

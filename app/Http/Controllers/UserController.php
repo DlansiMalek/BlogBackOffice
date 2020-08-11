@@ -232,7 +232,9 @@ class UserController extends Controller
             }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
-            'responses.form_input.type','packs'
+            'responses.form_input.type','packs' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }
         ])) {
             return response()->json('no user found',404);
         }
@@ -435,6 +437,7 @@ class UserController extends Controller
 
     public function saveUser(Request $request, $congress_id)
     {
+        
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name', 'password']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name', 'password']], 400);
 
@@ -442,6 +445,7 @@ class UserController extends Controller
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
+//check if date limit
 
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) 
