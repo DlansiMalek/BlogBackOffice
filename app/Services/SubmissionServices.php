@@ -130,7 +130,7 @@ class SubmissionServices
                     ->only(['submission_id', 'title', 'type',
                         'prez_type', 'description', 'global_note',
                         'status', 'theme', 'user', 'authors', 'submissions_evaluations',
-                        'congress_id', 'created_at'])
+                        'congress_id', 'communication_type_id', 'created_at'])
                     ->all();
             });
             return $allSubmissionToRender;
@@ -151,7 +151,7 @@ class SubmissionServices
                     ->only(['submission_id', 'title', 'type',
                         'prez_type', 'description', 'global_note',
                         'status', 'theme', 'submissions_evaluations',
-                        'congress_id', 'created_at'])
+                        'congress_id', 'communication_type_id', 'created_at'])
                     ->all();
             });
             return $allSubmissionToRender;
@@ -324,15 +324,14 @@ class SubmissionServices
     public function getSubmissionType() {
         return CommunicationType::get();
     }
-    public function getSubmissionAcceptedByCongress($congressId) {
-        $submissionAccepted = Submission::with([
+    public function getSubmissionByStatus($congressId, $status) {
+        $submission = Submission::with([
             'user:user_id,first_name,last_name,email',
             'authors:submission_id,author_id,first_name,last_name'])
             ->where('congress_id','=',$congressId)
-            ->where('status','=',1)
-            ->where('eligible','=','1')
+            ->where('status','=',$status)
             ->get();
-        return $submissionAccepted;
+        return $submission;
     }
     public function getAttestationSubmissionEnabled($congressId) {
         return AttestationSubmission::with([

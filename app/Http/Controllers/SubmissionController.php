@@ -410,7 +410,7 @@ class SubmissionController extends Controller
         return response()->json($submissionType, 200);
     }
 
-    public function getSubmissionAccepted($congressId)
+    public function getSubmissionByStatus($congressId, $status)
     {
 
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
@@ -421,8 +421,8 @@ class SubmissionController extends Controller
             if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            $submissionAccepted = $this->submissionServices->getSubmissionAcceptedByCongress($congressId);
-            return response()->json($submissionAccepted, 200);
+            $submission = $this->submissionServices->getSubmissionByStatus($congressId, $status);
+            return response()->json($submission, 200);
         } catch (Exception $e) {
             Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
@@ -479,7 +479,7 @@ class SubmissionController extends Controller
         }
     }
 
-    public function senMailAttestationAllSubmission($congressId)
+    public function sendMailAttestationAllSubmission($congressId)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
@@ -490,7 +490,10 @@ class SubmissionController extends Controller
                 return response()->json(['error' => 'bad request'], 400);
             }
             $mailtype = $this->congressServices->getMailType('attestation', 'submission');
-            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+
+            if (!$mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                return response()->json(['error' => 'mail attestation submission not found'], 400);
+            }
             $mailId = $mail->mail_id;
             $users = $this->userServices->getUsersSubmissionWithRelations($congressId, ['submissions' => function ($query) use ($congressId) {
                 $query->where("congress_id", "=", $congressId);
@@ -513,7 +516,7 @@ class SubmissionController extends Controller
                             }
                         }
                         if (!$attestationSubmission->attestation_generator_id) {
-                            return response(['error' => "attestation not configured"], 400);
+                            continue;
                         }
                         $mappedSubmission = $this->sharedServices->submissionMapping($submission->title,
                             $user->first_name . ' ' . $user->last_name,
@@ -571,7 +574,9 @@ class SubmissionController extends Controller
             }
             $user = $submission['user'];
             $mailtype = $this->congressServices->getMailType('attestation', 'submission');
-            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+            if (!$mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                return response()->json(['error' => 'mail attestation submission not found'], 400);
+            }
             $userMail = null;
 
 //            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);

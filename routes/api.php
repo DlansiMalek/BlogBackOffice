@@ -230,9 +230,8 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('types', 'SubmissionController@getSubmissionType');
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
-    Route::get('accepted/{congressId}', 'SubmissionController@getSubmissionAccepted');
-    Route::get('send_mail_attestation/all/{congressId}', 'SubmissionController@senMailAttestationAllSubmission');
     Route::get('{submissionId}/send_mail_attestation/{congressId}', 'SubmissionController@sendMailAttestationById');
+    Route::get('status/{congressId}/{status}', 'SubmissionController@getSubmissionByStatus');
     Route::get('{submissionId}/make_eligible/{congressId}', 'SubmissionController@makeSubmissionEligible');
 
     Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
@@ -325,6 +324,7 @@ Route::group(['prefix' => 'admin', "middelware" => "admin"], function () {
                 Route::group(['prefix' => 'email'], function () {
                     Route::get('send-confirm-inscription', 'CongressController@sendMailAllParticipants');
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
+                    Route::get('send-mails-all-attestations-submissions', 'SubmissionController@sendMailAttestationAllSubmission');
                     Route::get('send-mail-all-sondage', 'CongressController@sendMailAllParticipantsSondage');
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
