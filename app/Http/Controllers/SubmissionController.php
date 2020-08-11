@@ -362,7 +362,7 @@ class SubmissionController extends Controller
                 $link = '';
                 if ($areFiles && ($request->input('status')!= 3 )) {
                     $link = UrlUtils::getBaseUrlFrontOffice() 
-                    .'/user-profile/submission/submit-resources/'.$submission->submission_id.'/code/'.$file_upload_code;
+                    .'/user-profile/submission/submit-resources/'.$submission->submission_id.'?code='.$file_upload_code;
                 }
                 $user = $this->userServices->getUserById($submission->user_id);
                 $this->userServices->sendMail(
