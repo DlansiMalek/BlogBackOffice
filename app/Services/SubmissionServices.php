@@ -122,7 +122,11 @@ class SubmissionServices
         return Submission::with([
             'user:user_id,first_name,last_name,email',
             'communicationType:communication_type_id,label',
-            'authors:submission_id,author_id,first_name,last_name',
+            'authors' =>  function($query) {
+                $query->select('submission_id','author_id','first_name','last_name','service_id',
+                'etablissement_id')
+                ->with(['service','etablissment']);
+            },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
                 $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note','communication_type_id')
@@ -141,7 +145,7 @@ class SubmissionServices
                 ->where('congress_id', '=', $congress_id)->get();
             $allSubmissionToRender = $allSubmission->map(function ($submission) {
                 return collect($submission->toArray())
-                    ->only(['submission_id', 'title', 'type',
+                    ->only(['submission_id', 'title', 'type','code',
                         'prez_type', 'description', 'global_note',
                         'status', 'theme', 'user', 'authors', 'submissions_evaluations',
                         'congress_id', 'created_at'])
