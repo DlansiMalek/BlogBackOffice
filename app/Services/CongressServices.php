@@ -38,7 +38,7 @@ class CongressServices
     public function getById($congressId)
     {
         return Congress::where('congress_id','=',$congressId)
-        ->with( ['config_selection','users' => function($query) {
+        ->with( ['config_selection','evaluation_inscription','users' => function($query) {
             $query->select('User.user_id');
         }])
         ->first();

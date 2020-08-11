@@ -228,11 +228,11 @@ class CongressController extends Controller
         {
             $payments = $this->paymentServices->getAllPaymentsByCongressId($congressId);
             foreach($payments as $payment) {
+                if ($payment->isPaid != 1 ||  $payment->free!=1 ) {
                 $payment->delete();
+                }
             }
         } else {
-          
-                
                 $users = $this->userServices->getUsersCongress(
                     $congressId,
                     null

@@ -464,7 +464,8 @@ class AdminController extends Controller
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
         }
         if ($privilegeId == 13 && 
-        $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1)
+        $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1) &&
+        sizeof($congress->evaluation_inscription) <   $congress->config_selection->num_evaluators
         ) {
             
                 $this->adminServices->affectUsersToEvaluator(
