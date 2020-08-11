@@ -87,14 +87,12 @@ class AdminServices
         return Admin::where("privilege_id", "=", 11)->get();
     }
     public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
-        $evalutors = $this->getEvaluatorsByCongress($congress_id,11); //get by theme or all admin congress
+        $evalutors = $this->getEvaluatorsByTheme($submissions[0]->theme_id,$congress_id,11); //get by theme or all admin congress
         $max = sizeof($evalutors) > 0 ? $evalutors[sizeof($evalutors) - 1]['submission_count'] : 0;
         $count = 0;
         foreach($submissions as $submission) {
-            $isThemeExists = false;
             foreach ($themeIds as $themeId) {
                 if (($submission->theme_id == $themeId) &&  ($count <= $max)) {
-                    $isThemeExists = true ;
                     $congress = json_decode($submission['congress'],true);
                     if (sizeof($submission['submissions_evaluations']) <  $congress['config_submission']['num_evaluators']) {
                             $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
@@ -102,11 +100,6 @@ class AdminServices
                 break;
                 }
             }
-            if (!$isThemeExists && $count <= $max && (sizeof($submission['submissions_evaluations']) == 0) ) {
-              $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
-              $count++;
-            } 
-        
         }
         
         return 1;

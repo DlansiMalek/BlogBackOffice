@@ -24,7 +24,7 @@ class SubmissionServices
         return $submission;
     }
 
-    public function editSubmission($submission, $title, $type, $status, $communication_type_id, $description, $theme_id)
+    public function editSubmission($submission, $title, $type, $status, $communication_type_id, $description, $theme_id,$code)
     {
         $submission->title = $title;
         $submission->type = $type;
@@ -32,11 +32,12 @@ class SubmissionServices
         $submission->communication_type_id = $communication_type_id;
         $submission->description = $description;
         $submission->theme_id = $theme_id;
+        $submission->upload_file_code = $code ;
         $submission->update();
         return $submission;
     }
 
-    public function getSubmission($submission_id)
+    public function getSubmission($submission_id,$upload_file_code)
     {
         return Submission::with([
             'authors' => function ($query) {
@@ -46,6 +47,9 @@ class SubmissionServices
             'congress.configSubmission'
         ])
             ->where('submission_id', '=', $submission_id)
+            ->when($upload_file_code !=='null',function($query) use ($upload_file_code) {
+                $query->where('upload_file_code','=',$upload_file_code);
+            })
             ->first();
     }
     public function getSubmissionsByCongressId($congress_id) {
@@ -57,6 +61,7 @@ class SubmissionServices
     public function getSubmissionById($submission_id)
     {
         return Submission::where('submission_id', '=', $submission_id)
+        ->with(['congress','user'])
         ->first();
     }
 
