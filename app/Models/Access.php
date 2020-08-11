@@ -27,6 +27,11 @@ class Access extends Model
         return $this->hasMany(UserAccess::class, 'access_id', 'access_id')
             ->count();
     }
+    public function user_accesss()
+    {
+        return $this->hasMany('App\Models\UserAccess', 'access_id', 'access_id');
+
+    }
 
     public function participants()
     {

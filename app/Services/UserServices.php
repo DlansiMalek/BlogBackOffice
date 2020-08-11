@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AccessPresence;
+use App\Models\Access;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
@@ -12,7 +13,6 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
-use App\Models\UserPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -199,13 +199,6 @@ class UserServices
             ->where("Congress_User.isPresent", "=", 1)
             ->where("id_Congress", "=", $congressId)
             ->orderBy("Congress_User.updated_at", "desc")
-            ->get();
-    }
-
-    public function getAllParticipatorByCongress($congressId)
-    {
-        return User::join("Congress_User", "Congress_User.id_User", "=", "User.id_User")
-            ->where("id_Congress", "=", $congressId)
             ->get();
     }
 
@@ -451,6 +444,7 @@ class UserServices
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'country'])
+            ->with(['accesses'])
             ->get();
         return $users;
     }
@@ -1260,7 +1254,7 @@ class UserServices
         return $user_access;
     }
 
-    private function deleteAccessById($user_id, $accessId)
+    public function deleteAccessById($user_id, $accessId)
     {
         return UserAccess::where('user_id', '=', $user_id)
             ->where('access_id', '=', $accessId)
@@ -1381,4 +1375,13 @@ class UserServices
         }
     }
 
+    public function getRefusedParticipants($congressId,$emails_array)
+    {
+        //users id who are registred in the congress
+        $accepted_user_id_array= UserCongress::select('user_id')->where('congress_id','=',$congressId)
+        ->where('privilege_id','=',3);
+        //users who got refused with mails refused
+        return User::whereIn('user_id',$accepted_user_id_array)
+        ->whereNotIn('email', $emails_array)->get();
+    }
 }
