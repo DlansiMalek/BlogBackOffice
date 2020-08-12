@@ -326,14 +326,10 @@ class UserController extends Controller
         if ($user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
             return response()->json(['error' => 'user registred congress'], 405);
         }
-        $packId = $request->input('packId',[]);
+        $packId = $request->input('packIds',[]);
         $accessesIds = $request->input('accessesId',[]);
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id , $packId, $accessesIds);
-
-        if ($packId == []) {
-            $packId = null;
-        } else {$packId = $packId[0];}
-        $this->userServices->saveParticipantToCongress($congress_id, $user->user_id, $privilegeId,$packId);
+        $this->userServices->saveParticipantToCongress($congress_id, $user->user_id, $privilegeId);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
 
@@ -1330,6 +1326,8 @@ class UserController extends Controller
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
         }
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
+        $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
         if ($privilegeId == 3) {
             $this->userServices->affectPacksToUser($user->user_id, $packId);

@@ -1059,15 +1059,12 @@ class UserServices
         return $user_congress;
     }
 
-    public function saveParticipantToCongress($congress_id, $user_id, $privilegeId, $pack_id)
+    public function saveParticipantToCongress($congress_id, $user_id, $privilegeId)
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
-
         $user_congress->privilege_id = $privilegeId;
-        $user_congress->pack_id = $pack_id;
-
         $user_congress->save();
         return $user_congress;
     }
