@@ -155,7 +155,7 @@ class SharedServices
     {
         $authors = "";
         foreach ($co_authors as $author) {
-            $authors.= $author->first_name.' '.$author->last_name.' ,';
+            $authors.= strtoupper($author->first_name[0].'. '.$author->last_name[0]).' ,';
         }
         $authors = substr($authors, 0, -1);
         $mappingList = ['principal_author' => $principal_author,

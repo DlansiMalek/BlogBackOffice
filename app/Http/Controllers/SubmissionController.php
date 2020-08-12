@@ -273,7 +273,7 @@ class SubmissionController extends Controller
 
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'forbidden'], 400);
             }
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionByCongress($congressId);
@@ -302,7 +302,7 @@ class SubmissionController extends Controller
 
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'forbidden'], 400);
             }
             $attestationsSubmissions = $this->submissionServices->getAttestationsSubmissionsByCongressAndType($congressId, $attestationSubmission->communication_type_id);
@@ -330,7 +330,7 @@ class SubmissionController extends Controller
 
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'forbidden'], 400);
             }
             $response = $this->submissionServices->deleteAttestationSubmission($attestationSubmission);
@@ -356,7 +356,7 @@ class SubmissionController extends Controller
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
             // Affectation Attestation to Congress
@@ -410,18 +410,17 @@ class SubmissionController extends Controller
         return response()->json($submissionType, 200);
     }
 
-    public function getSubmissionByStatus($congressId, $status)
-    {
-
+    public function getSubmissionByStatus(Request $request, $congressId, $status)
+    {   $eligible = $request->input('eligible', '');
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            $submission = $this->submissionServices->getSubmissionByStatus($congressId, $status);
+            $submission = $this->submissionServices->getSubmissionByStatus($congressId, $status, $eligible);
             return response()->json($submission, 200);
         } catch (Exception $e) {
             Log::info($e->getMessage());
@@ -437,7 +436,7 @@ class SubmissionController extends Controller
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!($adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1))) {
+            if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
                 return response()->json(['error' => 'bad request'], 400);
             }
             if (!$attestationSubmissionEnabled = $this->submissionServices->getAttestationSubmissionEnabled($congressId)) {
@@ -468,7 +467,7 @@ class SubmissionController extends Controller
 
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
             $response = $this->submissionServices->makeSubmissionEligible($submission);
@@ -486,8 +485,11 @@ class SubmissionController extends Controller
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!($adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1))) {
+            if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
                 return response()->json(['error' => 'bad request'], 400);
+            }
+            if ($adminCongress->privilege_id != 1) {
+                return response()->json(['error' => 'must be admin'], 400);
             }
             $mailtype = $this->congressServices->getMailType('attestation', 'submission');
 
@@ -569,8 +571,11 @@ class SubmissionController extends Controller
 
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
+            if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
+            }
+            if ($adminCongress->privilege_id != 1) {
+                return response()->json(['error' => 'must be admin'], 400);
             }
             $user = $submission['user'];
             $mailtype = $this->congressServices->getMailType('attestation', 'submission');
@@ -578,8 +583,6 @@ class SubmissionController extends Controller
                 return response()->json(['error' => 'mail attestation submission not found'], 400);
             }
             $userMail = null;
-
-//            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
 
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             $attestationSubmission = null;

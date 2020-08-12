@@ -324,13 +324,23 @@ class SubmissionServices
     public function getSubmissionType() {
         return CommunicationType::get();
     }
-    public function getSubmissionByStatus($congressId, $status) {
-        $submission = Submission::with([
+    public function getSubmissionByStatus($congressId, $status, $eligible) {
+        if ($eligible === '1' or $eligible === '0')
+        {$submission = Submission::with([
             'user:user_id,first_name,last_name,email',
             'authors:submission_id,author_id,first_name,last_name'])
             ->where('congress_id','=',$congressId)
             ->where('status','=',$status)
-            ->get();
+            ->where('eligible','=',$eligible)
+            ->get();}
+        else {
+            $submission = Submission::with([
+                'user:user_id,first_name,last_name,email',
+                'authors:submission_id,author_id,first_name,last_name'])
+                ->where('congress_id','=',$congressId)
+                ->where('status','=',$status)
+                ->get();
+        }
         return $submission;
     }
     public function getAttestationSubmissionEnabled($congressId) {
