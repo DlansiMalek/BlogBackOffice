@@ -26,6 +26,7 @@ class AddCommunicationTypeIdToSubmission extends Migration
 
             $table->dateTime('limit_date')->nullable()->default(null)->after('congress_id');
             $table->string('code')->nullable()->default(null)->after('limit_date');
+            $table->string('upload_file_code')->after('user_id')->nullable()->default(null);
             $table->dropColumn('prez_type');
         });
     }
