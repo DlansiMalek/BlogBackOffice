@@ -33,7 +33,7 @@ class AuthorServices
     {
 
         $existingAuthor->rank = $author['rank'];
-        $existingAuthor->service_id = $author['service_id'] == -1 ? $service :$author['service_id'];
+        $existingAuthor->service_id = $author['service_id'] == -1 ? $service : $author['service_id'];
         $existingAuthor->etablissement_id = $author['etablissement_id'] == -1 ? $etablissement : $author['etablissement_id'];
         $existingAuthor->update();
         return $existingAuthor;
@@ -60,9 +60,8 @@ class AuthorServices
 
     public function editAuthors($existingAuthors,$authors, $submission_id,$services,$etablissements)
     {
-
         //test si il exist que l'utilisateur seuelement
-        if (sizeof($authors) > 1 )  {
+        if (sizeof($authors) >= 1 )  {
             //première loop pour voir les auteurs qui ont été modifié ou supprimé
             foreach ($existingAuthors as $existingAuthor) {
                 $isExist = false;

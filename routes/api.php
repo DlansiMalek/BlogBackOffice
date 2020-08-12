@@ -23,6 +23,7 @@ Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/services', 'SharedController@getAllServices');
 Route::get('/etablissements', 'SharedController@getAllEtablissements');
+Route::get('/communication_type', 'SharedController@getAllCommunicationTypes');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
@@ -150,7 +151,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
     Route::get('/all', 'CongressController@getAllCongresses');
-
+    Route::get('minCongressData','CongressController@getMinCongressData') ;
     Route::group(['prefix' => 'mail'], function () {
         Route::get('{mailId}', 'MailController@getById');
         Route::get('types/{typeId}', 'MailController@getMailTypeById');
@@ -219,12 +220,14 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
     });
 });
-
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
-    Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
+    Route::put('{submissionId}/evaluate/type/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
+    Route::put('{submissionId}/finalDecisionOnSubmission','SubmissionController@finalDecisionOnSubmission');
+    Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
+    Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
@@ -233,7 +236,7 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
         Route::get('/detail', 'SubmissionController@getSubmission');
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
-    Route::get('user/all', 'SubmissionController@getSubmissionByUserId');
+    Route::get('user/all/pagination', 'SubmissionController@getSubmissionByUserId');
 });
 
 Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], function () {

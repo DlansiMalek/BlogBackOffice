@@ -9,7 +9,7 @@ class SubmissionEvaluation extends Model {
 
     protected $table = 'Submission_Evaluation';
     protected $primaryKey = 'submission_evaluation_id';
-    protected $fillable = ['submission_id','admin_id','note'];
+    protected $fillable = ['submission_id','admin_id','note','communication_type_id'];
     public $timestamps = false;
 
     public function submission() {
