@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AccessPack;
 use App\Models\AccessPresence;
-use App\Models\Access;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
@@ -1043,17 +1042,17 @@ class UserServices
             ->get();
     }
 
-    public function saveUserCongress($congress_id, $user_id, Request $request)
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id)
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
-        $user_congress->privilege_id = $request->privilege_id;
+        $user_congress->privilege_id = $privilege_id;
 
-        if ($request->has('organization_id'))
-            $user_congress->organization_id = $request->input('organization_id');
-        if ($request->has('pack_id'))
-            $user_congress->pack_id = $request->input("pack_id");
+        if ($organization_id)
+            $user_congress->organization_id = $organization_id;
+        if ($pack_id)
+            $user_congress->pack_id = $pack_id;
 
         $user_congress->save();
         return $user_congress;
