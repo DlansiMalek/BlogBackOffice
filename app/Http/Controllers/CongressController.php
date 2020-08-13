@@ -45,7 +45,8 @@ class CongressController extends Controller
     protected $mailServices;
     protected $paymentServices;
     protected $notificationService;
-    protected $roomServices; 
+    protected $roomServices;
+
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
                          PrivilegeServices $privilegeServices,
@@ -63,13 +64,13 @@ class CongressController extends Controller
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
         $this->adminServices = $adminServices;
-        $this->notificationService = $notificationService ;
+        $this->notificationService = $notificationService;
         $this->accessServices = $accessServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
-        $this->roomServices = $roomServices ;
+        $this->roomServices = $roomServices;
         $this->packService = $packService;
         $this->resourceService = $resourceService;
         $this->mailServices = $mailServices;
@@ -103,35 +104,37 @@ class CongressController extends Controller
         return response()->json(['message' => 'auto presence updating']);
     }
 
-    public function switchUsersRoom($congressId,Request $request) {
+    public function switchUsersRoom($congressId, Request $request)
+    {
 
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-     
+
         $event = $request->input('event');
-        $usersToken = $this->notificationService->getAllKeysByCongressIdAndSource($congressId,'frontOffice');
+        $usersToken = $this->notificationService->getAllKeysByCongressIdAndSource($congressId, 'frontOffice');
         foreach ($usersToken as $userToken) {
             if ($event == 'distribute') {
-            $access = $this->accessServices->getClosestAccess($userToken->user_id,$congressId);
-            if (!$access)
-                return response()->json(['message' => 'no access found '],400);
+                $access = $this->accessServices->getClosestAccess($userToken->user_id, $congressId);
+                if (!$access)
+                    return response()->json(['message' => 'no access found '], 400);
             }
             $data = [
                 'title' => $event,
-                'body' => $event == 'collect' ? 
-                         '/congress/room/'.$congressId :
-                         '/congress/room/'.$congressId . '/access/' . $access->access_id ,
-                'link' =>  $event == 'collect' ? 
-                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId :
-                      UrlUtils::getBaseUrlFrontOffice().'/congress/room/'.$congressId . '/access/' . $access->access_id
+                'body' => $event == 'collect' ?
+                    '/congress/room/' . $congressId :
+                    '/congress/room/' . $congressId . '/access/' . $access->access_id,
+                'link' => $event == 'collect' ?
+                    UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congressId :
+                    UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congressId . '/access/' . $access->access_id
             ];
-            
-            $this->notificationService->sendNotification($data, [$userToken->firebase_key_user],false);
-        } 
+
+            $this->notificationService->sendNotification($data, [$userToken->firebase_key_user], false);
+        }
 
 
     }
+
     public function editConfigCongress(Request $request, $congressId)
     {
 
@@ -147,32 +150,32 @@ class CongressController extends Controller
 
         $newConfig = $request->input("congress");
 
-        $token = null ;
+        $token = null;
 
         if ($newConfig['is_online']) {
-        $token =  $this->roomServices->createToken(
-            $loggedadmin->email, 
-            'eventizer_room_' .$congressId,
-            true,  
-            $loggedadmin->name
-        );
-    }
-        $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId,$token);
+            $token = $this->roomServices->createToken(
+                $loggedadmin->email,
+                'eventizer_room_' . $congressId,
+                true,
+                $loggedadmin->name
+            );
+        }
+        $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
 
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
         if (sizeof($submissionData) > 0) {
-        $this->congressServices->addCongressSubmission(
-            $configSubmission,
-            $submissionData,
-            $congressId
-        );
-    }
-        if($theme_ids){
+            $this->congressServices->addCongressSubmission(
+                $configSubmission,
+                $submissionData,
+                $congressId
+            );
+        }
+        if ($theme_ids) {
             $this->congressServices->addSubmissionThemeCongress(
                 $theme_ids,
-                $congressId   );
+                $congressId);
         }
 
         $eventLocation = $request->input("eventLocation");
@@ -212,6 +215,11 @@ class CongressController extends Controller
         $congress = $this->congressServices->updateWithParticipantsCount($congress);
 
         return response()->json($congress);
+    }
+
+    public function getMinCongressData()
+    {
+        return $this->congressServices->getMinCongressData();
     }
 
     public function getCongressPagination(Request $request)
@@ -685,7 +693,6 @@ class CongressController extends Controller
                 }]);
 
         return response()->json($access);
-
 
 
     }
