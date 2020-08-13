@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\AccessPack;
 use App\Models\AccessPresence;
-use App\Models\Access;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
 use App\Models\Evaluation_Inscription;
@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
+use App\Models\UserPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -311,7 +312,8 @@ class UserServices
         }
     }
 
-    public function affectPacksToUser($user_id, $packIds=null,$packs=null) {
+    public function affectPacksToUser($user_id, $packIds = null, $packs = null)
+    {
 
         if ($packIds) {
             $this->AffectPacksToUserWithPackIdsArray($user_id, $packIds);
@@ -320,9 +322,10 @@ class UserServices
         }
     }
 
-    private function AffectPacksToUserWithPackIdsArray($user_id,$packIds) {
-        
-        foreach($packIds as $packId) {
+    private function AffectPacksToUserWithPackIdsArray($user_id, $packIds)
+    {
+
+        foreach ($packIds as $packId) {
             $user_pack = new UserPack();
             $user_pack->user_id = $user_id;
             $user_pack->pack_id = $packId;
@@ -330,7 +333,8 @@ class UserServices
         }
     }
 
-    private function AffectPacksToUserWithPackArray($user_id,$packs) {
+    private function AffectPacksToUserWithPackArray($user_id, $packs)
+    {
         foreach ($packs as $pack) {
             $user_pack = new UserPack();
             $user_pack->user_id = $user_id;
@@ -343,7 +347,7 @@ class UserServices
     {
         return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
             $query->where('congress_id', '=', $congressId);
-            if($showInRegister)
+            if ($showInRegister)
                 $query->where('show_in_register', '=', $showInRegister);
         }])
             ->where("user_id", "=", $userId)
@@ -890,11 +894,11 @@ class UserServices
     public function saveUserResponses($responses, $userId)
     {
         foreach ($responses ? $responses : [] as $req) {
-
             $reponse = new FormInputResponse();
             if (!array_key_exists("response", $req)) {
 
                 $reponse->user_id = $userId;
+
                 $reponse->form_input_id = $req['form_input_id'];
                 $reponse->response = null;
                 $reponse->save();
@@ -1060,16 +1064,17 @@ class UserServices
             ->get();
     }
 
-    public function saveUserCongress($congress_id, $user_id, Request $request)
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id)
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
-        $user_congress->privilege_id = $request->privilege_id;
-        if ($request->has('organization_id'))
-            $user_congress->organization_id = $request->input('organization_id');
-        if ($request->has('pack_id'))
-            $user_congress->pack_id = $request->input("pack_id");
+        $user_congress->privilege_id = $privilege_id;
+
+        if ($organization_id)
+            $user_congress->organization_id = $organization_id;
+        if ($pack_id)
+            $user_congress->pack_id = $pack_id;
 
         $user_congress->save();
         return $user_congress;
@@ -1424,13 +1429,41 @@ class UserServices
         }
     }
 
-    public function getRefusedParticipants($congressId,$emails_array)
+    public function calculateCongressFees($congress, $pack, $accesses)
+    {
+        if ($congress->congress_type_id == 2 || $congress->congress_type_id == 3) {
+            return 0;
+        }
+
+        $price = 0;
+        if ($congress->price) {
+            $price += $congress->price;
+        }
+        if ($pack) {
+            $price += $pack->price;
+        }
+        if ($accesses) {
+            foreach ($accesses as $access) {
+                if ($pack) {
+                    if (!$accessInPack = AccessPack::where('pack_id', '=', $pack->pack_id)->where('access_id', '=', $access->access_id)->first()) {
+                        $price += $access->price;
+                    }
+                } else {
+                    $price += $access->price;
+                }
+
+            }
+        }
+        return $price;
+    }
+
+    public function getRefusedParticipants($congressId, $emails_array)
     {
         //users id who are registred in the congress
-        $accepted_user_id_array= UserCongress::select('user_id')->where('congress_id','=',$congressId)
-        ->where('privilege_id','=',3);
+        $accepted_user_id_array = UserCongress::select('user_id')->where('congress_id', '=', $congressId)
+            ->where('privilege_id', '=', 3);
         //users who got refused with mails refused
-        return User::whereIn('user_id',$accepted_user_id_array)
-        ->whereNotIn('email', $emails_array)->get();
+        return User::whereIn('user_id', $accepted_user_id_array)
+            ->whereNotIn('email', $emails_array)->get();
     }
 }
