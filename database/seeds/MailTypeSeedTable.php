@@ -114,8 +114,23 @@ class MailTypeSeedTable extends Seeder
         ]);
         DB::table('Mail_Type')->insert([
             'mail_type_id' => 18,
-            'name' => 'refus',
-            'display_name' => "Refus d\'inscription"
+            'name' => 'Attente_de_fichier',
+            'display_name' => "Attente de fichiers",
+            'type' => "submission",
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 19,
+            'name' => 'refus',
+            'display_name' => "Refus d\'inscription",
+            'type' => "event",
+          
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 20,
+            'name' => 'file_submitted',
+            'display_name' => "Fichiers soumis",
+            'type' => "submission",
+          
+        ]);  
     }
 }

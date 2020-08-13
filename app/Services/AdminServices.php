@@ -15,6 +15,7 @@ use App\Models\Congress;
 use App\Models\Evaluation_Inscription;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
+use App\Models\SubmissionEvaluation;
 use App\Models\ThemeAdmin;
 use DateInterval;
 use DateTime;
@@ -96,6 +97,37 @@ class AdminServices
             );
         }
     } 
+    public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
+        $evalutors = $this->getEvaluatorsByTheme($submissions[0]->theme_id,$congress_id,11); //get by theme or all admin congress
+        $max = sizeof($evalutors) > 0 ? $evalutors[sizeof($evalutors) - 1]['submission_count'] : 0;
+        $count = 0;
+        foreach($submissions as $submission) {
+            foreach ($themeIds as $themeId) {
+                if (($submission->theme_id == $themeId) &&  ($count <= $max)) {
+                    $congress = json_decode($submission['congress'],true);
+                    if (sizeof($submission['submissions_evaluations']) <  $congress['config_submission']['num_evaluators']) {
+                            $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
+                    }
+                break;
+                }
+            }
+        }
+        
+        return 1;
+    }
+
+    public function addSubmissionEvaluation($admin_id, $submission_id)
+    {
+        $submissionEvaluation = new SubmissionEvaluation();
+        $submissionEvaluation->submission_id = $submission_id;
+        $submissionEvaluation->admin_id = $admin_id;
+        $submissionEvaluation->save();
+        return $submissionEvaluation;
+    }
+
+    public function getEvaluatorsBySubmissionId($submission_id) {
+        return SubmissionEvaluation::where('submission_id','=',$submission_id)->get();
+    }   
 
     public function getEvaluatorsByCongress($congressId, $privilegeId,$relation)
     {
@@ -103,6 +135,7 @@ class AdminServices
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('privilege_id', '=', $privilegeId);
+           
         })
             ->withCount([$relation => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -115,8 +148,12 @@ class AdminServices
     {
 
         return Admin::whereHas('themeAdmin', function ($query) use ($privilegeId, $themeId) {
-            $query->where('privilege_id', '=', $privilegeId);
+           
             $query->where('theme_id', '=', $themeId);
+        })
+        ->whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('privilege_id', '=', $privilegeId);
         })
             ->withCount(['submission' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -254,7 +291,6 @@ class AdminServices
         $personnel->name = $admin["name"];
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
-
         $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
