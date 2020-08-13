@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
 class UserController extends Controller
 {
     protected $smsServices;
@@ -309,6 +310,34 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+
+    public function saveUserInscription(Request $request, $congress_id)
+    {
+        $packId = $request->input('packIds', []);
+        $accessesIds = $request->input('accessesId', []);
+        $privilegeId = 3;
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 404);
+        }
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 404);
+        }
+
+        // Check if User already registed to congress
+        if ($user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
+            return response()->json(['error' => 'user registred congress'], 405);
+        }
+
+        // Affect User to Congress
+        $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+
+        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
+
+        return response()->json(['response' => 'Inscrit avec succès'], 200);
+    }
+
     public function saveUser(Request $request, $congress_id)
     {
         if (!$request->has(['email', 'privilege_id', 'first_name', 'last_name', 'password']))
@@ -330,107 +359,18 @@ class UserController extends Controller
             return response()->json(['error' => 'user registred congress'], 405);
         }
 
-        // Affect User to Congress
-        $this->userServices->saveUserCongress($congress_id, $user->user_id, $request);
-
-        //Adding Responses User To Form (Additional Information)
-        if ($request->has('responses')) {
-            $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
-        }
-
-        // Affect All Access Free (To All Users)
-        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
-
-        $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
-        //Save Access Premium
-        if ($privilegeId == 3) {
-            $this->packServices->affectPacksToUser($user->user_id , $request->input('packIds'),0) ;
-            $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
-                $user->user_id,
-                $congress_id,
-                $request->input('packIds'),
-                1,
-                0
-            );
-            $this->userServices->affectAccessElement($user->user_id, $accessInPackNotInRegister);
-            $this->userServices->affectAccess($user->user_id, $request->input('accessIds'), []);
-        } else {
-            $packs = $this->packServices->getAllPackByCongress($congress_id);
-            $packIds = $this->packServices->getPackIdsByPacks($packs);
-            $this->packServices->affectPacksToUser($user->user_id,$packIds,0);
-            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0,1);
-            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
-
-            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 1);
-            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
-        }
-
         $congress = $this->congressServices->getCongressById($congress_id);
-        $isFree = false;
-        if ($privilegeId == 3) {
-            $nbParticipants = $this->congressServices->getParticipantsCount($congress_id, 3, null);
-            $freeNb = $this->paymentServices->getFreeUserByCongressId($congress_id);
-            //Free Inscription (By Chance)
-            if ($freeNb < $congress->config->free && ($nbParticipants % 10) == 0) {
-                $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), true);
-                $isFree = true;
-            }
-        }
-        // Sending Mail
-        $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
-        $userPayment = null;
-        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $request->input("price") == 0) || $isFree) {
-            //Free Mail
-            if ($isFree) {
-                if ($mailtype = $this->congressServices->getMailType('free')) {
-                    if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
-                    }
-                }
-            }
-            //Confirm Direct
-            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
-            $badgeIdGenerator = $badge['badge_id_generator'];
-            $fileAttached = false;
-            if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badge,
-                    $user,
-                    $user->qr_code,
-                    $privilegeId
-                );
-            }
-            if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
-                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
-                }
-            }
-            $this->smsServices->sendSms($congress_id, $user, $congress);
-        } else {
-            //PreInscription First (Payment Required)
-            //Add Payement Ligne
-            $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $request->input("price"), false);
-
-            if ($mailtype = $this->congressServices->getMailType('inscription')) {
-                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
-                }
-            }
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 404);
         }
 
-        // Notify Organizer Mail Rule (privilege ==3 & configCongress Activated & form user-register not backoffice add)
-        if ($privilegeId === 3 && $congress->config->replyto_mail && $congress->config->is_notif_register_mail && !$user->is_admin_created) {
-            $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
-            $template = Utils::getDefaultMailNotifNewRegister();
-            $objectMail = "Nouvelle Inscription";
-            $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
-        }
-        return $user;
+        // Affect User to Congress
+        $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+
+        $packId = $request->input('packIds', 0);
+        $accessesIds = $request->input('accessIds', []);
+        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
+        return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
 
     public function editerUserToCongress(Request $request, $congressId, $userId)
@@ -493,16 +433,15 @@ class UserController extends Controller
         if ($privilegeId != 3) {
             $packs = $this->packServices->getAllPackByCongress($congressId);
             $packIds = $this->packServices->getPackIdsByPacks($packs);
-            $this->packServices->editUserPacksWithPackId($userId,$user->user_packs,$packIds);
+            $this->packServices->editUserPacksWithPackId($userId, $user->user_packs, $packIds);
             $allAccess = $this->accessServices->getMainByCongressId($congressId);
             $accessIds = $this->accessServices->getAccessIdsByAccess($allAccess);
-        }
-        else {
-            
-            $this->packServices->editUserPacksWithPackId($userId,$user->user_packs,$request->input('packIds'));
-            $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0,0);
+        } else {
+
+            $this->packServices->editUserPacksWithPackId($userId, $user->user_packs, $request->input('packIds'));
+            $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0, 0);
             $accessNotInRegisterIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
-            $accessIds = array_merge($accessIds,$accessNotInRegisterIds);
+            $accessIds = array_merge($accessIds, $accessNotInRegisterIds);
             $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
                 $user->user_id,
                 $congressId,
@@ -511,7 +450,7 @@ class UserController extends Controller
                 0
             );
             $accessInPackNotInRegisterIds = $this->accessServices->getAccessIdsByAccess($accessInPackNotInRegister);
-            $accessIds = array_merge($accessIds,$accessInPackNotInRegisterIds);
+            $accessIds = array_merge($accessIds, $accessInPackNotInRegisterIds);
         }
 
         if ($accessIds && array_count_values($accessIds)) {
@@ -525,11 +464,11 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function checkUserRights($congressId, $accessId=null)
+    public function checkUserRights($congressId, $accessId = null)
     {
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
-            return response()->json(['response' => 'No user found'],401);
+            return response()->json(['response' => 'No user found'], 401);
         }
         $userId = $user->user_id;
         $user = $this->userServices->getUserByIdWithRelations($userId, ['user_congresses' => function ($query) use ($congressId) {
@@ -546,7 +485,7 @@ class UserController extends Controller
             }]);
 
         $userRight = $this->userServices->checkUserRights($user, $accessId);
-        
+
         if ($userRight == 2 || $userRight == 3) {
             $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
             $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
@@ -751,152 +690,147 @@ class UserController extends Controller
 
         $congress = $this->congressServices->getById($congressId);
         $users = $request->input("data");
-        $refused= $request->query('refused');
-        if($refused=="false"){$refused=false;}
-        else{$refused=true;}
+        $refused = $request->query('refused');
+        if ($refused == "false") {
+            $refused = false;
+        } else {
+            $refused = true;
+        }
         //PrivilegeId = 3
         $sum = 0;
         $privilegeId = $request->input("privilegeId");
         $organizationId = $request->input("organisationId");
-        $emails=[];
-        $accessIdTable=[];
-        foreach($users as $e){
-            $emails[]=$e["EMAIL"];
-            $accessIdTable[]=$e["accessIdTable"];
+        $emails = [];
+        $accessIdTable = [];
+        foreach ($users as $e) {
+            $emails[] = $e["EMAIL"];
+            $accessIdTable[] = $e["accessIdTable"];
         }
 
         // Affect All Access Free (To All Users)
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
         $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
         $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
-            foreach ($users as $userData) {
-                if ($userData['EMAIL']) {
+        foreach ($users as $userData) {
+            if ($userData['EMAIL']) {
 
-                    $request->merge(['privilege_id' => $privilegeId,
-                        'email' => $userData['EMAIL']
-                    ]);
-                    // Get User per mail
-                    if($user_by_mail=$this->userServices->getUserByEmail($userData['EMAIL']))
-                    {   $user_id= $user_by_mail->user_id;
+                $request->merge(['privilege_id' => $privilegeId,
+                    'email' => $userData['EMAIL']
+                ]);
+                // Get User per mail
+                if ($user_by_mail = $this->userServices->getUserByEmail($userData['EMAIL'])) {
+                    $user_id = $user_by_mail->user_id;
                     $user = $this->userServices->getUserByIdWithRelations($user_id, [
-                    'accesses' => function ($query) use ($congressId) {
-                        $query->where('congress_id', '=', $congressId);
-                        $query->where('show_in_register', '=', 1);
-                    }, 'payments' => function ($query) use ($congressId) {
-                        $query->where('congress_id', '=', $congressId);
-                    },
-                    'user_congresses' => function ($query) use ($congressId) {
-                        $query->where('congress_id', '=', $congressId);
-                    }
+                        'accesses' => function ($query) use ($congressId) {
+                            $query->where('congress_id', '=', $congressId);
+                            $query->where('show_in_register', '=', 1);
+                        }, 'payments' => function ($query) use ($congressId) {
+                            $query->where('congress_id', '=', $congressId);
+                        },
+                        'user_congresses' => function ($query) use ($congressId) {
+                            $query->where('congress_id', '=', $congressId);
+                        }
                     ]);
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
                     if (!$user_congress) {
-                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request);
-                        $this->paymentServices->affectPaymentToUser($user->user_id,$congressId,0,false);
-                        $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
+                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+                        $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
+                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     } else {
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->update();
-                        $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
+                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     }
 
-                    $new_access_array=null;
-                    $old_access_id_array=[];
-                    $old_access_array =$user->accesses;
-                    for ($i=0 ; $i< sizeof($emails) ; $i++)
-                    {   
+                    $new_access_array = null;
+                    $old_access_id_array = [];
+                    $old_access_array = $user->accesses;
+                    for ($i = 0; $i < sizeof($emails); $i++) {
                         //if statement to get the right index i of accessIdTable corresponding to our user 
-                        if ($emails[$i]==$userData['EMAIL'])
-                        {
+                        if ($emails[$i] == $userData['EMAIL']) {
                             //put all new accesses ID in the new access array 
-                            $new_access_array=$accessIdTable[$i];
+                            $new_access_array = $accessIdTable[$i];
                         };
                     }
-                    if($accessNotInRegister){$this->userServices->affectAccessIds($user->user_id,$accessNotInRegister);}
-                        if ($new_access_array)
-                        {
-                            //add new accesses if not already existant 
-                            for ($j=0 ; $j< sizeof($new_access_array) ; $j++)
-                            {
-                                $exists=false;
-                                //check if the user already has this access_id  
-                                foreach ($old_access_array as $old_access)
-                                {
-                                if($old_access->access_id==$new_access_array[$j])
-                                {$exists=true;}
-                                }
-                                if(!$exists){
-                                    // this means we have a new access to add 
-                                    // add the new access 
-                                    $access_added=$this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
-                                }
-                                $this->paymentServices->changeIsPaidStatus($user->user_id,$congressId,1);
-                                
-                            }
-                            // send mail confirmation
-                            if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
-                                if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
+                    if ($accessNotInRegister) {
+                        $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
+                    }
+                    if ($new_access_array) {
+                        //add new accesses if not already existant
+                        for ($j = 0; $j < sizeof($new_access_array); $j++) {
+                            $exists = false;
+                            //check if the user already has this access_id
+                            foreach ($old_access_array as $old_access) {
+                                if ($old_access->access_id == $new_access_array[$j]) {
+                                    $exists = true;
                                 }
                             }
-                            //delete the access if no longer exists on the excel sheet
-                            // we loop in the old access aray
-                            for ($j=0 ; $j< sizeof($old_access_array) ; $j++)
-                            {
-                                $exists=false; // initialise to doesn't exist
-                                for($k=0 ; $k< sizeof($new_access_array) ; $k++){
-                                    //search if access exists in the new access table if it does we won't delete it
-                                    //otherwise we have to delete it
-                                    if ($old_access_array[$j]->access_id==$new_access_array[$k]){
-                                        $exists=true; // access exists in both array new and old
-                                    }
-                                }
-                                if (!$exists){
-                                    //delete where access_id== $j from the old access array
-                                    $this->userServices->deleteAccessById($user->user_id,$old_access_array[$j]->access_id);
-                                }
+                            if (!$exists) {
+                                // this means we have a new access to add
+                                // add the new access
+                                $access_added = $this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
+                            }
+                            $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
+
+                        }
+                        // send mail confirmation
+                        if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                            if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
                             }
                         }
-                        else
-                        {
-                            //new access_array empty
-                            //there is no new accesses
-                            //delete all current access traitement
-                            for($k=0 ; $k< sizeof($old_access_array) ; $k++){
-                                $this->userServices->deleteAccessById($user->user_id,$old_access_array[$k]->access_id);
+                        //delete the access if no longer exists on the excel sheet
+                        // we loop in the old access aray
+                        for ($j = 0; $j < sizeof($old_access_array); $j++) {
+                            $exists = false; // initialise to doesn't exist
+                            for ($k = 0; $k < sizeof($new_access_array); $k++) {
+                                //search if access exists in the new access table if it does we won't delete it
+                                //otherwise we have to delete it
+                                if ($old_access_array[$j]->access_id == $new_access_array[$k]) {
+                                    $exists = true; // access exists in both array new and old
+                                }
                             }
-                        }   
-                        
+                            if (!$exists) {
+                                //delete where access_id== $j from the old access array
+                                $this->userServices->deleteAccessById($user->user_id, $old_access_array[$j]->access_id);
+                            }
+                        }
+                    } else {
+                        //new access_array empty
+                        //there is no new accesses
+                        //delete all current access traitement
+                        for ($k = 0; $k < sizeof($old_access_array); $k++) {
+                            $this->userServices->deleteAccessById($user->user_id, $old_access_array[$k]->access_id);
+                        }
                     }
+
                 }
             }
+        }
 
-        if($refused && $congress->congress_type_id==2)
-        {
-        // partie gestion des participants refusés !
-        $all_refused_participants=$this->userServices->getRefusedParticipants($congressId,$emails);       
-            foreach($all_refused_participants as $refused_participant) 
-            {
-                    //change user payment status
-                    $this->paymentServices->changeIsPaidStatus($refused_participant->user_id,$congressId,-1);
-                    //envoi de mail de refus
-                    if ($mailtype = $this->congressServices->getMailType('refus')) {
-                        if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) 
-                        {
-                            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $refused_participant->user_id);
-                            $this->userServices->sendMail(
+        if ($refused && $congress->congress_type_id == 2) {
+            // partie gestion des participants refusés !
+            $all_refused_participants = $this->userServices->getRefusedParticipants($congressId, $emails);
+            foreach ($all_refused_participants as $refused_participant) {
+                //change user payment status
+                $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
+                //envoi de mail de refus
+                if ($mailtype = $this->congressServices->getMailType('refus')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $refused_participant->user_id);
+                        $this->userServices->sendMail(
                             $this->congressServices->renderMail($mail->template, $congress, $refused_participant, null, null, null),
                             $refused_participant,
                             $congress,
                             $mail->object,
                             null,
                             $userMail
-                            );
-                        }
+                        );
                     }
+                }
             }
         }
 
@@ -1325,34 +1259,41 @@ class UserController extends Controller
         if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
         return Storage::download($user->profile_pic);
     }
-    public function forgetPassword(Request $request )  {
+
+    public function forgetPassword(Request $request)
+    {
         if (!$request->has(['email']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
 
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
-            return response()->json(['response' => 'email not found'], 404);}
+            return response()->json(['response' => 'email not found'], 404);
+        }
 
         if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('forget_password')) {
-            return response()->json(['response' => 'bad request'], 400);}
+            return response()->json(['response' => 'bad request'], 400);
+        }
 
         if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
-            return response()->json(['response' => 'bad request'], 400);}
+            return response()->json(['response' => 'bad request'], 400);
+        }
         $user->verification_code = Str::random(40);
         $user->update();
 
-        $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/'. $user->user_id  . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id ;
+        $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-        $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null,null, $activationLink), $user, null, $mail->object, null, $userMail);
+        $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
 
         return response()->json(['response' => 'Check your mail to reset password !'], 200);
 
     }
 
-    public function getUserById($user_id ,Request $request)  {
-        
+    public function getUserById($user_id, Request $request)
+    {
+
         $verification_code = $request->query('verification_code', '');
         if (!$user = $this->userServices->getUserById($user_id)) {
-            return response()->json(['response' => 'user not found'], 404);}
+            return response()->json(['response' => 'user not found'], 404);
+        }
         if ($user->verification_code !== $verification_code) {
             return response()->json('bad request', 400);
         }
@@ -1360,20 +1301,24 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function resetUserPassword($userId , Request $request )  {
+    public function resetUserPassword($userId, Request $request)
+    {
         if (!$request->has(['verification_code', 'password']))
             return response()->json(['response' => 'bad request'], 400);
         $verification_code = $request->input('verification_code');
         if (!$user = $this->userServices->getUserById($userId)) {
-            return response()->json(['response' => 'user not found'], 404);}
+            return response()->json(['response' => 'user not found'], 404);
+        }
         if ($user->verification_code !== $verification_code) {
             return response()->json(['response' => 'bad request'], 400);
         }
         if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('reset_password_success')) {
-            return response()->json(['response' => 'bad request'], 400);}
+            return response()->json(['response' => 'bad request'], 400);
+        }
 
         if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
-            return response()->json(['response' => 'bad request'], 400);}
+            return response()->json(['response' => 'bad request'], 400);
+        }
         $password = $request->input('password');
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
@@ -1382,6 +1327,112 @@ class UserController extends Controller
         $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
 
         return response()->json(['response' => 'password successfully updated'], 200);
+    }
+
+
+    private function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds)
+    {
+
+        if ($request->has('responses')) {
+            $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
+        }
+        $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
+        $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
+
+        if ($privilegeId == 3) {
+            $this->userServices->affectPacksToUser($user->user_id, $packId);
+            $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
+                $user->user_id,
+                $congress_id,
+                $packId,
+                1,
+                0
+            );
+            $this->userServices->affectAccessElement($user->user_id, $accessInPackNotInRegister);
+            $this->userServices->affectAccess($user->user_id, $accessesIds, []);
+        } else {
+            $packs = $this->packServices->getAllPackByCongress($congress_id);
+            $this->userServices->affectPacksToUser($user->user_id, null, $packs);
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 1);
+            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
+
+            $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 1);
+            $this->userServices->affectAccessElement($user->user_id, $accessInRegister);
+        }
+
+        if ($packId == []) {
+            $pack = null;
+        } else {
+            $pack = $this->packServices->getPackById($packId);
+        }
+        $accessesId = $accessesIds;
+        $accesses = $this->accessServices->getAllAccessByAccessIds($accessesId);
+        $totalPrice = $this->userServices->calculateCongressFees($congress, $pack, $accesses);
+        $isFree = false;
+        if ($privilegeId == 3) {
+            $nbParticipants = $this->congressServices->getParticipantsCount($congress_id, 3, null);
+            $freeNb = $this->paymentServices->getFreeUserByCongressId($congress_id);
+            //Free Inscription (By Chance)
+            if ($freeNb < $congress->config->free && ($nbParticipants % 10) == 0) {
+                $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $totalPrice, true);
+                $isFree = true;
+            }
+        }
+        // Sending Mail
+        $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+        $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
+        $userPayment = null;
+
+        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $totalPrice == 0) || $isFree) {
+            //Free Mail
+            if ($isFree) {
+                if ($mailtype = $this->congressServices->getMailType('free')) {
+                    if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
+                    }
+                }
+            }
+            //Confirm Direct
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
+            $fileAttached = false;
+            if ($badgeIdGenerator != null) {
+                $fileAttached = $this->sharedServices->saveBadgeInPublic(
+                    $badge,
+                    $user,
+                    $user->qr_code,
+                    $privilegeId
+                );
+            }
+            if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                }
+            }
+            $this->smsServices->sendSms($congress_id, $user, $congress);
+        } else {
+            //PreInscription First (Payment Required)
+            //Add Payement Ligne
+            $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $totalPrice, false);
+
+            if ($mailtype = $this->congressServices->getMailType('inscription')) {
+                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                }
+            }
+        }
+
+        // Notify Organizer Mail Rule (privilege ==3 & configCongress Activated & form user-register not backoffice add)
+        if ($privilegeId === 3 && $congress->config->replyto_mail && $congress->config->is_notif_register_mail && !$user->is_admin_created) {
+            $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
+            $template = Utils::getDefaultMailNotifNewRegister();
+            $objectMail = "Nouvelle Inscription";
+            $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
+        }
     }
 
 
