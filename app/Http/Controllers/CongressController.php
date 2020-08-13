@@ -212,45 +212,49 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
+        
         if (!$config = ConfigCongress::where('congress_id', '=', $congressId)->first())
             $config = new ConfigCongress();
-        if (!$config_selection = $this->congressServices->getConfigSelection($congressId)) {
+        
+            $isUpdate = 1;
+        if ( !$config_selection = $this->congressServices->getConfigSelection($congressId)) {
             $config_selection = new ConfigSelection();
+            $isUpdate = 0;
         } 
      
             
         
 
-        $congress = $this->congressServices->editCongress($congress, $config, $config_selection, $request);
+        $congress = $this->congressServices->editCongress($congress, $config, $config_selection, $request, $isUpdate);
         //update the payment table
-        if ( $congress->congress_type_id != 1   ||
-          ($congress->config_selection && $congress->config_selection->selection_type == 1) )
-        {
-            $payments = $this->paymentServices->getAllPaymentsByCongressId($congressId);
-            foreach($payments as $payment) {
-                if ($payment->isPaid != 1 ||  $payment->free!=1 ) {
-                $payment->delete();
-                }
-            }
-        } else {
-                $users = $this->userServices->getUsersCongress(
-                    $congressId,
-                    null
-                );
-                foreach($users as $user ) {
-                    if (!$user_payment = $this->paymentServices->getPaymentByUserIdAndCongressId(
-                        $user->user_id,
-                        $congressId
-                    ))
-                    $this->addPaymentToUser(
-                        $request->root(),
-                        $user,
-                        $congress,
-                        $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0
-                    );
-                }
+        // if ( $congress->congress_type_id != 1   ||
+        //   ($congress->config_selection && $congress->config_selection->selection_type == 1) )
+        // {
+        //     $payments = $this->paymentServices->getAllPaymentsByCongressId($congressId);
+        //     foreach($payments as $payment) {
+        //         if ($payment->isPaid != 1 ||  $payment->free!=1 ) {
+        //         $payment->delete();
+        //         }
+        //     }
+        // } else {
+        //         $users = $this->userServices->getUsersCongress(
+        //             $congressId,
+        //             null
+        //         );
+        //         foreach($users as $user ) {
+        //             if (!$user_payment = $this->userServices->getPaymentInfoByUserAndCongress(
+        //                 $user->user_id,
+        //                 $congressId
+        //             ))
+        //             $this->addPaymentToUser(
+        //                 $request->root(),
+        //                 $user,
+        //                 $congress,
+        //                 $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0
+        //             );
+        //         }
             
-        }
+        // }
         return response()->json($congress);
     }
 

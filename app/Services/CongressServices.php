@@ -60,9 +60,6 @@ class CongressServices
         return configSelection::where('congress_id', '=', $congress_id)->first();
     }
 
-  public function getCongressByIdWithoutRelations($congress_id) {
-      return Congress::where('congress_id','=',$congress_id)->first();
-  }
     public function getCongressPagination($offset, $perPage, $search)
     {
 
@@ -224,6 +221,7 @@ class CongressServices
         $config->free = $configRequest['free'] ? $configRequest['free'] : 0;
         $config->access_system = $configRequest['access_system'] ? $configRequest['access_system'] : 'Workshop';
         $config->is_submission_enabled = $configRequest['is_submission_enabled'] ? 1 : 0;
+        $config->status = $configRequest['status'];
         $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
@@ -356,7 +354,7 @@ class CongressServices
         return $congress;
     }
 
-    public function editCongress($congress, $config, $config_selection , $request)
+    public function editCongress($congress, $config, $config_selection , $request,$isUpdate)
     {
         $congress->name = $request->input('name');
         $congress->start_date = $request->input('start_date');
@@ -370,13 +368,19 @@ class CongressServices
         $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
         $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
         $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
+        $config->status = $request->input('config')['status'];
         $config->update();
 
         $config_selection->num_evaluators = $request->input('config_selection')['num_evaluators'] ;
         $config_selection->selection_type = $request->input('config_selection')['selection_type'] ;
         $config_selection->start_date = $request->input('config_selection')['start_date'] ;
         $config_selection->end_date = $request->input('config_selection')['end_date'] ;
+        $config_selection->congress_id = $congress->congress_id;
+        if ($isUpdate) {
         $config_selection->update();
+        } else {
+            $config_selection->save();
+        }
 
         return $this->getCongressById($congress->congress_id);
     }

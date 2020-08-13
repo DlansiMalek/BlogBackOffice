@@ -16,7 +16,7 @@ class CreateEvaluationInscriptionTable extends Migration
         Schema::create('Evaluation_Inscription', function (Blueprint $table) {
             $table->bigIncrements('evaluation_inscription_id');
             $table->string('commentaire')->nullable()->default(null);
-            $table->integer('note')->nullable()->default(0);
+            $table->integer('note')->nullable()->default(-1);
             $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
             ->onDelete('cascade');
