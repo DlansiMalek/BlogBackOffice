@@ -72,10 +72,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\UserCongress', 'user_id', 'user_id');
     }
 
-    function packs() {
-        return $this->belongsToMany('App\Models\Pack','User_Pack','user_id','pack_id');
-    }
-    
     function user_packs() {
         return $this->hasMany('App\Models\UserPack', 'user_id', 'user_id');
     }
