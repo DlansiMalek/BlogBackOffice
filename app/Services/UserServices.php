@@ -6,6 +6,7 @@ use App\Models\AccessPack;
 use App\Models\AccessPresence;
 use App\Models\Admin;
 use App\Models\AttestationRequest;
+use App\Models\Evaluation_Inscription;
 use App\Models\FormInputResponse;
 use App\Models\Payment;
 use App\Models\ResponseValue;
@@ -382,9 +383,17 @@ class UserServices
             }
         })->get();
     }
-
-    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null)
+    // public function getUsersCongress($congress_id,$privilegeIds = null){
+    //     return User::whereHas('user_congresses', function ($query) use ($congress_id,$privilegeIds) {
+    //         $query->where('congress_id', '=', $congress_id);
+    //         if ($privilegeIds != null) {
+    //             $query->whereIn('privilege_id', $privilegeIds);
+    //         }
+    //     })->get();
+    // }
+    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null,$admin_id = null)
     {
+        
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
             if ($privilegeIds != null) {
@@ -402,14 +411,22 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
-            }])
+            },
+            'inscription_evaluation' => function($query) use ($congressId,$admin_id) {
+                if ($admin_id) {
+                    $query->where('admin_id','=',$admin_id)->where('congress_id','=',$congressId);
+                } else {
+                    $query->where('congress_id','=',$congressId);
+                }
+            }
+            ])
             ->where(function ($query) use ($search) {
                 if ($search != "") {
                     $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                 }
-            });
+            }) ;
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
                 || $tri == 'mobile' || $tri = 'country_id')) {
@@ -1033,7 +1050,12 @@ class UserServices
 
     public function getUserCongress($congress_id, $user_id)
     {
-        return UserCongress::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)->first();
+        return UserCongress::where('user_id', '=', $user_id)
+        ->where('congress_id', '=', $congress_id)
+        ->with(['congress','congress.config_selection' => function ($query) {
+            $query->select(['congress_id','selection_type']);
+        },'user'])
+        ->first();
     }
 
     public function getUserCongressByUserId($userId)
@@ -1058,13 +1080,16 @@ class UserServices
         return $user_congress;
     }
 
-    public function saveParticipantToCongress($congress_id, $user_id, $privilegeId)
-    {
-        $user_congress = new UserCongress();
-        $user_congress->user_id = $user_id;
-        $user_congress->congress_id = $congress_id;
-        $user_congress->privilege_id = $privilegeId;
-        $user_congress->save();
+    public function affectNoteToUser($evaluation,$note,$commentaire) {
+        $evaluation->note = $note;
+        $evaluation->commentaire = $commentaire;
+        $evaluation->update();
+        return $evaluation;
+    }
+
+    public function changeUserStatus($user_congress , $status){
+        $user_congress->isSelected = $status ;
+        $user_congress->update();
         return $user_congress;
     }
 
@@ -1110,6 +1135,7 @@ class UserServices
             ->where('user_id', '=', $userId)
             ->first();
     }
+  
 
     public function checkUserRights($user, $accessId = null)
     {
@@ -1124,9 +1150,18 @@ class UserServices
         return -1;
     }
 
+    public function getEvaluationInscriptionByUserIdAndAdminId($user_id,$congress_id,$admin_id) {
+       $conditionsToMatch = ['user_id'=>$user_id,'congress_id'=>$congress_id,'admin_id' => $admin_id];
+        return Evaluation_Inscription::where($conditionsToMatch)->first();
+    }
+    public function getAllEvaluationInscriptionByUserId($user_id,$congress_id) {
+        return Evaluation_Inscription::where('user_id','=',$user_id)->where('congress_id','=',$congress_id)
+        ->get();
+    }
+
     public function getUserById($userId)
     {
-        return User::with([
+        return  User::with([
             'user_congresses.congress.accesss.speakers',
             'user_congresses.congress.accesss.chairs',
             'user_congresses.congress.accesss.sub_accesses',
@@ -1142,6 +1177,11 @@ class UserServices
         ])
             ->where('user_id', '=', $userId)
             ->first();
+    }
+    public function getAverageNote($user_id,$congress_id) {
+        return Evaluation_Inscription::where('user_id','=',$user_id)->where('congress_id','=',$congress_id)
+        ->where('note','>',-1)
+        ->average('note');
     }
 
     public function getUserCongressLocal($userCongresss, $congressId)

@@ -12,6 +12,7 @@ namespace App\Services;
 use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\Congress;
+use App\Models\Evaluation_Inscription;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
 use App\Models\SubmissionEvaluation;
@@ -86,6 +87,16 @@ class AdminServices
 
         return Admin::where("privilege_id", "=", 11)->get();
     }
+    public function affectUsersToEvaluator($users,$numEvalutors,$admin_id,$congress_id){
+        $loopLength = sizeof($users) < $numEvalutors ? sizeof($users) : $numEvalutors;
+        for ($i=0;$i<$loopLength;$i++) {
+            $this->addEvaluationInscription(
+                $admin_id,
+                $congress_id,
+                $users[$i]->user_id
+            );
+        }
+    } 
     public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
         $evalutors = $this->getEvaluatorsByTheme($submissions[0]->theme_id,$congress_id,11); //get by theme or all admin congress
         $max = sizeof($evalutors) > 0 ? $evalutors[sizeof($evalutors) - 1]['submission_count'] : 0;
@@ -118,7 +129,7 @@ class AdminServices
         return SubmissionEvaluation::where('submission_id','=',$submission_id)->get();
     }   
 
-    public function getEvaluatorsByCongress($congressId, $privilegeId)
+    public function getEvaluatorsByCongress($congressId, $privilegeId,$relation)
     {
 
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
@@ -126,10 +137,10 @@ class AdminServices
             $query->where('privilege_id', '=', $privilegeId);
            
         })
-            ->withCount(['submission' => function ($query) use ($congressId) {
+            ->withCount([$relation => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }])
-            ->orderBy('submission_count', 'asc')
+            ->orderBy($relation.'_count', 'asc')
             ->get();
     }
 
@@ -155,7 +166,7 @@ class AdminServices
     {
         $admins = $this->getEvaluatorsByTheme($themeId, $congressId, $privilegeId);
         if (sizeof($admins) < 1) {
-            $admins = $this->getEvaluatorsByCongress($congressId, $privilegeId);
+            $admins = $this->getEvaluatorsByCongress($congressId, $privilegeId,'submission');
         }
         return $admins;
     }
@@ -440,6 +451,26 @@ class AdminServices
         $admin->privilege_id = 1;
         $admin->save();
         return $admin;
+    }
+
+    public function affectEvaluatorsToUser($evaluators,$numEvalutors,$congress_id,$user_id){
+        $loopLength = sizeof($evaluators) < $numEvalutors  ? sizeof($evaluators) : $numEvalutors;
+        for ($i=0;$i<$loopLength;$i++) {
+           $this->addEvaluationInscription(
+               $evaluators[$i]->admin_id,
+               $congress_id,
+               $user_id
+           );
+        }
+    }
+    public function addEvaluationInscription($admin_id,$congress_id,$user_id) {
+      
+            $evaluation = new Evaluation_Inscription();
+            $evaluation->admin_id = $admin_id;
+            $evaluation->congress_id = $congress_id;
+            $evaluation->user_id = $user_id;
+            $evaluation->save();
+        
     }
 
     public function renderMail($template, $admin = null, $user=null ,$activationLink = null, $linkBackOffice = null)

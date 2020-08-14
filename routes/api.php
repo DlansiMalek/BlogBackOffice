@@ -117,8 +117,8 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
-
         Route::group(['prefix' => 'congress/{congressId}'], function () {
+            Route::post('changeStatus','UserController@changeUserStatus');
             Route::delete('delete', 'UserController@delete');
             Route::post('upload-payement', 'UserController@uploadPayement');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
@@ -252,12 +252,15 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
+    
 
+    
     Route::post('/register', 'UserController@registerUser');
 
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
+            Route::post('{user_id}/changeScore','UserController@affectScoreToUser');
             Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');

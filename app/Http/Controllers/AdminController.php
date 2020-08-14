@@ -469,6 +469,19 @@ class AdminController extends Controller
               $this->adminServices->affectEvaluatorToSubmissions(
                  $submissions,$admin_id,$request->input("themesSelected"),$congress_id);
         }
+        if ($privilegeId == 13 && 
+        $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1) &&
+        sizeof($congress->evaluation_inscription) <   $congress->config_selection->num_evaluators
+        ) {
+            
+                $this->adminServices->affectUsersToEvaluator(
+                    $congress->users,
+                    $congress->config_selection->num_evaluators,
+                    $admin_id,
+                    $congress_id
+                );
+            
+        }
 
         //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
