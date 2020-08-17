@@ -649,7 +649,7 @@ class CongressServices
                 $query->whereHas('user_accesss', function($q) use($user){
                     $q->where('user_id', '=', $user->user_id)->where('isPresent','=',1);});
             },
-        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,program_link,status,free")->whereHas('user_congresses', function($q) use($user){
+        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,program_link,status,free","location","location.city","location.city.country")->whereHas('user_congresses', function($q) use($user){
             $q->where('user_id', '=', $user->user_id);})->orderBy('start_date', 'desc');
         if ($startDate) {
             $congresses = $congresses->where('start_date', '>=', $startDate);
