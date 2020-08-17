@@ -283,6 +283,7 @@ class CongressServices
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
         $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
+        $configCongress->register_disabled = $configCongressRequest['register_disabled'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
