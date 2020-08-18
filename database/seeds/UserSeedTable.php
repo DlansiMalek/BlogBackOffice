@@ -54,5 +54,18 @@ class UserSeedTable extends Seeder
             'password' => '$2y$10$kK1IDI8b1dJwzcCYxnsAkODG9Kb0q1/mgKD4Unrl3O0z4W6MaLkjW',
             'passwordDecrypt' => 'test'
         ]);
+        DB::table('User')->insert([
+            'user_id' => 4,
+            'first_name' => 'Invité',
+            'last_name' => 'Vayetek',
+            'gender' => 1,
+            'mobile' => '777777',
+            'email' => 'invite@vayetek.com',
+            'email_verified' => 1,
+            'qr_code' => '8sqafmsd3',
+            'country_id' => 'TUN',
+            'password' => '$2y$10$kK1IDI8b1dJwzcCYxnsAkODG9Kb0q1/mgKD4Unrl3O0z4W6MaLkjW',
+            'passwordDecrypt' => 'test'
+        ]);
     }
 }
