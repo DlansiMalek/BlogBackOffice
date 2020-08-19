@@ -18,7 +18,15 @@ class Utils
     {
         return round(abs(strtotime($enter_time) - strtotime($endCongress)) / 60, 2);
     }
-
+     
+    public  static function generateSubmissionCode($abrv,$count) {
+        $diff= 4 - strlen($count);
+        $code = '';
+        for ($i=0 ; $i<$diff ; $i++) {
+            $code = $code . '0';
+        }
+        return $code = $abrv . $code . $count;
+    }
     public static function getFullName($first_name, $last_name)
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
