@@ -67,6 +67,16 @@ class UserController extends Controller
         $this->resourcesServices = $resourcesServices;
     }
 
+    public function getLoggedUser()
+    {
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+        $user = $this->userServices->getUserById($user->user_id);
+
+        return response()->json($user);
+    }
+
     public function getUserByTypeAndCongressId($congress_id, Request $request)
     {
         $privilegeIds = $request->all();
