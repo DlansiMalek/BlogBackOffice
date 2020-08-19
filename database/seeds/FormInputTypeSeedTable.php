@@ -57,8 +57,12 @@ class FormInputTypeSeedTable extends Seeder
         ]);
 
         DB::table('Form_Input_Type')->insert([
-            'name' => 'Radio',
-            'display_name' => 'radio',
+            'name' => 'radio',
+            'display_name' => 'Radio',
+        ]);
+        DB::table('Form_Input_Type')->insert([
+            'name' => 'image',
+            'display_name' => 'Image',
         ]);
     }
 }
