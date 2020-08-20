@@ -34,18 +34,15 @@ class PaymentServices
     }
     public function affectPaymentToUser($user_id, $congress_id, $price, $free)
     {
-        if ($price && $price > 0) {
-            $payment = new Payment();
+        $payment = new Payment();
 
-            $payment->user_id = $user_id;
-            $payment->congress_id = $congress_id;
-            $payment->free = $free;
-            $payment->price = $price;
-            $payment->save();
-
-            return $payment;
-        }
-        return null;
+        $payment->user_id = $user_id;
+        $payment->congress_id = $congress_id;
+        $payment->free = $free;
+        $payment->price = $price;
+        $payment->save();
+        
+        return $payment;
     }
 
     public function getFreeUserByCongressId($congress_id)
@@ -65,6 +62,7 @@ class PaymentServices
         return Payment::where('reference', '=', $ref)
             ->first();
     }
+
 
     public function getPaymentPagination($user_id, $offset, $perPage, $search, $status, $method, $min, $max)
     {
@@ -92,5 +90,16 @@ class PaymentServices
 
 
         return $payment_renderer;
+}
+    public function changeIsPaidStatus($user_id,$congress_id,$status)
+    {
+        return Payment::where('user_id', '=', $user_id)
+        ->where('congress_id', '=', $congress_id)
+        ->update(['isPaid' => $status]);
+    }
+    public function getAllPaymentsByCongressId($congress_id) {
+        return Payment::where('congress_id', '=', $congress_id)
+        ->get();
+
     }
 }
