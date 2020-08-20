@@ -15,7 +15,17 @@ class SubmissionEvaluationTableSeeder extends Seeder
         DB::table('Submission_Evaluation')->insert([
             'admin_id'=>1,
             'submission_id'=>1,
-            'note'=>10
+            'note'=>7
+        ]);
+        DB::table('Submission_Evaluation')->insert([
+            'admin_id' => 2,
+            'submission_id' => 2,
+            'note' => 11
+        ]);
+        DB::table('Submission_Evaluation')->insert([
+            'admin_id' => 3,
+            'submission_id' => 3,
+            'note'=> 13
         ]);
     }
 }

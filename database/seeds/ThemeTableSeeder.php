@@ -15,5 +15,13 @@ class ThemeTableSeeder extends Seeder
             'label'=>'Science',
             'description'=>'Scientifique'
         ]);
+        DB::table('Theme')->insert([
+            'label'=>'Sport',
+            'description'=>'Sport'
+        ]);
+        DB::table('Theme')->insert([
+            'label'=>'Litterature',
+            'description'=>'Litterature'
+        ]);
     }
 }

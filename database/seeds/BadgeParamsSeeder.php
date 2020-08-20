@@ -2,7 +2,8 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-class User_SMSTableSeeder extends Seeder
+
+class BadgeParamsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -11,10 +12,9 @@ class User_SMSTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('User_SMS')->insert([
-            'user_id'=>'1',
-            'custom_sms_id'=>'1',
-            'status'=>0,
+        DB::table('Badge_Params')->insert([
+            'key' => 'string_test',
+            'badge_id' => 1
         ]);
     }
 }
