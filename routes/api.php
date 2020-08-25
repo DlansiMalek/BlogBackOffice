@@ -252,9 +252,13 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
-    
+    Route::group(['prefix' => 'contact', 'middleware' => 'assign.guard:users'], function()  {
 
-    
+        Route::post('','UserController@addContact');
+        Route::delete('{userId}','UserController@deleteContact');
+        Route::get('','UserController@listContacts');
+        });
+        
     Route::post('/register', 'UserController@registerUser');
 
     Route::group(['prefix' => 'congress'], function () {
