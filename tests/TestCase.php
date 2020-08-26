@@ -31,7 +31,7 @@ abstract class TestCase extends BaseTestCase
 
     private function setClientToken()
     {
-        $client = factory(Admin::class)->create(['privilege_id' => 1]);
+        $client = factory(Admin::class)->create(['privilege_id' => 1,]);
 
         $this->admin = $client;
 

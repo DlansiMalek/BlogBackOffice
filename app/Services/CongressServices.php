@@ -240,6 +240,7 @@ class CongressServices
         $config_selection->end_date = $configSelectionRequest['end_date'];
         $config_selection->save();
 
+
         }
         $admin_congress = new AdminCongress();
         $admin_congress->admin_id = $adminId;
@@ -381,7 +382,7 @@ class CongressServices
         $config_selection->end_date = $request->input('config_selection')['end_date'] ;
         $config_selection->congress_id = $congress->congress_id;
         if ($isUpdate) {
-        $config_selection->update();
+            $config_selection->update();
         } else {
             $config_selection->save();
         }
@@ -531,8 +532,8 @@ class CongressServices
     function getMailType($name,$type = 'event')
     {
         return MailType::where("name", "=", $name)
-        ->where('type','=',$type)
-        ->first();
+            ->where('type','=',$type)
+            ->first();
     }
 
     public
@@ -643,8 +644,8 @@ class CongressServices
     public function getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user) {
         $congresses = Congress::withCount([
             'submissions' => function($query) use($user) {
-            $query->whereHas('user', function($q) use($user){
-                $q->where('user_id', '=', $user->user_id);});
+                $query->whereHas('user', function($q) use($user){
+                    $q->where('user_id', '=', $user->user_id);});
             },
             'accesss' => function($query) use($user) {
                 $query->whereHas('user_accesss', function($q) use($user){
