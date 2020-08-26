@@ -15,6 +15,8 @@ use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
+use App\Models\UserAccess;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -51,6 +53,8 @@ class AccessServices
         if ($request->has('with_attestation'))
             $access->with_attestation = $request->input('with_attestation');
 
+        if ($request->has('is_online'))
+            $access->is_online = $request->input('is_online');
 
         $access->congress_id = $congress_id;
         $access->save();
@@ -78,6 +82,8 @@ class AccessServices
         if ($request->has('with_attestation'))
             $access->with_attestation = $request->input('with_attestation');
 
+        if ($request->has('is_online'))
+            $access->is_online = $request->input('is_online');
 
         $access->update();
         return $access;
@@ -293,7 +299,20 @@ class AccessServices
     {
         return AccessType::all();
     }
+    
+    public function ChangeAccessPacklessZeroToOne($accessIds , $accesss) {
+        
+        foreach($accessIds as $accessId) {
+            foreach ($accesss as $access) {
+                
+                if ($accessId == $access->access_id) {
+                    $access->packless = 1 ;
+                    $access->update();
+                }
 
+            }
+        }
+    }
     public function getAccessTopics()
     {
         return Topic::all();
@@ -306,21 +325,64 @@ class AccessServices
             ->get();
     }
 
-    public function getAllAccessByRegisterParams($congress_id, $showInRegister)
+    public function getAllAccessByRegisterParams($congress_id, $showInRegister,$packless=null)
     {
         return Access::where('show_in_register', '=', $showInRegister)
+            ->when($packless === 0  || $packless === 1, function ($query) use ($packless) {
+                $query->where('packless','=',$packless);
+             }) 
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
     }
+   public function getAllAccessByPackIds($user_id,$congressId,$packIds,$packless,$show_in_register) {
 
+       return Access::join('Access_Pack', 'Access_Pack.access_id', '=', 'Access.access_id')
+       ->join('User_Pack' , 'User_Pack.pack_id' , '=', 'Access_Pack.pack_id')
+       ->whereIn('User_Pack.pack_id',$packIds)
+       ->where('User_Pack.user_id','=',$user_id)
+       ->where('congress_id','=',$congressId)
+       ->where('packless','=',$packless)
+       ->where('show_in_register','=',$show_in_register)
+       ->get();
+   }
     public function getChairAccessByAccessAndUser($accessId, $userId)
     {
         return AccessChair::where('user_id', '=', $userId)
             ->where('access_id', '=', $accessId)
             ->first();
     }
+    public function getUserAccessByUserId($userId,$congressId) {;
+        return UserAccess::where('user_id','=',$userId)
+                ->join('Access','Access.access_id','=','User_Access.access_id')
+                ->where('Access.congress_id','=',$congressId)
+                ->orderBy('Access.start_date','asc')
+                ->get();
 
+    }
+    public function getClosestAccess($userId,$congressId) {
+    
+         $date = new DateTime(date('Y-m-d H:i:s')); 
+         $maxDate = mktime(0,0,0,0,0,3000); // creation d'une date supperieur à la date actuelle ;
+         $diff = $date->diff(new DateTime(date('Y-m-d H:i:s',$maxDate)));
+         $closestAccess = new Access();
+         $accesss = $this->getUserAccessByUserId($userId,$congressId) ;
+         foreach($accesss as $access ) {
+            $accessDate = new DateTime($access->start_date);
+            if (
+                $diff->days > ($date->diff($accessDate))->days || 
+                $diff->h > ($date->diff($accessDate))->h ||
+                $diff->s > ($date->diff($accessDate))->s
+            
+            ) {
+                $diff =  $date->diff($accessDate);
+                $closestAccess = $access;
+             } 
+                    
+              
+         }
+         return $closestAccess ;
+    }
     public function getSpeakerAccessByAccessAndUser($accessId, $userId)
     {
         return AccessSpeaker::where("user_id", '=', $userId)
@@ -338,14 +400,24 @@ class AccessServices
 
     public function getAllAccessByCongress($congressId, $showInRegister, $relations)
     {
-        return Access::with($relations)
+        $accesses =  Access::with($relations)
             ->where("congress_id", "=", $congressId)
-            ->where(function ($query) use ($showInRegister) {
-                if ($showInRegister != null) {
-                    $query->where('show_in_register', '=', $showInRegister);
-                }
+            ->when($showInRegister!=null, function ($query) use ($showInRegister) {
+                return $query->where('show_in_register', '=', $showInRegister); 
             })
             ->get();
+
+
+        foreach ($accesses as $accesss) {
+            $accesss->nb_participants = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                return sizeof($item['user_congresses']) > 0;
+            }));
+            $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
+            }));
+            $accesss->unsetRelation('participants');
+        }
+        return $accesses    ;
     }
 
     private function addSubAccess(Access $access, $sub)
@@ -401,5 +473,31 @@ class AccessServices
         } else $this->resourcesServices->removeAllResources($old->access_id);
         return $old;
 
+    }
+
+    public function editVideoUrl($access, $isRecorder){
+        if(!$isRecorder){
+            $access->recorder_url = null;
+        }else {
+
+            $roomName = Utils::getRoomName($access->congress_id, $access->access_id);
+            $client = new \GuzzleHttp\Client(['http_errors' => false]);
+            $res = $client->request('GET',
+            
+            UrlUtils::getBaseUrlDiscoveryRecording() . '/room/'.$roomName.'/discover') ;
+
+            if($res->getStatusCode() === 200){
+                $access->recorder_url  = json_decode($res->getBody(),true)['recording'];
+            }
+        }
+
+        $access->update();
+    }
+
+    // // la fonction existante getUserAccessByUser  nécessite accessId comme paramètre que je ne veux pas
+    public function getAllAccessByUserId($userId){
+        return Access::whereHas('participants', function ($query) use ($userId) {
+            $query->where('User.user_id', '=', $userId);
+        })->get();
     }
 }

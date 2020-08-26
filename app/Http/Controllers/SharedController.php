@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Services\CommunicationTypeService;
 use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -14,13 +14,15 @@ class SharedController extends Controller
 
     protected $sharedServices;
     protected $userServices;
-
+    protected $communicationTypeService;
 
     function __construct(SharedServices $sharedServices,
-                         UserServices $userServices)
+                         UserServices $userServices,
+                         CommunicationTypeService $communicationTypeService)
     {
         $this->sharedServices = $sharedServices;
         $this->userServices = $userServices;
+        $this->communicationTypeService = $communicationTypeService;
     }
 
     public function getAllPrivileges()
@@ -33,7 +35,11 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getPrivilegesWithBadges());
     }
 
+    public function getAllCommunicationTypes() {
 
+        return $this->communicationTypeService->getAllCommunicationType();
+
+    }
     public function getRecuPaiement($path)
     {
         $chemin = config('media.payement-user-recu');
@@ -135,5 +141,13 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getAllCongressTypes());
 
 
+    }
+
+    public function getAllServices(){
+        return $this->sharedServices->getAllServices();
+    }
+
+    public function getAllEtablissements(){
+        return $this->sharedServices->getAllEtablissements();
     }
 }

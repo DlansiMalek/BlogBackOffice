@@ -74,5 +74,60 @@ class MailTypeSeedTable extends Seeder
             'name' => 'sondage',
             'display_name' => "Mail de Sondage",
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 12,
+            'name' => 'room',
+            'display_name' => "Creation d\'une room",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 13,
+            'name' => 'save_submission',
+            'display_name' => "Enregistrer une soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 14,
+            'name' => 'accept_submission',
+            'display_name' => "Accepter la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 15,
+            'name' => 'refuse_submission',
+            'display_name' => "Refuser la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 16,
+            'name' => 'edit_submission',
+            'display_name' => "Modification de la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 17,
+            'name' => 'bloc_edit_submission',
+            'display_name' => "Blocage de la modification de la soumission",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 18,
+            'name' => 'Attente_de_fichier',
+            'display_name' => "Attente de fichiers",
+            'type' => "submission",
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 19,
+            'name' => 'refus',
+            'display_name' => "Refus d\'inscription",
+            'type' => "event",
+          
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 20,
+            'name' => 'file_submitted',
+            'display_name' => "Fichiers soumis",
+            'type' => "submission",
+          
+        ]);  
     }
 }

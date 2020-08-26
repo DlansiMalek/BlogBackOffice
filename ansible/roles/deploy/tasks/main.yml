@@ -1,0 +1,75 @@
+---
+
+- name: Login docker
+  docker_login:
+    registry_url: "{{ lookup('env','CI_REGISTRY') }}"
+    username: "{{ lookup('env','CI_REGISTRY_USER') }}"
+    password: "{{ lookup('env','CI_JOB_TOKEN') }}"
+    state: "present"
+
+- name: Create Eventizer API data directory
+  file:
+    path: "{{ project_dir }}/data"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+  become: true
+
+- name: Copy .env
+  copy:
+    src: "{{ env_file }}"
+    dest: "{{ project_dir }}/.env"
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+  become: true
+
+- name: Run Eventizer API
+  docker_compose:
+    project_name: "{{ project_name }}-{{project_version}}"
+    pull: true
+    definition:
+      version: '3.7'
+      services:
+        web:
+          image: "{{ lookup('env','WEB_IMAGE_NAME') }}"
+          container_name: "{{ project_name }}-{{project_version}}-web"
+          restart: always
+          links:
+            - app
+          environment:
+            VIRTUAL_HOST: "{{ host_name }}"
+            LETSENCRYPT_HOST: "{{ host_name }}"
+            LETSENCRYPT_EMAIL: "{{ letsencrypt_email }}"
+        app:
+          image: "{{ lookup('env','APP_IMAGE_NAME') }}"
+          container_name: "{{ project_name }}-{{project_version}}-app"
+          restart: always
+          volumes:
+            - "{{ project_dir }}/.env:/var/www/.env"
+            - "{{ project_dir }}/data:/var/www/storage/app"
+          env_file: "{{ project_dir }}/.env"
+
+      networks:
+        default:
+          external:
+            name: "{{ docker_network }}"
+  notify: Log out of DockerHub
+
+- name: Sleep for 5 seconds
+  wait_for:
+    timeout: 5
+
+- name: Change Dir Permission
+  command: docker exec {{ project_name }}-{{ project_version }}-app chown -R www-data.www-data .
+
+- name: Change Dir Permission
+  command: docker exec {{ project_name }}-{{ project_version }}-app chmod -R 755 .
+
+- name: Change Dir Permission
+  command:  docker exec {{ project_name }}-{{ project_version }}-app chmod -R 777 ./app
+
+- name: Change Dir Permission
+  command: docker exec {{ project_name }}-{{ project_version }}-app chmod -R 777 ./vendor
+
+- name: Change Dir Permission
+  command:   docker exec {{ project_name }}-{{ project_version }}-app php artisan key:generate

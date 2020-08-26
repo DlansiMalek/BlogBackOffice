@@ -24,15 +24,33 @@ class Congress extends Model
     {
         return $this->hasOne('App\Models\ConfigCongress', 'congress_id', 'congress_id');
     }
+    public function config_selection()
+    {
+        return $this->hasOne('App\Models\ConfigSelection', 'congress_id', 'congress_id');
+    }
+    public function evaluation_inscription()
+    {
+        return $this->hasMany('App\Models\Evaluation_Inscription', 'congress_id', 'congress_id');
+    }
 
     public function mail_config()
     {
         return $this->hasOne('App\Models\Mail_Config', 'congress_id', 'congress_id');
     }
 
+    public function theme()
+    {
+        return $this->belongsToMany('App\Models\Theme', 'Congress_Theme', 'congress_id', 'theme_id');
+    }
+
     public function badges()
     {
         return $this->hasMany('App\Models\Badge', 'congress_id', 'congress_id');
+    }
+
+    public function configSubmission()
+    {
+        return $this->hasOne('App\Models\ConfigSubmission', 'congress_id', 'congress_id');
     }
 
     public function mails()
@@ -69,6 +87,10 @@ class Congress extends Model
     {
         return $this->hasMany('App\Models\Access', "congress_id", "congress_id")->whereNull('parent_id')->orderBy('start_date');
     }
+    public function submissions()
+    {
+        return $this->hasMany('App\Models\Submission', "congress_id", "congress_id");
+    }
 
     public function packs()
     {
@@ -83,5 +105,9 @@ class Congress extends Model
     public function location()
     {
         return $this->hasOne('App\Models\Location', 'congress_id', 'congress_id');
+    }
+    function user_congresses()
+    {
+        return $this->hasMany('App\Models\UserCongress', 'congress_id', 'congress_id');
     }
 }
