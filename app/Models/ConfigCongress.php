@@ -28,7 +28,16 @@ class ConfigCongress extends Model
         'nb_ob_access',
         'access_system',
         'congress_id',
-        'status'
+        'status',
+        'is_online',
+        'is_code_shown',
+        'is_notif_register_mail',
+        'is_notif_sms_confirm',
+        'currency_code',
+        'token_sms',
+        'lydia_token',
+        'lydia_api',
+        'is_submission_enabled'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

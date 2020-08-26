@@ -8,6 +8,20 @@ use App\SpeakerAccess;
 
 class ResourcesServices
 {
+
+    public function saveResource($path,$size)
+    {
+        $resource= new Resource();
+        $resource->path=$path;
+        $resource->size=$size;
+        $resource->save();
+        return $resource;
+    }
+
+    public function getResourceByPath($path){
+        return Resource::where('path','=',$path)->first();
+    }
+
     private $path = 'resources/';
 
     public function uploadResource($file)

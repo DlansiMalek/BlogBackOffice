@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -18,10 +18,65 @@ class Utils
     {
         return round(abs(strtotime($enter_time) - strtotime($endCongress)) / 60, 2);
     }
-
+     
+    public  static function generateSubmissionCode($abrv,$count) {
+        $diff= 4 - strlen($count);
+        $code = '';
+        for ($i=0 ; $i<$diff ; $i++) {
+            $code = $code . '0';
+        }
+        return $code = $abrv . $code . $count;
+    }
     public static function getFullName($first_name, $last_name)
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
+    }
+
+    public static function getMobileFormatted($mobile)
+    {
+        if (Str::contains($mobile, ['+216', '00216']))
+            return $mobile;
+
+        return '+216' . $mobile;
+
+    }
+
+    public static function getSmsMessage($qrCode, $first_name, $last_name, $congress_name, $congress_date, $mobile_committee, $mobile_technical = null)
+    {
+
+        return
+            'Inscription validée
+        '
+
+            . 'Evénement : ' . $congress_name . '
+        '
+
+            . 'Date :' . $congress_date . '
+        '
+            . 'Nom et prénom : ' . $first_name . ' ' . $last_name . '
+        '
+            . 'Code d`accès : ' . $qrCode . ' Veuillez présenter votre code à l`accueil le jour de l`événement.
+        '
+
+            . 'Comité d`organisation : ' . $mobile_committee . ' 
+        '
+
+            . 'Hotline technique : ' . $mobile_technical;
+    }
+
+    public static function customSmsMessage($sms, $user)
+    {
+        $content = $sms->content;
+        $content = str_replace('{{first_name}}', $user->first_name, $content);
+        $content = str_replace('{{last_name}}', $user->last_name, $content);
+        $content = str_replace('{{email}}', $user->email, $content);
+        $content = str_replace('{{mobile}}', $user->mobile, $content);
+
+        return
+            $sms->title . '
+        '
+
+            . $content;
     }
 
     public static function convertDateFrench($date)
@@ -84,6 +139,20 @@ class Utils
         }, json_decode($data, true));
     }
 
+    public static function getDefaultMailNotifNewRegister()
+    {
+        return '<p>Bonjour,</p><p>Vous avez re&ccedil;u une nouvelle inscription dans votre &eacute;v&eacute;nement<strong>&nbsp;{{$congress-&gt;name}}</strong> au nom de :</p><p><strong>Nom &amp; pr&eacute;nom :</strong>&nbsp; {{$participant-&gt;last_name}} {{$participant-&gt;first_name}}</p><p><strong>Email :</strong> {{$participant-&gt;email}}</p><p><strong>T&eacute;l&eacute;phone :</strong>&nbsp; &nbsp;{{$participant-&gt;mobile}}</p><p><strong>Date de l&#39;inscription :</strong> {{$participant-&gt;registration_date}}</p><p><strong>Ateliers :</strong> {{$participant-&gt;accesses}}</p><p><strong>Montant &agrave; payer :</strong> {{$userPayment-&gt;price}} DT</p><p><br></p><p>Vous pouvez acc&eacute;der au back-office &agrave; travers ce lien pour suivre et valider les inscriptions. &nbsp;</p><p>En cas de probl&egrave;me, n&#39;h&eacute;sitez pas &agrave; contacter l&#39;&eacute;quipe Support d&#39;Eventizer &nbsp;disponible 24/7.&nbsp;</p><p><br></p><p>SUPPORT Eventizer<a href="mailto:contact@eventizer.io" rel="noopener noreferrer"></a></p><p><a href="mailto:contact@eventizer.io" rel="noopener noreferrer">contact@eventizer.io</a></p><p>+216 98 613 158&nbsp;</p>';
+    }
+
+    public static function getUCWords(string $text)
+    {
+        $uc = ucwords(strtolower($text));
+
+        $res = preg_replace("/[^a-zA-Z0-9]/", "", $uc);
+
+        return $res;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
@@ -121,6 +190,10 @@ class Utils
         }
 
         return $result;
+    }
+
+    public static function getRoomName($congressId, $accessId){
+        return 'eventizer_room_' . $congressId . $accessId;
     }
 
 

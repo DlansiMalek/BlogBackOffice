@@ -33,6 +33,8 @@ class AddColumnCongressType extends Migration
      */
     public function down()
     {
-        //
+        Schema::table('Congress', function ($table) {
+            $table->dropForeign(['congress_type_id']);
+        });
     }
 }

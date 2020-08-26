@@ -7,14 +7,16 @@ use App\Services\CongressServices;
 use App\Services\MailServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
+use App\Services\SmsServices;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\UrlUtils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-
+    protected $smsServices;
     protected $paymentServices;
     protected $userServices;
     protected $congressServices;
@@ -25,8 +27,10 @@ class PaymentController extends Controller
                          UserServices $userServices,
                          CongressServices $congressServices,
                          SharedServices $sharedServices,
+                         SmsServices $smsServices,
                          MailServices $mailServices)
     {
+        $this->smsServices = $smsServices;
         $this->paymentServices = $paymentServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -53,6 +57,10 @@ class PaymentController extends Controller
 
         $userPayment = $this->paymentServices->getPaymentByReference($ref);
 
+        if (!$userPayment) {
+            return "";
+        }
+
         $user = $userPayment->user;
         $congress = $userPayment->congress;
 
@@ -68,17 +76,16 @@ class PaymentController extends Controller
                 $userPayment->isPaid = 1;
                 $userPayment->authorization = $param;
                 $userPayment->update();
-
                 $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
-
-                $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress,
+                $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                     $userCongress->privilege_id);
+                $badgeIdGenerator = $badge['badge_id_generator'];
                 $fileAttached = false;
                 if ($badgeIdGenerator != null) {
-                    $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                        ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                        $user->qr_code);
-                    $fileAttached = true;
+                    $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                        $user,
+                        $user->qr_code,
+                        $userCongress->privilege_id);
                 }
 
 
@@ -90,10 +97,13 @@ class PaymentController extends Controller
                     }
                 }
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+                    $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, $fileAttached, $userMail);
+                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
+
+                    $this->smsServices->sendSms($congress->congress_id, $user, $congress);
                 }
 
 
@@ -120,5 +130,4 @@ class PaymentController extends Controller
 
         return "";
     }
-
 }

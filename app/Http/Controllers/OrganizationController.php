@@ -10,6 +10,7 @@ use App\Services\OrganizationServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
 use App\Services\UserServices;
+use App\Services\UrlUtils;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -85,16 +86,17 @@ class OrganizationController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme VayeCongress";
             }
 
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    strtoupper($organization->name),
-                    $admin->passwordDecrypt);
-                $fileAttached = true;
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                    $organization->name,
+                    $admin->passwordDecrypt,
+                    $privilegeId);
             }
-            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://congress.vayetek.com'>Eventizer</a>: " . $admin->email;
-            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://congress.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
+            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
+            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
 
             $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization, null), $congress, $mail->object, $admin, $fileAttached);
         }
@@ -170,13 +172,15 @@ class OrganizationController extends Controller
     private function sendMail($congress, $user)
     {
         $organization = $this->organizationServices->getOrganizationById($user->organization_id);
-        $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        $badgeIdGenerator = $badge['badge_id_generator'];
+
         $fileAttached = false;
         if ($badgeIdGenerator != null) {
-            $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                $user->qr_code);
-            $fileAttached = true;
+            $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                $user,
+                $user->qr_code,
+                $user->privilege_id);
         }
 
 
@@ -187,8 +191,9 @@ class OrganizationController extends Controller
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
+            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, $fileAttached);
+                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached);
             }
         }
     }

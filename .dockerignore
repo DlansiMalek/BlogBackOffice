@@ -1,0 +1,8 @@
+.gitlab-ci.yml
+.git
+.idea
+ansible
+docker
+docker-compose-*
+public/badge
+tests

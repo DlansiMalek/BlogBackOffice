@@ -27,5 +27,4 @@ class FormInput extends Model
     {
         return $this->hasMany("App\Models\FormInputValue", "form_input_id", "form_input_id");
     }
-
 }
