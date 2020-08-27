@@ -168,6 +168,9 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::post('switchRoom','CongressController@switchUsersRoom');
+        Route::post('addItemsEvaluation','CongressController@addItemsEvaluation')->middleware('assign.guard:admins');
+        Route::get('getItemsEvaluation','CongressController@getItemsEvaluation')->middleware('assign.guard:admins');
+        Route::post('addItemsNote/{evaluation_inscription_id}','CongressController@addItemsNote')->middleware('assign.guard:admins');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');

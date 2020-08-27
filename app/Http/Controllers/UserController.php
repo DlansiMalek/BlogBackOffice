@@ -116,17 +116,20 @@ class UserController extends Controller
             },
             'inscription_evaluation' => function ($query) use ($congressId, $admin_id) {
 
-                $query->select(['user_id', 'note', 'admin_id', 'commentaire'])->where('congress_id', '=', $congressId)
-                    ->when($admin_id, function ($q) use ($admin_id) {
-                        return $q->where('admin_id', '=', $admin_id);
-                    });
+                $query->select(['user_id', 'note', 'admin_id', 'commentaire' ,'evaluation_inscription_id'])->where('congress_id', '=', $congressId);
+                
             },
+            'inscription_evaluation.itemNote',
+            'inscription_evaluation.itemNote.itemEvaluation',
             'inscription_evaluation.admin' => function ($query) {
                 $query->select(['admin_id', 'name']);
             },
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.form_input' => function ($query) use ($congressId) {
+            },'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }
+            , 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {

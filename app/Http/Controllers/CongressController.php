@@ -139,6 +139,85 @@ class CongressController extends Controller
 
 
     }
+ 
+    public function getItemsEvaluation($congress_id) {
+      
+        $grids = $this->congressServices->getItemsEvaluation($congress_id);
+        if (sizeof($grids) > 0 ) {
+            return response()->json($grids,200);
+        } 
+        $grids =  array();
+        return response()->json($grids,200);
+    }
+    public function addItemsEvaluation($congress_id,Request $request) {
+
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json('no congress found',404);
+        }
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json('no admin found',404);
+        }
+        
+        $itemsEvaluation = $this->congressServices->getItemsEvaluation($congress_id);
+        if (sizeof($itemsEvaluation) > 0) {
+            return response()->json('You have already configured your grids',404);
+        }
+        if (!$request->has('grids') || sizeof($request->input('grids')) === 0) {
+            return response()->json('field missing',404);
+        }
+        $sumPonderation = 0;
+        foreach($request->input('grids') as $itemEvaluation) {
+            $sumPonderation += $itemEvaluation['ponderation']; 
+        }
+        if ($sumPonderation !=100) {
+            return response()->json('sum ponderations must be 100',404);
+        }
+        $this->congressServices->addItemsEvaluation($request->input('grids'),$congress_id);
+
+        return response()->json('evaluation items added',200);
+        
+    }
+
+    public function addItemsNote($congress_id,$evaluation_inscription_id,Request $request) {
+
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json('no congress found',404);
+        }
+        if (!$evaluation = $this->adminServices->getEvaluationInscriptionByIdAndCongressId($evaluation_inscription_id,$congress_id)) {
+            return response()->json('no evaluation found',404);
+        }
+        $admin = $this->adminServices->retrieveAdminFromToken();
+        if (!$admin  || $admin->admin_id !== $evaluation->admin_id) {
+            return response()->json('you have no rights',404);
+        }
+        if (!$request->has('itemsNote')) {
+            return response()->json('filed is missing',404);
+        }
+        
+        $itemEvaluations = $this->congressServices->getItemsEvaluation($congress_id);
+        if (!$itemEvaluations || sizeof($itemEvaluations) !== sizeof($request->input('itemsNote'))){
+            return response()->json('problem !',404);
+        }
+        $this->congressServices->addItemsNote(
+            $request->input('itemsNote'),
+            $evaluation_inscription_id
+        );
+        $note = 0 ;
+        $itemsNote = $request->input('itemsNote');
+        for ($i = 0 ; $i<sizeof($itemsNote) ; $i++) {
+            if ($itemsNote[$i]['note'] <0 || $itemsNote[$i]['note']>20) { 
+                return response()->json('the '.($i+1) . ' item has a wrong mark',400);
+            }
+            $note = $note + ($itemsNote[$i]['note'] * $itemEvaluations[$i]->ponderation );
+        }
+        $note = $note / 100;
+        $evaluation->note = $note ;
+        $evaluation->commentaire = $request->input('globalComment');
+        $evaluation->update();
+        return response()->json('items note affected',200);
+        
+
+    }
 
     public function editConfigCongress(Request $request, $congressId)
     {

@@ -15,5 +15,8 @@ class Evaluation_Inscription extends Model
  function admin() {
      return $this->hasMany('App\Models\Admin','admin_id','admin_id');
  }
+ function itemNote() {
+     return $this->hasMany('App\Models\ItemNote','evaluation_inscription_id','evaluation_inscription_id');
+ }
 
 }
