@@ -186,6 +186,8 @@ class SubmissionServices
                 $allSubmission = $allSubmission->orderBy($tri, $order);
             }
 
+            $allSubmission = $perPage ? $allSubmission->paginate($perPage) : $allSubmission->get();
+
             return $allSubmission;
         }
 
