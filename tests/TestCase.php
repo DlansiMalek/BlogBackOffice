@@ -26,7 +26,7 @@ abstract class TestCase extends BaseTestCase
 
         $this->setClientToken();
 
-        $this->withHeaders(['HTTP_Authorization' => 'Bearer ' . $this->clientToken]);
+        $this->withHeaders(['Authorization' => 'Bearer ' . $this->clientToken]);
     }
 
     private function setClientToken()

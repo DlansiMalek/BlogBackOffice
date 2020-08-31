@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
+use stdClass;
 use Tests\TestCase;
+use App\Services\Utils;
 
 class CongressTest extends TestCase
 {
@@ -70,9 +72,7 @@ class CongressTest extends TestCase
         $configCongress = ConfigCongress::where('congress_id', '=', $dataResponse['congress_id'])
             ->first();
 
-        $this->assertEquals($data['config']['has_payment'], $configCongress->has_payment);
         $this->assertEquals($data['config']['free'], $configCongress->free);
-        $this->assertEquals($data['config']['prise_charge_option'], $configCongress->prise_charge_option);
         $this->assertNull($configCongress->logo);
         $this->assertNull($configCongress->banner);
         $this->assertNull($configCongress->feedback_start);
@@ -100,19 +100,7 @@ class CongressTest extends TestCase
      *
      * @return void
      */
-    public function testDeleteCongress()
-    {
-        // Url : api/congress/{congress_id}/delete
-        $congress = factory(Congress::class)->create();
 
-        $this->delete('api/congress/' . $congress->congress_id . '/delete')
-            ->assertStatus(202);
-
-        $congressData = Congress::where('congress_id', '=', $congress->congress_id)
-            ->first();
-
-        $this->assertNull($congressData);
-    }
 
     /**
      * A basic feature test edit congress
@@ -181,6 +169,30 @@ class CongressTest extends TestCase
         $this->assertEquals(1, $adminCongress->privilege_id);
     }
 
+    public function testGetMinimalCongressById()
+    {
+        $congress = factory(Congress::class)->create();
+        $this->get('api/congress/' . $congress->congress_id .'/min')
+            ->assertStatus(200);
+    }
+
+
+
+    public function testGetMailTypeById ()
+    {
+        $congress = factory(Congress::class)->create();
+        $this->get('/api/congress/mail/types/' . $congress->congress_id  )
+            ->assertStatus(200);
+    }
+
+    public function testGetCongressOrganizations()
+    {
+        //  api/congress/1/organization
+        $congress = factory(Congress::class)->create();
+        $this->get('/api/congress/' . $congress->congress_id .'/organization' )
+            ->assertStatus(200);
+    }
+
     private function getFakeDataCongress()
     {
         return [
@@ -189,12 +201,24 @@ class CongressTest extends TestCase
             'end_date' => $this->faker->date(),
             'price' => $this->faker->randomFloat(2, 0, 5000),
             'congress_type_id' => strval($this->faker->numberBetween(1, 3)),
+
             'description' => $this->faker->paragraph,
             'config' => [
-                'has_payment' => $this->faker->numberBetween(0, 1),
-                'free' => $this->faker->numberBetween(0, 1),
-                'prise_charge_option' => $this->faker->numberBetween(0, 1)
-            ]
+                'free' => $this->faker->numberBetween(0, 100),
+                'access_system' => 'Ateliers',
+                'has_payment' => $this->faker->numberBetween(0,1),
+                'prise_charge_option' => $this->faker->numberBetween(0, 1),
+                'is_online'=>$this->faker->numberBetween(0,1),
+                'status' => 1,
+                'is_submission_enabled' => $this->faker->numberBetween(0, 1),
+                'currency_code' => 'TND',
+            ],
+            'config_selection' => [
+                'num_evaluators' => $this->faker->numberBetween(1, 20),
+                'selection_type' =>  $this->faker->numberBetween(0, 2),
+                'start_date'=> $this->faker->date(),
+                'end_date' => $this->faker->date(),
+            ],
         ];
     }
 }

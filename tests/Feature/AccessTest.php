@@ -36,13 +36,13 @@ class AccessTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function testEditAccess ()
+   /* public function testEditAccess ()
     {
         $data = $this->getFakeDataAccess();
 
         $oldAccess = factory(Access::class)->create();
 
-    }
+    }*/
 
     private function getFakeDataAccess()
     {
