@@ -1055,6 +1055,10 @@ class UserServices
             }, 'user'])
             ->first();
     }
+    public function getUsersCongressByCongressId($congress_id){
+        return UserCongress::where('congress_id', '=', $congress_id)
+        ->get();
+    }
 
     public function getUserCongressByUserId($userId)
     {

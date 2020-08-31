@@ -17,6 +17,7 @@ use App\Services\SmsServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -120,7 +121,6 @@ class UserController extends Controller
                 
             },
             'inscription_evaluation.itemNote',
-            'inscription_evaluation.itemNote.itemEvaluation',
             'inscription_evaluation.admin' => function ($query) {
                 $query->select(['admin_id', 'name']);
             },
@@ -128,7 +128,7 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             },'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }
+            },'user_congresses.congress.itemEvaluation.itemNote'
             , 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
@@ -269,6 +269,48 @@ class UserController extends Controller
 
         return response()->json($users);
     }
+    
+    public function changeMultipleUsersStatus($congress_id, Request $request) {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response('no admin found',404);
+        }
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json('no congress found');
+        }
+        if (!$request->has('users') || sizeof($request->input('users')) === 0 ) {
+            return response('fields are missing',404);
+        }
+        $usersCongress = $this->userServices->getUsersCongressByCongressId($congress_id);
+        $users = $request->input('users');
+        for ($i=0 ; $i<sizeof($users); $i++) {
+            $left = 0;
+            $right = sizeof($usersCongress) - 1;
+            $index = -1;
+            while($left <= $right) {
+                $midpoint = (int) floor(($left + $right) / 2);
+ 
+                if ($usersCongress[$midpoint]['user_id'] < $users[$i]['user_id']) {
+                  $left = $midpoint + 1;
+                } elseif ($usersCongress[$midpoint]['user_id'] > $users[$i]['user_id']) {
+                  $right = $midpoint - 1;
+                } else {
+                    $index = $midpoint;
+                    $status = json_decode($users[$i]['user_congresses'][0]['isSelected']);
+                    $this->userServices->changeUserStatus($usersCongress[$midpoint], $status);
+                    $this->acceptOrRefuseUser($status,$congress,$users[$i],$usersCongress[$midpoint]);
+                 
+                break;
+                }
+              }
+              if ($index === -1) {
+                return response()->json('no user found',404);
+              }
+            }
+            return response()->json('success',200);
+        
+    }
+
+    
 
     public function changeUserStatus($user_id, $congress_id, Request $request)
     {
@@ -282,8 +324,13 @@ class UserController extends Controller
         $this->userServices->changeUserStatus($user_congress, $request->input('status'));
         $user = $this->userServices->getUserById($user_id);
         $congress = $this->congressServices->getCongressById($congress_id);
+        $status = $request->input('status');
+        $this->acceptOrRefuseUser($status,$congress,$user,$user_congress);
+        return response()->json(['message' => 'change status success'], 200);
+    }
 
-        if ($request->input('status') == 1) {
+    public function acceptOrRefuseUser($status,$congress,$user,$user_congress) {
+        if ( $status == 1) {
             // Mail acceptation
             $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $user_congress->privilege_id);
             $badgeIdGenerator = $badge['badge_id_generator'];
@@ -293,22 +340,21 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
-                if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_id);
+                if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-        } else if ($request->input('status') == -1) {
+        } else if ($status == -1) {
             // Mail refus
             if ($mailtype = $this->congressServices->getMailType('refus')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                     $this->userServices->sendMail(
                         $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail);
                 }
             }
         }
-        return response()->json(['message' => 'change status success'], 200);
     }
 
     public function affectScoreToUser($congress_id, $user_id, Request $request)

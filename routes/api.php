@@ -107,7 +107,7 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-
+    Route::post('changeMultipleStatus/{congressId}','UserController@changeMultipleUsersStatus');
     Route::post('password/reset', 'UserController@forgetPassword');
     Route::post('password/reset/{userId}', 'UserController@resetUserPassword');
     Route::post('/upload-users', 'UserController@uploadUsers');

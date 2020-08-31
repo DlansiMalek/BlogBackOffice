@@ -15,6 +15,6 @@ class ItemEvaluation extends Model
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 
     function itemNote() {
-        return $this->hasMany('App\Models\ItemNote','item_evaluation_id','item_evaluation_id');
+        return $this->hasMany('App\Models\ItemNote','item_evaluation_id','item_evaluation_id')->orderBy('evaluation_inscription_id','asc');
     }
 }

@@ -214,6 +214,10 @@ class CongressController extends Controller
         $evaluation->note = $note ;
         $evaluation->commentaire = $request->input('globalComment');
         $evaluation->update();
+        $user_congress = $this->userServices->getUserCongress($congress_id, $evaluation->user_id);
+        $avg_note = $this->userServices->getAverageNote($evaluation->user_id, $congress_id);
+        $user_congress->globale_score = $avg_note;
+        $user_congress->update();
         return response()->json('items note affected',200);
         
 
