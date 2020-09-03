@@ -73,6 +73,13 @@ class VotingServices
         return AccessVote::where('congress_id', '=', $congress_id)->delete();
     }
 
+
+    public function getAccessVoteById($accessVoteId)
+    {
+        return AccessVote::where('access_vote_id', '=', $accessVoteId)
+            ->first();
+    }
+
     public function addScore($scoreVoteData)
     {
         $scoreVote = new VoteScore();
@@ -96,10 +103,5 @@ class VotingServices
         $oldVoteScore->update();
     }
 
-    public function getAccessVoteById($accessVoteId)
-    {
-        return AccessVote::where('access_vote_id', '=', $accessVoteId)
-            ->first();
-    }
 
 }

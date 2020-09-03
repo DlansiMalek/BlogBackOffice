@@ -71,19 +71,6 @@ class CustomSMSController extends Controller
         return response()->json($this->customSmsServices->filterUsersBySmsStatus($smsId, $status));
     }
 
-
-    public function deleteUserSms($smsId, $userId)
-    {
-
-        if (!$user_sms = $this->customSmsServices->getUserSms($smsId, $userId))
-            return response(['No user_sms found', 404]);
-
-        $user_sms->delete();
-        return $user_sms;
-
-    }
-
-
     public function sendSmsToUsers($smsId)
     {
 
@@ -100,6 +87,16 @@ class CustomSMSController extends Controller
         }
 
         return response(['response' => 'Message sent successfully', 200]);
+    }
+
+    public function deleteUserSms($smsId, $userId)
+    {
+        if (!$user_sms = $this->customSmsServices->getUserSms($smsId, $userId))
+            return response(['No user_sms found', 404]);
+
+        $user_sms->delete();
+        return $user_sms;
+
     }
 
 }

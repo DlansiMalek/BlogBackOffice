@@ -176,25 +176,6 @@ class UserController extends Controller
 
     }
 
-    public function update(Request $request, $user_id)
-    {
-        if (!$request->has(['first_name', 'last_name'])) {
-            return response()->json([
-                'response' => 'invalid request',
-                'content' => [
-                    'gender', 'first_name', 'last_name',
-                    'profession', 'domain', 'establishment', 'city_id',
-                    'address', 'postal', 'tel', 'mobile', 'fax',
-                ]
-            ], 400);
-        }
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-        return response()->json($this->userServices->updateUser($request, $user), 202);
-    }
-
     public function delete($userId, $congressId)
     {
 
@@ -227,18 +208,6 @@ class UserController extends Controller
             return response()->json(['response' => 'user verified'], 202);
         }
         return response()->json(['response' => 'invalid verifiaction code'], 400);
-    }
-
-    public function resendConfirmationMail($user_id)
-    {
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-
-
-        $this->userServices->sendConfirmationMail($user);
-        return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
     public function getUsersByCongressPagination($congressId, Request $request)
@@ -371,6 +340,23 @@ class UserController extends Controller
             }
         }
         return response()->json($users);
+    }
+
+
+    function validateUserAccount($userId = null, $congressId = null, $token = null)
+    {
+        $user = $this->userServices->getUserById($userId);
+        if (!$user) {
+            return response()->json(['response' => 'Votre compte à été supprimé'], 404);
+        }
+        if ($token == $user->verification_code) {
+            $user->email_verified = 1;
+            $user->update();
+
+            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
+        } else {
+            return response()->json(['response' => 'Token not match'], 400);
+        }
     }
 
     public function addUserToCongress(Request $request, $congressId)
@@ -620,22 +606,6 @@ class UserController extends Controller
         }
         $userId = $user->user_id;
         return $this->userServices->getAllUserAccess($congressId, $userId);
-    }
-
-    function validateUserAccount($userId = null, $congressId = null, $token = null)
-    {
-        $user = $this->userServices->getUserById($userId);
-        if (!$user) {
-            return response()->json(['response' => 'Votre compte à été supprimé'], 404);
-        }
-        if ($token == $user->verification_code) {
-            $user->email_verified = 1;
-            $user->update();
-
-            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
-        } else {
-            return response()->json(['response' => 'Token not match'], 400);
-        }
     }
 
     public function getUsersByAccess($congressId, $accessId)
@@ -1310,34 +1280,6 @@ class UserController extends Controller
             $req->update();
         }
         return $this->userServices->getAttestationRequestsByUserId($user_id);
-    }
-
-    public function changeQrCode($user_id, Request $request)
-    {
-        $congressId = $request->input("congressId");
-
-        if (!$user = $this->userServices->getUserByIdWithRelations($user_id, ['user_congresses' => function ($query) use ($congressId) {
-            $query->where('congress_id', '=', $congressId);
-        }]))
-            return response()->json(['error' => 'user not found'], 400);
-
-        $oldUsers = $this->userServices->getMinUserByQrCode($request->input("qrcode"));
-
-        foreach ($oldUsers as $oldUser) {
-            if ($oldUser->user_id != $user->user_id) {
-                $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
-                $oldUser->update();
-            }
-        }
-
-        if (sizeof($user->user_congresses) > 0) {
-            $user->user_congresses[0]->isPresent = 1;
-            $user->user_congresses[0]->update();
-        }
-
-        $user->qr_code = $request->get('qrcode');
-        $user->update();
-        return $user;
     }
 
     public function mobileEditUser(Request $request, $user_id)
