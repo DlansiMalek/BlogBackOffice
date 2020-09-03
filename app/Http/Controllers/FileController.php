@@ -61,16 +61,6 @@ class FileController extends Controller
         return response()->json(['response' => 'user cv deleted', 'media' => $path], 201);
     }
 
-    public function deleteLogoCongress($path)
-    {
-
-        $chemin = config('media.congress-logo');
-        $path = $chemin . '/' . $path;
-        Storage::delete($path);
-
-        return response()->json(['response' => 'congress logo deleted', 'media' => $path], 201);
-    }
-
     public function uploadLogo(Request $request)
     {
         $file = $request->file('logo-file');
@@ -85,23 +75,6 @@ class FileController extends Controller
         return response()->json(['path' => $path]);
     }
 
-    public function getLogoCongress($path)
-    {
-        $chemin = config('media.congress-logo');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
-    public function deleteBannerCongress($path)
-    {
-
-        $chemin = config('media.congress-banner');
-        $path = $chemin . '/' . $path;
-        Storage::delete($path);
-
-        return response()->json(['response' => 'congress banner deleted', 'media' => $path], 201);
-    }
-
-
     public function uploadBanner(Request $request)
     {
         $file = $request->file('banner-file');
@@ -115,12 +88,6 @@ class FileController extends Controller
         $path = $file->store($chemin);
 
         return response()->json(['path' => $path]);
-    }
-
-    public function getBannerCongress($path)
-    {
-        $chemin = config('media.congress-banner');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 
     public function uploadResource(Request $request)
@@ -149,5 +116,37 @@ class FileController extends Controller
         Storage::delete($path);
 
         return response()->json(['resource_id' => $resource->resource_id]);
+    }
+
+    public function deleteLogoCongress($path)
+    {
+
+        $chemin = config('media.congress-logo');
+        $path = $chemin . '/' . $path;
+        Storage::delete($path);
+
+        return response()->json(['response' => 'congress logo deleted', 'media' => $path], 201);
+    }
+
+    public function getLogoCongress($path)
+    {
+        $chemin = config('media.congress-logo');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
+    }
+
+    public function deleteBannerCongress($path)
+    {
+
+        $chemin = config('media.congress-banner');
+        $path = $chemin . '/' . $path;
+        Storage::delete($path);
+
+        return response()->json(['response' => 'congress banner deleted', 'media' => $path], 201);
+    }
+
+    public function getBannerCongress($path)
+    {
+        $chemin = config('media.congress-banner');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 }

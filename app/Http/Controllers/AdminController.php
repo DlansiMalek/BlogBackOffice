@@ -316,93 +316,10 @@ class AdminController extends Controller
     }
 
     public
-    function updateUserWithCongress()
-    {
-        set_time_limit(3600);
-
-        $users = User::where("id_User", ">", "970")
-            ->get();
-        foreach ($users as $user) {
-            $userCongress = Congress_User::where('id_User', '=', $user->id_User)->first();
-            if (is_null($userCongress)) {
-                Congress_User::create([
-                    'id_User' => $user->id_User,
-                    'id_Congress' => 4
-                ])->save();
-            }
-        }
-        return response()->json(['response' => 'all user congresses updated'], 200);
-    }
-
-
-    public
-    function updateUsers()
-    {
-        $users = Inscription_Neuro2018::where("id_inscription", ">", "129")->get();
-        foreach ($users as $user) {
-            $userNew = User::create([
-                'first_name' => $user->prenom,
-                'last_name' => $user->nom,
-                'profession' => $user->status,
-                'email' => $user->email,
-                'address' => $user->adresse,
-                'mobile' => $user->tel,
-                'transport' => $user->transport,
-                'repas' => $user->repas,
-                'diner' => $user->diner,
-                'hebergement' => $user->hebergement,
-                'chambre' => $user->chambre,
-                'conjoint' => $user->conjoint,
-                'date_arrivee' => $user->date_arrivee,
-                'date_depart' => $user->date_depart,
-                'date' => $user->date,
-                'qr_code' => $user->qr_code
-            ])->save();
-        }
-        return response()->json(['response' => 'all users updated'], 200);
-    }
-
-    public
-    function generateUserQrCode()
-    {
-        set_time_limit(3600);
-        $users = User::all();
-        foreach ($users as $user) {
-            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $charactersLength = strlen($characters);
-            $randomString = '';
-            for ($i = 0; $i < 10; $i++) {
-                $randomString .= $characters[rand(0, $charactersLength - 1)];
-            }
-            $user->qr_code = $randomString;
-            $user->update();
-        }
-    }
-
-    public
     function cleanBadges()
     {
         File::cleanDirectory(public_path() . '/badge/jnn');
         return response()->json(["message" => "Badges deleted"]);
-    }
-
-    public
-    function generateTickets()
-    {
-        set_time_limit(3600);
-        for ($i = 231; $i <= 400; $i++) {
-            User::create([
-                "first_name" => "Ticket",
-                "last_name" => $i,
-            ])->save();
-        }
-        for ($i = 1; $i <= 100; $i++) {
-            User::create([
-                "first_name" => "Invitation",
-                "last_name" => $i,
-            ])->save();
-        }
-        return response()->json(['response' => 'tickets registred'], 200);
     }
 
     /**
@@ -574,34 +491,6 @@ class AdminController extends Controller
         } else {
             return response()->json(["error" => "dossier vide"]);
         }
-    }
-
-    public
-    function eliminateInscription($congressId)
-    {
-        $users = $this->userServices->getUsersByCongressWithAccess($congressId);
-        Log::info($users);
-        foreach ($users as $user) {
-            $access1 = 0;
-            $access2 = 0;
-            foreach ($user->accesss as $access) {
-                if ($access->access_id == 2 || $access->access_id == 3 || $access->access_id == 4) {
-                    if ($access1 != 0) {
-                        $access->delete();
-                    }
-                    $access1 = 1;
-
-                }
-                if ($access->access_id == 5 || $access->access_id == 6 || $access->access_id == 7) {
-                    if ($access2 != 0) {
-                        $access->delete();
-                    }
-                    $access2 = 1;
-                }
-            }
-        }
-        return response()->json(['message' => 'success']);
-
     }
 
     public function sendCredentialsViaEmailToOrganizer($adminId, Request $request)

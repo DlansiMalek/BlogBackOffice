@@ -92,4 +92,8 @@ class ResourcesServices
             }
         }
     }
+
+    public function getResourceByResourceId($resourceId){
+        return Resource::where('resource_id','=',$resourceId)->first();
+    }
 }
