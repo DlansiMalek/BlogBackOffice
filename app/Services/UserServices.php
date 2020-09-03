@@ -429,7 +429,7 @@ class UserServices
             });
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-                || $tri == 'mobile' || $tri = 'country_id')) {
+                || $tri == 'mobile')) {
             $users = $users->orderBy($tri, $order);
         }
         if ($order && ($tri == 'type' || $tri == 'date')) {
