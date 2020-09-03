@@ -227,7 +227,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], fun
 });
 
 //User API
-Route::group(['prefix' => 'user', "middleware" => ['assign.guard:users']], function () {
+Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
