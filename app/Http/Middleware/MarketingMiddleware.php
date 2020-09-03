@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-class MarketingMiddelware
+class MarketingMiddleware
 {
     /**
      * Handle an incoming request.

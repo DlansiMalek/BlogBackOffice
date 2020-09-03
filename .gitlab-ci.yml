@@ -6,48 +6,13 @@ variables:
   DOCKER_DRIVER: overlay
 
 stages:
-  - deploy-manual
   - build
   - package
   - deploy
+  - build-manual
+  - package-manual
+  - deploy-manual
   - backup
-
-
-# Deploy stage
-ansible-deploy-prod-manual:
-  stage: deploy-manual
-  image: mullnerz/ansible-playbook:2.9.1
-  when: manual
-  only:
-    - master
-  before_script:
-    - chmod 600 $SSH_KEY
-    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
-    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
-    - export DEPLOY_TARGET=prod
-    - cd ansible
-  after_script:
-    - cd ..
-  script:
-    - ansible-playbook --key-file $SSH_KEY playbook.yml
-
-ansible-deploy-dev-manual:
-  stage: deploy-manual
-  image: mullnerz/ansible-playbook:2.9.1
-  when: manual
-  only:
-    - develop
-  before_script:
-    - chmod 600 $SSH_KEY
-    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
-    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
-    - export DEPLOY_TARGET=dev
-    - cd ansible
-  after_script:
-    - cd ..
-  script:
-    - ansible-playbook --key-file $SSH_KEY playbook.yml
-
 
 # Build stage
 build:
@@ -56,6 +21,17 @@ build:
   only:
     - master
     - develop
+  script:
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 2 hours
+
+build-feat:
+  stage: build-manual
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
+  when: manual
   script:
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
   artifacts:
@@ -80,6 +56,23 @@ docker-package:
     - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
+    - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
+    - docker push "$IMAGE_NAME"
+
+docker-package-feat:
+  stage: package-manual
+  services:
+    - docker:dind
+  when: manual
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  after_script:
+    - docker logout "$CI_REGISTRY"
+  script:
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-feat"
+    - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
+    - docker push "$IMAGE_NAME"
+    - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-feat"
     - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
     - docker push "$IMAGE_NAME"
 
@@ -116,7 +109,57 @@ ansible-deploy-dev:
     - cd ..
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
-    
+
+# Deploy stage
+ansible-deploy-prod-manual:
+  stage: deploy-manual
+  image: mullnerz/ansible-playbook:2.9.1
+  when: manual
+  only:
+    - master
+  before_script:
+    - chmod 600 $SSH_KEY
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
+    - export DEPLOY_TARGET=prod
+    - cd ansible
+  after_script:
+    - cd ..
+  script:
+    - ansible-playbook --key-file $SSH_KEY playbook.yml
+
+ansible-deploy-dev-manual:
+  stage: deploy-manual
+  image: mullnerz/ansible-playbook:2.9.1
+  when: manual
+  only:
+    - develop
+  before_script:
+    - chmod 600 $SSH_KEY
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
+    - export DEPLOY_TARGET=dev
+    - cd ansible
+  after_script:
+    - cd ..
+  script:
+    - ansible-playbook --key-file $SSH_KEY playbook.yml
+
+ansible-deploy-feat-manual:
+  stage: deploy-manual
+  image: mullnerz/ansible-playbook:2.9.1
+  when: manual
+  before_script:
+    - chmod 600 $SSH_KEY
+    - export APP_IMAGE_NAME="$CI_REGISTRY_IMAGE:app-feat"
+    - export WEB_IMAGE_NAME="$CI_REGISTRY_IMAGE:web-feat"
+    - export DEPLOY_TARGET=feat
+    - export CI_COMMIT_REF_NAME=feat
+    - cd ansible
+  after_script:
+    - cd ..
+  script:
+    - ansible-playbook --key-file $SSH_KEY playbook.yml
 
 # Backup stages
 backup-bitbucket:

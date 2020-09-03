@@ -24,6 +24,14 @@ class Congress extends Model
     {
         return $this->hasOne('App\Models\ConfigCongress', 'congress_id', 'congress_id');
     }
+    public function config_selection()
+    {
+        return $this->hasOne('App\Models\ConfigSelection', 'congress_id', 'congress_id');
+    }
+    public function evaluation_inscription()
+    {
+        return $this->hasMany('App\Models\Evaluation_Inscription', 'congress_id', 'congress_id');
+    }
 
     public function mail_config()
     {
