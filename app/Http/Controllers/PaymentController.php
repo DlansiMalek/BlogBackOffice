@@ -38,6 +38,16 @@ class PaymentController extends Controller
         $this->mailServices = $mailServices;
     }
 
+    function echecPayment()
+    {
+        return response()->json(['error' => 'echec payment']);
+    }
+
+    function successPayment()
+    {
+        return response()->json(['message' => 'success payment']);
+    }
+
     function notification(Request $request)
     {
 

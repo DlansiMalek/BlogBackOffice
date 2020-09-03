@@ -2,25 +2,24 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Services\CommunicationTypeService;
 use App\Services\SharedServices;
 use App\Services\UserServices;
-use App\Services\Utils;
-use http\Env\Request;
-use Illuminate\Support\Facades\Log;
 
 class SharedController extends Controller
 {
 
     protected $sharedServices;
     protected $userServices;
-
+    protected $communicationTypeService;
 
     function __construct(SharedServices $sharedServices,
-                         UserServices $userServices)
+                         UserServices $userServices,
+                         CommunicationTypeService $communicationTypeService)
     {
         $this->sharedServices = $sharedServices;
         $this->userServices = $userServices;
+        $this->communicationTypeService = $communicationTypeService;
     }
 
     public function getAllPrivileges()
@@ -31,6 +30,17 @@ class SharedController extends Controller
     public function getPrivilegesWithBadges()
     {
         return response()->json($this->sharedServices->getPrivilegesWithBadges());
+    }
+
+    public function getAllCommunicationTypes()
+    {
+        return $this->communicationTypeService->getAllCommunicationType();
+    }
+
+    public function getRecuPaiement($path)
+    {
+        $chemin = config('media.payement-user-recu');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 
     public function getAllTypesAttestation()
@@ -58,15 +68,20 @@ class SharedController extends Controller
     public function getAllCongressTypes()
     {
         return response()->json($this->sharedServices->getAllCongressTypes());
-
-
     }
 
-    public function getAllServices(){
+    public function getAllServices()
+    {
         return $this->sharedServices->getAllServices();
     }
 
-    public function getAllEtablissements(){
+    public function getAllEtablissements()
+    {
         return $this->sharedServices->getAllEtablissements();
+    }
+
+    public function encrypt($password)
+    {
+        return bcrypt($password);
     }
 }

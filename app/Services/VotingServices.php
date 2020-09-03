@@ -80,4 +80,28 @@ class VotingServices
             ->first();
     }
 
+    public function addScore($scoreVoteData)
+    {
+        $scoreVote = new VoteScore();
+        $scoreVote->user_id = $scoreVoteData['userId'];
+        $scoreVote->access_vote_id = $scoreVoteData['accessVoteId'];
+        $scoreVote->score = $scoreVoteData['score'];
+        $scoreVote->num_user_vote = $scoreVoteData['userNumber'];
+        $scoreVote->save();
+    }
+
+    public function getByUserIdAndAccessVote($userId, $accessVoteId)
+    {
+        return VoteScore::where('user_id', '=', $userId)
+            ->where('access_vote_id', '=', $accessVoteId)
+            ->first();
+    }
+
+    public function updateScore($oldVoteScore, $scoreVoteData)
+    {
+        $oldVoteScore->score = $scoreVoteData['score'];
+        $oldVoteScore->update();
+    }
+
+
 }
