@@ -16,7 +16,10 @@ class CreateItemEvaluationTable extends Migration
         Schema::create('Item_Evaluation', function (Blueprint $table) {
             $table->increments('item_evaluation_id');
             $table->unsignedInteger('congress_id');
-            $table->foreign('congress_id')->references('congress_id')->on('Congress');
+            $table->foreign('congress_id')
+                ->references('congress_id')
+                ->on('Congress')
+                ->onDelete('cascade');
             $table->string('label')->unique();
             $table->integer('ponderation');
             $table->timestamps();

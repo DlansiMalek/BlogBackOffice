@@ -17,10 +17,12 @@ class CreateItemNoteTable extends Migration
             $table->increments('item_note_id');
             $table->unsignedInteger('item_evaluation_id');
             $table->foreign('item_evaluation_id')->references('item_evaluation_id')
-            ->on('Item_Evaluation');
+                ->on('Item_Evaluation')
+                ->onDelete('cascade');
             $table->unsignedBigInteger('evaluation_inscription_id');
             $table->foreign('evaluation_inscription_id')->references('evaluation_inscription_id')
-            ->on('Evaluation_Inscription');
+                ->on('Evaluation_Inscription')
+                ->onDelete('cascade');
             $table->integer('note')->nullable()->default(-1);
             $table->string('comment')->nullable()->default(null);
             $table->timestamps();

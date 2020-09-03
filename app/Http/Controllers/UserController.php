@@ -117,8 +117,8 @@ class UserController extends Controller
             },
             'inscription_evaluation' => function ($query) use ($congressId, $admin_id) {
 
-                $query->select(['user_id', 'note', 'admin_id', 'commentaire' ,'evaluation_inscription_id'])->where('congress_id', '=', $congressId);
-                
+                $query->select(['user_id', 'note', 'admin_id', 'commentaire', 'evaluation_inscription_id'])->where('congress_id', '=', $congressId);
+
             },
             'inscription_evaluation.itemNote',
             'inscription_evaluation.admin' => function ($query) {
@@ -126,7 +126,7 @@ class UserController extends Controller
             },
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            },'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
+            }, 'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -268,48 +268,47 @@ class UserController extends Controller
 
         return response()->json($users);
     }
-    
-    public function changeMultipleUsersStatus($congress_id, Request $request) {
+
+    public function changeMultipleUsersStatus($congress_id, Request $request)
+    {
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
-            return response('no admin found',404);
+            return response('no admin found', 404);
         }
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json('no congress found');
         }
-        if (!$request->has('users') || sizeof($request->input('users')) === 0 ) {
-            return response('fields are missing',404);
+        if (!$request->has('users') || sizeof($request->input('users')) === 0) {
+            return response('fields are missing', 404);
         }
         $usersCongress = $this->userServices->getUsersCongressByCongressId($congress_id);
         $users = $request->input('users');
-        for ($i=0 ; $i<sizeof($users); $i++) {
+        for ($i = 0; $i < sizeof($users); $i++) {
             $left = 0;
             $right = sizeof($usersCongress) - 1;
             $index = -1;
-            while($left <= $right) {
-                $midpoint = (int) floor(($left + $right) / 2);
- 
+            while ($left <= $right) {
+                $midpoint = (int)floor(($left + $right) / 2);
+
                 if ($usersCongress[$midpoint]['user_id'] < $users[$i]['user_id']) {
-                  $left = $midpoint + 1;
+                    $left = $midpoint + 1;
                 } elseif ($usersCongress[$midpoint]['user_id'] > $users[$i]['user_id']) {
-                  $right = $midpoint - 1;
+                    $right = $midpoint - 1;
                 } else {
                     $index = $midpoint;
                     $status = json_decode($users[$i]['user_congresses'][0]['isSelected']);
                     $this->userServices->changeUserStatus($usersCongress[$midpoint], $status);
-                    $this->acceptOrRefuseUser($status,$congress,$users[$i],$usersCongress[$midpoint]);
-                 
-                break;
+                    $this->acceptOrRefuseUser($status, $congress, $users[$i], $usersCongress[$midpoint]);
+                    break;
                 }
-              }
-              if ($index === -1) {
-                return response()->json('no user found',404);
-              }
             }
-            return response()->json('success',200);
-        
+            if ($index === -1) {
+                return response()->json('no user found', 404);
+            }
+        }
+        return response()->json('success', 200);
+
     }
 
-    
 
     public function changeUserStatus($user_id, $congress_id, Request $request)
     {
@@ -319,17 +318,18 @@ class UserController extends Controller
         if (!$request->has('status')) {
             return response()->json(['message' => 'status is required'], 400);
         }
+        $status = $request->input('status');
 
-        $this->userServices->changeUserStatus($user_congress, $request->input('status'));
+        $this->userServices->changeUserStatus($user_congress, $status);
         $user = $this->userServices->getUserById($user_id);
         $congress = $this->congressServices->getCongressById($congress_id);
-        $status = $request->input('status');
-        $this->acceptOrRefuseUser($status,$congress,$user,$user_congress);
+        $this->acceptOrRefuseUser($status, $congress, $user, $user_congress);
         return response()->json(['message' => 'change status success'], 200);
     }
 
-    public function acceptOrRefuseUser($status,$congress,$user,$user_congress) {
-        if ( $status == 1) {
+    public function acceptOrRefuseUser($status, $congress, $user, $user_congress)
+    {
+        if ($status == 1) {
             // Mail acceptation
             $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $user_congress->privilege_id);
             $badgeIdGenerator = $badge['badge_id_generator'];
