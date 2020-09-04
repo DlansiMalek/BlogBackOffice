@@ -33,40 +33,42 @@ class PackController extends Controller
         return response()->json($this->packServices->getAllPackByCongress($congressId));
     }
 
-    public function addPack($congressId, Request $request) {
-        
-        if (!$congress = $this->congressServices->getCongressById($congressId)){
-            return response()->json(['response' => 'No congress found'],400);
+    public function addPack($congressId, Request $request)
+    {
+
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'No congress found'], 400);
         }
 
         $pack = $this->packServices->addPack(
-                $congressId,
-                $request->input('label'),
-                $request->input('description'),
-                $request->input('price'),
-                $request->input('accessIds')
+            $congressId,
+            $request->input('label'),
+            $request->input('description'),
+            $request->input('price'),
+            $request->input('accessIds')
         );
         $acesss = $this->accessServices->getByCongressId($congressId);
         $this->accessServices->ChangeAccessPacklessZeroToOne(
             $request->input('accessIds'),
             $acesss
         );
-        return response()->json(['responsse' => 'packed added'],200);
+        return response()->json(['responsse' => 'packed added'], 200);
     }
 
-    public function getPackById($packId)
+    public function getPackById($congressId, $packId)
     {
-        return $this->packServices->getPackById($packId);
+        return response()->json($this->packServices->getPackById($packId));
     }
 
-    public function editPack(Request $request, $pack_id)
+    public function editPack(Request $request, $congressId, $pack_id)
     {
-        if (!$pack = $this->packServices->getPackById($pack_id))
-        {return response()->json(['message' => 'pack not found'], 404);}
+        if (!$pack = $this->packServices->getPackById($pack_id)) {
+            return response()->json(['message' => 'pack not found'], 404);
+        }
 
-        $pack=$this->packServices->editPack($pack, $request);
+        $pack = $this->packServices->editPack($pack, $request);
 
         return $pack;
-        
+
     }
 }

@@ -25,36 +25,81 @@ class PackServices
 
     public function getPackById($packId)
     {
-        return Pack::where('pack_id', '=', $packId)->with(['users'])
+        return Pack::where('pack_id', '=', $packId)->with(['users', 'accesses'])
             ->first();
     }
-    public function addPack($congressId, $label , $description, $price , $accessIds) {
-        
+
+    public function addPack($congressId, $label, $description, $price, $accessIds)
+    {
+
         $pack = new Pack();
         $pack->label = $label;
         $pack->description = $description;
-        $pack->price = $price ;
+        $pack->price = $price;
         $pack->congress_id = $congressId;
         $pack->save();
         $this->addAccessPack($pack->pack_id, $accessIds);
-        
+
         return $pack;
     }
 
-    private function addAccessPack($pack_id , $accessIds) {
-       
-       $this->addItemAccesPack($pack_id,$accessIds);
+    private function addAccessPack($pack_id, $accessIds)
+    {
+
+        $this->addItemAccesPack($pack_id, $accessIds);
     }
 
-    private function addItemAccesPack($packId, $accessIds) {
-
-        foreach($accessIds as $access_id) {
-        $access_pack = new AccessPack();
-        $access_pack->access_id = $access_id;
-        $access_pack->pack_id = $packId;
-        $access_pack->save();
+    private function addItemAccesPack($packId, $accessIds)
+    {
+        foreach ($accessIds as $access_id) {
+            $access_pack = new AccessPack();
+            $access_pack->access_id = $access_id;
+            $access_pack->pack_id = $packId;
+            $access_pack->save();
+        }
     }
-}
+
+    public function getPackIdsByPacks($packs)
+    {
+        $res = array();
+        foreach ($packs as $pack) {
+            array_push($res, $pack->pack_id);
+        }
+        return $res;
+    }
+
+    public function affectPacksToUser($user_id, $packIds, $startPoint)
+    {
+        for ($i = $startPoint; $i < sizeof($packIds); $i++) {
+            $this->affectPackToUser($user_id, $packIds[$i]);
+        }
+    }
+
+    private function affectPackToUser($user_id, $packId)
+    {
+        $user_pack = new UserPack();
+        $user_pack->user_id = $user_id;
+        $user_pack->pack_id = $packId;
+        $user_pack->save();
+    }
+
+
+    public function editUserPacksWithPackId($user_id, $user_packs, $packIds)
+    {
+        $loopLength = sizeof($user_packs) > sizeof($packIds) ? sizeof($packIds) : sizeof($user_packs);
+        for ($i = 0; $i < $loopLength; $i++) {
+            $user_packs[$i]['pack_id'] = $packIds[$i];
+            $user_packs[$i]->update();
+        }
+        if (sizeof($user_packs) > sizeof($packIds)) {
+            for ($i = $loopLength; $i < sizeof($user_packs); $i++) {
+                $user_packs[$i]->delete();
+            }
+        }
+        if (sizeof($user_packs) < sizeof($packIds)) {
+            $this->affectPacksToUser($user_id, $packIds, $loopLength);
+        }
+    }
 
     public function addPacks($accesses, $packs, $congress)
     {
@@ -76,42 +121,42 @@ class PackServices
 
     }
 
-    public function getUserPacksByPackId($pack_id){
-        return UserPack::where('pack_id','=',$pack_id)->get();
+    public function getUserPacksByPackId($pack_id)
+    {
+        return UserPack::where('pack_id', '=', $pack_id)->get();
     }
 
     public function getAllAccessPackByPackId($pack_id)
     {
-        return AccessPack::where('pack_id','=',$pack_id)->get();
+        return AccessPack::where('pack_id', '=', $pack_id)->get();
     }
 
-    public function deleteAccessPack($access_id,$pack_id)
+    public function deleteAccessPack($access_id, $pack_id)
     {
         AccessPack::where('access_id', '=', $access_id)
-        ->where('pack_id','=',$pack_id)
-        ->delete();
+            ->where('pack_id', '=', $pack_id)
+            ->delete();
     }
 
     public function editpack($pack, Request $request)
     {
-        
+
         if ($request->has('label')) $pack->label = $request->input("label");
         if ($request->has('description')) $pack->description = $request->input("description");
-        $user_packs=$this->getUserPacksByPackId($pack->pack_id);
-        if( count($user_packs)==0)
-        {
-            if ($request->has('price')) {$pack->price = $request->input("price");}
-            if ($request->has('accessIds')) 
-            {
+        $user_packs = $this->getUserPacksByPackId($pack->pack_id);
+        if (count($user_packs) == 0) {
+            if ($request->has('price')) {
+                $pack->price = $request->input("price");
+            }
+            if ($request->has('accessIds')) {
                 //delete all old access_packs
-                $old_access_packs=$this->getAllAccessPackByPackId($pack->pack_id);
+                $old_access_packs = $this->getAllAccessPackByPackId($pack->pack_id);
 
-                foreach ($old_access_packs as $access_pack)
-                {
-                    $this->deleteAccessPack($access_pack->access_id,$pack->pack_id);
+                foreach ($old_access_packs as $access_pack) {
+                    $this->deleteAccessPack($access_pack->access_id, $pack->pack_id);
                 }
                 //add all new access_packs
-                $this->addAccessPack($pack->pack_id , $request->accessIds);
+                $this->addAccessPack($pack->pack_id, $request->accessIds);
             }
         }
         $pack->update();
