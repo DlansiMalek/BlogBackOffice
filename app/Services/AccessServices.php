@@ -15,6 +15,8 @@ use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
+use App\Models\UserAccess;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -350,7 +352,37 @@ class AccessServices
             ->where('access_id', '=', $accessId)
             ->first();
     }
+    public function getUserAccessByUserId($userId,$congressId) {;
+        return UserAccess::where('user_id','=',$userId)
+                ->join('Access','Access.access_id','=','User_Access.access_id')
+                ->where('Access.congress_id','=',$congressId)
+                ->orderBy('Access.start_date','asc')
+                ->get();
 
+    }
+    public function getClosestAccess($userId,$congressId) {
+    
+         $date = new DateTime(date('Y-m-d H:i:s')); 
+         $maxDate = mktime(0,0,0,0,0,3000); // creation d'une date supperieur à la date actuelle ;
+         $diff = $date->diff(new DateTime(date('Y-m-d H:i:s',$maxDate)));
+         $closestAccess = new Access();
+         $accesss = $this->getUserAccessByUserId($userId,$congressId) ;
+         foreach($accesss as $access ) {
+            $accessDate = new DateTime($access->start_date);
+            if (
+                $diff->days > ($date->diff($accessDate))->days || 
+                $diff->h > ($date->diff($accessDate))->h ||
+                $diff->s > ($date->diff($accessDate))->s
+            
+            ) {
+                $diff =  $date->diff($accessDate);
+                $closestAccess = $access;
+             } 
+                    
+              
+         }
+         return $closestAccess ;
+    }
     public function getSpeakerAccessByAccessAndUser($accessId, $userId)
     {
         return AccessSpeaker::where("user_id", '=', $userId)
@@ -460,5 +492,12 @@ class AccessServices
         }
 
         $access->update();
+    }
+
+    // // la fonction existante getUserAccessByUser  nécessite accessId comme paramètre que je ne veux pas
+    public function getAllAccessByUserId($userId){
+        return Access::whereHas('participants', function ($query) use ($userId) {
+            $query->where('User.user_id', '=', $userId);
+        })->get();
     }
 }

@@ -1,0 +1,4 @@
+# Docker
+
+host_name: feat.api.eventizer.io
+env_file: "{{ lookup('env','ENV_FEAT') }}"

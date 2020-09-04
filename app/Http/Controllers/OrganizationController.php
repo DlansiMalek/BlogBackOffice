@@ -86,12 +86,14 @@ class OrganizationController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme VayeCongress";
             }
 
-            $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    strtoupper($organization->name),
-                    $admin->passwordDecrypt);
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                    $organization->name,
+                    $admin->passwordDecrypt,
+                    $privilegeId);
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -170,12 +172,15 @@ class OrganizationController extends Controller
     private function sendMail($congress, $user)
     {
         $organization = $this->organizationServices->getOrganizationById($user->organization_id);
-        $badgeIdGenerator = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $user->privilege_id);
+        $badgeIdGenerator = $badge['badge_id_generator'];
+
         $fileAttached = false;
         if ($badgeIdGenerator != null) {
-            $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                ucfirst($user->first_name) . " " . strtoupper($user->last_name),
-                $user->qr_code);
+            $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                $user,
+                $user->qr_code,
+                $user->privilege_id);
         }
 
 

@@ -22,10 +22,18 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(UserMail::class, "user_id", "user_id");
     }
 
+    function inscription_evaluation() {
+        return $this->hasMany(Evaluation_Inscription::class, 'user_id','user_id');
+    }
+
     function accesses()
     {
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
+    }
+    function packs()
+    {
+        return $this->belongsToMany('App\Models\Pack', 'User_Pack', 'user_id', 'pack_id');
     }
     function user_access()
     {
@@ -64,6 +72,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\UserCongress', 'user_id', 'user_id');
     }
 
+    function user_packs() {
+        return $this->hasMany('App\Models\UserPack', 'user_id', 'user_id');
+    }
     function custom_sms()
     {
         return $this->belongsToMany('App\Models\CustomSMS', 'User_Sms', 'user_id', 'custom_sms_id');

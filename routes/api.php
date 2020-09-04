@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-//Functional API
+// Functional API
 Route::get('/synchroData', 'SharedController@synchroData');
 Route::get('deleteOldQrCode', 'SharedController@deleteOldQrCode');
 Route::get('/scanAllPresence', 'SharedController@scanAllPresence');
@@ -24,6 +23,7 @@ Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
 Route::get('/services', 'SharedController@getAllServices');
 Route::get('/etablissements', 'SharedController@getAllEtablissements');
+Route::get('/communication_type', 'SharedController@getAllCommunicationTypes');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
@@ -34,6 +34,8 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+
+
 });
 //SMS API
 
@@ -105,14 +107,18 @@ Route::get('/testImpression', 'UserController@testImpression');
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
+
+    Route::post('password/reset', 'UserController@forgetPassword');
+    Route::post('password/reset/{userId}', 'UserController@resetUserPassword');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
-
+        Route::get('', 'UserController@getUserById');
         Route::group(['prefix' => 'congress/{congressId}'], function () {
+            Route::post('changeStatus','UserController@changeUserStatus');
             Route::delete('delete', 'UserController@delete');
             Route::post('upload-payement', 'UserController@uploadPayement');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
@@ -145,7 +151,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 
     Route::get('/all', 'CongressController@getAllCongresses');
-
+    Route::get('minCongressData','CongressController@getMinCongressData') ;
     Route::group(['prefix' => 'mail'], function () {
         Route::get('{mailId}', 'MailController@getById');
         Route::get('types/{typeId}', 'MailController@getMailTypeById');
@@ -161,8 +167,10 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::post('switchRoom','CongressController@switchUsersRoom');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
+        Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
@@ -176,6 +184,11 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
+
+        Route::get('badge/list', 'BadgeController@getBadgesByCongress');
+        Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+
+
         Route::get('badge/apercu', 'BadgeController@apercuBadge');
         Route::post('program-link', 'CongressController@setProgramLink');
 
@@ -210,76 +223,51 @@ Route::group(['prefix' => 'congress', "middelware" => "jwt"], function () {
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
-    Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
+    Route::put('{submissionId}/evaluate/type/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
+    Route::put('{submissionId}/finalDecisionOnSubmission','SubmissionController@finalDecisionOnSubmission');
+    Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
+    Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
     Route::group(['prefix' => '{submission_id}'], function () {
-        Route::get('', 'SubmissionController@getSubmission');
+        Route::get('/detail', 'SubmissionController@getSubmission');
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
-
-
+    Route::get('user/all/pagination', 'SubmissionController@getSubmissionByUserId');
 });
-Route::group(['prefix' => 'theme'], function () {
-    Route::get('all', 'ThemeController@getAllThemes');
+
+Route::group(['middleware' => ['assign.guard:admins'],'prefix' => 'theme'], function () {
+    Route::get('all/{congressId}', 'ThemeController@getAllThemes');
+    Route::post('add/{congressId}', 'ThemeController@addExternalTheme');
     Route::get('congress/{congressId}', 'ThemeController@getThemesByCongressId');
-});
-//PackAdmin API
-Route::group(['prefix' => 'packadmin'], function () {
-    Route::get('list', 'PackAdminController@index');
-    Route::get('{pack_id}', 'PackAdminController@getPackById');
-    Route::delete('{pack_id}/delete', 'PackAdminController@delete');
-    Route::post('add', 'PackAdminController@store');
-    Route::put('{pack_id}/update', 'PackAdminController@update');
-    Route::get('{pack_id}/modules', 'PackAdminController@getpackmodules');
-    Route::get('modules/list', 'PackAdminController@getmodules');
-    Route::post('{pack_id}/addmodule/{module_id}', 'PackAdminController@addmoduletoPack');
-    Route::get('mails/admin/{mail_id}', 'MailController@getMailAdminById');
-
-    Route::get('clients/all', 'AdminController@getClients');
-    Route::get('clients/{adminId}/histories', 'AdminController@getClienthistoriesbyId');
-    Route::get('clients/{adminId}/congresses', 'AdminController@getClientcongressesbyId');
-    Route::delete('admins/{adminId}/delete', 'AdminController@delete');
-
-    Route::post('admins/{admin_id}/{pack_id}/validate/{history_id}', 'AdminController@ActivatePackForAdmin');
-    Route::post('histories/add', 'AdminController@addHistoryToAdmin');
-
-    Route::post('admins/add/{pack_id}', 'AdminController@store');
-    Route::get('admins/{adminId}', 'AdminController@getAdminById');
-    Route::get('packs/{packId}', 'PackAdminController@getPackById');
-    Route::put('admins/{admin_id}/update', 'AdminController@update');
-    Route::post('Demo/{admin_id}', 'CongressController@addDemo');
-    Route::get('congress/all', 'CongressController@getAll');
-    Route::delete('congress/{congress_id}/delete', 'CongressController@delete');
-    Route::delete('admins/{admin_id}/{congressId}', 'CongressController@RemoveCongressFromAdmin');
-    Route::get('mailtypes/all', 'MailController@getAllMailTypesAdmin');
-    Route::put('mails/{mail_id}/update', 'MailController@updateMailAdmin');
-    Route::post('mails/add', 'MailController@storeMailAdmin');
 });
 
 //User API
-
 Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
+    
 
+    
     Route::post('/register', 'UserController@registerUser');
 
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
+            Route::post('{user_id}/changeScore','UserController@affectScoreToUser');
             Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');
             Route::post('list/privilege', 'UserController@getUsersByPrivilegeByCongress');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');
+            Route::post('registerV2', 'UserController@saveUserInscription')->middleware('assign.guard:users');
             Route::put('edit/{userId}', 'UserController@editerUserToCongress');
             Route::put('edit-fast-user/{user_id}', 'UserController@editFastUserToCongress');
             Route::get('presence/list', 'UserController@getPresencesByCongress');
@@ -299,6 +287,8 @@ Route::group(['prefix' => 'user', "middelware" => "jwt"], function () {
     });
 
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
+        ->middleware('assign.guard:users');
+    Route::get('me/events', 'CongressController@getUserCongress')
         ->middleware('assign.guard:users');
 });
 //Admin API
@@ -373,9 +363,16 @@ Route::group(['prefix' => 'access'], function () {
 });
 
 // Super Admin API
-Route::group(['middelware' => 'marketing'], function () {
-    Route::get('/admin/all', 'AdminController@getClients');
-    Route::post('/admin/add', 'AdminController@addClient');
+Route::group(['prefix'=> 'admin', 'middleware' => 'marketing'], function () {
+    Route::get('all', 'AdminController@getClients');
+    Route::get('{admin_id}', "AdminController@getClientById")
+        ->where('admin_id', '[0-9]+');
+    Route::post('add', 'AdminController@addClient');
+    Route::get('mailtype','MailController@getAllMailTypesAdmin');
+    Route::get('mail/{mailTypeAdminId}', 'MailController@getMailAdminByMailTypeAdminId');
+    Route::get('mailtype/{mailTypeAdminId}', 'MailController@getMailTypeAdminByMailTypeAdminId');
+    Route::post('mail/{mailTypeAdminId}', 'MailController@saveMailAdmin');
+    Route::put('{admin_id}', "AdminController@editClient");
 });
 
 
@@ -384,6 +381,8 @@ Route::group(['prefix' => 'pack'], function () {
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
         Route::get('list', 'PackController@getAllPackByCongress');
         Route::post('add', 'PackController@addPack');
+        Route::get('get/{packId}', 'PackController@getPackById');
+        Route::put('{pack_id}', 'PackController@editPack');
     });
     Route::delete('delete/{packId}', 'PackController@deletePack');
 

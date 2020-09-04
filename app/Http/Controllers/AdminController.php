@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
-use App\Models\HistoryPack;
 use App\Models\Mail;
 use App\Models\PaymentAdmin;
 use App\Models\User;
@@ -12,9 +11,9 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
-use App\Services\PackAdminServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
+use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -32,10 +31,9 @@ class AdminController extends Controller
     protected $privilegeServices;
     protected $sharedServices;
     protected $badgeServices;
-    protected $packAdminServices;
     protected $accessServices;
     protected $mailServices;
-
+    protected $submissionServices;
     protected $client;
 
     public function __construct(UserServices $userServices,
@@ -43,9 +41,9 @@ class AdminController extends Controller
                                 CongressServices $congressService,
                                 PrivilegeServices $privilegeServices,
                                 SharedServices $sharedServices,
-                                PackAdminServices $packAdminServices,
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
+                                SubmissionServices $submissionServices,
                                 MailServices $mailServices)
     {
         $this->userServices = $userServices;
@@ -54,8 +52,8 @@ class AdminController extends Controller
         $this->privilegeServices = $privilegeServices;
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
-        $this->packAdminServices = $packAdminServices;
         $this->accessServices = $accessServices;
+        $this->submissionServices = $submissionServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();
     }
@@ -467,6 +465,22 @@ class AdminController extends Controller
 
         if ($privilegeId == 11) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
+            $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
+              $this->adminServices->affectEvaluatorToSubmissions(
+                 $submissions,$admin_id,$request->input("themesSelected"),$congress_id);
+        }
+        if ($privilegeId == 13 && 
+        $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1) &&
+        sizeof($congress->evaluation_inscription) <   $congress->config_selection->num_evaluators
+        ) {
+            
+                $this->adminServices->affectUsersToEvaluator(
+                    $congress->users,
+                    $congress->config_selection->num_evaluators,
+                    $admin_id,
+                    $congress_id
+                );
+            
         }
 
         //create admin congress bind privilege admin and congress
@@ -483,12 +497,14 @@ class AdminController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
             }
 
-            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badge= $this->congressService->getBadgeByPrivilegeId($congress, $privilegeId);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    $admin->name,
-                    $admin->passwordDecrypt);
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                    $admin,
+                    $admin->passwordDecrypt,
+                    $privilegeId);
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -613,12 +629,14 @@ class AdminController extends Controller
                 $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
             }
 
-            $badgeIdGenerator = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+            $badge = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+            $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badgeIdGenerator,
-                    $admin->name,
-                    $admin->passwordDecrypt);
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                    $admin,
+                    $admin->passwordDecrypt,
+                    $admin_congress->privilege_id);
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -703,118 +721,51 @@ class AdminController extends Controller
         return $this->adminServices->getClients();
     }
 
-    public function getAdminById($adminId)
-    {
-        $admin = $this->adminServices->getAdminById($adminId);
-        if (!$admin) {
-            return response()->json(['response' => 'admin not found'], 404);
-        } else {
-            return $admin;
-        }
-    }
-
-    public function getClienthistoriesbyId($adminId)
-    {
-        return $this->adminServices->getClienthistoriesbyId($adminId);
-    }
-
-    public function getClientcongressesbyId($adminId)
-    {
-        return $this->adminServices->getClientcongressesbyId($adminId);
-    }
-
-    public function delete($adminId)
-    {
-        $admin = $this->adminServices->getAdminById($adminId);
-        if (!$admin) {
-            return response()->json(['response' => 'admin not found'], 404);
-        } elseif ($admin) {
-            $admin->delete();
-        }
-        return response()->json(['response' => 'admin deleted'], 202);
-    }
-
-    public function store(Request $request, $pack_id)
-    {
-        if (!$request->has(['name', 'mobile', 'email'])) {
-            return response()->json(['response' => 'invalid request',
-                'content' => ['name', 'mobile', 'email']], 400);
-        }
-
-        $admin = $this->adminServices->getAdminByMail($request->input('email'));
-        if ($admin) {
-            return response()->json(['response' => 'admin with same mail found'], 404);
-        } else {
-            $admin = new Admin();
-            $pack = $this->packAdminServices->getPackById($pack_id);
-            $history = new HistoryPack();
-            $payment = new PaymentAdmin();
-            $admin = $this->adminServices->AddAdmin($request, $admin);
-            $this->adminServices->addPayment($payment, $admin, $pack);
-            $this->adminServices->addHistory($history, $admin, $pack);
-            return response()->json(['response' => 'admin added with payment and history'], 202);
-        }
-    }
-
-    public function update(Request $request, $admin_id)
-    {
-        $admin = $this->adminServices->getAdminById($admin_id);
-        if (!$admin) {
-            return response()->json(['response' => 'Admin not found'], 404);
-        }
-        return response()->json($this->adminServices->updateAdmin($request, $admin), 202);
-    }
-
-    public function ActivatePackForAdmin($admin_id, $pack_id, $history_id)
-    {
-        $newhistory = new HistoryPack();
-        $previoushistory = $this->adminServices->gethistorybyId($history_id);
-        $pack = $this->packAdminServices->getPackById($pack_id);
-        $admin = $this->adminServices->getAdminById($admin_id);
-        $this->adminServices->addValidatedHistory($newhistory, $admin, $pack, $previoushistory);
-        return response()->json(['response' => 'pack Activated , new  history entry created'], 202);
-    }
-
-    public function addHistoryToAdmin(Request $request)
-    {
-        $newhistory = new HistoryPack();
-        $this->adminServices->addPackToAdmin($request, $newhistory);
-        return response()->json(['response' => 'pack Added , new  history entry created'], 202);
-
-    }
-
     public function addClient(Request $request)
     {
         if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
             return response()->json(['message' => 'bad request'], 400);
 
-        if ($this->adminServices->getAdminByLogin($request->input("email"))) {
+        if ($admin = $this->adminServices->getAdminByLogin($request->input("email"))) {
+            if($admin->privilege_id)
             return response()->json(['message' => 'admin exists'], 400);
         }
 
-        $admin = $this->adminServices->addClient($request->input("name"), $request->input("email"), $request->input("mobile"), $request->input("passwordDecrypt"), $request->input("valid_date"));
-
-        $mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin');
-        if (!$mailTypeAdmin) {
+        if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin')) {
             return response()->json(['message' => 'Mail type not found'], 400);
         }
 
         $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
+
         if (!$mailAdmin) {
             return response()->json(['message' => 'Mail not found'], 400);
         }
 
+        $admin = $this->adminServices->addClient($admin, $request);
+
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-        $this->adminServices->sendMAil(
-            $this->adminServices->renderMail($mailAdmin->template, $admin, null, $linkBackOffice),
-            null,
-            $mailAdmin->object,
-            $admin,
-            null,
-            null
-        );
+        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
 
         return response()->json(['message' => 'Client added success']);
     }
 
+    public function getClientById($admin_id)
+    {
+        if (!$admin = $this->adminServices->getClientById($admin_id)) {
+            return response()->json(["error" => "client not found"], 404);
+        }
+        return response()->json($admin);
+    }
+
+    public function editClient(Request $request, $clientId)
+    {
+        if (!$request->has(['name', 'email', 'mobile', 'passwordDecrypt']))
+            return response()->json(['message' => 'bad request'], 400);
+        if (!$updatedAdmin= $this->adminServices->getClientById($clientId)) {
+            return response()->json(["message" => "client not found"], 404);
+        }
+        $admin = $this->adminServices->editClient($request,$updatedAdmin);
+        return response()->json($admin);
+    }
 }
+

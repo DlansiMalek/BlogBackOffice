@@ -29,51 +29,47 @@ class AuthorServices
         $author->save();
         return $author;
     }
-    public function editAuthor($author, $rank)
+    public function editAuthor($existingAuthor, $author,$service,$etablissement)
     {
 
-        $author->rank = $rank;
-        $author->update();
-        return $author;
+        $existingAuthor->rank = $author['rank'];
+        $existingAuthor->service_id = $author['service_id'] == -1 ? $service : $author['service_id'];
+        $existingAuthor->etablissement_id = $author['etablissement_id'] == -1 ? $etablissement : $author['etablissement_id'];
+        $existingAuthor->update();
+        return $existingAuthor;
     }
     public function deleteAuthor($author)
     {
         $author->delete();
     }
-    public function saveAuthorsBySubmission($authors, $submission_id)
+    public function saveAuthorsBySubmission($authors, $submission_id,$etablissements,$services)
     {
 
 
-        foreach ($authors as $author) {
+        for ($i = 0 ; $i<sizeof($authors) ; $i++){
             $this->saveAuthor(
-                $author['first_name'],
-                $author['last_name'],
-                $author['rank'],
+                $authors[$i]['first_name'],
+                $authors[$i]['last_name'],
+                $authors[$i]['rank'],
                 $submission_id,
-                $author['service_id'],
-                $author['etablissement_id'],
-
+                $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'] ,
+                $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id']
             );
         }
     }
 
-    public function editAuthors($existingAuthors,$authors, $submission_id)
+    public function editAuthors($existingAuthors,$authors, $submission_id,$services,$etablissements)
     {
-
         //test si il exist que l'utilisateur seuelement
-        if (sizeof($authors) > 1 )  {
+        if (sizeof($authors) >= 1 )  {
             //première loop pour voir les auteurs qui ont été modifié ou supprimé
             foreach ($existingAuthors as $existingAuthor) {
                 $isExist = false;
-                foreach ($authors as $author) {
-                    if (isset($author['author_id'])) {
-                        if ($existingAuthor['author_id'] == $author['author_id']) {
+                for ($i = 0 ; $i< sizeof($authors); $i++ ) {
+                    if (isset($authors[$i]['author_id'])) {
+                        if ($existingAuthor['author_id'] == $authors[$i]['author_id']) {
                             $isExist = true;
-                            $this->editAuthor(
-                                $existingAuthor,
-                                $author['rank'],
-
-                            );
+                            $this->editAuthor($existingAuthor, $authors[$i],$services[$i],$etablissements[$i]);
                         }
                     } 
                 }
@@ -89,9 +85,8 @@ class AuthorServices
                         $authors[$i]['last_name'],
                         $authors[$i]['rank'],
                         $submission_id,
-                        $authors[$i]['service_id'],
-                        $authors[$i]['etablissement_id'],
-                    );
+                        $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'] ,
+                        $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id']);
                  }
              }
 
