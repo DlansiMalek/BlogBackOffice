@@ -186,6 +186,7 @@ class UserController extends Controller
 
         $this->userServices->deleteUserAccesses($userId, $congressId);
         $this->userServices->deleteFormInputUser($userId, $congressId);
+        $this->userServices->deleteUserPacks($userId, $congressId);
         $userCongress = $this->userServices->getUserCongress($congressId, $userId);
         $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
         $evaluations = $this->userServices->getAllEvaluationInscriptionByUserId($userId, $congressId);

@@ -381,6 +381,8 @@ Route::group(['prefix' => 'pack'], function () {
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
         Route::get('list', 'PackController@getAllPackByCongress');
         Route::post('add', 'PackController@addPack');
+        Route::get('get/{packId}', 'PackController@getPackById');
+        Route::put('{pack_id}', 'PackController@editPack');
     });
 
 });
