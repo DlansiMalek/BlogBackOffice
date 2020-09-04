@@ -384,6 +384,7 @@ Route::group(['prefix' => 'pack'], function () {
         Route::get('get/{packId}', 'PackController@getPackById');
         Route::put('{pack_id}', 'PackController@editPack');
     });
+    Route::delete('delete/{packId}', 'PackController@deletePack');
 
 });
 //Organisation API

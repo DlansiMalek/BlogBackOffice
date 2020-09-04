@@ -11,7 +11,6 @@ namespace App\Services;
 use App\Models\AccessPack;
 use App\Models\Pack;
 use App\Models\UserPack;
-use Illuminate\Http\Request;
 
 class PackServices
 {
@@ -119,6 +118,13 @@ class PackServices
             }
         }
 
+    }
+
+    public function checkIfHasRelation($packId)
+    {
+        if ($user_pack = UserPack::where('pack_id', '=', $packId)->first())
+            return 1;
+        return 0;
     }
 
     public function getUserPacksByPackId($pack_id)

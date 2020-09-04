@@ -55,6 +55,21 @@ class PackController extends Controller
         return response()->json(['responsse' => 'packed added'], 200);
     }
 
+    public function deletePack($packId)
+    {
+        if (!$pack = $this->packServices->getPackById($packId)) {
+            return response()->json(['response' => 'pack not found'], 404);
+
+        }
+
+        if (!$this->packServices->checkIfHasRelation($packId)) {
+            $pack->delete();
+            return response()->json(['response' => 'pack deleted'], 202);
+        } else return response()->json(['response' => 'error ! pack already assigned to a participant'], 404);
+
+
+    }
+
     public function getPackById($congressId, $packId)
     {
         return response()->json($this->packServices->getPackById($packId));
