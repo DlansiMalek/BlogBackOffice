@@ -20,7 +20,7 @@ class CreateItemEvaluationTable extends Migration
                 ->references('congress_id')
                 ->on('Congress')
                 ->onDelete('cascade');
-            $table->string('label')->unique();
+            $table->string('label');
             $table->integer('ponderation');
             $table->timestamps();
         });

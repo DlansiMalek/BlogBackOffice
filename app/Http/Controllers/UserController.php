@@ -14,6 +14,7 @@ use App\Services\PaymentServices;
 use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\SmsServices;
+use App\Services\ResourcesServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -37,6 +38,7 @@ class UserController extends Controller
     protected $paymentServices;
     protected $mailServices;
     protected $roomServices;
+    protected $resourcesServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -48,7 +50,8 @@ class UserController extends Controller
                          PaymentServices $paymentServices,
                          SmsServices $smsServices,
                          RoomServices $roomServices,
-                         MailServices $mailServices)
+                         MailServices $mailServices,
+                         ResourcesServices $resourcesServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -62,6 +65,17 @@ class UserController extends Controller
         $this->paymentServices = $paymentServices;
         $this->mailServices = $mailServices;
         $this->roomServices = $roomServices;
+        $this->resourcesServices = $resourcesServices;
+    }
+
+    public function getLoggedUser()
+    {
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+        $user = $this->userServices->getUserById($user->user_id);
+
+        return response()->json($user);
     }
 
     public function getUserByTypeAndCongressId($congress_id, Request $request)
@@ -164,28 +178,9 @@ class UserController extends Controller
 
     }
 
-    public function update(Request $request, $user_id)
+    public function delete($userId, $congressId=null)
     {
-        if (!$request->has(['first_name', 'last_name'])) {
-            return response()->json([
-                'response' => 'invalid request',
-                'content' => [
-                    'gender', 'first_name', 'last_name',
-                    'profession', 'domain', 'establishment', 'city_id',
-                    'address', 'postal', 'tel', 'mobile', 'fax',
-                ]
-            ], 400);
-        }
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-        return response()->json($this->userServices->updateUser($request, $user), 202);
-    }
-
-    public function delete($userId, $congressId)
-    {
-
+        if ($congressId) {
         $this->userServices->deleteUserAccesses($userId, $congressId);
         $this->userServices->deleteFormInputUser($userId, $congressId);
         $userCongress = $this->userServices->getUserCongress($congressId, $userId);
@@ -201,6 +196,11 @@ class UserController extends Controller
             $evaluation->delete();
         }
         return response()->json(['response' => 'user disaffected to congress'], 202);
+        }
+        else {
+            $this->userServices->deleteById($userId);
+            return response()->json(['response' => 'user deleted'], 202);
+        }
     }
 
     public function validateUser($user_id, $validation_code)
@@ -215,18 +215,6 @@ class UserController extends Controller
             return response()->json(['response' => 'user verified'], 202);
         }
         return response()->json(['response' => 'invalid verifiaction code'], 400);
-    }
-
-    public function resendConfirmationMail($user_id)
-    {
-        $user = $this->userServices->getParticipatorById($user_id);
-        if (!$user) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
-
-
-        $this->userServices->sendConfirmationMail($user);
-        return response()->json(['response' => 'email send to user' . $user->email], 202);
     }
 
     public function getUsersByCongressPagination($congressId, Request $request)
@@ -407,6 +395,23 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+
+    function validateUserAccount($userId = null, $congressId = null, $token = null)
+    {
+        $user = $this->userServices->getUserById($userId);
+        if (!$user) {
+            return response()->json(['response' => 'Votre compte à été supprimé'], 404);
+        }
+        if ($token == $user->verification_code) {
+            $user->email_verified = 1;
+            $user->update();
+
+            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
+        } else {
+            return response()->json(['response' => 'Token not match'], 400);
+        }
+    }
+
     public function addUserToCongress(Request $request, $congressId)
     {
 
@@ -503,6 +508,7 @@ class UserController extends Controller
         }
 
         $congress = $this->congressServices->getCongressById($congress_id);
+
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
@@ -654,22 +660,6 @@ class UserController extends Controller
         }
         $userId = $user->user_id;
         return $this->userServices->getAllUserAccess($congressId, $userId);
-    }
-
-    function validateUserAccount($userId = null, $congressId = null, $token = null)
-    {
-        $user = $this->userServices->getUserById($userId);
-        if (!$user) {
-            return response()->json(['response' => 'Votre compte à été supprimé'], 404);
-        }
-        if ($token == $user->verification_code) {
-            $user->email_verified = 1;
-            $user->update();
-
-            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
-        } else {
-            return response()->json(['response' => 'Token not match'], 400);
-        }
     }
 
     public function getUsersByAccess($congressId, $accessId)
@@ -1346,34 +1336,6 @@ class UserController extends Controller
         return $this->userServices->getAttestationRequestsByUserId($user_id);
     }
 
-    public function changeQrCode($user_id, Request $request)
-    {
-        $congressId = $request->input("congressId");
-
-        if (!$user = $this->userServices->getUserByIdWithRelations($user_id, ['user_congresses' => function ($query) use ($congressId) {
-            $query->where('congress_id', '=', $congressId);
-        }]))
-            return response()->json(['error' => 'user not found'], 400);
-
-        $oldUsers = $this->userServices->getMinUserByQrCode($request->input("qrcode"));
-
-        foreach ($oldUsers as $oldUser) {
-            if ($oldUser->user_id != $user->user_id) {
-                $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
-                $oldUser->update();
-            }
-        }
-
-        if (sizeof($user->user_congresses) > 0) {
-            $user->user_congresses[0]->isPresent = 1;
-            $user->user_congresses[0]->update();
-        }
-
-        $user->qr_code = $request->get('qrcode');
-        $user->update();
-        return $user;
-    }
-
     public function mobileEditUser(Request $request, $user_id)
     {
         if (!$request->has(['first_name', 'last_name', 'gender', 'mobile', 'email', 'country_id']))
@@ -1471,6 +1433,36 @@ class UserController extends Controller
         return response()->json(['response' => 'password successfully updated'], 200);
     }
 
+    public function editUserProfile(Request $request)
+    {
+        if (!$request->has(['email', 'first_name', 'last_name']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['email', 'first_name', 'last_name']], 400);
+
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+
+        $user = $this->userServices->editUser($request, $user);
+        if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('update_profile')) {
+            return response()->json(['response' => 'mail type admin not found'], 400);
+        }
+
+        if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
+            $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
+            $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
+        }
+
+        return response()->json($user, 200);
+    }
+
+    public function getResourceByResourceId($resourceId)
+    {
+        $chemin = config('media.resource');
+        $resource = $this->resourcesServices->getResourceByResourceId($resourceId);
+
+        return response()->download(storage_path('app/' . $chemin . "/" . $resource->path));
+    }
 
     private function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds)
     {
@@ -1554,7 +1546,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSms($congress_id, $user, $congress);
+            $this->smsServices->sendSmsToUsers($user,null,$congress_id,$congress);
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
@@ -1586,5 +1578,4 @@ class UserController extends Controller
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
     }
-
 }
