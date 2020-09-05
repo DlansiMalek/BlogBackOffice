@@ -103,7 +103,7 @@ Route::group(['prefix' => 'auth'], function () {
 //User API
 Route::group(['prefix' => 'users'], function () {
     Route::get('', 'UserController@index');
-
+    Route::post('changeMultipleStatus/{congressId}', 'UserController@changeMultipleUsersStatus');
     Route::post('password/reset', 'UserController@forgetPassword');
     Route::post('password/reset/{userId}', 'UserController@resetUserPassword');
     Route::post('/upload-users', 'UserController@uploadUsers');
@@ -160,6 +160,9 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::post('switchRoom', 'CongressController@switchUsersRoom');
+        Route::post('addItemsEvaluation', 'CongressController@addItemsEvaluation')->middleware('assign.guard:admins');
+        Route::get('getItemsEvaluation', 'CongressController@getItemsEvaluation')->middleware('assign.guard:admins');
+        Route::post('addItemsNote/{evaluation_inscription_id}', 'CongressController@addItemsNote')->middleware('assign.guard:admins');
         Route::get('min', 'CongressController@getMinimalCongressById');
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
@@ -276,7 +279,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
         ->middleware('assign.guard:users');
 });
 //Admin API
-Route::group(['prefix' => 'admin', "middleware" => "admin"], function () {
+Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], function () {
     Route::group(['prefix' => 'rfid'], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
