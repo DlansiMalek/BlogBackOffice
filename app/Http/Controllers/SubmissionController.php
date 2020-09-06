@@ -385,7 +385,8 @@ class SubmissionController extends Controller
                         null,
                         null,
                         null,
-                        $link
+                        $link,
+                        $request->input('status') == '1' ? $submission->code : null
                     ),
                     $user, 
                     null,
