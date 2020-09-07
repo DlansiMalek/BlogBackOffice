@@ -234,8 +234,7 @@ class SubmissionController extends Controller
         $perPage = $request->query('perPage', 10);
         $search = $request->query('search', '');
         $tri = $request->query('tri', '');
-        $order = $request->query('order', '');
-
+        $order = $request->query('order', '');  
         $status = $request->query('status');
 
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
@@ -332,7 +331,7 @@ class SubmissionController extends Controller
         $submission->limit_date = $request->input('limit_date');
 
         // generate code 
-
+        $type = $this->communicationTypeService->getCommunicationTypeById($request->input('communication_type_id'));
         if ($request->has('communication_type_id') && $request->input('status') == '1' ) {
             $index = -1;
             $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
@@ -342,8 +341,7 @@ class SubmissionController extends Controller
                 break;
                 }
     
-            }
-            $type = $this->communicationTypeService->getCommunicationTypeById($request->input('communication_type_id'));
+            }     
             $code = Utils::generateSubmissionCode($type->abrv,$index);
             $submission->code = $code ;
         }
@@ -385,7 +383,11 @@ class SubmissionController extends Controller
                         null,
                         null,
                         null,
-                        $link
+                        $link,
+                        $request->input('status') == '1' ? $submission->code : null,
+                        $submission->title,
+                        $type->label
+                      
                     ),
                     $user, 
                     null,
