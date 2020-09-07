@@ -374,7 +374,7 @@ class SubmissionController extends Controller
                     $this->congressServices->renderMail(
                         $mail->template,
                         null,
-                        null,
+                        $user,
                         null,
                         null,
                         null,
