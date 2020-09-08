@@ -151,18 +151,24 @@ class CongressController extends Controller
 
     public function addItemsEvaluation($congress_id, Request $request)
     {
-
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json('no admin found', 404);
-        }
-
-        $itemsEvaluation = $this->congressServices->getItemsEvaluation($congress_id);
-        if (sizeof($itemsEvaluation) > 0) {
-            return response()->json('You have already configured your grids', 404);
         }
         if (!$request->has('grids') || sizeof($request->input('grids')) === 0) {
             return response()->json('field missing', 404);
         }
+        $itemsEvaluation = $this->congressServices->getItemsEvaluation($congress_id);
+        if (sizeof($itemsEvaluation) > 0 ) {
+            foreach ($itemsEvaluation as $itemEvaluation) {
+                if (sizeof($itemEvaluation->itemNote) > 0 ) {
+                     return response()->json('You have already configured your grids', 404);
+                }
+            }
+            foreach ($itemsEvaluation as $itemEvaluation) {
+                $itemEvaluation->delete();
+            }
+        } 
+       
         $sumPonderation = 0;
         foreach ($request->input('grids') as $itemEvaluation) {
             $sumPonderation += $itemEvaluation['ponderation'];

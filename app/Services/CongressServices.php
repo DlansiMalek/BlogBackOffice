@@ -85,7 +85,9 @@ class CongressServices
     }
 
     public function getItemsEvaluation($congress_id) {
-        return ItemEvaluation::where('congress_id','=',$congress_id)->get();
+        return ItemEvaluation::where('congress_id','=',$congress_id)
+        ->with(['itemNote'])
+        ->get();
     }
     public function getConfigSelection($congress_id)
     {
