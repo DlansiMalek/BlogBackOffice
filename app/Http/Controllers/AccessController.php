@@ -43,13 +43,6 @@ class AccessController extends Controller
     }
 
 
-    function getAllAccessByCongress($congressId)
-    {
-
-        return response()->json($this->accessServices->getAllAccessByCongress($congressId, null, ['participants']));
-
-    }
-
     function startAccessById(Request $request)
     {
         $accessId = $request->input('access_id');
@@ -74,46 +67,6 @@ class AccessController extends Controller
 
         return response()->json($access);
 
-    }
-
-    public function grantAccessByCountry($countryId, Request $request)
-    {
-        $congressId = $request->input('congressId');
-
-        $users = $this->userServices->getUsersByContry($congressId, $countryId);
-
-        $accesss = $this->accessServices->getAllAccessByCongress($congressId, null, ['participants']);
-        foreach ($users as $user) {
-            UserAccess::where('user_id', '=', $user->user_id)
-                ->delete();
-            foreach ($accesss as $access) {
-                $userAccess = new UserAccess();
-                $userAccess->user_id = $user->user_id;
-                $userAccess->access_id = $access->access_id;
-                $userAccess->save();
-            }
-        }
-        return response()->json(['message' => 'success', 'user_number' => sizeof($users)]);
-    }
-
-    public function grantAccessByParticipantType($participantTypeId, Request $request)
-    {
-        $congressId = $request->input('congressId');
-
-        $users = $this->userServices->getUsersByParticipantTypeId($congressId, $participantTypeId);
-
-        $accesss = $this->accessServices->getAllAccessByCongress($congressId, null, ['participants']);
-        foreach ($users as $user) {
-            UserAccess::where('user_id', '=', $user->user_id)
-                ->delete();
-            foreach ($accesss as $access) {
-                $userAccess = new UserAccess();
-                $userAccess->user_id = $user->user_id;
-                $userAccess->access_id = $access->access_id;
-                $userAccess->save();
-            }
-        }
-        return response()->json(['message' => 'success', 'user_number' => sizeof($users)]);
     }
 
     public function addAccess(Request $request, $congress_id)
