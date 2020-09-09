@@ -110,4 +110,7 @@ class Congress extends Model
     {
         return $this->hasMany('App\Models\UserCongress', 'congress_id', 'congress_id');
     }
+    function itemEvaluation() {
+        return $this->hasMany('App\Models\ItemEvaluation', 'congress_id', 'congress_id');
+    }
 }

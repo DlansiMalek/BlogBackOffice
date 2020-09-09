@@ -75,3 +75,22 @@ And UA1.user_id = UA2.user_id
 And UA1.access_id = UA2.access_id
 
 */
+
+
+/* Delete duplicate submission with same title:
+
+DELETE `a`
+FROM
+    Submission AS `a`,
+    Submission AS `b`
+WHERE
+    -- IMPORTANT: Ensures one version remains
+    -- Change "ID" to your unique column's name
+    `a`.`submission_id` < `b`.`submission_id`
+
+    -- Any duplicates you want to check for
+    AND `a`.`title` = `b`.`title`
+    AND `a`.`congress_id` = `b`.`congress_id`
+    AND `a`.`user_id` = `b`.`user_id`;
+
+*/

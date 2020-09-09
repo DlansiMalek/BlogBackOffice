@@ -229,9 +229,15 @@ class SubmissionController extends Controller
         return $this->submissionServices->getSubmission($submission_id,$upload_file_code);
     }
 
-    public function getCongressSubmission(Request $request, $congressId)
+    public function getCongressSubmission($congressId, Request $request)
     {
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search', '');
+        $tri = $request->query('tri', '');
+        $order = $request->query('order', '');
+
         $status = $request->query('status');
+
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
         }
@@ -241,11 +247,10 @@ class SubmissionController extends Controller
                 return response()->json(['response' => 'bad request'], 400);
             }
             $privilege_id = $adminCongress->privilege_id;
-            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id, $status);
+
+            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id, $status, $perPage, $search, $tri, $order);
 
             return response()->json($submissions, 200);
-
-
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
         }
