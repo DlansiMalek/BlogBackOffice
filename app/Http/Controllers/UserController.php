@@ -494,6 +494,10 @@ class UserController extends Controller
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
+        $packIds =  $request->input('packIds', 0);
+        if (sizeof($packIds) === 0 ) {
+            return response()->json('you should select at least one pack',400);
+        }
         //check if date limit
 
         // Get User per mail
