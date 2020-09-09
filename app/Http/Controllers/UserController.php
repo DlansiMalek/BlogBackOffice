@@ -443,7 +443,10 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
         //check if date limit
-
+        $packIds =  $request->input('packIds', 0);
+        if (sizeof($packIds) === 0 ) {
+            return response()->json('you should select at least one pack',400);
+        }
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email')))
             $user = $this->userServices->saveUser($request);
