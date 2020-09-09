@@ -28,29 +28,6 @@ class BadgeController extends Controller
         $this->privilegeServices = $privilegeServices;
     }
 
-    function uploadBadgeToCongress(Request $request, $congressId)
-    {
-        $file = $request->file('file_data');
-        $chemin = config('media.badge-medias');
-        $path = $file->store($chemin);
-
-
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response(["error" => "congress not found"]);
-        } else {
-            $badge = $this->badgeServices->getBadgeByCongress($congressId);
-        }
-        $badge = $this->badgeServices->uploadBadge($badge, $path, $congressId);
-
-        return response()->json($badge, 200);
-    }
-
-
-    function apercuBadge()
-    {
-        return $this->badgeServices->impressionBadge();
-    }
-
     function affectBadgeToCongress($congressId, Request $request)
     {
         $badgeIdGenerator = $request->input('badgeIdGenerator');
