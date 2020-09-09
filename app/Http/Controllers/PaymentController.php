@@ -132,13 +132,13 @@ class PaymentController extends Controller
         return "";
     }
 
-    function getAll(){
-        return Payment::all();
-    }
 
     public function getPaymentsPagination(Request $request)
     {
-        $user_id = $request->query('user_id');
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['message' => 'user not found']);
+        }
+        $user_id = $user->user_id;
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 6);
         $search = $request->query('search', '');
@@ -146,7 +146,6 @@ class PaymentController extends Controller
         $method = $request->query('method');
         $min = $request->query('min',0);
         $max = $request->query('max',9999999999);
-//        return response()->json(["response" => $request->all()],200);
         return $this->paymentServices->getPaymentPagination($user_id, $offset, $perPage, $search, $status, $method, $min, $max);
     }
 

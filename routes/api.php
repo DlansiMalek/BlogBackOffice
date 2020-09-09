@@ -114,7 +114,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
-    Route::get('payments','PaymentController@getPaymentsPagination');
+    Route::get('payments','PaymentController@getPaymentsPagination')->middleware('assign.guard:users');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('', 'UserController@getUserById');
 
