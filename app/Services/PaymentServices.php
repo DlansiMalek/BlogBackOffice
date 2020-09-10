@@ -59,12 +59,17 @@ class PaymentServices
             ['Payment.price','>', '0'],
         ])
             ->join('Congress','Congress.congress_id','=','Payment.congress_id')
+            ->select('Congress.name','Payment.*')
             ->orderBy('Payment.price', 'desc')
             ->offset($offset)->limit($perPage)
             ->whereIn('Payment.congress_id', $congresses_id)
             ->Where('isPaid', 'LIKE', $status)
-            ->Where('Payment.price', '>', $min)
-            ->Where('Payment.price', '<', $max)
+            ->when($min !== 'null', function ($query) use ($min) {
+                $query->where('Payment.price', '>', $min);
+            })
+            ->when($max !== 'null', function ($query) use ($max) {
+                $query->where('Payment.price', '<', $max);
+            })
             ->when($method !== 'null', function ($query) use ($method) {
                 $query->where('payment_type_id', '=', $method);
             })->get();

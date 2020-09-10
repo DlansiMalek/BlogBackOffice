@@ -144,8 +144,8 @@ class PaymentController extends Controller
         $search = $request->query('search', '');
         $status = $request->query('status');
         $method = $request->query('method');
-        $min = $request->query('min',0);
-        $max = $request->query('max',9999999999);
+        $min = $request->query('min',null);
+        $max = $request->query('max',null);
         return $this->paymentServices->getPaymentPagination($user_id, $offset, $perPage, $search, $status, $method, $min, $max);
     }
 
