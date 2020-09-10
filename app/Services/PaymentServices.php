@@ -28,7 +28,7 @@ class PaymentServices
             ['Payment.user_id','=', $userID],
             ['Payment.congress_id', '=', $congressID]
         ])
-            ->join('Congress','Congress.congress_id','=','Payment.congress_id')
+            ->with(['congress'])
             ->first();
         return $payment;
     }
