@@ -65,7 +65,9 @@ class PaymentServices
             ->Where('isPaid', 'LIKE', $status)
             ->Where('Payment.price', '>', $min)
             ->Where('Payment.price', '<', $max)
-            ->Where('payment_type_id', 'LIKE', $method)->get();
+            ->when($method !== 'null', function ($query) use ($method) {
+                $query->where('payment_type_id', '=', $method);
+            })->get();
        $payment_renderer = $all_payments->map(function ($payment)  {
             return collect($payment->toArray())
                 ->only(["payment_id", "isPaid", "reference",
