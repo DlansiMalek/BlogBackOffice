@@ -40,18 +40,18 @@ class CongressServices
     public function getById($congressId)
     {
         return Congress::where('congress_id','=',$congressId)
-        ->with( ['config_selection','evaluation_inscription','users' => function($query) {
-            $query->select('User.user_id');
-        }])
-        ->first();
-        
+            ->with( ['config_selection','evaluation_inscription','users' => function($query) {
+                $query->select('User.user_id');
+            }])
+            ->first();
+
     }
 
     public function getAll()
     {
         return Congress::all();
     }
-    
+
     public function getMinCongressData() {
         return Congress::select('congress_id','name')->get();
     }
@@ -59,17 +59,17 @@ class CongressServices
     {
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
-    
+
     public function addItemsEvaluation($itemsEvaluation,$congress_id) {
 
         foreach($itemsEvaluation as $itemEvaluation) {
-        
+
             $item = new ItemEvaluation();
             $item->label = $itemEvaluation['label'];
             $item->ponderation = $itemEvaluation['ponderation'];
             $item->congress_id = $congress_id;
             $item->save();
-        
+
         }
     }
     public function addItemsNote($itemsNote,$evaluation_inscription_id) {
@@ -85,7 +85,9 @@ class CongressServices
     }
 
     public function getItemsEvaluation($congress_id) {
-        return ItemEvaluation::where('congress_id','=',$congress_id)->get();
+        return ItemEvaluation::where('congress_id','=',$congress_id)
+            ->with(['itemNote'])
+            ->get();
     }
     public function getConfigSelection($congress_id)
     {
@@ -149,7 +151,7 @@ class CongressServices
             },
             "packs",
             "accesss.packs" => function ($query) use ($congressId){
-                $query->where('congress_id','=',$congressId);                
+                $query->where('congress_id','=',$congressId);
             },
             "accesss" => function ($query) use ($congressId) {
                 $query->where('show_in_register', '=', 1);
@@ -234,8 +236,8 @@ class CongressServices
             return null;
         }
     }
-  
-    
+
+
 
     public function addCongress($congressRequest, $configRequest, $adminId,$configSelectionRequest)
     {
@@ -257,17 +259,17 @@ class CongressServices
         $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
-         if ( 
-         $congressRequest->input('congress_type_id') == 2  || 
-         ($congressRequest->input('congress_type_id') == 1  &&   $congressRequest->input('withSelection') ) ) {
+        if (
+            $congressRequest->input('congress_type_id') == 2  ||
+            ($congressRequest->input('congress_type_id') == 1  &&   $congressRequest->input('withSelection') ) ) {
 
-        $config_selection = new ConfigSelection();
-        $config_selection->congress_id = $congress->congress_id;
-        $config_selection->num_evaluators = $configSelectionRequest['num_evaluators'];
-        $config_selection->selection_type = $configSelectionRequest['selection_type'];
-        $config_selection->start_date = $configSelectionRequest['start_date'];
-        $config_selection->end_date = $configSelectionRequest['end_date'];
-        $config_selection->save();        
+            $config_selection = new ConfigSelection();
+            $config_selection->congress_id = $congress->congress_id;
+            $config_selection->num_evaluators = $configSelectionRequest['num_evaluators'];
+            $config_selection->selection_type = $configSelectionRequest['selection_type'];
+            $config_selection->start_date = $configSelectionRequest['start_date'];
+            $config_selection->end_date = $configSelectionRequest['end_date'];
+            $config_selection->save();
 
         }
         $admin_congress = new AdminCongress();
@@ -410,7 +412,7 @@ class CongressServices
         $config_selection->end_date = $request->input('config_selection')['end_date'] ;
         $config_selection->congress_id = $congress->congress_id;
         if ($isUpdate) {
-        $config_selection->update();
+            $config_selection->update();
         } else {
             $config_selection->save();
         }
@@ -523,8 +525,8 @@ class CongressServices
     function getMailType($name,$type = 'event')
     {
         return MailType::where("name", "=", $name)
-        ->where('type','=',$type)
-        ->first();
+            ->where('type','=',$type)
+            ->first();
     }
 
     public
@@ -635,8 +637,8 @@ class CongressServices
     public function getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user) {
         $congresses = Congress::withCount([
             'submissions' => function($query) use($user) {
-            $query->whereHas('user', function($q) use($user){
-                $q->where('user_id', '=', $user->user_id);});
+                $query->whereHas('user', function($q) use($user){
+                    $q->where('user_id', '=', $user->user_id);});
             },
             'accesss' => function($query) use($user) {
                 $query->whereHas('user_accesss', function($q) use($user){
