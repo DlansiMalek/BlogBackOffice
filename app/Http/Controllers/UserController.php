@@ -408,7 +408,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
+            return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
