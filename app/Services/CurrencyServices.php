@@ -15,7 +15,7 @@ class CurrencyServices
 
     public function getConvertCurrency($convertFrom, $convertTo)
     {
-        $client = new Client(['verify'=> 'C:/xampp/apache/bin/mycert.pem']);
+        $client = new Client();
         $res = $client->request('GET',
             UrlUtils::getBaseCurrencyRates() . "/convert?q=" . $convertFrom . '_' . $convertTo . "&compact=ultra&apiKey=" . env('API_CURRENCY_KEY', ''));
 
