@@ -494,10 +494,6 @@ class UserController extends Controller
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
-        $packIds =  $request->input('packIds', 0);
-        if (sizeof($packIds) === 0 ) {
-            return response()->json('you should select at least one pack',400);
-        }
         //check if date limit
 
         // Get User per mail
@@ -516,6 +512,11 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
+        $packIds =  $request->input('packIds', 0);
+        if ( sizeof($congress->packs) > 0 && sizeof($packIds) === 0 ) {
+            return response()->json('you should select at least one pack',400);
+        }
+
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
