@@ -59,6 +59,10 @@
   wait_for:
     timeout: 5
 
+- name: Migrate BD
+  command: |
+    docker exec {{ project_name }}-{{ project_version }}-app php artisan migrate
+
 - name: Change Dir Permission
   command: docker exec {{ project_name }}-{{ project_version }}-app chown -R www-data.www-data .
 
