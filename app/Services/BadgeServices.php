@@ -194,6 +194,16 @@ class BadgeServices
         return "activated successfully";
     }
 
+    public function getBadgeByCongress($congressId, $badgeId)
+    {
+        return Badge::where('congress_id','=',$congressId)->where('badge_id', '=', $badgeId)
+            ->first();
+    }
+
+    public function deleteBadge ($badgeId) {
+        Badge::where('badge_id', '=', $badgeId)->delete();
+        BadgeParams::where('badge_id', '=', $badgeId)->delete();
+    }
 
 
 }
