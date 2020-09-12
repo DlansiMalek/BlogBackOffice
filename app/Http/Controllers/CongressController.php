@@ -369,8 +369,11 @@ class CongressController extends Controller
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 6);
         $search = $request->query('search', '');
+        $startDate = $request->query('startDate', '');
+        $endDate = $request->query('endDate', '');
+        $status = $request->query('status', '');
 //        return response()->json(["response" => $request->all()],200);
-        return $this->congressServices->getCongressPagination($offset, $perPage, $search);
+        return $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
     }
 
     public function getMinimalCongress()
