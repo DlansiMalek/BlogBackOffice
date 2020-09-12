@@ -9,10 +9,6 @@ use App\Models\Location;
 
 class GeoServices
 {
-    public function getAllCountries()
-    {
-        return Country::All();
-    }
 
     public function getCityByNameAndCountryCode($name, $countryCode)
     {
