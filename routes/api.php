@@ -241,6 +241,13 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
+    Route::group(['prefix' => 'contact', 'middleware' => 'assign.guard:users'], function()  {
+
+        Route::post('','UserController@addContact');
+        Route::delete('{userId}','UserController@deleteContact');
+        Route::get('','UserController@listContacts');
+        });
+        
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
     Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
