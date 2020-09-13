@@ -15,6 +15,8 @@ use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\Payment;
 use App\Models\ConfigSubmission;
+use App\Models\ItemEvaluation;
+use App\Models\ItemNote;
 use App\Models\User;
 use App\Models\UserCongress;
 use Illuminate\Support\Facades\Config;
@@ -58,12 +60,41 @@ class CongressServices
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
     
+    public function addItemsEvaluation($itemsEvaluation,$congress_id) {
+
+        foreach($itemsEvaluation as $itemEvaluation) {
+        
+            $item = new ItemEvaluation();
+            $item->label = $itemEvaluation['label'];
+            $item->ponderation = $itemEvaluation['ponderation'];
+            $item->congress_id = $congress_id;
+            $item->save();
+        
+        }
+    }
+    public function addItemsNote($itemsNote,$evaluation_inscription_id) {
+
+        foreach($itemsNote as $itemNote) {
+            $item = new ItemNote();
+            $item->note = $itemNote['note'];
+            $item->comment = $itemNote['comment'];
+            $item->item_evaluation_id = $itemNote['item_evaluation_id'];
+            $item->evaluation_inscription_id = $evaluation_inscription_id;
+            $item->save();
+        }
+    }
+
+    public function getItemsEvaluation($congress_id) {
+        return ItemEvaluation::where('congress_id','=',$congress_id)
+        ->with(['itemNote'])
+        ->get();
+    }
     public function getConfigSelection($congress_id)
     {
         return configSelection::where('congress_id', '=', $congress_id)->first();
     }
 
-    public function getCongressPagination($offset, $perPage, $search)
+    public function getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status)
     {
 
         $all_congresses = Congress::with([
@@ -75,13 +106,31 @@ class CongressServices
             ->where('name', 'LIKE', '%' . $search . '%')
             ->orWhere('description', 'LIKE', '%' . $search . '%')
             ->get();
+
+        if ($startDate) {
+            $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
+        }
+        if ($endDate) {
+            $all_congresses = $all_congresses->where('end_date', '<=', $endDate)->values();
+        }
+        $todayDate = date("Y-m-d");
+        if ($status == "0") {
+            $all_congresses = $all_congresses->where('end_date', '<=', $todayDate)->values();
+        }
+        if ($status == "1") {
+            $all_congresses = $all_congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate)->values();
+        }
+        if ($status == "2") {
+            $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
+        }
+
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
                 ->only(["congress_id", "name", "start_date",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-        return $congress_renderer;
+        return  response()->json($congress_renderer);
     }
 
     public function getMinimalCongress()
@@ -396,43 +445,6 @@ class CongressServices
             ->get();
     }
 
-    public function getLabsByCongress($congressId)
-    {
-        return Organization::with(['users' => function ($q) use ($congressId) {
-            $q->where('User.congress_id', '=', $congressId);
-        }])->whereHas('users', function ($q) use ($congressId) {
-            $q->where('User.congress_id', '=', $congressId);
-        })->get();
-    }
-
-    public function getOrganizationInvoiceByCongress($labId, $congress)
-    {
-        $lab = $this->organizationServices->getOrganizationById($labId);
-        $totalPrice = 0;
-        $packs = Pack::whereCongressId($congress->congress_id)->with(['participants' => function ($q) use ($labId) {
-            $q->where('User.organization_id', '=', $labId);
-        }])->get();
-        foreach ($packs as $pack) {
-            $packPrice = $pack->price;
-            $pack->price = 0;
-            foreach ($pack->participants as $participant) {
-                $pack->price += $packPrice;
-            }
-            $totalPrice += $pack->price;
-        }
-        $today = date('d-m-Y');
-        $data = [
-            'packs' => $packs,
-            'congress' => $congress,
-            'today' => $today,
-            'lab' => $lab,
-            'totalPrice' => $totalPrice,
-            'displayTaxes' => false
-        ];
-        $pdf = PDF::loadView('pdf.invoice.invoice', $data);
-        return $pdf->download($lab->name . '_facture_' . $today . '.pdf');
-    }
-
     public function getBadgeByPrivilegeId($congress, $privilege_id)
     {
         for ($i = 0; $i < sizeof($congress->badges); $i++) {
@@ -650,7 +662,8 @@ class CongressServices
                 $query->whereHas('user_accesss', function($q) use($user){
                     $q->where('user_id', '=', $user->user_id)->where('isPresent','=',1);});
             },
-        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,program_link,status,free")->whereHas('user_congresses', function($q) use($user){
+        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,currency_code,program_link,status,free","location","location.city","location.city.country")
+          ->whereHas('user_congresses', function($q) use($user){
             $q->where('user_id', '=', $user->user_id);})->orderBy('start_date', 'desc');
         if ($startDate) {
             $congresses = $congresses->where('start_date', '>=', $startDate);

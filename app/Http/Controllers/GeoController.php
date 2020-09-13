@@ -13,9 +13,4 @@ class GeoController extends Controller
         $this->geoServices = $geoServices;
     }
 
-    function getAllCountries()
-    {
-        return response()->json($this->geoServices->getAllCountries(), 200);
-    }
-
 }
