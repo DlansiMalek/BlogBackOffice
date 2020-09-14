@@ -23,9 +23,10 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
+use App\Services\ContactServices;
 class UserController extends Controller
 {
+    protected $contactServices;
     protected $smsServices;
     protected $userServices;
     protected $congressServices;
@@ -49,6 +50,7 @@ class UserController extends Controller
                          OrganizationServices $organizationServices,
                          PaymentServices $paymentServices,
                          SmsServices $smsServices,
+                         ContactServices $contactServices,
                          RoomServices $roomServices,
                          MailServices $mailServices,
                          ResourcesServices $resourcesServices)
@@ -65,6 +67,7 @@ class UserController extends Controller
         $this->paymentServices = $paymentServices;
         $this->mailServices = $mailServices;
         $this->roomServices = $roomServices;
+        $this->contactServices = $contactServices;
         $this->resourcesServices = $resourcesServices;
     }
 
@@ -98,6 +101,66 @@ class UserController extends Controller
         }
 
         return response()->json($user);
+    }
+
+    public function addContact(Request $request) {
+        if (!$request->has('qrCode')) {
+            return response()->json(['qrCode is needed'],400);
+        }
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['no user found'],404);
+        }
+        if (!$user_viewed = $this->userServices->getUserByQrCode($request->input('qrCode'))) {
+            return response()->json(['contact not found'],404);
+        }
+        if ($contact = $this->contactServices->getContactByUserViewedId(
+            $user_viewed->user_id,
+            $user->user_id
+        )) {
+            return response()->json(['contact already registred'],200);
+        }
+
+        $this->contactServices->addContact(
+            $user->user_id,
+            $user_viewed->user_id,
+            $request->has('congressId') ? $request->input('congressId') : null
+        );
+        
+        return response()->json('conctact added',200);
+
+    }
+
+    public function deleteContact($user_viewed_id, Request $request) {
+
+        if (!$user = $this->userServices->retrieveUserFromToken()){
+            return response()->json('no user found',404);
+        }
+        if (!$user_viewed = $this->userServices->getUserById($user_viewed_id)){
+            return response()->json('no user found',404);
+        }
+        $congress_id = $request->query('congress_id');
+        if (!$contact = $this->contactServices->getContactByUserViewedId($user_viewed_id,$user->user_id,$congress_id)) {
+            return response()->json('no contact found',404);
+        }
+
+        $contact->delete();
+        return response()->json('contact deleted',201);
+
+    }
+
+    public function listContacts(Request $request) {
+
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found',404);
+        }
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = $request->query('search','');
+        $congressId = $request->query('eventId');
+        $contacts = $this->contactServices->getAllContacts($offset,$perPage,$search,$congressId,$user->user_id);
+
+        return response()->json($contacts,200);
+
     }
 
     public function confirmInscription(Request $request, $userId)
