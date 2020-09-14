@@ -377,14 +377,14 @@ class UserServices
                 $query->whereIn('privilege_id', $privilegeIds);
             }
         })
-            ->with(['user_congresses' => function ($query) use ($congressId) {
+            ->with(['user_congresses' => function ($query) use ($congressId, $search) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                 $query->where('congress_id', '=', $congressId);
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order, $search) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
@@ -396,12 +396,34 @@ class UserServices
                         $query->where('congress_id', '=', $congressId);
                     }
                 }
-            ])
+            ]);
+        $users = $users->join('Payment', 'Payment.user_id', '=', 'User.user_id')
             ->where(function ($query) use ($search) {
                 if ($search != "") {
                     $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(mobile) like (?)',["%{$search}%"]);
+                    $query->orWhereRaw('Payment.price like (?)',["%{$search}%"]);
+                    if (Str::lower($search) == 'payé'){
+                        $query->orWhereRaw('Payment.isPaid like (?)', '1');
+                    }
+                    if (Str::lower($search) == 'non payé'){
+                        $query->orWhereRaw('Payment.isPaid like (?)', '0');
+                    }
+                    if (Str::lower($search) == 'en ligne'){
+                        $query->orWhereRaw('Payment.payment_type_id like (?)', '4');
+                    }
+                    if (Str::lower($search) == 'cash'){
+                        $query->orWhereRaw('Payment.payment_type_id like (?)', '1');
+                    }
+                    if (Str::lower($search) == 'check'){
+                        $query->orWhereRaw('Payment.payment_type_id like (?)', '2');
+                    }
+                    if (Str::lower($search) == 'transfert'){
+                        $query->orWhereRaw('Payment.payment_type_id like (?)', '3');
+                    }
+
                 }
             });
 
@@ -1006,7 +1028,7 @@ class UserServices
     }
     public function getUsersCongressByCongressId($congress_id){
         return UserCongress::where('congress_id', '=', $congress_id)
-        ->get();
+            ->get();
     }
 
     public function getUserCongressByUserId($userId)
