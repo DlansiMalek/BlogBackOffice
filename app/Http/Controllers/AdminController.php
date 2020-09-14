@@ -466,8 +466,10 @@ class AdminController extends Controller
         if ($privilegeId == 11) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
             $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
+            if (sizeof($submissions) > 0) {
               $this->adminServices->affectEvaluatorToSubmissions(
                  $submissions,$admin_id,$request->input("themesSelected"),$congress_id);
+              }
         }
         if ($privilegeId == 13 && 
         $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1) &&
