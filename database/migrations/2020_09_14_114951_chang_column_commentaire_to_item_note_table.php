@@ -13,7 +13,7 @@ class ChangColumnCommentaireToItemNoteTable extends Migration
      */
     public function up()
     {
-        Schema::table('item_note', function (Blueprint $table) {
+        Schema::table('Item_Note', function (Blueprint $table) {
             $table->longText('comment')->change();
         });
     }

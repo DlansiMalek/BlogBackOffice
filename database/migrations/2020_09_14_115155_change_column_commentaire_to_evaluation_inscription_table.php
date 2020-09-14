@@ -13,7 +13,7 @@ class ChangeColumnCommentaireToEvaluationInscriptionTable extends Migration
      */
     public function up()
     {
-        Schema::table('evaluation_inscription', function (Blueprint $table) {
+        Schema::table('Evaluation_Inscription', function (Blueprint $table) {
             $table->longText('commentaire')->change();
         });
     }
@@ -25,7 +25,7 @@ class ChangeColumnCommentaireToEvaluationInscriptionTable extends Migration
      */
     public function down()
     {
-        Schema::table('evaluation_inscription', function (Blueprint $table) {
+        Schema::table('Evaluation_Inscription', function (Blueprint $table) {
             //
         });
     }
