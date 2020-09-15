@@ -167,6 +167,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
+        Route::delete('delete', 'CongressController@delete')
+            ->middleware('admin'); // Done Unit Test
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
@@ -235,7 +237,6 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], fun
 Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
-
     Route::get('me', 'UserController@getLoggedUser')
         ->middleware('assign.guard:users');
 
@@ -247,13 +248,10 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
         Route::delete('{userId}','UserController@deleteContact');
         Route::get('','UserController@listContacts');
         });
-        
-    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
+
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
     Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
-
     Route::post('/register', 'UserController@registerUser');
-
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
