@@ -397,35 +397,39 @@ class UserServices
                     }
                 }
             ]);
-        $users = $users->join('Payment', 'Payment.user_id', '=', 'User.user_id')
-            ->where(function ($query) use ($search) {
-                if ($search != "") {
-                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(mobile) like (?)',["%{$search}%"]);
-                    $query->orWhereRaw('Payment.price like (?)',["%{$search}%"]);
-                    if (Str::lower($search) == 'payé'){
-                        $query->orWhereRaw('Payment.isPaid like (?)', '1');
-                    }
-                    if (Str::lower($search) == 'non payé'){
-                        $query->orWhereRaw('Payment.isPaid like (?)', '0');
-                    }
-                    if (Str::lower($search) == 'en ligne'){
-                        $query->orWhereRaw('Payment.payment_type_id like (?)', '4');
-                    }
-                    if (Str::lower($search) == 'cash'){
-                        $query->orWhereRaw('Payment.payment_type_id like (?)', '1');
-                    }
-                    if (Str::lower($search) == 'check'){
-                        $query->orWhereRaw('Payment.payment_type_id like (?)', '2');
-                    }
-                    if (Str::lower($search) == 'transfert'){
-                        $query->orWhereRaw('Payment.payment_type_id like (?)', '3');
-                    }
+            $users = $users->leftjoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+                ->select('User.*', 'Payment.price', 'Payment.isPaid', 'Payment.payment_type_id')
+                ->where(function ($query) use ($search) {
+                    if ($search != "") {
+                        if (Str::lower($search) == 'payé') {
+                            $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 1);
+                        }
+                        if (Str::lower($search) == 'non payé') {
+                            $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 0);
+                        }
+                        if (Str::lower($search) == 'en ligne') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '4');
+                        }
+                        if (Str::lower($search) == 'cash') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '1');
+                        }
+                        if (Str::lower($search) == 'check') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '2');
+                        }
+                        if (Str::lower($search) == 'transfert') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '3');
+                        } else {
+                            $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('Payment.price like (?)', ["%{$search}%"]);
 
-                }
-            });
+                        }
+
+                    }
+                });
+
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
                 || $tri == 'mobile')) {
@@ -441,7 +445,7 @@ class UserServices
                 $users->orderBy('User_Congress.updated_at', $order);
         }
         if ($order && ($tri == 'isPaid' || $tri == 'price')) {
-            $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+            $users = $users
                 ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where(function ($query) use ($congressId) {
                     $query->where('Payment.congress_id', '=', $congressId)
