@@ -206,7 +206,6 @@ class CongressTest extends TestCase
             'config' => [
                 'free' => $this->faker->numberBetween(0, 100),
                 'access_system' => 'Ateliers',
-                'has_payment' => $this->faker->numberBetween(0,1),
                 'prise_charge_option' => $this->faker->numberBetween(0, 1),
                 'is_online'=>$this->faker->numberBetween(0,1),
                 'status' => 1,
