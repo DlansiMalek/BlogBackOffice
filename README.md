@@ -5,7 +5,7 @@ Version actuelle de laravel est 6.
 ## Init
 
 1. `composer install`
-2. `php artisan migrate`
+2. `php artisan migrate` 
 3. `php artisan db:seed`
 
 ## Lancement
@@ -15,9 +15,10 @@ Version actuelle de laravel est 6.
 
 ### Init
 
-1. `php artisan migrate --env=testing`
-
-2. `php artisan db:seed --env=testing`
+1.  Créer un fichier `.env.testing` en mettant `APP_ENV=testing` et un nom de base `eventizer_test`
+2.  Dans votre local créer une base `eventizer_test`
+3. `php artisan migrate --env=testing`
+4. `php artisan db:seed --env=testing`
 
 ### Lancement
 
