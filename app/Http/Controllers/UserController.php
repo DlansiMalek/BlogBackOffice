@@ -246,6 +246,7 @@ class UserController extends Controller
         if ($congressId) {
         $this->userServices->deleteUserAccesses($userId, $congressId);
         $this->userServices->deleteFormInputUser($userId, $congressId);
+        $this->userServices->deleteUserPacks($userId, $congressId);
         $userCongress = $this->userServices->getUserCongress($congressId, $userId);
         $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
         $evaluations = $this->userServices->getAllEvaluationInscriptionByUserId($userId, $congressId);
@@ -558,7 +559,6 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
         //check if date limit
-
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email')))
             $user = $this->userServices->saveUser($request);
@@ -1628,7 +1628,7 @@ class UserController extends Controller
                 }
             }
         }
-        if ($privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+        if ($congress->config_selection && $congress->config_selection->num_evaluators>0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
             $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
             $this->adminServices->affectEvaluatorsToUser(
                 $evalutors,

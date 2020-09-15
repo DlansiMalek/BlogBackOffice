@@ -407,7 +407,7 @@ class CongressServices
         return $congress;
     }
 
-    public function editCongress($congress, $config, $config_selection , $request,$isUpdate)
+    public function editCongress($congress, $config, $config_selection , $request)
     {
         $congress->name = $request->input('name');
         $congress->start_date = $request->input('start_date');
@@ -419,21 +419,18 @@ class CongressServices
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
         $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
-        $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
-        $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->status = $request->input('config')['status'];
         $config->update();
 
+        if(isset($request->input('config_selection')['num_evaluators']))
         $config_selection->num_evaluators = $request->input('config_selection')['num_evaluators'] ;
         $config_selection->selection_type = $request->input('config_selection')['selection_type'] ;
+        if(isset($request->input('config_selection')['start_date']))
         $config_selection->start_date = $request->input('config_selection')['start_date'] ;
+        if(isset($request->input('config_selection')['end_date']))
         $config_selection->end_date = $request->input('config_selection')['end_date'] ;
         $config_selection->congress_id = $congress->congress_id;
-        if ($isUpdate) {
-            $config_selection->update();
-        } else {
-            $config_selection->save();
-        }
+        $config_selection->update();
 
         return $this->getCongressById($congress->congress_id);
     }
@@ -480,7 +477,8 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles=null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles=null,$submissionCode = null,
+     $submissionTitle = null, $communication_type = null )
     {
 
         $accesses = "";
@@ -536,7 +534,7 @@ class CongressServices
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles,'submission_code' => $submissionCode,'submission_title' => $submissionTitle ,'communication_type' => $communication_type]);
     }
 
     public
