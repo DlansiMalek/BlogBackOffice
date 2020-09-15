@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\ContactServices;
+
 class UserController extends Controller
 {
     protected $contactServices;
@@ -103,21 +104,22 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function addContact(Request $request) {
+    public function addContact(Request $request)
+    {
         if (!$request->has('qrCode')) {
-            return response()->json(['qrCode is needed'],400);
+            return response()->json(['qrCode is needed'], 400);
         }
         if (!$user = $this->userServices->retrieveUserFromToken()) {
-            return response()->json(['no user found'],404);
+            return response()->json(['no user found'], 404);
         }
         if (!$user_viewed = $this->userServices->getUserByQrCode($request->input('qrCode'))) {
-            return response()->json(['contact not found'],404);
+            return response()->json(['contact not found'], 404);
         }
         if ($contact = $this->contactServices->getContactByUserViewedId(
             $user_viewed->user_id,
             $user->user_id
         )) {
-            return response()->json(['contact already registred'],200);
+            return response()->json(['contact already registred'], 200);
         }
 
         $this->contactServices->addContact(
@@ -125,41 +127,43 @@ class UserController extends Controller
             $user_viewed->user_id,
             $request->has('congressId') ? $request->input('congressId') : null
         );
-        
-        return response()->json('conctact added',200);
+
+        return response()->json('conctact added', 200);
 
     }
 
-    public function deleteContact($user_viewed_id, Request $request) {
+    public function deleteContact($user_viewed_id, Request $request)
+    {
 
-        if (!$user = $this->userServices->retrieveUserFromToken()){
-            return response()->json('no user found',404);
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
         }
-        if (!$user_viewed = $this->userServices->getUserById($user_viewed_id)){
-            return response()->json('no user found',404);
+        if (!$user_viewed = $this->userServices->getUserById($user_viewed_id)) {
+            return response()->json('no user found', 404);
         }
         $congress_id = $request->query('congress_id');
-        if (!$contact = $this->contactServices->getContactByUserViewedId($user_viewed_id,$user->user_id,$congress_id)) {
-            return response()->json('no contact found',404);
+        if (!$contact = $this->contactServices->getContactByUserViewedId($user_viewed_id, $user->user_id, $congress_id)) {
+            return response()->json('no contact found', 404);
         }
 
         $contact->delete();
-        return response()->json('contact deleted',201);
+        return response()->json('contact deleted', 201);
 
     }
 
-    public function listContacts(Request $request) {
+    public function listContacts(Request $request)
+    {
 
         if (!$user = $this->userServices->retrieveUserFromToken()) {
-            return response()->json('no user found',404);
+            return response()->json('no user found', 404);
         }
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 6);
-        $search = $request->query('search','');
+        $search = $request->query('search', '');
         $congressId = $request->query('eventId');
-        $contacts = $this->contactServices->getAllContacts($offset,$perPage,$search,$congressId,$user->user_id);
+        $contacts = $this->contactServices->getAllContacts($offset, $perPage, $search, $congressId, $user->user_id);
 
-        return response()->json($contacts,200);
+        return response()->json($contacts, 200);
 
     }
 
@@ -241,27 +245,26 @@ class UserController extends Controller
 
     }
 
-    public function delete($userId, $congressId=null)
+    public function delete($userId, $congressId = null)
     {
         if ($congressId) {
-        $this->userServices->deleteUserAccesses($userId, $congressId);
-        $this->userServices->deleteFormInputUser($userId, $congressId);
-        $this->userServices->deleteUserPacks($userId, $congressId);
-        $userCongress = $this->userServices->getUserCongress($congressId, $userId);
-        $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
-        $evaluations = $this->userServices->getAllEvaluationInscriptionByUserId($userId, $congressId);
-        if ($userCongress) {
-            $userCongress->delete();
-        }
-        if ($payment) {
-            $payment->delete();
-        }
-        foreach ($evaluations as $evaluation) {
-            $evaluation->delete();
-        }
-        return response()->json(['response' => 'user disaffected to congress'], 202);
-        }
-        else {
+            $this->userServices->deleteUserAccesses($userId, $congressId);
+            $this->userServices->deleteFormInputUser($userId, $congressId);
+            $this->userServices->deleteUserPacks($userId, $congressId);
+            $userCongress = $this->userServices->getUserCongress($congressId, $userId);
+            $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
+            $evaluations = $this->userServices->getAllEvaluationInscriptionByUserId($userId, $congressId);
+            if ($userCongress) {
+                $userCongress->delete();
+            }
+            if ($payment) {
+                $payment->delete();
+            }
+            foreach ($evaluations as $evaluation) {
+                $evaluation->delete();
+            }
+            return response()->json(['response' => 'user disaffected to congress'], 202);
+        } else {
             $this->userServices->deleteById($userId);
             return response()->json(['response' => 'user deleted'], 202);
         }
@@ -575,9 +578,9 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
-        $packIds =  $request->input('packIds', 0);
-        if ( sizeof($congress->packs) > 0 && sizeof($packIds) === 0 ) {
-            return response()->json('you should select at least one pack',400);
+        $packIds = $request->input('packIds', 0);
+        if (sizeof($congress->packs) > 0 && sizeof($packIds) === 0) {
+            return response()->json('you should select at least one pack', 400);
         }
 
         // Affect User to Congress
@@ -1614,7 +1617,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSmsToUsers($user,null,$congress_id,$congress);
+            $this->smsServices->sendSmsToUsers($user, null, $congress_id, $congress);
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
@@ -1628,7 +1631,7 @@ class UserController extends Controller
                 }
             }
         }
-        if ($congress->config_selection && $congress->config_selection->num_evaluators>0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+        if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
             $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
             $this->adminServices->affectEvaluatorsToUser(
                 $evalutors,
