@@ -81,7 +81,7 @@ class CongressTest extends TestCase
         $this->assertNull($configCongress->nb_ob_access);
         $this->assertEquals(0, $configCongress->auto_presence);
         $this->assertNull($configCongress->link_sondage);
-        $this->assertEquals('Ateliers', $configCongress->access_system);
+        $this->assertEquals('Workshop', $configCongress->access_system);
         $this->assertEquals(1, $configCongress->status);
         $this->assertEquals($dataResponse['congress_id'], $configCongress->congress_id);
 
@@ -120,10 +120,10 @@ class CongressTest extends TestCase
             'congress_id' => $congressOld->congress_id,
             'privilege_id' => 1
         ]);
+
         $configCongressOld = factory(ConfigCongress::class)->create(['congress_id' => $congressOld->congress_id]);
 
-
-        $response = $this->put('api/admin/me/congress/' . $congressOld->congress_id . '/edit', $data)
+        $response = $this->post('api/admin/me/congress/' . $congressOld->congress_id . '/edit', $data)
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
@@ -144,9 +144,7 @@ class CongressTest extends TestCase
         $configCongress = ConfigCongress::where('congress_id', '=', $dataResponse['congress_id'])
             ->first();
 
-        $this->assertEquals($data['config']['has_payment'], $configCongress->has_payment);
         $this->assertEquals($data['config']['free'], $configCongress->free);
-        $this->assertEquals($data['config']['prise_charge_option'], $configCongress->prise_charge_option);
         $this->assertEquals($configCongressOld->logo, $configCongress->logo);
         $this->assertEquals($configCongressOld->banner, $configCongress->banner);
         $this->assertNull($configCongress->feedback_start);
@@ -155,7 +153,7 @@ class CongressTest extends TestCase
         $this->assertNull($configCongress->nb_ob_access);
         $this->assertEquals(0, $configCongress->auto_presence);
         $this->assertNull($configCongress->link_sondage);
-        $this->assertEquals('Ateliers', $configCongress->access_system);
+        $this->assertEquals('Workshop', $configCongress->access_system);
         $this->assertEquals(1, $configCongress->status);
         $this->assertEquals($configCongressOld->congress_id, $configCongress->congress_id);
 
@@ -205,8 +203,7 @@ class CongressTest extends TestCase
             'description' => $this->faker->paragraph,
             'config' => [
                 'free' => $this->faker->numberBetween(0, 100),
-                'access_system' => 'Ateliers',
-                'has_payment' => $this->faker->numberBetween(0,1),
+                'access_system' => 'Workshop',
                 'prise_charge_option' => $this->faker->numberBetween(0, 1),
                 'is_online'=>$this->faker->numberBetween(0,1),
                 'status' => 1,

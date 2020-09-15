@@ -11,8 +11,6 @@ $factory->define(ConfigCongress::class, function (Faker $faker) {
         'logo' => 'congress-logo/' . Utils::generateCode(0, 15) . ".png",
         'banner' => 'congress-banner/' . Utils::generateCode(0, 15) . ".png",
         'free' => $faker->numberBetween(0, 100),
-        'has_payment' => $faker->numberBetween(0, 1),
-        'program_link' => 'https://eventizer.io',
-        'prise_charge_option' => $faker->numberBetween(0, 1)
+        'program_link' => 'https://eventizer.io'
     ];
 });

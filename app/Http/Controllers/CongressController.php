@@ -151,18 +151,24 @@ class CongressController extends Controller
 
     public function addItemsEvaluation($congress_id, Request $request)
     {
-
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json('no admin found', 404);
-        }
-
-        $itemsEvaluation = $this->congressServices->getItemsEvaluation($congress_id);
-        if (sizeof($itemsEvaluation) > 0) {
-            return response()->json('You have already configured your grids', 404);
         }
         if (!$request->has('grids') || sizeof($request->input('grids')) === 0) {
             return response()->json('field missing', 404);
         }
+        $itemsEvaluation = $this->congressServices->getItemsEvaluation($congress_id);
+        if (sizeof($itemsEvaluation) > 0 ) {
+            foreach ($itemsEvaluation as $itemEvaluation) {
+                if (sizeof($itemEvaluation->itemNote) > 0 ) {
+                     return response()->json('You have already configured your grids', 404);
+                }
+            }
+            foreach ($itemsEvaluation as $itemEvaluation) {
+                $itemEvaluation->delete();
+            }
+        } 
+       
         $sumPonderation = 0;
         foreach ($request->input('grids') as $itemEvaluation) {
             $sumPonderation += $itemEvaluation['ponderation'];
@@ -302,43 +308,10 @@ class CongressController extends Controller
         if (!$config = ConfigCongress::where('congress_id', '=', $congressId)->first())
             $config = new ConfigCongress();
 
-        $isUpdate = 1;
-        if (!$config_selection = $this->congressServices->getConfigSelection($congressId)) {
+        if (!$config_selection = $this->congressServices->getConfigSelection($congressId))
             $config_selection = new ConfigSelection();
-            $isUpdate = 0;
-        }
 
-
-        $congress = $this->congressServices->editCongress($congress, $config, $config_selection, $request, $isUpdate);
-        //update the payment table
-        // if ( $congress->congress_type_id != 1   ||
-        //   ($congress->config_selection && $congress->config_selection->selection_type == 1) )
-        // {
-        //     $payments = $this->paymentServices->getAllPaymentsByCongressId($congressId);
-        //     foreach($payments as $payment) {
-        //         if ($payment->isPaid != 1 ||  $payment->free!=1 ) {
-        //         $payment->delete();
-        //         }
-        //     }
-        // } else {
-        //         $users = $this->userServices->getUsersCongress(
-        //             $congressId,
-        //             null
-        //         );
-        //         foreach($users as $user ) {
-        //             if (!$user_payment = $this->userServices->getPaymentInfoByUserAndCongress(
-        //                 $user->user_id,
-        //                 $congressId
-        //             ))
-        //             $this->addPaymentToUser(
-        //                 $request->root(),
-        //                 $user,
-        //                 $congress,
-        //                 $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0
-        //             );
-        //         }
-
-        // }
+        $congress = $this->congressServices->editCongress($congress, $config, $config_selection, $request);
         return response()->json($congress);
     }
 
@@ -363,8 +336,11 @@ class CongressController extends Controller
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 6);
         $search = $request->query('search', '');
+        $startDate = $request->query('startDate', '');
+        $endDate = $request->query('endDate', '');
+        $status = $request->query('status', '');
 //        return response()->json(["response" => $request->all()],200);
-        return $this->congressServices->getCongressPagination($offset, $perPage, $search);
+        return $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
     }
 
     public function getMinimalCongress()

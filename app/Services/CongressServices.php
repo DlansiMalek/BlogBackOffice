@@ -59,7 +59,6 @@ class CongressServices
     {
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
-
     public function addItemsEvaluation($itemsEvaluation,$congress_id) {
 
         foreach($itemsEvaluation as $itemEvaluation) {
@@ -94,7 +93,7 @@ class CongressServices
         return configSelection::where('congress_id', '=', $congress_id)->first();
     }
 
-    public function getCongressPagination($offset, $perPage, $search)
+    public function getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status)
     {
 
         $all_congresses = Congress::with([
@@ -106,13 +105,31 @@ class CongressServices
             ->where('name', 'LIKE', '%' . $search . '%')
             ->orWhere('description', 'LIKE', '%' . $search . '%')
             ->get();
+
+        if ($startDate) {
+            $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
+        }
+        if ($endDate) {
+            $all_congresses = $all_congresses->where('end_date', '<=', $endDate)->values();
+        }
+        $todayDate = date("Y-m-d");
+        if ($status == "0") {
+            $all_congresses = $all_congresses->where('end_date', '<=', $todayDate)->values();
+        }
+        if ($status == "1") {
+            $all_congresses = $all_congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate)->values();
+        }
+        if ($status == "2") {
+            $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
+        }
+
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
                 ->only(["congress_id", "name", "start_date",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-        return $congress_renderer;
+        return  response()->json($congress_renderer);
     }
 
     public function getMinimalCongress()
@@ -389,7 +406,7 @@ class CongressServices
         return $congress;
     }
 
-    public function editCongress($congress, $config, $config_selection , $request,$isUpdate)
+    public function editCongress($congress, $config, $config_selection , $request)
     {
         $congress->name = $request->input('name');
         $congress->start_date = $request->input('start_date');
@@ -401,21 +418,18 @@ class CongressServices
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
         $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
-        $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
-        $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
         $config->status = $request->input('config')['status'];
         $config->update();
 
+        if(isset($request->input('config_selection')['num_evaluators']))
         $config_selection->num_evaluators = $request->input('config_selection')['num_evaluators'] ;
         $config_selection->selection_type = $request->input('config_selection')['selection_type'] ;
+        if(isset($request->input('config_selection')['start_date']))
         $config_selection->start_date = $request->input('config_selection')['start_date'] ;
+        if(isset($request->input('config_selection')['end_date']))
         $config_selection->end_date = $request->input('config_selection')['end_date'] ;
         $config_selection->congress_id = $congress->congress_id;
-        if ($isUpdate) {
-            $config_selection->update();
-        } else {
-            $config_selection->save();
-        }
+        $config_selection->update();
 
         return $this->getCongressById($congress->congress_id);
     }
@@ -462,7 +476,8 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles=null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles=null,$submissionCode = null,
+     $submissionTitle = null, $communication_type = null )
     {
 
         $accesses = "";
@@ -518,7 +533,7 @@ class CongressServices
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles,'submission_code' => $submissionCode,'submission_title' => $submissionTitle ,'communication_type' => $communication_type]);
     }
 
     public
@@ -644,7 +659,8 @@ class CongressServices
                 $query->whereHas('user_accesss', function($q) use($user){
                     $q->where('user_id', '=', $user->user_id)->where('isPresent','=',1);});
             },
-        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,program_link,status,free")->whereHas('user_congresses', function($q) use($user){
+        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,currency_code,program_link,status,free","location","location.city","location.city.country")
+          ->whereHas('user_congresses', function($q) use($user){
             $q->where('user_id', '=', $user->user_id);})->orderBy('start_date', 'desc');
         if ($startDate) {
             $congresses = $congresses->where('start_date', '>=', $startDate);
