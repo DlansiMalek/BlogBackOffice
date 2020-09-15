@@ -93,7 +93,7 @@ class CongressServices
         return configSelection::where('congress_id', '=', $congress_id)->first();
     }
 
-    public function getCongressPagination($offset, $perPage, $search)
+    public function getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status)
     {
 
         $all_congresses = Congress::with([
@@ -105,13 +105,31 @@ class CongressServices
             ->where('name', 'LIKE', '%' . $search . '%')
             ->orWhere('description', 'LIKE', '%' . $search . '%')
             ->get();
+
+        if ($startDate) {
+            $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
+        }
+        if ($endDate) {
+            $all_congresses = $all_congresses->where('end_date', '<=', $endDate)->values();
+        }
+        $todayDate = date("Y-m-d");
+        if ($status == "0") {
+            $all_congresses = $all_congresses->where('end_date', '<=', $todayDate)->values();
+        }
+        if ($status == "1") {
+            $all_congresses = $all_congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate)->values();
+        }
+        if ($status == "2") {
+            $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
+        }
+
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
                 ->only(["congress_id", "name", "start_date",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-        return $congress_renderer;
+        return  response()->json($congress_renderer);
     }
 
     public function getMinimalCongress()
@@ -644,7 +662,8 @@ class CongressServices
                 $query->whereHas('user_accesss', function($q) use($user){
                     $q->where('user_id', '=', $user->user_id)->where('isPresent','=',1);});
             },
-        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,program_link,status,free")->whereHas('user_congresses', function($q) use($user){
+        ])->with('configSubmission:config_submission_id,congress_id',"config:congress_id,logo,banner,currency_code,program_link,status,free","location","location.city","location.city.country")
+          ->whereHas('user_congresses', function($q) use($user){
             $q->where('user_id', '=', $user->user_id);})->orderBy('start_date', 'desc');
         if ($startDate) {
             $congresses = $congresses->where('start_date', '>=', $startDate);
