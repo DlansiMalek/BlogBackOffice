@@ -25,6 +25,7 @@ Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
+Route::get('/submissions/congress/{congressId}', 'SubmissionController@getAllSubmissionsByCongress');
 
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {

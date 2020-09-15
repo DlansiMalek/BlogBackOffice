@@ -281,4 +281,27 @@ class SubmissionServices
             ->get();
     }
 
+    public function getAllSubmissionsByCongress( $congressId, $perPage, $search)
+    {
+        $allSubmission = Submission::with([
+            'authors' => function ($query) {
+                $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'rank');
+            },
+            'resources' => function ($query) {
+                $query->select('submission_id', 'resource_submission_id', 'resource.resource_id', 'resource.path');
+            }
+        ])
+            ->select('submission_id', 'code', 'title', 'communication_type_id')
+            ->where('congress_id', '=', $congressId)
+            ->when($search !== "null" && $search !== "" , function ($query) use ($search) {
+              // ->where('title', '=', $search)
+                $query ->whereHas('authors', function ($query) use ($search) {
+                    $query->where('first_name', 'like', $search );
+                });
+              //  has('authors.first_name', '=', $search);
+            })->get();
+       // $allSubmission = $perPage ? $allSubmission->paginate($perPage) : $allSubmission;
+        return $allSubmission->values();
+    }
+
 }
