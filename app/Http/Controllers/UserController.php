@@ -1524,7 +1524,7 @@ class UserController extends Controller
                 }
             }
         }
-        if ($privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+        if ($congress->config_selection && $congress->config_selection->num_evaluators>0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
             $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
             $this->adminServices->affectEvaluatorsToUser(
                 $evalutors,
