@@ -168,6 +168,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/{accessId}/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('/checkUserRights', 'UserController@checkUserRights')->middleware('assign.guard:users');
         Route::get('badge', 'CongressController@getCongressByIdBadge');
+        Route::delete('delete', 'CongressController@delete')
+            ->middleware('admin'); // Done Unit Test
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
@@ -178,6 +180,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
+        Route::delete('/delete-badge/{badgeId}','BadgeController@deleteBadge' );
 
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
@@ -235,18 +238,21 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], fun
 Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], function () {
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
-
     Route::get('me', 'UserController@getLoggedUser')
         ->middleware('assign.guard:users');
 
     Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
 
-    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
+    Route::group(['prefix' => 'contact', 'middleware' => 'assign.guard:users'], function()  {
+
+        Route::post('','UserController@addContact');
+        Route::delete('{userId}','UserController@deleteContact');
+        Route::get('','UserController@listContacts');
+        });
+
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
     Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
-
     Route::post('/register', 'UserController@registerUser');
-
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
@@ -362,7 +368,10 @@ Route::group(['prefix' => 'pack'], function () {
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
         Route::get('list', 'PackController@getAllPackByCongress');
         Route::post('add', 'PackController@addPack');
+        Route::get('get/{packId}', 'PackController@getPackById');
+        Route::put('{pack_id}', 'PackController@editPack');
     });
+    Route::delete('delete/{packId}', 'PackController@deletePack');
 
 });
 //Organisation API

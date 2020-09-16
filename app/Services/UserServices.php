@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PDF;
+use function foo\func;
 
 class UserServices
 {
@@ -565,6 +566,15 @@ class UserServices
             ->whereRaw('lower(email) like (?)', ["{$email}"])
             ->where('code', '=', $code)
             ->first();
+    }
+
+    public function deleteUserPacks($userId, $congressId)
+    {
+        return UserPack::where('user_id', '=', $userId)
+            ->whereHas('pack', function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            })
+            ->delete();
     }
 
     private function sendingRTAccess($user, $accessId)
