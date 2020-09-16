@@ -352,7 +352,7 @@ class UserController extends Controller
                     $index = $midpoint;
                     $status = json_decode($users[$i]['user_congresses'][0]['isSelected']);
                     $this->userServices->changeUserStatus($usersCongress[$midpoint], $status);
-                    $this->acceptOrRefuseUser($status, $congress, $users[$i], $usersCongress[$midpoint]);
+                    $this->acceptOrRefuseUser($status, $congress, json_decode(json_encode($users[$i])), $usersCongress[$midpoint]);
                     break;
                 }
             }
