@@ -458,13 +458,12 @@ class SubmissionController extends Controller
 
     public function getAllSubmissionsByCongress($congressId, Request $request)
     {
-        $perPage = $request->query('perPage', 10);
         $search = $request->query('search', '');
 
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $perPage, $search);
+        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search);
         return response()->json($submissions, 200);
     }
 

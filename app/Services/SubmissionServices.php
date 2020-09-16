@@ -281,7 +281,7 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress( $congressId, $perPage, $search)
+    public function getAllSubmissionsByCongress( $congressId, $search)
     {
         $allSubmission = Submission::with([
             'authors' => function ($query) {
@@ -294,13 +294,13 @@ class SubmissionServices
             ->select('submission_id', 'code', 'title', 'communication_type_id')
             ->where('congress_id', '=', $congressId)
             ->when($search !== "null" && $search !== "" , function ($query) use ($search) {
-              // ->where('title', '=', $search)
-                $query ->whereHas('authors', function ($query) use ($search) {
-                    $query->where('first_name', 'like', $search );
+                $query ->whereHas('authors', function ($q) use ($search) {
+                    $q->where('first_name', 'like', $search );
+                    $q->orWhere('last_name', 'like', $search);
                 });
-              //  has('authors.first_name', '=', $search);
+                $query->orWhere('title', '=', $search);
+                $query->orWhere('code', '=', $search);
             })->get();
-       // $allSubmission = $perPage ? $allSubmission->paginate($perPage) : $allSubmission;
         return $allSubmission->values();
     }
 
