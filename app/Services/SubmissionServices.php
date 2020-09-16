@@ -121,7 +121,7 @@ class SubmissionServices
     public function renderSubmissionForAdmin()
     {
         return Submission::with([
-            'user:user_id,first_name,last_name,email',
+            'user:user_id,first_name,last_name,email,mobile',
             'communicationType:communication_type_id,label',
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'service_id',
