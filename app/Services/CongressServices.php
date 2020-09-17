@@ -40,10 +40,10 @@ class CongressServices
     public function getById($congressId)
     {
         return Congress::where('congress_id','=',$congressId)
-        ->with( ['config_selection','evaluation_inscription','users' => function($query) {
-            $query->select('User.user_id');
-        }])
-        ->first();
+            ->with( ['config_selection','evaluation_inscription','users' => function($query) {
+                $query->select('User.user_id');
+            }])
+            ->first();
 
     }
 
@@ -62,13 +62,13 @@ class CongressServices
     public function addItemsEvaluation($itemsEvaluation,$congress_id) {
 
         foreach($itemsEvaluation as $itemEvaluation) {
-        
+
             $item = new ItemEvaluation();
             $item->label = $itemEvaluation['label'];
             $item->ponderation = $itemEvaluation['ponderation'];
             $item->congress_id = $congress_id;
             $item->save();
-        
+
         }
     }
     public function addItemsNote($itemsNote,$evaluation_inscription_id) {
@@ -85,8 +85,8 @@ class CongressServices
 
     public function getItemsEvaluation($congress_id) {
         return ItemEvaluation::where('congress_id','=',$congress_id)
-        ->with(['itemNote'])
-        ->get();
+            ->with(['itemNote'])
+            ->get();
     }
     public function getConfigSelection($congress_id)
     {
@@ -276,18 +276,17 @@ class CongressServices
         $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
-         if (
-         $congressRequest->input('congress_type_id') == 2  ||
-         ($congressRequest->input('congress_type_id') == 1  &&   $congressRequest->input('withSelection') ) ) {
+        if (
+            $congressRequest->input('congress_type_id') == 2  ||
+            ($congressRequest->input('congress_type_id') == 1  &&   $congressRequest->input('withSelection') ) ) {
 
-        $config_selection = new ConfigSelection();
-        $config_selection->congress_id = $congress->congress_id;
-        $config_selection->num_evaluators = $configSelectionRequest['num_evaluators'];
-        $config_selection->selection_type = $configSelectionRequest['selection_type'];
-        $config_selection->start_date = $configSelectionRequest['start_date'];
-        $config_selection->end_date = $configSelectionRequest['end_date'];
-        $config_selection->save();
-
+            $config_selection = new ConfigSelection();
+            $config_selection->congress_id = $congress->congress_id;
+            $config_selection->num_evaluators = $configSelectionRequest['num_evaluators'];
+            $config_selection->selection_type = $configSelectionRequest['selection_type'];
+            $config_selection->start_date = $configSelectionRequest['start_date'];
+            $config_selection->end_date = $configSelectionRequest['end_date'];
+            $config_selection->save();
 
         }
         $admin_congress = new AdminCongress();
