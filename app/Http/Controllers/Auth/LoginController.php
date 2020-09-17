@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Contracts\Providers\Auth;
-
+use App\Services\UrlUtils;
 
 
 class LoginController extends Controller
@@ -165,7 +165,7 @@ class LoginController extends Controller
             auth()->login($existingUser, true);
             $token = $user->token;
         }
-        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'#/login?&token='.$token.'&user='.$existingUser->email);
+        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'&user='.$existingUser->email);
     }
     /**
      * Redirect the user to the Facebook authentication page.
@@ -195,7 +195,7 @@ class LoginController extends Controller
             $token = $user->token;
         }
 
-        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'#/login?&token='.$token.'/')->with('user', $user);
+        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'/')->with('user', $user);
     }
 
 
