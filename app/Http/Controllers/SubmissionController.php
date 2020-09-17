@@ -203,6 +203,7 @@ class SubmissionController extends Controller
             }
             return response()->json(['response' => 'modification avec success'], 200);
         } catch (Exception $e) {
+            $submission->delete();
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }

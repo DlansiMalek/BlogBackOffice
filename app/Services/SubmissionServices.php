@@ -73,10 +73,15 @@ class SubmissionServices
         $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
+                $isExist = false ;
                 foreach ($oldResources as $oldResource) {
-                    if ($oldResource['resource_id'] != $resourceId) {
-                        $this->addResourceSubmission($resourceId, $submission_id);
+                    if ($oldResource['resource_id'] == $resourceId) {
+                      $isExist = true ;
+                    break;
                     }
+                }
+                if (!$isExist) {
+                    $this->addResourceSubmission($resourceId, $submission_id);
                 }
             }
         } else {
