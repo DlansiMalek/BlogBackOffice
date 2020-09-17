@@ -144,6 +144,7 @@ Route::group(['prefix' => 'users'], function () {
 Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], function () {
 
     Route::get('/all', 'CongressController@getAllCongresses');
+    Route::get('/latest','CongressController@getLatestCongresses');
     Route::get('minCongressData', 'CongressController@getMinCongressData');
     Route::group(['prefix' => 'mail'], function () {
         Route::get('{mailId}', 'MailController@getById');

@@ -685,4 +685,21 @@ class CongressServices
         return $congresses_filter;
 
     }
+    public function getLatestCongresses()
+    {
+        $day = date('Y-m-d', time() + (60 * 60));
+        $congresses_list = Congress::with([
+            'location.address', /*location*/
+            'admin_congresses' => function ($query) {
+                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name')->first();
+            }, /*admin */
+            'config:congress_id,banner' /* get the banner from here */
+        ])->withCount('users')
+            ->where('end_date', ">=", $day)
+            ->orderBy('start_date')
+            ->take(10)->get();
+        return $congresses_list;
+
+    }
+
 }

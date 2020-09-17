@@ -811,4 +811,8 @@ class CongressController extends Controller
         $events = $this->congressServices->getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user);
         return response()->json($events, 200);
     }
+    public function getLatestCongresses(){
+        return $this->congressServices->getLatestCongresses();
+    }
+
 }
