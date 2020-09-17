@@ -269,7 +269,7 @@ class SubmissionServices
     public function getSubmissionsByUserId($user, $offset, $perPage, $search, $perCongressId, $status)
     {
         return Submission::where('user_id', '=', $user->user_id)
-            ->with('authors', 'congress')
+            ->with('authors', 'congress', 'resources')
             ->offset($offset)->limit($perPage)
             ->when($perCongressId !== "null", function ($query) use ($perCongressId) {
                 $query->where('congress_id', '=', $perCongressId);
@@ -281,7 +281,7 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress( $congressId, $search)
+    public function getAllSubmissionsByCongress( $congressId, $search, $status)
     {
         $allSubmission = Submission::with([
             'authors' => function ($query) {
@@ -291,16 +291,19 @@ class SubmissionServices
                 $query->select('submission_id', 'resource_submission_id', 'resource.resource_id', 'resource.path');
             }
         ])
-            ->select('submission_id', 'code', 'title', 'communication_type_id')
+            ->select('submission_id', 'code', 'title', 'communication_type_id', 'status')
             ->where('congress_id', '=', $congressId)
-            ->when($search !== "null" && $search !== "" , function ($query) use ($search) {
+            ->when($search !== "null" && $search !== "" , function ($query) use ($search, $status) {
                 $query ->whereHas('authors', function ($q) use ($search) {
                     $q->where('first_name', 'like', $search );
                     $q->orWhere('last_name', 'like', $search);
                 });
                 $query->orWhere('title', '=', $search);
                 $query->orWhere('code', '=', $search);
-            })->get();
+            })->when($status !== "null" && $status !=="", function ($query) use ($status) {
+                $query->where('status', '=', $status);
+            })
+            ->get();
         return $allSubmission->values();
     }
 
