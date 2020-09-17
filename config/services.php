@@ -34,5 +34,16 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
+    'facebook' => [
+        'client_id' => '298537464591943',
+        'client_secret' => '1ef7e31d877ebe29441441aee08883c6',
+        'redirect' => 'http://localhost:8000/api/login/facebook/callback',
+    ],
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT')
+    ]
+
 
 ];

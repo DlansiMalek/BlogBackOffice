@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::group(['middleware' => ['web']], function () {
+    Route::get('login/google', 'Auth\LoginController@redirectToGoogleProvider');
+    Route::get('login/google/callback', 'Auth\LoginController@handleGoogleProviderCallback');
+    Route::get('login/facebook', 'Auth\LoginController@redirectToFacebookProvider');
+    Route::get('login/facebook/callback', 'Auth\LoginController@handleFacebookProviderCallback');
+});
 
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');

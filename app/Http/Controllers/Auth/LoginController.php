@@ -10,6 +10,9 @@ use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Socialite\Facades\Socialite;
+use Tymon\JWTAuth\Contracts\Providers\Auth;
+
 
 
 class LoginController extends Controller
@@ -135,4 +138,65 @@ class LoginController extends Controller
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
+    /**
+     * Redirect the user to the Google authentication page.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function redirectToGoogleProvider()
+    {
+        return Socialite::with('google')->redirect();
+    }
+
+    /**
+     * Obtain the user information from Google.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function handleGoogleProviderCallback()
+    {
+        try {
+            $user = Socialite::with('google')->user();
+        } catch (\Exception $e) {
+            return redirect('/api/login/google');;
+        }
+        $existingUser = User::where('email', $user->email)->first();
+        if($existingUser){
+            auth()->login($existingUser, true);
+            $token = $user->token;
+        }
+        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'#/login?&token='.$token.'&user='.$existingUser->email);
+    }
+    /**
+     * Redirect the user to the Facebook authentication page.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function redirectToFacebookProvider()
+    {
+        return Socialite::with('facebook')->redirect();
+    }
+
+    /**
+     * Obtain the user information from facebook.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function handleFacebookProviderCallback()
+    {
+        try {
+            $user = Socialite::with('facebook')->user();
+        } catch (\Exception $e) {
+            return redirect('/api/login/facebook');;
+        }
+        $existingUser = User::where('email', $user->email)->first();
+        if($existingUser){
+            auth()->login($existingUser, true);
+            $token = $user->token;
+        }
+
+        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'#/login?&token='.$token.'/')->with('user', $user);
+    }
+
+
 }
