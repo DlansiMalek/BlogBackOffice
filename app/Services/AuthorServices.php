@@ -16,12 +16,13 @@ class AuthorServices
 
     function __construct(){}
 
-    public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id)
+    public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id, $email)
     {
 
         $author = new Author();
         $author->first_name = $first_name;
         $author->last_name = $last_name;
+        $author->email = $email;
         $author->rank = $rank;
         $author->submission_id = $submission_id;
         $author->service_id = $service_id;
@@ -53,7 +54,8 @@ class AuthorServices
                 $authors[$i]['rank'],
                 $submission_id,
                 $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'] ,
-                $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id']
+                $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id'],
+                $authors[$i]['email']
             );
         }
     }
@@ -86,7 +88,8 @@ class AuthorServices
                         $authors[$i]['rank'],
                         $submission_id,
                         $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'] ,
-                        $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id']);
+                        $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id'],
+                        $authors[$i]['email']);
                  }
              }
 

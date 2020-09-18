@@ -29,8 +29,10 @@ Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+});
 
-
+Route::group(['prefix' => 'user-abstract-book/{path}'], function () {
+    Route::get('/downloadAbstractBook', 'FileController@downloadBook');
 });
 //SMS API
 
@@ -214,6 +216,10 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::put('{submissionId}/finalDecisionOnSubmission', 'SubmissionController@finalDecisionOnSubmission');
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
+    Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
+
+    
+
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
@@ -239,16 +245,13 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     Route::get('me', 'UserController@getLoggedUser')
         ->middleware('assign.guard:users');
 
-    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
-
     Route::group(['prefix' => 'contact', 'middleware' => 'assign.guard:users'], function()  {
 
         Route::post('','UserController@addContact');
         Route::delete('{userId}','UserController@deleteContact');
         Route::get('','UserController@listContacts');
         });
-        
-    Route::get('{user_id}/qr-code', 'UserController@getQrCodeUser');
+
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
     Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
 
@@ -369,7 +372,10 @@ Route::group(['prefix' => 'pack'], function () {
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
         Route::get('list', 'PackController@getAllPackByCongress');
         Route::post('add', 'PackController@addPack');
+        Route::get('get/{packId}', 'PackController@getPackById');
+        Route::put('{pack_id}', 'PackController@editPack');
     });
+    Route::delete('delete/{packId}', 'PackController@deletePack');
 
 });
 //Organisation API

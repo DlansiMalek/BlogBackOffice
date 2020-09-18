@@ -8,7 +8,7 @@ class Author extends Model
 {
     protected $table = 'Author';
     protected $primaryKey = 'author_id';
-    protected $fillable = ['first_name','last_name','rank','service_id','etablissement_id'];
+    protected $fillable = ['first_name','last_name','email','rank','service_id','etablissement_id'];
 
     protected $hidden = ["password"];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
