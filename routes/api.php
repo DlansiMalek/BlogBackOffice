@@ -29,8 +29,10 @@ Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+});
 
-
+Route::group(['prefix' => 'user-abstract-book/{path}'], function () {
+    Route::get('/downloadAbstractBook', 'FileController@downloadBook');
 });
 //SMS API
 
@@ -214,6 +216,10 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::put('{submissionId}/finalDecisionOnSubmission', 'SubmissionController@finalDecisionOnSubmission');
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
+    Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
+
+    
+
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
