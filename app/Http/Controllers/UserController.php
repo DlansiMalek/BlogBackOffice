@@ -854,7 +854,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSms($congress->congress_id, $user, $congress);
+            $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
         }
         $userPayement->isPaid = $isPaid;
         $userPayement->update();
