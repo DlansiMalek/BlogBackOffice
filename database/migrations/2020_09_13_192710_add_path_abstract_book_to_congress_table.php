@@ -13,7 +13,7 @@ class AddPathAbstractBookToCongressTable extends Migration
      */
     public function up()
     {
-        Schema::table('congress', function (Blueprint $table) {
+        Schema::table('Congress', function (Blueprint $table) {
             $table->string("path_abstract_book")
             ->nullable()
             ->default(null);
@@ -27,8 +27,8 @@ class AddPathAbstractBookToCongressTable extends Migration
      */
     public function down()
     {
-        Schema::table('congress', function (Blueprint $table) {
-            //
+        Schema::table('Congress', function (Blueprint $table) {
+            $table->dropColumn('path_abstract_book');
         });
     }
 }
