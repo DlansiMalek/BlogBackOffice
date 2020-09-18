@@ -13,8 +13,8 @@ class AddApplicationToConfigCongressTable extends Migration
      */
     public function up()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
-             $table->tinyInteger('application')->default(1);
+        Schema::table('Config_Congress', function (Blueprint $table) {
+             $table->tinyInteger('application')->default(0);
         });
     }
 
@@ -25,7 +25,7 @@ class AddApplicationToConfigCongressTable extends Migration
      */
     public function down()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
+        Schema::table('Config_congress', function (Blueprint $table) {
             $table->dropColumn(['application']);
         });
     }
