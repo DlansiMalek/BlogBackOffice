@@ -420,12 +420,38 @@ class UserServices
                         $query->where('congress_id', '=', $congressId);
                     }
                 }
-            ])
+            ]);
+         
+            $users = $users->leftjoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+            ->select('User.*', 'Payment.price', 'Payment.isPaid', 'Payment.payment_type_id')
             ->where(function ($query) use ($search) {
                 if ($search != "") {
-                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                    if (Str::lower($search) == 'payé') {
+                        $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 1);
+                    }
+                    if (Str::lower($search) == 'non payé') {
+                        $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 0);
+                    }
+                    if (Str::lower($search) == 'en ligne') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '4');
+                    }
+                    if (Str::lower($search) == 'cash') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '1');
+                    }
+                    if (Str::lower($search) == 'check') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '2');
+                    }
+                    if (Str::lower($search) == 'transfert') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '3');
+                    } else {
+                        $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('Payment.price like (?)', ["%{$search}%"]);
+
+                    }
+
                 }
             });
 
