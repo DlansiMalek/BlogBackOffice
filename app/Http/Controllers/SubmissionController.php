@@ -368,12 +368,16 @@ return response()->json('success',200);
         $submission->status = $request->input('status');
 
         $submission->limit_date = $request->input('limit_date');
-        $type = null ;
+
         // generate code 
-        if ($request->has('communication_type_id') ) {
-        $type = $this->communicationTypeService->getCommunicationTypeById($request->input('communication_type_id'));
+   
+        $type = $this->communicationTypeService->getCommunicationTypeById(
+            $request->has('communication_type_id') ? $request->input('communication_type_id') :
+            $submission->communication_type_id
+    );
+    if ($request->has('communication_type_id')) {
         $submission->communication_type_id = $request->input('communication_type_id');
-        }
+    }
         if ($type && $request->input('status') == '1' ) {
             $index = -1;
             $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
@@ -396,7 +400,9 @@ return response()->json('success',200);
         //send email
             $areFiles = $request->has('areFiles') ? 1 : 0 ;
             $mailName = $request->input('status') == 3  ? 'refuse_submission' : 
-            ($request->input('status') == 4 ? 'Attente_de_fichier' : 'accept_submission') ;
+            ($request->input('status') == 4 ? 'Attente_de_fichier' : 
+             ($request->input('status') == 5 ? 'file_submitted' : 'accept_submission'));
+            
             $mailtype = $this->congressServices->getMailType($mailName,$this->type);
             $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
 
@@ -407,7 +413,7 @@ return response()->json('success',200);
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
                 }
                 $link = '';
-                if ($areFiles && ($request->input('status')!= 3 )) {
+                if ( ($request->input('status') == 4   )) {
                     $link = UrlUtils::getBaseUrlFrontOffice() 
                     .'/user-profile/submission/submit-resources/'.$submission->submission_id.'?code='.$file_upload_code;
                 }
