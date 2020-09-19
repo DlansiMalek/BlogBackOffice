@@ -319,6 +319,44 @@ class SubmissionController extends Controller
 
         return response()->json(['response' => 'Submission status changed'], 201);
     }
+    public function changeMultipleSubmissionsStatus(Request $request,$congress_id) {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json('no admin found',404);
+        }
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json('no congress found',404);
+        }
+        if (!$request->has('selectedSubmissions')) {
+            return response()->json('bad request',404);
+        }
+        $selectedSubmissions = $request->input('selectedSubmissions');
+        $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
+
+        for ($i = 0; $i < sizeof($selectedSubmissions); $i++) {
+            $left = 0;
+            $right = sizeof($submissions) - 1;
+            $index = -1;
+            while ($left <= $right) {
+                $midpoint = (int)floor(($left + $right) / 2);
+
+                if ($submissions[$midpoint]['submission_id'] < $selectedSubmissions[$i]) {
+                    $left = $midpoint + 1;
+                } elseif ($submissions[$midpoint]['submission_id'] > $selectedSubmissions[$i]) {
+                    $right = $midpoint - 1;
+                } else {
+                    $index = $midpoint;
+                    $this->finalDecisionOnSubmission($request,$submissions[$midpoint]->submission_id);
+                    break;
+                }
+            }
+            if ($index === -1) {
+                return response()->json('no submission found', 404);
+            }
+ 
+
+    }
+    return response()->json('success',200);
+}
 
     public function finalDecisionOnSubmission(Request $request, $submission_id)
     {
@@ -330,10 +368,12 @@ class SubmissionController extends Controller
         $submission->status = $request->input('status');
         $submission->communication_type_id = $request->input('communication_type_id');
         $submission->limit_date = $request->input('limit_date');
-
-        // generate code 
+        $type = null;
+        // generate code
+        if ($request->has('communication_type_id'))  {
         $type = $this->communicationTypeService->getCommunicationTypeById($request->input('communication_type_id'));
-        if ($request->has('communication_type_id') && $request->input('status') == '1' ) {
+        }
+        if ($type && $request->input('status') == '1' ) {
             $index = -1;
             $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
             foreach ($submissions as $key => $value) {
@@ -387,8 +427,7 @@ class SubmissionController extends Controller
                         $link,
                         $request->input('status') == '1' ? $submission->code : null,
                         $submission->title,
-                        $type->label
-                      
+                        $type ? $type->label : null 
                     ),
                     $user, 
                     null,
