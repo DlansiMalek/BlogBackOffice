@@ -459,8 +459,8 @@ class UserServices
                 $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where('User_Congress.congress_id', '=', $congressId)->orderBy('globale_score',$order);
             } else {
-                $users = $users->leftJoin('Evaluation_Inscription','Evaluation_Inscription.user_id','=','User.user_id')
-                ->where('Evaluation_Inscription.congress_id','=',$congressId)->orderBy('note',$order);
+                $users = $users->join('Evaluation_Inscription','Evaluation_Inscription.user_id','=','User.user_id')
+                ->where('Evaluation_Inscription.congress_id','=',$congressId)->where('admin_id','=',$admin_id)->orderBy('note',$order);
             }
         }
         return $perPage ? $users->paginate($perPage) : $users->get();
