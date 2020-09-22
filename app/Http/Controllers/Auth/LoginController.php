@@ -21,6 +21,7 @@ class LoginController extends Controller
     protected $adminServices;
     protected $userServices;
     protected $privilegeServices;
+    
 
     public function __construct(AdminServices $adminServices,
                                 PrivilegeServices $privilegeServices,
@@ -161,10 +162,10 @@ class LoginController extends Controller
             return redirect('/api/login/google');;
         }
         $existingUser = User::where('email', $user->email)->first();
-        if($existingUser){
-            auth()->login($existingUser, true);
-            $token = $user->token;
+        if(!$existingUser) {
+            $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
+        $token =auth()->login($existingUser, true);  
         return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'&user='.$existingUser->email);
     }
     /**
@@ -190,13 +191,13 @@ class LoginController extends Controller
             return redirect('/api/login/facebook');;
         }
         $existingUser = User::where('email', $user->email)->first();
-        if($existingUser){
-            auth()->login($existingUser, true);
-            $token = $user->token;
+        if(!$existingUser) {
+            $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
+        $token =auth()->login($existingUser, true);  
 
-        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'/')->with('user', $user);
+        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'&user='.$existingUser->email);
     }
 
-
+ 
 }

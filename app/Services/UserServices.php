@@ -49,6 +49,27 @@ class UserServices
         return $user;
     }
 
+    public function saveUserWithFbOrGoogle($user) {
+        $name_array = explode(" ", $user->name);
+        $first_name =$name_array[0];
+        //make sure we get all the rest of his name
+        $last_name='';
+        for ($i=1;$i<count($name_array);$i++){
+        $last_name=$last_name. " ". $name_array[$i];
+        }
+        $last_name = substr($last_name, 1); //Remove first space
+
+        $newUser=new User();
+        $newUser->email=$user->email;
+        $newUser->email_verified=1;
+        $newUser->first_name=$first_name;
+        $newUser->last_name=$last_name;
+        $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
+        $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->save();
+        
+        return $newUser;
+    }
     public function editerUser(Request $request, $newUser)
     {
         $newUser->first_name = $request->input('first_name');
