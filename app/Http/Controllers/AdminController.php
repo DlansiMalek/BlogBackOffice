@@ -22,7 +22,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Str;
 class AdminController extends Controller
 {
     protected $userServices;
@@ -357,9 +357,18 @@ class AdminController extends Controller
 
         $admin = $request->input('admin');
         $privilegeId = (int)$request->input('privilege_id');
+        $password  = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin);
+           
+            $admin = $this->adminServices->addPersonnel($admin,$password);
+            if ($privilegeId == 8) {
+             $this->userServices->saveQuickUser(
+                $admin['name'],
+                $admin['email'],
+                $password
+            );
+            }
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
@@ -370,6 +379,14 @@ class AdminController extends Controller
             if ($admin_congress) {
                 return response()->json(['error' => 'Organisateur existant'], 505);
             }
+            if (!$this->userServices->getUserByEmail($admin['email']) && $privilegeId == 8 ) {
+                $this->userServices->saveQuickUser(
+                    $admin['name'],
+                    $admin['email'],
+                    $password
+                );
+            }
+          
             // else edit changed infos while creating
 
             $admin['admin_id'] = $admin_id;
@@ -388,9 +405,10 @@ class AdminController extends Controller
                  $submissions,$admin_id,$request->input("themesSelected"),$congress_id);
               }
         }
+        $evalutors  = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
         if ($privilegeId == 13 && 
         $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1) &&
-        sizeof($congress->evaluation_inscription) <   $congress->config_selection->num_evaluators
+        sizeof($evalutors) <   $congress->config_selection->num_evaluators
         ) {
             
                 $this->adminServices->affectUsersToEvaluator(
