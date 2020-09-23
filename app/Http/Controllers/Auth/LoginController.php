@@ -146,7 +146,7 @@ class LoginController extends Controller
      */
     public function redirectToGoogleProvider()
     {
-        return Socialite::with('google')->redirect();
+        return Socialite::driver('google')->with(["prompt" => "select_account"])->redirect();
     }
 
     /**
@@ -175,7 +175,7 @@ class LoginController extends Controller
      */
     public function redirectToFacebookProvider()
     {
-        return Socialite::with('facebook')->redirect();
+        return Socialite::driver('facebook')->redirect();
     }
 
     /**
