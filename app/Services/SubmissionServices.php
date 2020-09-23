@@ -295,11 +295,11 @@ class SubmissionServices
             ->where('congress_id', '=', $congressId)
             ->when($search !== "null" && $search !== "" && $search !== null , function ($query) use ($search, $status) {
                 $query ->whereHas('authors', function ($q) use ($search) {
-                    $q->where('first_name', 'like', $search );
-                    $q->orWhere('last_name', 'like', $search);
-                });
-                $query->orWhere('title', '=', $search);
-                $query->orWhere('code', '=', $search);
+                    $q->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $q->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                });     
+                $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('code like (?)', ["%{$search}%"]);
             })->when($status !== "null" && $status !=="" && $search !== null, function ($query) use ($status) {
                 $query->where('status', '=', $status);
             })
