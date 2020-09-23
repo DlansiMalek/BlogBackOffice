@@ -303,6 +303,7 @@ class SubmissionServices
             })->when($status !== "null" && $status !=="" && $search !== null, function ($query) use ($status) {
                 $query->where('status', '=', $status);
             })
+            ->orderBy('status')
             ->get();
         return $allSubmission->values();
     }
