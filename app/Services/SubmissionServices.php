@@ -293,14 +293,14 @@ class SubmissionServices
         ])
             ->select('submission_id', 'code', 'title', 'communication_type_id', 'status')
             ->where('congress_id', '=', $congressId)
-            ->when($search !== "null" && $search !== "" , function ($query) use ($search, $status) {
+            ->when($search !== "null" && $search !== "" && $search !== null , function ($query) use ($search, $status) {
                 $query ->whereHas('authors', function ($q) use ($search) {
                     $q->where('first_name', 'like', $search );
                     $q->orWhere('last_name', 'like', $search);
                 });
                 $query->orWhere('title', '=', $search);
                 $query->orWhere('code', '=', $search);
-            })->when($status !== "null" && $status !=="", function ($query) use ($status) {
+            })->when($status !== "null" && $status !=="" && $search !== null, function ($query) use ($status) {
                 $query->where('status', '=', $status);
             })
             ->get();
