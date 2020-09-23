@@ -159,7 +159,7 @@ class LoginController extends Controller
         try {
             $user = Socialite::with('google')->user();
         } catch (\Exception $e) {
-            return redirect('/api/login/google');;
+            return redirect('/api/login/google');
         }
         $existingUser = User::where('email', $user->email)->first();
         if(!$existingUser) {
