@@ -362,13 +362,6 @@ class AdminController extends Controller
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
            
             $admin = $this->adminServices->addPersonnel($admin,$password);
-            if ($privilegeId == 8) {
-             $this->userServices->saveQuickUser(
-                $admin['name'],
-                $admin['email'],
-                $password
-            );
-            }
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
@@ -378,13 +371,6 @@ class AdminController extends Controller
 
             if ($admin_congress) {
                 return response()->json(['error' => 'Organisateur existant'], 505);
-            }
-            if (!$this->userServices->getUserByEmail($admin['email']) && $privilegeId == 8 ) {
-                $this->userServices->saveQuickUser(
-                    $admin['name'],
-                    $admin['email'],
-                    $password
-                );
             }
           
             // else edit changed infos while creating

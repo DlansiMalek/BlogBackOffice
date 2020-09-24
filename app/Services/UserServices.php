@@ -1013,17 +1013,6 @@ class UserServices
         return $user;
     }
 
-    public function saveQuickUser($name,$email,$password) {
-        $user = new User();
-        $user->email = $email;
-        $user->first_name = $name;
-        $user->last_name = 'orateur_';
-        $user->password = bcrypt($password);
-        $user->passwordDecrypt = $password;
-        $user->save();
-        return $user;
-    }
-
     public function saveUser(Request $request)
     {
         $user = new User();
