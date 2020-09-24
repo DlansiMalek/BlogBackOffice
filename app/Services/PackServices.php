@@ -144,7 +144,7 @@ class PackServices
             ->delete();
     }
 
-    public function editpack($pack, Request $request)
+    public function editpack($pack, $request)
     {
 
         if ($request->has('label')) $pack->label = $request->input("label");
