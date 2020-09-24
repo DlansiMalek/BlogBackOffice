@@ -10,8 +10,8 @@ $factory->define(Author::class, function (Faker $faker) {
         'first_name' => $faker->firstName,
         'last_name' => $faker->lastName,
         'email' => $faker->email,
-        'service_id' => $faker->numberBetween(127,151),
-        'etablissement_id' => $faker->numberBetween(60,84),
+        'service_id' => $faker->numberBetween(1,127),
+        'etablissement_id' => $faker->numberBetween(1,60),
         'rank' => $faker->numberBetween(1,3)
     ];
 });
