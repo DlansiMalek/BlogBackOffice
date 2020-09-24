@@ -175,4 +175,11 @@ class FileController extends Controller
         $chemin = config('media.congress-banner');
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
+
+    public function getResouceSubmission($path, Request $request)
+    {
+        $ext = $request->query('ext');
+        $chemin = config('media.resource');
+        return response()->download(storage_path('app/' . $chemin. "/" . $path  . $ext ));
+    }
 }

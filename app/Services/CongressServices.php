@@ -97,7 +97,7 @@ class CongressServices
     {
 
         $all_congresses = Congress::with([
-            "config:congress_id,logo,banner,program_link,status,free",
+            "config:congress_id,logo,banner,program_link,status,free,currency_code",
             "theme:label,description",
             "location.city:city_id,name"
         ])->orderBy('start_date', 'desc')

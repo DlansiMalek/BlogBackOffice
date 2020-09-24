@@ -31,6 +31,7 @@ Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
+Route::get('/submissions/congress/{congressId}', 'SubmissionController@getAllSubmissionsByCongress');
 
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
@@ -72,6 +73,7 @@ Route::group(['prefix' => 'resource/{path}'], function () {
     Route::get('', 'FileController@getResouce');
     Route::post('delete', 'FileController@deleteResouce');
 });
+// Route::get('resource/get/{path}', 'FileController@getResouceSubmission');
 
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
