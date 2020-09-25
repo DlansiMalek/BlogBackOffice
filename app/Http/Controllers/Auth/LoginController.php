@@ -188,7 +188,7 @@ class LoginController extends Controller
         try {
             $user = Socialite::with('facebook')->user();
         } catch (\Exception $e) {
-            return redirect('/api/login/facebook');;
+            return redirect('/api/login/facebook');
         }
         $existingUser = User::where('email', $user->email)->first();
         if(!$existingUser) {
