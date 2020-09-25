@@ -97,7 +97,7 @@ class CongressServices
     {
 
         $all_congresses = Congress::with([
-            "config:congress_id,logo,banner,program_link,status,free",
+            "config:congress_id,logo,banner,program_link,status,free,currency_code",
             "theme:label,description",
             "location.city:city_id,name"
         ])->orderBy('start_date', 'desc')
@@ -689,9 +689,9 @@ class CongressServices
     {
         $day = date('Y-m-d', time() + (60 * 60));
         $congresses_list = Congress::with([
-            'location.address', /*location*/
+            'location', /*location*/
             'admin_congresses' => function ($query) {
-                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name')->first();
+                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
             }, /*admin */
             'config:congress_id,banner' /* get the banner from here */
         ])->withCount('users')
