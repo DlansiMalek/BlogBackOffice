@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::group(['middleware' => ['web']], function () {
+    Route::get('login/google', 'Auth\LoginController@redirectToGoogleProvider');
+    Route::get('login/google/callback', 'Auth\LoginController@handleGoogleProviderCallback');
+    Route::get('login/facebook', 'Auth\LoginController@redirectToFacebookProvider');
+    Route::get('login/facebook/callback', 'Auth\LoginController@handleFacebookProviderCallback');
+});
 
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
@@ -25,12 +31,15 @@ Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
 Route::get('/feedback-question-types', 'FeedbackController@getFeedbackQuestionTypes');
 Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
+Route::get('/submissions/congress/{congressId}', 'SubmissionController@getAllSubmissionsByCongress');
 
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+});
 
-
+Route::group(['prefix' => 'user-abstract-book/{path}'], function () {
+    Route::get('/downloadAbstractBook', 'FileController@downloadBook');
 });
 //SMS API
 
@@ -64,6 +73,7 @@ Route::group(['prefix' => 'resource/{path}'], function () {
     Route::get('', 'FileController@getResouce');
     Route::post('delete', 'FileController@deleteResouce');
 });
+// Route::get('resource/get/{path}', 'FileController@getResouceSubmission');
 
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
@@ -210,11 +220,16 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
+    Route::post('congress/{congressId}/changeSubmissionsStatus', 'SubmissionController@changeMultipleSubmissionsStatus');
     Route::put('{submissionId}/evaluate/type/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
     Route::put('{submissionId}/finalDecisionOnSubmission', 'SubmissionController@finalDecisionOnSubmission');
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
+    Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
+
+    
+
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {

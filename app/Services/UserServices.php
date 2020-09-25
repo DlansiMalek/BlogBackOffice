@@ -49,6 +49,27 @@ class UserServices
         return $user;
     }
 
+    public function saveUserWithFbOrGoogle($user) {
+        $name_array = explode(" ", $user->name);
+        $first_name =$name_array[0];
+        //make sure we get all the rest of his name
+        $last_name='';
+        for ($i=1;$i<count($name_array);$i++){
+        $last_name=$last_name. " ". $name_array[$i];
+        }
+        $last_name = substr($last_name, 1); //Remove first space
+
+        $newUser=new User();
+        $newUser->email=$user->email;
+        $newUser->email_verified=1;
+        $newUser->first_name=$first_name;
+        $newUser->last_name=$last_name;
+        $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
+        $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->save();
+        
+        return $newUser;
+    }
     public function editerUser(Request $request, $newUser)
     {
         $newUser->first_name = $request->input('first_name');
@@ -378,14 +399,14 @@ class UserServices
                 $query->whereIn('privilege_id', $privilegeIds);
             }
         })
-            ->with(['user_congresses' => function ($query) use ($congressId) {
+            ->with(['user_congresses' => function ($query) use ($congressId, $search) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                 $query->where('congress_id', '=', $congressId);
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order, $search) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
@@ -397,14 +418,40 @@ class UserServices
                         $query->where('congress_id', '=', $congressId);
                     }
                 }
-            ])
-            ->where(function ($query) use ($search) {
-                if ($search != "") {
-                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                }
-            });
+            ]);
+            $users = $users->leftjoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+                ->select('User.*', 'Payment.price', 'Payment.isPaid', 'Payment.payment_type_id')
+                ->where(function ($query) use ($search) {
+                    if ($search != "") {
+                        if (Str::lower($search) == 'payé') {
+                            $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 1);
+                        }
+                        if (Str::lower($search) == 'non payé') {
+                            $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 0);
+                        }
+                        if (Str::lower($search) == 'en ligne') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '4');
+                        }
+                        if (Str::lower($search) == 'cash') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '1');
+                        }
+                        if (Str::lower($search) == 'check') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '2');
+                        }
+                        if (Str::lower($search) == 'transfert') {
+                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '3');
+                        } else {
+                            $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                            $query->orWhereRaw('Payment.price like (?)', ["%{$search}%"]);
+
+                        }
+
+                    }
+                });
+
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
                 || $tri == 'mobile')) {
@@ -420,7 +467,7 @@ class UserServices
                 $users->orderBy('User_Congress.updated_at', $order);
         }
         if ($order && ($tri == 'isPaid' || $tri == 'price')) {
-            $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+            $users = $users
                 ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where(function ($query) use ($congressId) {
                     $query->where('Payment.congress_id', '=', $congressId)
@@ -433,8 +480,8 @@ class UserServices
                 $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where('User_Congress.congress_id', '=', $congressId)->orderBy('globale_score',$order);
             } else {
-                $users = $users->leftJoin('Evaluation_Inscription','Evaluation_Inscription.user_id','=','User.user_id')
-                ->where('Evaluation_Inscription.congress_id','=',$congressId)->orderBy('note',$order);
+                $users = $users->join('Evaluation_Inscription','Evaluation_Inscription.user_id','=','User.user_id')
+                ->where('Evaluation_Inscription.congress_id','=',$congressId)->where('admin_id','=',$admin_id)->orderBy('note',$order);
             }
         }
         return $perPage ? $users->paginate($perPage) : $users->get();
@@ -1025,7 +1072,7 @@ class UserServices
     }
     public function getUsersCongressByCongressId($congress_id){
         return UserCongress::where('congress_id', '=', $congress_id)
-        ->get();
+            ->get();
     }
 
     public function getUserCongressByUserId($userId)

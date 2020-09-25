@@ -209,7 +209,9 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             }, 'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.form_input' => function ($query) use ($congressId) {
+            },'user_congresses.congress.config' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
@@ -854,7 +856,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSms($congress->congress_id, $user, $congress);
+            $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
         }
         $userPayement->isPaid = $isPaid;
         $userPayement->update();
