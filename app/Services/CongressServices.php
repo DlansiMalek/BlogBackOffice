@@ -478,9 +478,8 @@ class CongressServices
     }
 
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles=null,$submissionCode = null,
-     $submissionTitle = null, $communication_type = null )
+     $submissionTitle = null, $communication_type = null, $buttons = null )
     {
-
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "<ul>";
@@ -532,9 +531,13 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
+        $linkAccept = UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/'.$participant->user_id . '/1';
+        $linkRefuse = UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/'.$participant->user_id . '/0';
+        $template = str_replace('{{$buttons}}', ' <a href="{{$linkAccept}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
+                                                                 <a href="{{$linkRefuse}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles,'submission_code' => $submissionCode,'submission_title' => $submissionTitle ,'communication_type' => $communication_type]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles,'submission_code' => $submissionCode,'submission_title' => $submissionTitle ,'communication_type' => $communication_type,'buttons' => $buttons, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse]);
     }
 
     public
@@ -685,5 +688,15 @@ class CongressServices
             ->get();
         return $congresses_filter;
 
+    }
+
+    public function confirmPresence($congress_id, $user_id, $will_be_present)
+    {
+        $userCongress = UserCongress::where('user_id', '=', $user_id)
+            ->where('congress_id', '=', $congress_id)
+            ->first();
+        $userCongress->will_be_present = $will_be_present;
+        $userCongress->update();
+        return $userCongress;
     }
 }
