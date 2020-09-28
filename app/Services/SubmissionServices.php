@@ -287,9 +287,7 @@ class SubmissionServices
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'rank');
             },
-            'resources' => function ($query) {
-                $query->select('submission_id', 'resource_submission_id', 'resource.resource_id', 'resource.path');
-            }
+            'resources'
         ])
             ->select('submission_id', 'code', 'title', 'communication_type_id', 'status')
             ->where('congress_id', '=', $congressId)
