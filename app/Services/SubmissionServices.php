@@ -73,11 +73,11 @@ class SubmissionServices
         $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
-                $isExist = false ;
+                $isExist = false;
                 foreach ($oldResources as $oldResource) {
                     if ($oldResource['resource_id'] == $resourceId) {
-                      $isExist = true ;
-                    break;
+                        $isExist = true;
+                        break;
                     }
                 }
                 if (!$isExist) {
@@ -286,27 +286,28 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress($congressId, $search, $status)
+    public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
     {
         $allSubmission = Submission::with([
             'resources', 'authors'
-        ])
-        ->where('congress_id', '=', $congressId)
+        ])->when($search !== "null" && $search !== "" && $search !== null,
+                function ($query) use ($search) {
+                    $query->where('title', 'like', '%' . $search . '%');
+                    $query->orWhere('code', 'like', '%' . $search . '%');
+                })->where('status', '=', 1)
+            ->where('congress_id', '=', $congressId)
+            ->where('communication_type_id', '=', $communication_type_id);
+        $otherSubmissions = Submission::with([
+            'resources', 'authors'
+        ])->where('communication_type_id', '=', $communication_type_id)
+            ->where('congress_id', '=', $congressId)
             ->where('status', '=', 1)
             ->whereHas("authors", function ($query) use ($search) {
                 $query->where('Author.first_name', 'like', '%' . $search . '%');
                 $query->orWhere('Author.last_name', 'like', '%' . $search . '%');
-            });
-            $otherSubmissions = Submission::with([
-                'resources', 'authors'
-            ])->where('status', '=', 1)
-        ->when($search != "null" && $search != ""  && $search != null,
-            function ($query) use ($search) {
-                $query->where('title', 'like', '%' . $search . '%');
-                $query->orWhere('code', 'like', '%' . $search . '%');
-            })->where('status', '=', 1)
-                ->union($allSubmission)
-
+            })
+            ->union($allSubmission)
+            ->limit($perPage)->offset($offset)
             ->get();
 
         return $otherSubmissions->values();
