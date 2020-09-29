@@ -16,6 +16,19 @@ use App\Models\Privilege;
 
 class PrivilegeServices
 {
+
+    public function addPrivilege($name,$priv_reference,$internal,$congress_id) {
+        $privilege = new Privilege();
+        $privilege->name =  $name;
+        $privilege->internal =  $internal;
+        $privilege->priv_reference = $priv_reference;
+        $privilege->congress_id = $congress_id;
+        $privilege->save();
+        return $privilege;
+    }
+
+
+
     public function affectPrivilegeToAdmin($privilegeId, $adminId, $congress_id)
     {
         $admin_congress = new AdminCongress();
@@ -36,6 +49,8 @@ class PrivilegeServices
 
     }
 
+
+
     public function checkIfAdminOfCongress($adminId,$congress_id)
     {
         return AdminCongress::where('admin_id','=',$adminId)
@@ -48,9 +63,10 @@ class PrivilegeServices
         $admincongress->delete();
     }
 
-    public function checkValidPrivilege($privilege_id) {
-        return Privilege::where('privilege_id','=', $privilege_id)->first();
+    public function checkValidPrivilege($privilege_id, $congress_id) {
+        return Privilege::where('privilege_id','=', $privilege_id)->where('congress_id','=',$congress_id)->first();
 
     }
+
 
 }

@@ -20,9 +20,15 @@ class SharedServices
         return Privilege::where('privilege_id', '>=', 3)->get();
     }
 
+    public function getCorPrivileges($congress_id,$priv_ref)
+    {
+        return Privilege::where('priv_reference','=',$priv_ref)->where('priv_reference', '=', $congress_id)->get();
+        
+     }
+
     public function getPrivilegesWithBadges()
     {
-        return Privilege::with(['badges'])
+        return Privilege::with(['badges'])->where('priv_reference', '=', NULL)->where('internal', '!=', -1)
             ->get();
     }
 
