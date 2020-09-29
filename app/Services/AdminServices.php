@@ -89,7 +89,7 @@ class AdminServices
     }
     public function affectUsersToEvaluator($users,$numEvalutors,$admin_id,$congress_id){
         $loopLength = sizeof($users) < $numEvalutors ? sizeof($users) : $numEvalutors;
-        for ($i=0;$i<$loopLength;$i++) {
+        for ($i=0;$i<sizeof($users);$i++) {
             $this->addEvaluationInscription(
                 $admin_id,
                 $congress_id,
@@ -160,6 +160,11 @@ class AdminServices
             }])
             ->orderBy('submission_count', 'asc')
             ->get();
+    }
+    public function getEvaluationInscriptionByIdAndCongressId($evaluation_inscription_id,$congress_id) {
+        return Evaluation_Inscription::where('evaluation_inscription_id','=',$evaluation_inscription_id)
+        ->where('congress_id','=',$congress_id)
+        ->first();
     }
 
     public function getEvaluatorsByThemeOrByCongress($themeId, $congressId, $privilegeId)
@@ -285,13 +290,12 @@ class AdminServices
     {
     }
 
-    public function addPersonnel($admin)
+    public function addPersonnel($admin,$password)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
-        $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
         $personnel->save();

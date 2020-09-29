@@ -16,4 +16,5 @@ composer.lock
 .env
 .env.dev
 .env.prod
+.env.testing
 _git2_a09040

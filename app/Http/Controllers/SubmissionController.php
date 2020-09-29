@@ -357,6 +357,7 @@ return response()->json('success',200);
 
         return response()->json(['response' => 'Submission status changed'], 201);
     }
+   
 
     public function finalDecisionOnSubmission(Request $request, $submission_id)
     {
@@ -503,6 +504,18 @@ return response()->json('success',200);
             $perCongressId,
             $perStatus
         );
+        return response()->json($submissions, 200);
+    }
+
+    public function getAllSubmissionsByCongress($congressId, Request $request)
+    {
+        $search = $request->query('search', '');
+        $status = $request->query('status', '');
+
+        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search, $status);
         return response()->json($submissions, 200);
     }
 

@@ -274,7 +274,7 @@ class SubmissionServices
     public function getSubmissionsByUserId($user, $offset, $perPage, $search, $perCongressId, $status)
     {
         return Submission::where('user_id', '=', $user->user_id)
-            ->with('authors', 'congress')
+            ->with('authors', 'congress', 'resources')
             ->offset($offset)->limit($perPage)
             ->when($perCongressId !== "null", function ($query) use ($perCongressId) {
                 $query->where('congress_id', '=', $perCongressId);
@@ -284,6 +284,22 @@ class SubmissionServices
             })
             ->where('title', 'LIKE', '%' . $search . '%')
             ->get();
+    }
+
+    public function getAllSubmissionsByCongress($congressId, $search, $status)
+    {
+        $allSubmission = Submission::with([
+            'authors', 'resources'
+        ])
+        ->where('congress_id', '=', $congressId)
+            ->where('status', '=', 1)
+            ->when($search !== "null" && $search !== ""  && $search !== null, function ($query) use ($search) {
+                $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(code) like (?)', ["%{$search}%"]);
+            })
+
+            ->get();
+        return $allSubmission->values();
     }
 
 }

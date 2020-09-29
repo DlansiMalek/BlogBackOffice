@@ -15,28 +15,6 @@ use Illuminate\Support\Facades\View;
 class BadgeServices
 {
 
-
-    public function uploadBadge($badge, $path, $congressId)
-    {
-        if (!$badge) {
-            $badge = new Badge();
-        }
-        $badge->img_name = $path;
-        $badge->qr_code_choice = -1;
-        $badge->text_choice = -1;
-        $badge->congress_id = $congressId;
-        $badge->save();
-
-
-        return $badge;
-    }
-
-    public function getBadgeByCongress($congressId)
-    {
-        return Badge::where("congress_id", "=", $congressId)
-            ->first();
-    }
-
     public function validerAttestationType($congressId, $attestationIdGenerator, $type)
     {
         $attestation = new AttestationDivers();
@@ -56,17 +34,6 @@ class BadgeServices
         $badge->save();
 
         return $badge;
-    }
-
-    public function impressionBadge()
-    {
-
-        $html = View::make('pdf.test')->render();
-        $conv = new \Anam\PhantomMagick\Converter();
-        return $conv
-            ->addPage('<html><body><h1>Welcome to PhantomMagick</h1></body></html>')
-            ->toPng()
-            ->save(public_path() . '/google.png');
     }
 
     public function validerAttestation($congressId, $attesationIdGenerator, $blank)
@@ -227,6 +194,16 @@ class BadgeServices
         return "activated successfully";
     }
 
+    public function getBadgeByCongress($congressId, $badgeId)
+    {
+        return Badge::where('congress_id','=',$congressId)->where('badge_id', '=', $badgeId)
+            ->first();
+    }
+
+    public function deleteBadge ($badgeId) {
+        Badge::where('badge_id', '=', $badgeId)->delete();
+        BadgeParams::where('badge_id', '=', $badgeId)->delete();
+    }
 
 
 }

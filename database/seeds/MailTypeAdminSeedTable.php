@@ -42,6 +42,11 @@ class MailTypeAdminSeedTable extends Seeder
             'name' => 'custom',
             'display_name' => 'Personalisé'
         ]);
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 6,
+            'name' => 'update_profile',
+            'display_name' => 'Update profile'
+        ]);
 
     }
 }
