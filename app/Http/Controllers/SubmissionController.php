@@ -379,7 +379,7 @@ return response()->json('success',200);
     if ($request->has('communication_type_id')) {
         $submission->communication_type_id = $request->input('communication_type_id');
     }
-        if ($type && $request->input('status') == '1' ) {
+        if ($type && $request->input('status') == '1' && !$submission->code) {
             $index = -1;
             $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
             foreach ($submissions as $key => $value) {
