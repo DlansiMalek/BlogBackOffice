@@ -73,10 +73,15 @@ class SubmissionServices
         $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
+                $isExist = false ;
                 foreach ($oldResources as $oldResource) {
-                    if ($oldResource['resource_id'] != $resourceId) {
-                        $this->addResourceSubmission($resourceId, $submission_id);
+                    if ($oldResource['resource_id'] == $resourceId) {
+                      $isExist = true ;
+                    break;
                     }
+                }
+                if (!$isExist) {
+                    $this->addResourceSubmission($resourceId, $submission_id);
                 }
             }
         } else {
@@ -121,7 +126,7 @@ class SubmissionServices
     public function renderSubmissionForAdmin()
     {
         return Submission::with([
-            'user:user_id,first_name,last_name,email',
+            'user:user_id,first_name,last_name,email,mobile',
             'communicationType:communication_type_id,label',
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'service_id',
