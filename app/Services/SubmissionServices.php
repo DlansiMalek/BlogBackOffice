@@ -6,7 +6,7 @@ use App\Models\Author;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
-
+use Illuminate\Support\Facades\DB;
 class SubmissionServices
 {
 
@@ -303,14 +303,12 @@ class SubmissionServices
             ->where('congress_id', '=', $congressId)
             ->where('status', '=', 1)
             ->whereHas("authors", function ($query) use ($search) {
-                $query->where('Author.first_name', 'like', '%' . $search . '%');
-                $query->orWhere('Author.last_name', 'like', '%' . $search . '%');
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+             
             })
             ->union($allSubmission)
-            ->limit($perPage)->offset($offset)
-            ->get();
-
-        return $otherSubmissions->values();
+            ->paginate($perPage);
+        return $otherSubmissions;
     }
 
 }
