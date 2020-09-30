@@ -511,11 +511,16 @@ return response()->json('success',200);
     {
         $search = $request->query('search', '');
         $status = $request->query('status', '');
-
-        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 5);
+        $communication_type_id = $request->query('communication_type_id');
+        if (!$communication_type_id) {
             return response()->json(['response' => 'bad request'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search, $status);
+        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+            return response()->json(['response' => 'congress not found'], 400);
+        }
+        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id);
         return response()->json($submissions, 200);
     }
 
