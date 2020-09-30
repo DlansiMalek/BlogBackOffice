@@ -282,7 +282,12 @@ class SubmissionServices
             ->when($status !== "null", function ($query) use ($status) {
                 $query->where('status', '=', $status);
             })
-            ->where('title', 'LIKE', '%' . $search . '%')
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(code) like (?)', ["%{$search}%"]);
+                }
+            })
             ->get();
     }
 

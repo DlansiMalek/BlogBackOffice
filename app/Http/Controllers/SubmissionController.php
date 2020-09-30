@@ -513,10 +513,10 @@ return response()->json('success',200);
         $status = $request->query('status', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
-        if (!$request->has('communication_type_id') ){
+        $communication_type_id = $request->query('communication_type_id');
+        if (!$communication_type_id) {
             return response()->json(['response' => 'bad request'], 400);
         }
-        $communication_type_id = $request->query('communication_type_id');
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
