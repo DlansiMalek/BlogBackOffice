@@ -645,8 +645,8 @@ class UserServices
                     "user_id" => $user->user_id,
                     "name" => $user->last_name . ' ' . $user->first_name,
                     "role" => sizeof($user->user_congresses)> 0 ?  Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'Participant',
-                    "channel_name" => null, // TODO
-                    "avatar_id" => sizeof($user->user_congresses)> 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null, // TODO
+                    "channel_name" => sizeof($user->user_congresses) >0 && $user->user_congresses[0]->privilege_id === 7 && sizeof($user->organization)>0  && sizeof($user->organization[0]->stands)>0 ? Utils::mapDataByKey($user->organization[0]->stands,'name')[0] : null, // TODO pour l'organisme seulement ?
+                    "avatar_id" => sizeof($user->user_congresses)> 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
                     "authorized_channels" => sizeof($user->user_congresses)> 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses,'name') : []
                 )
             );
