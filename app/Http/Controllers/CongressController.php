@@ -830,7 +830,17 @@ class CongressController extends Controller
             return response()->json(['response' => 'congress not found'], 404);
         }
 
-        $users = $this->userServices->getUsersByCongress($congressId);
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'organization'=> function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'organization.stands'=> function ($query) use ($congressId) {
+                $query->where('Stand.congress_id', '=', $congressId);
+            }], null);
+
 
         $results = $this->userServices->mappingPeacksourceData($users);
 
