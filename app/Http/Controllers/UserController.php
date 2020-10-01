@@ -563,6 +563,9 @@ class UserController extends Controller
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
+        if ($request->has('avatar_id') && $privilegeId != 7) {
+            $request->merge(['avatar_id' => null]);
+        }
         //check if date limit
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email')))
@@ -602,6 +605,10 @@ class UserController extends Controller
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
+        }
+
+        if ($request->has('avatar_id') && $privilegeId != 7) {
+            $request->merge(['avatar_id' => null]);
         }
 
         // Get User perId

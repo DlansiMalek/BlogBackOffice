@@ -1053,6 +1053,7 @@ class UserServices
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
+        if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1078,6 +1079,7 @@ class UserServices
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
+        if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
 
         $user->update();
         return $user;
