@@ -27,7 +27,7 @@ class CreateTableStand extends Migration
                 ->onDelete('cascade');
 
             $table->text("url_streaming")
-                ->default(null);
+                ->nullable()->default(null);
 
             $table->timestamps();
             $table->softDeletes();
