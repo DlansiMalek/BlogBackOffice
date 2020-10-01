@@ -73,10 +73,15 @@ class SubmissionServices
         $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
+                $isExist = false ;
                 foreach ($oldResources as $oldResource) {
-                    if ($oldResource['resource_id'] != $resourceId) {
-                        $this->addResourceSubmission($resourceId, $submission_id);
+                    if ($oldResource['resource_id'] == $resourceId) {
+                      $isExist = true ;
+                    break;
                     }
+                }
+                if (!$isExist) {
+                    $this->addResourceSubmission($resourceId, $submission_id);
                 }
             }
         } else {
@@ -121,7 +126,7 @@ class SubmissionServices
     public function renderSubmissionForAdmin()
     {
         return Submission::with([
-            'user:user_id,first_name,last_name,email',
+            'user:user_id,first_name,last_name,email,mobile',
             'communicationType:communication_type_id,label',
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'service_id',
@@ -269,7 +274,7 @@ class SubmissionServices
     public function getSubmissionsByUserId($user, $offset, $perPage, $search, $perCongressId, $status)
     {
         return Submission::where('user_id', '=', $user->user_id)
-            ->with('authors', 'congress')
+            ->with('authors', 'congress', 'resources')
             ->offset($offset)->limit($perPage)
             ->when($perCongressId !== "null", function ($query) use ($perCongressId) {
                 $query->where('congress_id', '=', $perCongressId);
@@ -279,6 +284,22 @@ class SubmissionServices
             })
             ->where('title', 'LIKE', '%' . $search . '%')
             ->get();
+    }
+
+    public function getAllSubmissionsByCongress($congressId, $search, $status)
+    {
+        $allSubmission = Submission::with([
+            'authors', 'resources'
+        ])
+        ->where('congress_id', '=', $congressId)
+            ->where('status', '=', 1)
+            ->when($search !== "null" && $search !== ""  && $search !== null, function ($query) use ($search) {
+                $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(code) like (?)', ["%{$search}%"]);
+            })
+
+            ->get();
+        return $allSubmission->values();
     }
 
 }

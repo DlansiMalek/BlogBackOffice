@@ -209,7 +209,9 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             }, 'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.form_input' => function ($query) use ($congressId) {
+            },'user_congresses.congress.config' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
@@ -515,7 +517,7 @@ class UserController extends Controller
                 $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id . '?verification_code=' . $user->verification_code;
                 if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $activationLink), $user, null, $mail->object, null, $userMail);
+                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
                 }
             }
         } else
@@ -561,6 +563,9 @@ class UserController extends Controller
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
+        if ($request->has('avatar_id') && $privilegeId != 7) {
+            $request->merge(['avatar_id' => null]);
+        }
         //check if date limit
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email')))
@@ -600,6 +605,10 @@ class UserController extends Controller
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
+        }
+
+        if ($request->has('avatar_id') && $privilegeId != 7) {
+            $request->merge(['avatar_id' => null]);
         }
 
         // Get User perId

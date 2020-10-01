@@ -1,4 +1,10 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: Abbes
+ * Date: 25/08/2016
+ * Time: 23:15
+ */
 
 namespace App\Models;
 
@@ -7,12 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 class Stand extends Model
 {
     public $timestamps = true;
-    protected $table = 'Stands';
+    protected $table = 'Stand';
     protected $primaryKey = 'stand_id';
-    protected $fillable = ['name','organization_id','congress_id'];
+    protected $fillable = ['name', 'congress_id', 'organization_id', 'url_streaming'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
-   public function congress(){
-        return $this->belongsTo('App\Models\Congress','congress_id','congress_id');
-    }
 }

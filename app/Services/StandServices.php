@@ -11,11 +11,12 @@ class StandServices
 {
 
 
-    public function addStand($name,$organization_id,$congress_id) {
+    public function addStand($name,$organization_id,$congress_id,$url_streaming) {
         $stand = new Stand();
         $stand->name = $name;
         $stand->organization_id = $organization_id;
         $stand->congress_id = $congress_id;
+        $stand->url_streaming = $url_streaming;
         $stand->save();
         return $stand;
     }

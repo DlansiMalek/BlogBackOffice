@@ -63,6 +63,7 @@ class PackController extends Controller
         }
 
         if (!$this->packServices->checkIfHasRelation($packId)) {
+            $pack->find($packId)->accesses()->detach();
             $pack->delete();
             return response()->json(['response' => 'pack deleted'], 202);
         } else return response()->json(['response' => 'error ! pack already assigned to a participant'], 404);

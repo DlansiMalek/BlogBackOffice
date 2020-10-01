@@ -21,7 +21,8 @@ class StandController extends Controller
         $this->standServices->addStand(
            $request->input('name'),
            $request->input('organization_id'),
-           $request->input('congress_id')
+           $request->input('congress_id'),
+           $request->input('url_streaming')
         );
         return response()->json('Stand added',200);
     }

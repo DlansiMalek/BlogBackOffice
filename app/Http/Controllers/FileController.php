@@ -122,7 +122,7 @@ class FileController extends Controller
         $chemin = config('media.resource');
         $path = $file->storeAs($chemin,$file->getClientOriginalName());
         $savedPath = str_replace('resource/', '', $path);
-        $resource = $this->resourceServices->saveResource($savedPath, $file->getSize(),$savedPath);
+        $resource = $this->resourceServices->saveResource($savedPath, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
 
@@ -174,5 +174,12 @@ class FileController extends Controller
     {
         $chemin = config('media.congress-banner');
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
+    }
+
+    public function getResouceSubmission($path, Request $request)
+    {
+        $ext = $request->query('ext');
+        $chemin = config('media.resource');
+        return response()->download(storage_path('app/' . $chemin. "/" . $path  . $ext ));
     }
 }
