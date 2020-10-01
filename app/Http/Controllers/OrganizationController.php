@@ -12,6 +12,7 @@ use App\Services\SharedServices;
 use App\Services\UserServices;
 use App\Services\UrlUtils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class OrganizationController extends Controller
 {
@@ -53,9 +54,10 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
+        $password  = Str::random(8);
         $admin = $this->adminServices->getAdminByMail($request->input("email"));
         if (!$admin) {
-            $admin = $this->adminServices->addPersonnel($request);
+            $admin = $this->adminServices->addPersonnel($request, $password);
         } else {
             if ($this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id)) {
                 return response()->json(['error' => 'admin alerady has a privilege in this congress'], 500);
