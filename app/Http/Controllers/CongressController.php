@@ -835,10 +835,14 @@ class CongressController extends Controller
                 $query->where("congress_id", "=", $congressId);
             }, 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'organization'=> function ($query) use ($congressId) {
+            }, 'organization' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'organization.stands'=> function ($query) use ($congressId) {
+            }, 'organization.stands' => function ($query) use ($congressId) {
                 $query->where('Stand.congress_id', '=', $congressId);
+            }, 'speaker_access' => function ($query) use ($congressId) {
+                $query->where('Access.congress_id', '=', $congressId);
+            }, 'chair_access' => function ($query) use ($congressId) {
+                $query->where('Access.congress_id', '=', $congressId);
             }], null);
 
 
@@ -846,7 +850,8 @@ class CongressController extends Controller
 
         return response()->json($results);
     }
-    public function getStands ($congress_id)
+
+    public function getStands($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
@@ -855,7 +860,7 @@ class CongressController extends Controller
         return response()->json($stands, 200);
     }
 
-    public function editStands ($congress_id, $stand_id, Request $request)
+    public function editStands($congress_id, $stand_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
@@ -867,7 +872,17 @@ class CongressController extends Controller
             return response()->json(['response' => 'bad request'], 400);
         }
         $url_streaming = $request->input('url_streaming');
-        $stand = $this->congressServices->editStands ($congress_id, $stand_id, $url_streaming);
+        $stand = $this->congressServices->editStands($congress_id, $stand_id, $url_streaming);
         return response()->json($stand, 200);
+    }
+
+    public function getDocsByCongress($congressId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+        // TODO à ce focaliser aprés.
+        return null;
     }
 }

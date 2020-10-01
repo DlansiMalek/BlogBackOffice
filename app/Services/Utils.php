@@ -18,15 +18,17 @@ class Utils
     {
         return round(abs(strtotime($enter_time) - strtotime($endCongress)) / 60, 2);
     }
-     
-    public  static function generateSubmissionCode($abrv,$count) {
-        $diff= 4 - strlen($count);
+
+    public static function generateSubmissionCode($abrv, $count)
+    {
+        $diff = 4 - strlen($count);
         $code = '';
-        for ($i=0 ; $i<$diff ; $i++) {
+        for ($i = 0; $i < $diff; $i++) {
             $code = $code . '0';
         }
         return $code = $abrv . $code . $count;
     }
+
     public static function getFullName($first_name, $last_name)
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
@@ -155,19 +157,35 @@ class Utils
 
     public static function getRoleNameByPrivilege($privilege_id)
     {
-        if($privilege_id === 7) {
-            return 'Manager';
+        if ($privilege_id === 7) {
+            return 'MANAGER';
         }
 
-        if($privilege_id === 3) {
-            return 'Participant';
+        if ($privilege_id === 3) {
+            return 'PARTICIPANT';
         }
 
-        if($privilege_id === 5 || $privilege_id === 8) {
-            return  'QUIZ manager';
+        if ($privilege_id === 5 || $privilege_id === 8) {
+            return 'MODERATOR';
         }
 
-        return 'Participant';
+        return 'PARTICIPANT';
+    }
+
+    public static function getChannelNameByUser($user)
+    {
+
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 && sizeof($user->organization) > 0 && sizeof($user->organization[0]->stands) > 0) {
+            return $user->organization[0]->stands[0]->name;
+        }
+
+        if (sizeof($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id === 5 || $user->user_congresses[0]->privilege_id === 8)) {
+            if ($user->user_congresses[0]->privilege_id === 5 && sizeof($user->chair_access) > 0)
+                return $user->chair_access[0]->name;
+            if ($user->user_congresses[0]->privilege_id === 8 && sizeof($user->speaker_access) > 0)
+                return $user->speaker_access[0]->name;
+        }
+        return null;
     }
 
     function base64_to_jpeg($base64_string, $output_file)
@@ -209,7 +227,8 @@ class Utils
         return $result;
     }
 
-    public static function getRoomName($congressId, $accessId){
+    public static function getRoomName($congressId, $accessId)
+    {
         return 'eventizer_room_' . $congressId . $accessId;
     }
 

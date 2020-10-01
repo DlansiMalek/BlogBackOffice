@@ -198,6 +198,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
         Route::group(['prefix' => 'stand'], function () {
             Route::get('', 'CongressController@getStands');
+            Route::get('docs', 'CongressController@getDocsByCongress');
             Route::put('/edit/{standId}', 'CongressController@editStands');
         });
 

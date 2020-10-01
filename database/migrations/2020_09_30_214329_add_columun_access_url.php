@@ -14,7 +14,8 @@ class AddColumunAccessUrl extends Migration
     public function up()
     {
         Schema::table('Access', function (Blueprint $table) {
-            $table->text("url_streaming")->default(null);
+            $table->text("url_streaming")
+                ->nullable()->default(null);
         });
     }
 

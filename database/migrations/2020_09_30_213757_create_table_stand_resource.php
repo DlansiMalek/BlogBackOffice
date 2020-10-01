@@ -16,7 +16,8 @@ class CreateTableStandResource extends Migration
         Schema::create('Resource_Stand', function (Blueprint $table) {
             $table->increments("resource_stand_id");
 
-            $table->string("doc_name")->default(null);
+            $table->string("doc_name")
+                ->nullable()->default(null);
 
             $table->unsignedInteger("stand_id");
             $table->foreign("stand_id")->references('stand_id')->on('Stand')
