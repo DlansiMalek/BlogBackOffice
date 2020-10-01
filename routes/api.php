@@ -141,6 +141,18 @@ Route::group(['prefix' => 'users'], function () {
 
 
 });
+ 
+
+// STAND API
+Route::group(['prefix' => 'stand'], function () {
+    Route::post('/add', 'StandController@addStand');
+    Route::get('/list/{congress_id}', 'StandController@getStands');
+    Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
+    Route::put('editStand/{stand_id}','standController@editStand');
+    Route::delete('deleteStand/{stand_id}','standController@deleteStand');
+
+});
+
 
 //Congress API
 Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], function () {

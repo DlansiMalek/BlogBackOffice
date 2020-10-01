@@ -118,14 +118,14 @@ class FileController extends Controller
 
     public function uploadResource(Request $request)
     {
-        $file = $request->file('files');
-
+        $file = $request->file('files'); 
         $chemin = config('media.resource');
-        $path = $file->store($chemin);
+        $path = $file->storeAs($chemin,$file->getClientOriginalName());
         $savedPath = str_replace('resource/', '', $path);
-        $resource = $this->resourceServices->saveResource($savedPath, $file->getSize());
+        $resource = $this->resourceServices->saveResource($savedPath, $file->getSize(),$savedPath);
         return response()->json(['resource' => $resource]);
     }
+
     public function getResouce($path)
     {
         $chemin = config('media.resource');
