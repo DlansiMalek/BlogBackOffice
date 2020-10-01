@@ -289,17 +289,27 @@ class SubmissionServices
     public function getAllSubmissionsByCongress($congressId, $search, $status)
     {
         $allSubmission = Submission::with([
-            'authors', 'resources'
+            'resources', 'authors'
         ])
         ->where('congress_id', '=', $congressId)
             ->where('status', '=', 1)
-            ->when($search !== "null" && $search !== ""  && $search !== null, function ($query) use ($search) {
-                $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
-                $query->orWhereRaw('lower(code) like (?)', ["%{$search}%"]);
-            })
+            ->whereHas("authors", function ($query) use ($search) {
+                $query->where('Author.first_name', 'like', '%' . $search . '%');
+                $query->orWhere('Author.last_name', 'like', '%' . $search . '%');
+            });
+            $otherSubmissions = Submission::with([
+                'resources', 'authors'
+            ])->where('status', '=', 1)
+        ->when($search != "null" && $search != ""  && $search != null,
+            function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%');
+                $query->orWhere('code', 'like', '%' . $search . '%');
+            })->where('status', '=', 1)
+                ->union($allSubmission)
 
             ->get();
-        return $allSubmission->values();
+
+        return $otherSubmissions->values();
     }
 
 }

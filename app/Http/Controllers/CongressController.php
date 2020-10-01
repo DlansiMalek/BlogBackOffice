@@ -846,4 +846,28 @@ class CongressController extends Controller
 
         return response()->json($results);
     }
+    public function getStands ($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $stands = $this->congressServices->getStands($congress_id);
+        return response()->json($stands, 200);
+    }
+
+    public function editStands ($congress_id, $stand_id, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        if (!$stand = $this->congressServices->getStandById($stand_id)) {
+            return response()->json(['response' => 'Stand not found', 404]);
+        }
+        if (!$request->has('url_streaming')) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        $url_streaming = $request->input('url_streaming');
+        $stand = $this->congressServices->editStands ($congress_id, $stand_id, $url_streaming);
+        return response()->json($stand, 200);
+    }
 }
