@@ -19,6 +19,7 @@ use App\Models\ItemEvaluation;
 use App\Models\ItemNote;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\Stand;
 use Illuminate\Support\Facades\Config;
 use JWTAuth;
 use PDF;
@@ -685,5 +686,18 @@ class CongressServices
             ->get();
         return $congresses_filter;
 
+    }
+
+    public function getStands ($congress_id)
+    {
+        return Stand::where('congress_id', '=', $congress_id);
+    }
+
+    public function editStands ($congress_id, $url_streaming)
+    {
+        $stand = Stand::where('congress_id', '=', $congress_id)->first();
+        $stand->url_streaming = $url_streaming;
+        $stand->update();
+        return $stand;
     }
 }

@@ -811,4 +811,26 @@ class CongressController extends Controller
         $events = $this->congressServices->getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user);
         return response()->json($events, 200);
     }
+
+    public function getStands ($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+       $stands = $this->congressServices->getStands ($congress_id);
+        return response()->json($stands, 200);
+    }
+
+    public function editStands ($congress_id, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        if (!$request->has('url_streaming')) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        $url_streaming = $request->input('url_streaming');
+        $stand = $this->congressServices->editStands ($congress_id, $url_streaming);
+        return response()->json($stand, 200);
+    }
 }

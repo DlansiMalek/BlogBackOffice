@@ -196,6 +196,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('program-link', 'CongressController@setProgramLink');
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
+        Route::get('/get-stands', 'CongressController@getStands');
+        Route::put('/edit-stands', 'CongressController@editStands');
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
