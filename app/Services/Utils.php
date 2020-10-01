@@ -153,6 +153,23 @@ class Utils
         return $res;
     }
 
+    public static function getRoleNameByPrivilege($privilege_id)
+    {
+        if($privilege_id === 7) {
+            return 'Manager';
+        }
+
+        if($privilege_id === 3) {
+            return 'Participant';
+        }
+
+        if($privilege_id === 5 || $privilege_id === 8) {
+            return  'QUIZ manager';
+        }
+
+        return 'Participant';
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");

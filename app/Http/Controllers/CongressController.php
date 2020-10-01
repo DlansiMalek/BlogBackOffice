@@ -158,17 +158,17 @@ class CongressController extends Controller
             return response()->json('field missing', 404);
         }
         $itemsEvaluation = $this->congressServices->getItemsEvaluation($congress_id);
-        if (sizeof($itemsEvaluation) > 0 ) {
+        if (sizeof($itemsEvaluation) > 0) {
             foreach ($itemsEvaluation as $itemEvaluation) {
-                if (sizeof($itemEvaluation->itemNote) > 0 ) {
-                     return response()->json('You have already configured your grids', 404);
+                if (sizeof($itemEvaluation->itemNote) > 0) {
+                    return response()->json('You have already configured your grids', 404);
                 }
             }
             foreach ($itemsEvaluation as $itemEvaluation) {
                 $itemEvaluation->delete();
             }
-        } 
-       
+        }
+
         $sumPonderation = 0;
         foreach ($request->input('grids') as $itemEvaluation) {
             $sumPonderation += $itemEvaluation['ponderation'];
@@ -810,5 +810,40 @@ class CongressController extends Controller
 
         $events = $this->congressServices->getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user);
         return response()->json($events, 200);
+    }
+
+    /*
+     * Get all users peacksource
+     *  @congressId
+     *
+     *  @Response format
+     *   - id
+     *   - name
+     *   - role
+     *   - channel name (access name / stand name)
+     *   - avatar id
+     *   - authorized_channels (accceses)
+     */
+    public function getUsersByCongressPeacksource($congressId)
+    {
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'organization'=> function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'organization.stands'=> function ($query) use ($congressId) {
+                $query->where('Stand.congress_id', '=', $congressId);
+            }], null);
+
+
+        $results = $this->userServices->mappingPeacksourceData($users);
+
+        return response()->json($results);
     }
 }

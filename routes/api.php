@@ -187,7 +187,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
-        Route::delete('/delete-badge/{badgeId}','BadgeController@deleteBadge' );
+        Route::delete('/delete-badge/{badgeId}', 'BadgeController@deleteBadge');
 
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
@@ -227,8 +227,6 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
     Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
 
-    
-
 
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
@@ -254,12 +252,12 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     Route::get('me', 'UserController@getLoggedUser')
         ->middleware('assign.guard:users');
 
-    Route::group(['prefix' => 'contact', 'middleware' => 'assign.guard:users'], function()  {
+    Route::group(['prefix' => 'contact', 'middleware' => 'assign.guard:users'], function () {
 
-        Route::post('','UserController@addContact');
-        Route::delete('{userId}','UserController@deleteContact');
-        Route::get('','UserController@listContacts');
-        });
+        Route::post('', 'UserController@addContact');
+        Route::delete('{userId}', 'UserController@deleteContact');
+        Route::get('', 'UserController@listContacts');
+    });
 
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
     Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
@@ -477,4 +475,11 @@ Route::group(["prefix" => "user-app"], function () {
     Route::post('/profile-pic/{user_id}', 'UserController@uploadProfilePic');
     Route::get('/profile-pic/{user_id}', 'UserController@getProfilePic');
     Route::post('/send-firebase-key/{congress_id}', 'NotificationController@sendFirebaseKey');
+});
+
+// Peacksource API
+Route::group(["prefix" => "peaksource", "middleware" => ['assign.guard:admins','admin']], function () {
+    Route::group(["prefix" => '{congressId}'], function () {
+        Route::get('users', 'CongressController@getUsersByCongressPeacksource');
+    });
 });
