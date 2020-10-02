@@ -220,6 +220,10 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('admin');
         Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
 
+        Route::group(['prefix' => 'users/{userId}'], function () {
+            Route::post('tracking', 'UserController@trackingUser');
+        });
+
     });
 });
 //Submission API
@@ -484,8 +488,9 @@ Route::group(["prefix" => "user-app"], function () {
 });
 
 // Peacksource API
-Route::group(["prefix" => "peaksource", "middleware" => ['assign.guard:admins','admin']], function () {
+Route::group(["prefix" => "peaksource", "middleware" => ['assign.guard:admins', 'admin']], function () {
     Route::group(["prefix" => '{congressId}'], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
+        Route::get('urls', 'CongressController@getAllUrlsByCongressId');
     });
 });

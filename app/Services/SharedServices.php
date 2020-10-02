@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Action;
 use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
@@ -73,30 +74,30 @@ class SharedServices
     }
 
     public function textMapping($badge, $user, $qrCode)
-    {   if ($user->first_name) {
-        $mappingList = ['first_name' => $user->first_name,
-            'last_name' => '',
-            'email' => $user->email,
-            'country' => '',
-            'mobile' => $user->mobile];
-    }
-    else {
-        $mappingList = ['first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'email' => $user->email,
-            'country' => $user->country->name,
-            'mobile' => $user->mobile];
-    }
+    {
+        if ($user->first_name) {
+            $mappingList = ['first_name' => $user->first_name,
+                'last_name' => '',
+                'email' => $user->email,
+                'country' => '',
+                'mobile' => $user->mobile];
+        } else {
+            $mappingList = ['first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'country' => $user->country->name,
+                'mobile' => $user->mobile];
+        }
         $badgeParams = $badge['badge_param'];
 
         $params = [];
         foreach ($badgeParams as $param) {
             if ($param['key'] === 'default') {
-                $params[]=
+                $params[] =
                     ["key" => $param['key'], "value" => $mappingList['first_name'] . ' ' . $mappingList['last_name']];
 
             } else {
-                $params[]=
+                $params[] =
                     ["key" => $param['key'], "value" => $this->mappingBadgeKey($param['key'], $mappingList)];
             }
         }
@@ -113,6 +114,12 @@ class SharedServices
             $val = $val . $mappingList[$k] . ' ';
         }
         return $val;
+    }
+
+    public function getActionByKey($key)
+    {
+        return Action::where('key', '=', $key)
+            ->first();
     }
 
 
