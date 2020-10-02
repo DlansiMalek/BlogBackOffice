@@ -876,13 +876,35 @@ class CongressController extends Controller
         return response()->json($stand, 200);
     }
 
-    public function getDocsByCongress($congressId)
+    public function getDocsByCongress($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
-        // TODO à ce focaliser aprés.
-        return null;
+        $name = $request->query('name', '');
+
+        $stands = $this->congressServices->getStands($congressId, $name);
+
+        $docs = $this->congressServices->getDocsByStands($stands);
+
+        return response()->json($docs);
+    }
+
+    public function getAllUrlsByCongressId($congressId, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+        $name = $request->query('name', '');
+
+        $stands = $this->congressServices->getStands($congressId, $name);
+
+        $accesses = $this->congressServices->getAccesssByCongressId($congressId, $name);
+
+        $urls = $this->congressServices->getUrlsByStandsAndAccess($stands, $accesses);
+
+        return response()->json($urls);
     }
 }

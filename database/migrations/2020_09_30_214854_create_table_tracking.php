@@ -17,7 +17,7 @@ class CreateTableTracking extends Migration
             $table->increments('tracking_id');
 
             $table->dateTime("date");
-            $table->string("type");
+            $table->string("type")->nullable()->default(null);
 
             $table->text("comment")
                 ->nullable()->default(null);

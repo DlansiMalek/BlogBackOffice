@@ -13,37 +13,37 @@ class ActionSeedTable extends Seeder
     public function run()
     {
         DB::table('Action')->insert([
-            'key' => 'login',
+            'key' => 'LOGIN',
             'value' => 'Login'
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'logout',
+            'key' => 'LOGOUT',
             'value' => 'Logout'
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'entry',
+            'key' => 'ENTRY',
             'value' => 'Entrée'
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'leave',
+            'key' => 'LEAVE',
             'value' => 'Sortie'
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'download-pdf',
+            'key' => 'DOWNLOADPDF',
             'value' => 'Download pdf'
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'call-user',
+            'key' => 'CALLUSER',
             'value' => 'Call user'
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'game-played',
+            'key' => 'GAMEPLAYED',
             'value' => 'Game Played'
         ]);
     }
