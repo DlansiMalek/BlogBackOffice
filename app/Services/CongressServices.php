@@ -698,7 +698,7 @@ class CongressServices
         ])->withCount('users')
             ->where('end_date', ">=", $day)
             ->orderBy('start_date')
-            ->take(4)->get();
+            ->take(10)->get();
         return $congresses_list;
 
     }
