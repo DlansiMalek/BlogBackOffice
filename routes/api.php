@@ -196,7 +196,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('attestation-submission/delete', 'SubmissionController@deleteAttestationByCongress')->middleware("admin");
         Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
-        
+
         Route::post('program-link', 'CongressController@setProgramLink');
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
