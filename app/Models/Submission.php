@@ -9,12 +9,17 @@ class Submission extends Model
     protected $table = 'Submission';
     protected $primaryKey = 'submission_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
-    protected $fillable = ['title', 'type', 'communication_type_id', 'description', 'global_note', 'status','eligible'];
+    protected $fillable = ['title', 'type', 'prez_type', 'communication_type_id', 'description', 'global_note', 'status', 'eligible', 'upload_file_code'];
 
 
     public function user()
     {
         return $this->belongsTo('App\Models\User', 'user_id');
+    }
+
+    public function communicationType()
+    {
+        return $this->belongsTo('App\Models\CommunicationType', 'communication_type_id');
     }
 
     public function theme()

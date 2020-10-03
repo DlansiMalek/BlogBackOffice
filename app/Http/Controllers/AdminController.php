@@ -13,6 +13,7 @@ use App\Services\CongressServices;
 use App\Services\MailServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
+use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -21,7 +22,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Str;
 class AdminController extends Controller
 {
     protected $userServices;
@@ -32,7 +33,7 @@ class AdminController extends Controller
     protected $badgeServices;
     protected $accessServices;
     protected $mailServices;
-
+    protected $submissionServices;
     protected $client;
 
     public function __construct(UserServices $userServices,
@@ -42,6 +43,7 @@ class AdminController extends Controller
                                 SharedServices $sharedServices,
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
+                                SubmissionServices $submissionServices,
                                 MailServices $mailServices)
     {
         $this->userServices = $userServices;
@@ -51,6 +53,7 @@ class AdminController extends Controller
         $this->sharedServices = $sharedServices;
         $this->badgeServices = $badgeServices;
         $this->accessServices = $accessServices;
+        $this->submissionServices = $submissionServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();
     }
@@ -313,93 +316,10 @@ class AdminController extends Controller
     }
 
     public
-    function updateUserWithCongress()
-    {
-        set_time_limit(3600);
-
-        $users = User::where("id_User", ">", "970")
-            ->get();
-        foreach ($users as $user) {
-            $userCongress = Congress_User::where('id_User', '=', $user->id_User)->first();
-            if (is_null($userCongress)) {
-                Congress_User::create([
-                    'id_User' => $user->id_User,
-                    'id_Congress' => 4
-                ])->save();
-            }
-        }
-        return response()->json(['response' => 'all user congresses updated'], 200);
-    }
-
-
-    public
-    function updateUsers()
-    {
-        $users = Inscription_Neuro2018::where("id_inscription", ">", "129")->get();
-        foreach ($users as $user) {
-            $userNew = User::create([
-                'first_name' => $user->prenom,
-                'last_name' => $user->nom,
-                'profession' => $user->status,
-                'email' => $user->email,
-                'address' => $user->adresse,
-                'mobile' => $user->tel,
-                'transport' => $user->transport,
-                'repas' => $user->repas,
-                'diner' => $user->diner,
-                'hebergement' => $user->hebergement,
-                'chambre' => $user->chambre,
-                'conjoint' => $user->conjoint,
-                'date_arrivee' => $user->date_arrivee,
-                'date_depart' => $user->date_depart,
-                'date' => $user->date,
-                'qr_code' => $user->qr_code
-            ])->save();
-        }
-        return response()->json(['response' => 'all users updated'], 200);
-    }
-
-    public
-    function generateUserQrCode()
-    {
-        set_time_limit(3600);
-        $users = User::all();
-        foreach ($users as $user) {
-            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $charactersLength = strlen($characters);
-            $randomString = '';
-            for ($i = 0; $i < 10; $i++) {
-                $randomString .= $characters[rand(0, $charactersLength - 1)];
-            }
-            $user->qr_code = $randomString;
-            $user->update();
-        }
-    }
-
-    public
     function cleanBadges()
     {
         File::cleanDirectory(public_path() . '/badge/jnn');
         return response()->json(["message" => "Badges deleted"]);
-    }
-
-    public
-    function generateTickets()
-    {
-        set_time_limit(3600);
-        for ($i = 231; $i <= 400; $i++) {
-            User::create([
-                "first_name" => "Ticket",
-                "last_name" => $i,
-            ])->save();
-        }
-        for ($i = 1; $i <= 100; $i++) {
-            User::create([
-                "first_name" => "Invitation",
-                "last_name" => $i,
-            ])->save();
-        }
-        return response()->json(['response' => 'tickets registred'], 200);
     }
 
     /**
@@ -437,9 +357,11 @@ class AdminController extends Controller
 
         $admin = $request->input('admin');
         $privilegeId = (int)$request->input('privilege_id');
+        $password  = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin);
+           
+            $admin = $this->adminServices->addPersonnel($admin,$password);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
@@ -450,6 +372,7 @@ class AdminController extends Controller
             if ($admin_congress) {
                 return response()->json(['error' => 'Organisateur existant'], 505);
             }
+          
             // else edit changed infos while creating
 
             $admin['admin_id'] = $admin_id;
@@ -462,6 +385,25 @@ class AdminController extends Controller
 
         if ($privilegeId == 11) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
+            $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
+            if (sizeof($submissions) > 0) {
+              $this->adminServices->affectEvaluatorToSubmissions(
+                 $submissions,$admin_id,$request->input("themesSelected"),$congress_id);
+              }
+        }
+        $evalutors  = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
+        if ($privilegeId == 13 && 
+        $congress->config_selection && ($congress->congress_type_id == 2 ||$congress->congress_type_id == 1) &&
+        sizeof($evalutors) <   $congress->config_selection->num_evaluators
+        ) {
+            
+                $this->adminServices->affectUsersToEvaluator(
+                    $congress->users,
+                    $congress->config_selection->num_evaluators,
+                    $admin_id,
+                    $congress_id
+                );
+            
         }
 
         //create admin congress bind privilege admin and congress
@@ -555,34 +497,6 @@ class AdminController extends Controller
         } else {
             return response()->json(["error" => "dossier vide"]);
         }
-    }
-
-    public
-    function eliminateInscription($congressId)
-    {
-        $users = $this->userServices->getUsersByCongressWithAccess($congressId);
-        Log::info($users);
-        foreach ($users as $user) {
-            $access1 = 0;
-            $access2 = 0;
-            foreach ($user->accesss as $access) {
-                if ($access->access_id == 2 || $access->access_id == 3 || $access->access_id == 4) {
-                    if ($access1 != 0) {
-                        $access->delete();
-                    }
-                    $access1 = 1;
-
-                }
-                if ($access->access_id == 5 || $access->access_id == 6 || $access->access_id == 7) {
-                    if ($access2 != 0) {
-                        $access->delete();
-                    }
-                    $access2 = 1;
-                }
-            }
-        }
-        return response()->json(['message' => 'success']);
-
     }
 
     public function sendCredentialsViaEmailToOrganizer($adminId, Request $request)

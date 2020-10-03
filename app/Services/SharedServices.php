@@ -109,8 +109,8 @@ class SharedServices
     }
 
     public function textMapping($badge, $user, $qrCode)
-    {   if ($user->name) {
-        $mappingList = ['first_name' => $user->name,
+    {   if ($user->first_name) {
+        $mappingList = ['first_name' => $user->first_name,
             'last_name' => '',
             'email' => $user->email,
             'country' => '',

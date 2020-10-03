@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTableCommunicationType extends Migration
+class AddPathAbstractBookToCongressTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreateTableCommunicationType extends Migration
      */
     public function up()
     {
-        Schema::create('Communication_Type', function (Blueprint $table) {
-            $table->increments('communication_type_id');
-            $table->string('label');
-            $table->string('abrv');
-            $table->timestamps();
+        Schema::table('Congress', function (Blueprint $table) {
+            $table->string("path_abstract_book")
+            ->nullable()
+            ->default(null);
         });
     }
 
@@ -28,6 +27,8 @@ class CreateTableCommunicationType extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Communication_Type');
+        Schema::table('Congress', function (Blueprint $table) {
+            $table->dropColumn('path_abstract_book');
+        });
     }
 }

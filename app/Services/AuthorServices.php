@@ -16,12 +16,13 @@ class AuthorServices
 
     function __construct(){}
 
-    public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id)
+    public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id, $email)
     {
 
         $author = new Author();
         $author->first_name = $first_name;
         $author->last_name = $last_name;
+        $author->email = $email;
         $author->rank = $rank;
         $author->submission_id = $submission_id;
         $author->service_id = $service_id;
@@ -33,7 +34,7 @@ class AuthorServices
     {
 
         $existingAuthor->rank = $author['rank'];
-        $existingAuthor->service_id = $author['service_id'] == -1 ? $service :$author['service_id'];
+        $existingAuthor->service_id = $author['service_id'] == -1 ? $service : $author['service_id'];
         $existingAuthor->etablissement_id = $author['etablissement_id'] == -1 ? $etablissement : $author['etablissement_id'];
         $existingAuthor->update();
         return $existingAuthor;
@@ -53,16 +54,16 @@ class AuthorServices
                 $authors[$i]['rank'],
                 $submission_id,
                 $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'] ,
-                $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id']
+                $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id'],
+                $authors[$i]['email']
             );
         }
     }
 
     public function editAuthors($existingAuthors,$authors, $submission_id,$services,$etablissements)
     {
-
         //test si il exist que l'utilisateur seuelement
-        if (sizeof($authors) > 1 )  {
+        if (sizeof($authors) >= 1 )  {
             //première loop pour voir les auteurs qui ont été modifié ou supprimé
             foreach ($existingAuthors as $existingAuthor) {
                 $isExist = false;
@@ -87,7 +88,8 @@ class AuthorServices
                         $authors[$i]['rank'],
                         $submission_id,
                         $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'] ,
-                        $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id']);
+                        $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id'],
+                        $authors[$i]['email']);
                  }
              }
 
