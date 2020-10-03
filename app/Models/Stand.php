@@ -18,4 +18,12 @@ class Stand extends Model
     protected $fillable = ['name', 'congress_id', 'organization_id', 'url_streaming'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+
+    function resources()
+    {
+        return $this->belongsToMany('App\Models\Resource', 'Resource_Stand', 'stand_id', 'resource_id');
+    }
+
 }
+
+

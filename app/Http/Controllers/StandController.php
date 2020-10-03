@@ -18,12 +18,14 @@ class StandController extends Controller
 
     function addStand (Request $request) {
      
-        $this->standServices->addStand(
+       $stand = $this->standServices->addStand(
            $request->input('name'),
            $request->input('organization_id'),
-           $request->input('congress_id'),
-           $request->input('url_streaming')
+           $request->input('congress_id')
+
         );
+        $resources_ids = $request->input('resources_ids');
+        $this->standServices->addResourceStand($resources_ids,$stand->stand_id);
         return response()->json('Stand added',200);
     }
 

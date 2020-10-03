@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTableStand extends Migration
+class CreateStandTable extends Migration
 {
     /**
      * Run the migrations.
@@ -26,7 +26,7 @@ class CreateTableStand extends Migration
             $table->foreign("organization_id")->references('organization_id')->on('Organization')
                 ->onDelete('cascade');
 
-            $table->text("url_streaming")
+            $table->text("url_streaming")->nullable()
                 ->default(null);
 
             $table->timestamps();
