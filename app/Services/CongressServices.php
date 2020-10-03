@@ -716,15 +716,12 @@ class CongressServices
             ->where('congress_id', '=', $congress_id)->get();
     }
 
-
-    public
-    function getStandById($stand_id)
+    public function getStandById($stand_id)
     {
         return Stand::where('congress_id', '=', $stand_id)->get();
     }
 
-    public
-    function editStands($congress_id, $stand_id, $url_streaming)
+    public function editStands($congress_id, $stand_id, $url_streaming)
     {
         $stand = Stand::where('congress_id', '=', $congress_id)
             ->where('stand_id', '=', $stand_id)->first();
@@ -733,8 +730,7 @@ class CongressServices
         return $stand;
     }
 
-    public
-    function getDocsByStands($stands)
+    public function getDocsByStands($stands)
     {
         $res = array();
 
@@ -779,4 +775,13 @@ class CongressServices
         }
         return $res;
     }
+
+    public function modifyAllStatusStand($congressId, $status)
+    {
+        return Stand::where('congress_id', '=', $congressId)
+            ->update(['status' => $status]);
+    }
+
+
+
 }

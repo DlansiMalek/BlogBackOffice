@@ -1659,22 +1659,29 @@ class UserController extends Controller
         }
     }
 
-    public function trackingUser($congressId, $userId, Request $request)
+    public function trackingUser(Request $request)
     {
-        if (!$request->has(['action']))
-            return response()->json(['response' => 'bad request', 'required fields' => ['action']], 400);
 
-        if (($request->has('channel_name') && !$request->has('type')) || ((!$request->has('channel_name') || $request->has('channel_name')=='') && $request->has('type'))) {
+        $user = $this->userServices->retrieveUserFromToken();
+
+        if (!$user) {
+            return response()->json(['response' => 'user not found'], 404);
+        }
+
+        $userId = $user->user_id;
+        if (!$request->has(['action', 'congress_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['action', 'congress_id']], 400);
+
+        if (($request->has('channel_name') && !$request->has('type')) || ((!$request->has('channel_name') || $request->has('channel_name') == '') && $request->has('type'))) {
             return response()->json(['response' => 'bad request', 'required fields' => ['type', 'channel_name']], 400);
         }
+
+        $congressId = $request->input("congress_id");
 
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
-        if (!$user = $this->userServices->getUserById($userId)) {
-            return response()->json(['response' => 'user not found'], 404);
-        }
 
         if (!$action = $this->sharedServices->getActionByKey($request->input("action"))) {
             return response()->json(['response' => 'action not found'], 404);
