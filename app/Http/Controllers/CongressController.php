@@ -812,7 +812,11 @@ class CongressController extends Controller
         return response()->json($events, 200);
     }
     public function getLatestCongresses(){
-        return $this->congressServices->getLatestCongresses();
+        $latestCongreses =  $this->congressServices->getLatestCongresses();
+        if (sizeof($latestCongreses) < 4) {
+            $latestCongreses = $this->congressServices->getCongressPagination(0,9,'','','','');
+        }
+        return $latestCongreses ;
     }
 
 }
