@@ -120,6 +120,9 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('by-email', 'UserController@getUserByEmail');
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
+
+    Route::post('tracking', 'UserController@trackingUser')
+        ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::delete('deleteUserOutOfCongress', 'UserController@delete');
@@ -135,9 +138,9 @@ Route::group(['prefix' => 'users'], function () {
             Route::get('send-attestation-mail', 'UserController@sendMailAttesation');
             Route::get('send-sondage', 'UserController@sendSondage');
         });
-
         Route::put('change-paiement', 'UserController@changePaiement');
         Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
+
     });
 
     //API PER CONGRESS
@@ -152,14 +155,13 @@ Route::group(['prefix' => 'users'], function () {
  
 
 // STAND API
-Route::group(['prefix' => 'stand'], function () {
-    Route::post('/add', 'StandController@addStand');
-    Route::get('/list/{congress_id}', 'StandController@getStands');
-    Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
-    Route::put('editStand/{stand_id}','standController@editStand');
-    Route::delete('deleteStand/{stand_id}','standController@deleteStand');
+// Route::group(['prefix' => 'stand'], function () {
 
-});
+//     Route::get('/list/{congress_id}', 'StandController@getStands');
+//     Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
+
+
+// });
 
 
 //Congress API
@@ -208,6 +210,17 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('program-link', 'CongressController@setProgramLink');
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
+        Route::group(['prefix' => 'stand'], function () {
+            Route::get('', 'StandController@getStands');
+            Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
+            Route::post('/add', 'StandController@addStand');
+            Route::get('docs', 'StandController@getDocsByCongress');
+            Route::put('/edit/{standId}', 'StandController@editStands');
+            Route::put('/change-status', 'StandController@modiyStatusStand');
+            Route::get('/get-status', 'StandController@getStatusStand');
+            Route::delete('deleteStand/{stand_id}','standController@deleteStand');
+        });
+
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
@@ -490,8 +503,9 @@ Route::group(["prefix" => "user-app"], function () {
 });
 
 // Peacksource API
-Route::group(["prefix" => "peaksource", "middleware" => ['assign.guard:admins','admin']], function () {
+Route::group(["prefix" => "peaksource"], function () {
     Route::group(["prefix" => '{congressId}'], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
+        Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });

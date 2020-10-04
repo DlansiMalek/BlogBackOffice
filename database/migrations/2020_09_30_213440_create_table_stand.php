@@ -26,8 +26,8 @@ class CreateStandTable extends Migration
             $table->foreign("organization_id")->references('organization_id')->on('Organization')
                 ->onDelete('cascade');
 
-            $table->text("url_streaming")->nullable()
-                ->default(null);
+            $table->text("url_streaming")
+                ->nullable()->default(null);
 
             $table->timestamps();
             $table->softDeletes();

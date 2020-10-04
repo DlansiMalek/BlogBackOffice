@@ -835,10 +835,14 @@ class CongressController extends Controller
                 $query->where("congress_id", "=", $congressId);
             }, 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'organization'=> function ($query) use ($congressId) {
+            }, 'organization' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'organization.stands'=> function ($query) use ($congressId) {
+            }, 'organization.stands' => function ($query) use ($congressId) {
                 $query->where('Stand.congress_id', '=', $congressId);
+            }, 'speaker_access' => function ($query) use ($congressId) {
+                $query->where('Access.congress_id', '=', $congressId);
+            }, 'chair_access' => function ($query) use ($congressId) {
+                $query->where('Access.congress_id', '=', $congressId);
             }], null);
 
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumunAccessUrl extends Migration
+class AddColumnStatusStand extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,10 @@ class AddColumunAccessUrl extends Migration
      */
     public function up()
     {
-        Schema::table('Access', function (Blueprint $table) {
-            $table->text("url_streaming")
-                ->nullable()->default(null);
+        Schema::table('Stand', function (Blueprint $table) {
+            $table->boolean("status")
+                ->after('organization_id')
+                ->default(true);
         });
     }
 
@@ -26,8 +27,8 @@ class AddColumunAccessUrl extends Migration
      */
     public function down()
     {
-        Schema::table('Access', function (Blueprint $table) {
-            $table->dropColumn('url_streaming');
+        Schema::table('Stand', function (Blueprint $table) {
+            $table->dropColumn("status");
         });
     }
 }

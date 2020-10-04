@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddVersionToResourceStandTable extends Migration
+class AddColumnVersionResourceStand extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,8 @@ class AddVersionToResourceStandTable extends Migration
     public function up()
     {
         Schema::table('Resource_Stand', function (Blueprint $table) {
-            $table->string("version")->default(1);
+            $table->tinyInteger('version')->default(0);
+            $table->dropColumn('doc_name');
         });
     }
 
@@ -26,7 +27,9 @@ class AddVersionToResourceStandTable extends Migration
     public function down()
     {
         Schema::table('Resource_Stand', function (Blueprint $table) {
-            $table->dropColumn('version');
+            $table->dropColumn('version')->default(0);
+            $table->string("doc_name")
+                ->nullable()->default(null);
         });
     }
 }
