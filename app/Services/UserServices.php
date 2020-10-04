@@ -10,6 +10,7 @@ use App\Models\Evaluation_Inscription;
 use App\Models\FormInputResponse;
 use App\Models\Payment;
 use App\Models\ResponseValue;
+use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
@@ -645,15 +646,33 @@ class UserServices
                 array(
                     "user_id" => $user->user_id,
                     "name" => $user->last_name . ' ' . $user->first_name,
-                    "role" => sizeof($user->user_congresses)> 0 ?  Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
+                    "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
                     "channel_name" => $channelName,
-                    "avatar_id" => sizeof($user->user_congresses)> 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
-                    "authorized_channels" => sizeof($user->user_congresses)> 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses,'name') : []
+                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
+                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
                 )
             );
         }
 
         return $res;
+    }
+
+    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment)
+    {
+        $tracking = new Tracking();
+
+        $tracking->congress_id = $congressId;
+        $tracking->action_id = $actionId;
+        $tracking->user_id = $userId;
+        $tracking->access_id = $accessId;
+        $tracking->stand_id = $standId;
+        $tracking->type = $type;
+        $tracking->comment = $comment;
+        $tracking->date = date('Y-m-d H:i:s');
+
+        $tracking->save();
+
+        return $tracking;
     }
 
     private function sendingRTAccess($user, $accessId)

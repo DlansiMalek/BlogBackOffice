@@ -209,9 +209,9 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             }, 'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            },'user_congresses.congress.config' => function ($query) use ($congressId) {
+            }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            },'responses.form_input' => function ($query) use ($congressId) {
+            }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
@@ -517,7 +517,7 @@ class UserController extends Controller
                 $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id . '?verification_code=' . $user->verification_code;
                 if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
+                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $user, $activationLink), $user, null, $mail->object, null, $userMail);
                 }
             }
         } else
@@ -1657,5 +1657,58 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
+    }
+
+    public function trackingUser(Request $request)
+    {
+
+        $user = $this->userServices->retrieveUserFromToken();
+
+        if (!$user) {
+            return response()->json(['response' => 'user not found'], 404);
+        }
+
+        $userId = $user->user_id;
+        if (!$request->has(['action', 'congress_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['action', 'congress_id']], 400);
+
+        if (($request->has('channel_name') && !$request->has('type')) || ((!$request->has('channel_name') || $request->has('channel_name') == '') && $request->has('type'))) {
+            return response()->json(['response' => 'bad request', 'required fields' => ['type', 'channel_name']], 400);
+        }
+
+        $congressId = $request->input("congress_id");
+
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+
+        if (!$action = $this->sharedServices->getActionByKey($request->input("action"))) {
+            return response()->json(['response' => 'action not found'], 404);
+        }
+
+        if ($request->input('type') && $request->input('type') != 'STAND' && $request->input('type') != 'ACCESS') {
+            return response()->json(['response' => 'Bad request type must be [STAND|ACCESS]'], 400);
+        }
+
+        $standId = null;
+        $accessId = null;
+        if ($request->input('type') == 'STAND') {
+            $stands = $this->congressServices->getStands($congressId, $request->input('channel_name'));
+            if (sizeof($stands) == 0) {
+                return response()->json(['response' => 'stand not found'], 404);
+            }
+            $standId = $stands[0]->stand_id;
+        }
+
+        if ($request->input('type') == 'ACCESS') {
+            $accesses = $this->congressServices->getAccesssByCongressId($congressId, $request->input('channel_name'));
+            if (sizeof($accesses) == 0) {
+                return response()->json(['response' => 'access not found'], 404);
+            }
+            $accessId = $accesses[0]->access_id;
+        }
+
+        return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment')));
     }
 }
