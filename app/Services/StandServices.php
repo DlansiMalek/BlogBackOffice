@@ -29,7 +29,7 @@ class StandServices
             foreach ($resources as $resource) {
                 $isExist = false ;
                 foreach ($oldResources as $oldResource) {
-                    if ($oldResource['resource']['path'] == $resource['path']) {
+                    if ( ($oldResource['resource']['path'] == $resource['path']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
                      $this->editResourceStand($oldResource,$resource['resource_id']);
                      $isExist = true ;
                      break ;
@@ -94,7 +94,7 @@ class StandServices
                 $query->where('name', '=', $name);
             }
         })
-            ->with(['docs'])
+            ->with(['docs' ])
             ->where('congress_id', '=', $congress_id)->get();
     }
 

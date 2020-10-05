@@ -57,8 +57,11 @@ class StandController extends Controller
        return response()->json('stand updated',200);
       }
  
-      public function deleteStand($stand_id)
-      { $stand = $this->standServices->getStandById($stand_id);
+      public function deleteStand($congress_id , $stand_id)
+      {  
+          if (!$stand = $this->standServices->getStandById($stand_id)) {
+          return response()->json('no stand found' ,404);
+      }
         $stand->delete();
          return response()->json(['response' => 'stand deleted'],200);
       }
