@@ -73,10 +73,15 @@ class SubmissionServices
         $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
+                $isExist = false ;
                 foreach ($oldResources as $oldResource) {
-                    if ($oldResource['resource_id'] != $resourceId) {
-                        $this->addResourceSubmission($resourceId, $submission_id);
+                    if ($oldResource['resource_id'] == $resourceId) {
+                      $isExist = true ;
+                    break;
                     }
+                }
+                if (!$isExist) {
+                    $this->addResourceSubmission($resourceId, $submission_id);
                 }
             }
         } else {
@@ -121,7 +126,7 @@ class SubmissionServices
     public function renderSubmissionForAdmin()
     {
         return Submission::with([
-            'user:user_id,first_name,last_name,email',
+            'user:user_id,first_name,last_name,email,mobile',
             'communicationType:communication_type_id,label',
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'service_id',
@@ -281,29 +286,30 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress( $congressId, $search, $status)
+    public function getAllSubmissionsByCongress($congressId, $search, $status)
     {
         $allSubmission = Submission::with([
-            'authors' => function ($query) {
-                $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'rank');
-            },
-            'resources' => function ($query) {
-                $query->select('submission_id', 'resource_submission_id', 'resource.resource_id', 'resource.path');
-            }
+            'resources', 'authors'
         ])
-            ->select('submission_id', 'code', 'title', 'communication_type_id', 'status')
-            ->where('congress_id', '=', $congressId)
-            ->where('status','=',1)
-            ->when($search !== "null" && $search !== "" && $search !== null , function ($query) use ($search, $status) {
-                $query ->whereHas('authors', function ($q) use ($search) {
-                    $q->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                    $q->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                });     
-                $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
-                $query->orWhereRaw('code like (?)', ["%{$search}%"]);
-            })
+        ->where('congress_id', '=', $congressId)
+            ->where('status', '=', 1)
+            ->whereHas("authors", function ($query) use ($search) {
+                $query->where('Author.first_name', 'like', '%' . $search . '%');
+                $query->orWhere('Author.last_name', 'like', '%' . $search . '%');
+            });
+            $otherSubmissions = Submission::with([
+                'resources', 'authors'
+            ])->where('status', '=', 1)
+        ->when($search != "null" && $search != ""  && $search != null,
+            function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%');
+                $query->orWhere('code', 'like', '%' . $search . '%');
+            })->where('status', '=', 1)
+                ->union($allSubmission)
+
             ->get();
-        return $allSubmission->values();
+
+        return $otherSubmissions->values();
     }
 
 }
