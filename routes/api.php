@@ -72,11 +72,13 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
 Route::group(['prefix' => 'resource/{path}'], function () {
     Route::get('', 'FileController@getResouce');
     Route::post('delete', 'FileController@deleteResouce');
+    Route::post('/stand/delete', 'FileController@deleteResouce');
 });
 // Route::get('resource/get/{path}', 'FileController@getResouceSubmission');
 
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
+    Route::post('/upload-resource/stand', 'FileController@uploadResourceStand');
 });
 
 //Mobile API

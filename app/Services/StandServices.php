@@ -28,7 +28,9 @@ class StandServices
         if (sizeof($oldResources) > 0) {
             foreach ($resources as $resource) {
                 $isExist = false ;
+                $resource['path'] = str_replace('('.$resource['resource_id'].')','',$resource['path']);
                 foreach ($oldResources as $oldResource) {
+                    $oldResource['resource']['path'] = str_replace('('.$oldResource['resource_id'].')','',$oldResource['resource']['path']);
                     if ( ($oldResource['resource']['path'] == $resource['path']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
                      $this->editResourceStand($oldResource,$resource['resource_id']);
                      $isExist = true ;
@@ -94,7 +96,7 @@ class StandServices
                 $query->where('name', '=', $name);
             }
         })
-            ->with(['docs' ])
+            ->with(['docs','organization'])
             ->where('congress_id', '=', $congress_id)->get();
     }
 
