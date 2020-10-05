@@ -789,7 +789,7 @@ class SubmissionController extends Controller
                             continue;
                         }
                         $mappedSubmission = $this->sharedServices->submissionMapping($submission->title,
-                            $user->first_name . ' ' . $user->last_name,
+                            Utils::getFullName($user->first_name, $user->last_name),
                             $submission->authors,
                             $attestationSubmission->attestation_param);
                         $mappedSubmission['badgeIdGenerator'] = $attestationSubmission->attestation_generator_id;
@@ -808,7 +808,7 @@ class SubmissionController extends Controller
                         if ($userMail->status != 1) {
                             $this->userServices->sendMailAttesationSubmissionZipToUser($user, $congress, $userMail,
                                 $mail->object,
-                                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null,$user->submissions));
+                                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions));
                         }
                     }
                 }
@@ -864,7 +864,7 @@ class SubmissionController extends Controller
             }
 
             $fill = $this->sharedServices->submissionMapping($submission->title,
-                $user->first_name . ' ' . $user->last_name,
+                Utils::getFullName($user->first_name, $user->last_name),
                 $submission->authors,
                 $attestationSubmission->attestation_param);
 
