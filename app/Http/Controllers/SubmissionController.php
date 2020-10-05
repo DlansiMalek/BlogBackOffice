@@ -759,7 +759,7 @@ class SubmissionController extends Controller
             if ($adminCongress->privilege_id != 1) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
-            $mailtype = $this->congressServices->getMailType('attestation', 'submission');
+            $mailtype = $this->congressServices->getMailType('attestation_all', 'submission');
 
             if (!$mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                 return response()->json(['error' => 'mail attestation submission not found'], 400);
@@ -808,7 +808,7 @@ class SubmissionController extends Controller
                         if ($userMail->status != 1) {
                             $this->userServices->sendMailAttesationSubmissionZipToUser($user, $congress, $userMail,
                                 $mail->object,
-                                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, $submission->code, $submission->title, $submission->communicationType ? $submission->communicationType->label : null));
+                                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null,$user->submissions));
                         }
                     }
                 }

@@ -18,6 +18,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\UserCongress;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use JWTAuth;
 use PDF;
 
@@ -484,7 +485,7 @@ class CongressServices
     }
 
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null)
+                        $submissionTitle = null, $communication_type = null, $submissions = [])
     {
 
         $accesses = "";
@@ -509,6 +510,17 @@ class CongressServices
                 }
             }
             $accesses = $accesses . "</ul>";
+        }
+
+        $submissionsParms = "";
+        if (sizeof($submissions) > 0) {
+            $submissionsParms = "<ul>";
+            foreach ($submissions as $submission) {
+                $type= $submission->communicationType ? $submission->communicationType->label : " ";
+                $submissionsParms = $submissionsParms
+                . "<li>" . $submission->code . ": " . $submission->title . " ( " . $type . " ) " . "</li>";
+            }
+            $submissionsParms = $submissionsParms . "</ul>";
         }
 
         if ($congress != null) {
@@ -538,6 +550,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
+        $template = str_replace('{{$submissionParams}}', $submissionsParms, $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
         return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type]);

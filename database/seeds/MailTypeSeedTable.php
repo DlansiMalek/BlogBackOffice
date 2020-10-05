@@ -126,6 +126,20 @@ class MailTypeSeedTable extends Seeder
             'name' => 'file_submitted',
             'display_name' => "Fichiers soumis",
             'type' => "submission"
-        ]);  
+        ]);
+
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 21,
+            'name' => 'attestation',
+            'display_name' => "Mail d'attestation",
+            'type' => "submission"
+        ]);
+
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 22,
+            'name' => 'attestation_all',
+            'display_name' => "Mail d'attestation en masse",
+            'type' => "submission"
+        ]);
     }
 }
