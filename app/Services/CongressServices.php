@@ -542,8 +542,8 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
-        $linkAccept = UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/'.$participant->user_id . '/1';
-        $linkRefuse = UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/'.$participant->user_id . '/-1';
+        $linkAccept =  $participant!=null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/'.$participant->user_id . '/1' : null;
+        $linkRefuse =  $participant!=null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/'.$participant->user_id . '/-1' : null;
         $template = str_replace('{{$buttons}}', '
                                                   <a href="{{$linkAccept}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
                                                   <a href="{{$linkRefuse}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);

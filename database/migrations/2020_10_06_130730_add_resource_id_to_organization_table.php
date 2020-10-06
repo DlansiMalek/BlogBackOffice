@@ -14,7 +14,7 @@ class AddResourceIdToOrganizationTable extends Migration
     public function up()
     {
         Schema::table('Organization', function (Blueprint $table) {
-            $table->unsignedInteger("resource_id");
+            $table->unsignedInteger("resource_id")->nullable()->default(null);
             $table->foreign("resource_id")->references('resource_id')->on('Resource')
                 ->onDelete('cascade');
         });
