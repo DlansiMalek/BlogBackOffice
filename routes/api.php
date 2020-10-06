@@ -78,6 +78,7 @@ Route::group(['prefix' => 'resource/{path}'], function () {
 
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
+    Route::post('/upload-resource/stand', 'FileController@uploadResourceStand');
 });
 
 //Mobile API
@@ -154,6 +155,7 @@ Route::group(['prefix' => 'users'], function () {
 
 });
 
+
 //Congress API
 Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], function () {
 
@@ -202,10 +204,13 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
         Route::group(['prefix' => 'stand'], function () {
             Route::get('', 'StandController@getStands');
+            Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
+            Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
             Route::put('/edit/{standId}', 'StandController@editStands');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
+            Route::delete('deleteStand/{stand_id}','standController@deleteStand');
         });
 
 

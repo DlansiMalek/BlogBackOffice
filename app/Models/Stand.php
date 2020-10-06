@@ -17,7 +17,12 @@ class Stand extends Model
     function docs()
     {
         return $this->belongsToMany(Resource::class,'Resource_Stand','stand_id','resource_id')
-            ->withPivot('version');
+        ->withPivot('version');
+    }
+    function organization() {
+        return $this->hasOne(Organization::class,'organization_id','organization_id');
     }
 
 }
+
+

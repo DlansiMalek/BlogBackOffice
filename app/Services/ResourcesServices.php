@@ -15,7 +15,7 @@ class ResourcesServices
         $resource->path=$path;
         $resource->size=$size;
         $resource->save();
-        return $resource;
+        return $resource; 
     }
 
     public function getResourceByPath($path){

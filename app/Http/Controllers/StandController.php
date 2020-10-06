@@ -7,7 +7,6 @@ use App\Services\CongressServices;
 use App\Services\StandServices;
 use Illuminate\Http\Request;
 
-
 class StandController extends Controller
 {
 
@@ -29,20 +28,61 @@ class StandController extends Controller
         $stands = $this->standServices->getStands($congress_id);
         return response()->json($stands, 200);
     }
+    function addStand (Request $request) {
+     
+        $stand = $this->standServices->addStand(
+            $request->input('name'),
+            $request->input('organization_id'),
+            $request->input('congress_id')
+ 
+         );
+         $resources = $request->input('docs');
+         $this->standServices->saveResourceStand($resources,$stand->stand_id);
+         return response()->json('Stand added',200);
+     }
+ 
+ 
+     public function getStandById ($congressId,$stand_id)
+     {   return $this->standServices->getStandById($stand_id);
+         
+     }
+ 
+     function editStand (Request $request, $congress_id, $stand_id) {
+        if (! $oldStand = $this->standServices->getStandById($stand_id)) {
+            return response()->json('stand not found',404);
+        }
+      
+    
+  
+       return response()->json('stand updated',200);
+      }
+ 
+      public function deleteStand($congress_id , $stand_id)
+      {  
+          if (!$stand = $this->standServices->getStandById($stand_id)) {
+          return response()->json('no stand found' ,404);
+      }
+        $stand->delete();
+         return response()->json(['response' => 'stand deleted'],200);
+      }
 
     public function editStands($congress_id, $stand_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        if (!$stand = $this->congressServices->getStandById($stand_id)) {
+        if (!$oldStand = $this->standServices->getStandById($stand_id)) {
             return response()->json(['response' => 'Stand not found', 404]);
         }
-        if (!$request->has('url_streaming')) {
-            return response()->json(['response' => 'bad request'], 400);
-        }
-        $url_streaming = $request->input('url_streaming');
-        $stand = $this->congressServices->editStands($congress_id, $stand_id, $url_streaming);
+        $url_streaming = $request->has('url_streaming') ? $request->input('url_streaming') : null;
+        $stand = $this->standServices->editStand(
+            $oldStand,
+            $request->input('name'),
+            $request->input('congress_id'),
+            $request->input('organization_id'),
+            $request->input('url_streaming')
+         );
+          $this->standServices->saveResourceStand($request->input('docs'),$stand->stand_id);
         return response()->json($stand, 200);
     }
 

@@ -738,15 +738,6 @@ class CongressServices
         return Stand::where('congress_id', '=', $stand_id)->get();
     }
 
-    public function editStands($congress_id, $stand_id, $url_streaming)
-    {
-        $stand = Stand::where('congress_id', '=', $congress_id)
-            ->where('stand_id', '=', $stand_id)->first();
-        $stand->url_streaming = $url_streaming;
-        $stand->update();
-        return $stand;
-    }
-
     public function getDocsByStands($stands)
     {
         $res = array();
