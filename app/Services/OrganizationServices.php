@@ -39,7 +39,7 @@ class OrganizationServices
         $organization->description = $request->input("description");
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
-
+        $organization->resource_id = $request->input("resource_id");
         $organization->save();
         return $organization;
     }
