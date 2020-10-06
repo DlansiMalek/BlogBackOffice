@@ -72,7 +72,6 @@ Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
 Route::group(['prefix' => 'resource/{path}'], function () {
     Route::get('', 'FileController@getResouce');
     Route::post('delete', 'FileController@deleteResouce');
-    Route::post('/stand/delete', 'FileController@deleteResouce');
 });
 // Route::get('resource/get/{path}', 'FileController@getResouceSubmission');
 
@@ -154,16 +153,6 @@ Route::group(['prefix' => 'users'], function () {
 
 
 });
- 
-
-// STAND API
-// Route::group(['prefix' => 'stand'], function () {
-
-//     Route::get('/list/{congress_id}', 'StandController@getStands');
-//     Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
-
-
-// });
 
 
 //Congress API
