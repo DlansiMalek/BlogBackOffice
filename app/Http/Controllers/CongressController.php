@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Access;
+use App\Models\AdminCongress;
 use App\Models\Badge;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
@@ -810,6 +811,38 @@ class CongressController extends Controller
 
         $events = $this->congressServices->getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user);
         return response()->json($events, 200);
+    }
+
+
+    public function confirmPresence($congress_id, $user_id, $present)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        if(!$user= $this->userServices->getUserById($user_id)) {
+            return response()->json(['error' => 'user not found'], 404);
+        }
+        if(!$user_congress = $this->userServices->getUserCongress($congress_id, $user_id)) {
+            return response()->json(['error' => 'user is not registered in congress'], 404);
+        }
+        if (!($adminCongress = (AdminCongress::where('congress_id', '=', $congress_id)
+            ->where('privilege_id', '=', 1)->first()))) {
+            return response()->json(['error' => 'bad request'], 400);
+        }
+        $user_congress = $this->congressServices->confirmPresence($congress_id, $user_id, $present);
+        if(!$admin = $this->adminServices->getAdminById($adminCongress->admin_id)) {
+            return response()->json(['error' => 'No admin found'], 404);
+        }
+        // print_r(json_encode($admin));
+        if ($user_congress->will_be_present == 1) {
+            $template = '<p>L\'utilisateur {{$participant-&gt;last_name}} {{$participant-&gt;first_name}} a accepté d\'être présent à votre événement {{$congress-&gt;name}}</p>';
+        } else {
+            $template = '<p>L\'utilisateur {{$participant-&gt;last_name}} {{$participant-&gt;first_name}} a refusé d\'être présent à votre événement {{$congress-&gt;name}}</p>';
+        }
+        $objectMail = 'Confirmation du présence';
+        $this->userServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, null), null, null, $objectMail, false, null, $admin->email);
+        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+        return redirect($linkFrontOffice);
     }
 
     /*
