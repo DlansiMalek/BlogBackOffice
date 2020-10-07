@@ -64,7 +64,7 @@ class AdminServices
             ->first();
     }
 
-    public function ilgetClients()
+    public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
             ->get();
