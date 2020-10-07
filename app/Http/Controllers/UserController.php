@@ -511,6 +511,7 @@ class UserController extends Controller
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
+            print_r(json_encode($user));
             // TODO Sending Confirmation Mail
 
             if ($mailAdminType = $this->mailServices->getMailTypeAdmin('confirmation')) {

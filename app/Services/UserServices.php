@@ -1070,6 +1070,7 @@ class UserServices
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
+        if ($request->has('email_verified')) $user->email_verified = $request->input('email_verified');
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;

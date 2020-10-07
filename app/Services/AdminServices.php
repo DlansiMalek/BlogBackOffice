@@ -64,7 +64,7 @@ class AdminServices
             ->first();
     }
 
-    public function getClients()
+    public function ilgetClients()
     {
         return Admin::where("privilege_id", "=", 1)
             ->get();
@@ -481,10 +481,11 @@ class AdminServices
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
-        $template = str_replace('{{$admin-&gt;first_name}}', '{{$admin->first_name}}', $template);
-        $template = str_replace('{{$admin-&gt;last_name}}', '{{$admin->last_name}}', $template);
+        $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
+        $template = str_replace('{{$user-&gt;gender}}', '{{$user->gender}}', $template);
+
 
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink]);
     }
