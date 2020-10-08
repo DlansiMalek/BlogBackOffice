@@ -125,6 +125,24 @@ class VotingController extends Controller
         return response()->json(['quiz' => $polls, 'associations' => $associations], 200);
     }
 
+    public function voteUser(Request $request)
+    {
+
+        if (!$request->has(['pollId', 'questionId', 'choiceNumbers', 'secret', 'accessId'])) {
+            return response()->json(['response' => 'invalid request',
+                'required fields' => ['pollId', 'questionId', 'choiceNumbers', 'secret', 'accessId']], 400);
+        }
+
+        $user = $this->userService->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(["error" => "user not found"], 404);
+        }
+
+        return response()->json($this->votingService->voteUser($user, $request));
+
+
+    }
+
     public function getMultipleListPolls(Request $request)
     {
         $res = [];

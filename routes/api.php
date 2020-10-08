@@ -210,7 +210,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::put('/edit/{standId}', 'StandController@editStands');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
-            Route::delete('deleteStand/{stand_id}','standController@deleteStand');
+            Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
         });
 
 
@@ -450,6 +450,8 @@ Route::group(["prefix" => "voting-users"], function () {
     Route::get("polls", "VotingController@getListPolls");
     Route::post("polls", "VotingController@getMultipleListPolls");
     Route::post("send-scores", "VotingController@sendScores");
+    Route::post('vote', 'VotingController@voteUser')
+        ->middleware('assign.guard:users');
 });
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
 Route::get('encrypt/{password}', 'SharedController@encrypt');
