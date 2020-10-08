@@ -581,7 +581,7 @@ class CongressServices
     public
     function getAccesssByCongressId($congress_id, $name = null)
     {
-        return Access::where(function ($query) use ($name) {
+        return Access::with( ['votes'])->where(function ($query) use ($name) {
             if ($name) {
                 $query->where('name', '=', $name);
             }

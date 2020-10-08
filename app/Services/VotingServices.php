@@ -54,6 +54,20 @@ class VotingServices
         return json_decode($res->getBody(), true);
     }
 
+    public function getPollById($token, $pollId)
+    {
+        $headers = [
+            'Authorization' => 'Bearer ' . $token,
+        ];
+
+
+        $res = $this->client->get('/api/polls/' . $pollId, [
+            'headers' => $headers
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
     public function saveAssociation($newAssociation, $congress_id)
     {
         $accessVote = new AccessVote();
@@ -101,6 +115,30 @@ class VotingServices
     {
         $oldVoteScore->score = $scoreVoteData['score'];
         $oldVoteScore->update();
+    }
+
+    public function getQuizInfosByAccesses($votingToken, $accesses)
+    {
+        $userResponse = $this->signinUser($votingToken);
+
+        foreach ($accesses as $access) {
+            $res = array();
+            foreach ($access->votes as $quiz) {
+                $quizInfo = $this->getPollById($userResponse['token'], $quiz->vote_id);
+                array_push(
+                    $res,
+                    array(
+                        "id"=>$quizInfo['_id'],
+                        "label" => $quizInfo['title'],
+                        "questions" => $quizInfo['questions']
+                    )
+
+                );
+                $access['quizs'] = $res;
+            }
+        }
+
+        return $accesses;
     }
 
 
