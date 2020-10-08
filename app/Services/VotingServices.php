@@ -132,6 +132,7 @@ class VotingServices
                     array(
                         "id" => $quizInfo['_id'],
                         "label" => $quizInfo['title'],
+                        "secret" => $quizInfo['secret'],
                         "questions" => $quizInfo['questions']
                     )
 

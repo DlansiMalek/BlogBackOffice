@@ -25,7 +25,8 @@ class UrlUtils
         if (App::environment() == 'dev') {
             return "http://vayevoting-backend-master:3000";
         }
-        return "http://localhost:3000";
+        return "https://ws.vayetek.com";
+        //return "http://localhost:3000";
     }
 
     public static function getMeetEventizerUrl()
