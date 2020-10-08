@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Models\AccessVote;
 use App\Models\VoteScore;
 use GuzzleHttp\Client;
+use Illuminate\Http\Request;
 
 /**
  * @property \GuzzleHttp\Client client
@@ -24,7 +25,8 @@ class VotingServices
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-            ]
+            ],
+            'http_errors' => false
         ]);
 
     }
@@ -128,8 +130,9 @@ class VotingServices
                 array_push(
                     $res,
                     array(
-                        "id"=>$quizInfo['_id'],
+                        "id" => $quizInfo['_id'],
                         "label" => $quizInfo['title'],
+                        "secret" => $quizInfo['secret'],
                         "questions" => $quizInfo['questions']
                     )
 
@@ -139,6 +142,24 @@ class VotingServices
         }
 
         return $accesses;
+    }
+
+    public function voteUser($user, Request $request)
+    {
+
+        $res = $this->client->post('/api/polls/vote-static', [
+            'form_params' => [
+                "pollId" => $request->input('pollId'),
+                "questionId" => $request->input('questionId'),
+                "choiceNumbers" => $request->input('choiceNumbers'),
+                "secret" => $request->input("secret"),
+                "accessId" => $request->input("accessId"),
+                "clientId" => $user->user_id
+            ]
+        ]);
+
+        return json_decode($res->getBody(), true);
+
     }
 
 
