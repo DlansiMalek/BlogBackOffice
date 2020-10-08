@@ -169,6 +169,10 @@ class Utils
             return 'MODERATOR';
         }
 
+        if ($privilege_id === 1) {
+            return 'ADMIN';
+        }
+
         return 'PARTICIPANT';
     }
 
