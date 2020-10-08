@@ -142,7 +142,6 @@ class StandServices
                 array(
                     "channel_name" => $access->name,
                     "url" => $access->url_streaming,
-                    "access_id" => $access->access_id,
                     "quizs" => $access->quizs
                 )
             );

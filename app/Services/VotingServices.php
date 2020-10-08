@@ -133,6 +133,7 @@ class VotingServices
                         "id" => $quizInfo['_id'],
                         "label" => $quizInfo['title'],
                         "secret" => $quizInfo['secret'],
+                        "access_id" => $quiz->access_vote_id,
                         "questions" => $quizInfo['questions']
                     )
 
