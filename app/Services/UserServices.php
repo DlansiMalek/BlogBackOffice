@@ -657,7 +657,7 @@ class UserServices
         return $res;
     }
 
-    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment)
+    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment, $userCalledId)
     {
         $tracking = new Tracking();
 
@@ -668,6 +668,7 @@ class UserServices
         $tracking->stand_id = $standId;
         $tracking->type = $type;
         $tracking->comment = $comment;
+        $tracking->user_call_id = $userCalledId;
         $tracking->date = date('Y-m-d H:i:s');
 
         $tracking->save();

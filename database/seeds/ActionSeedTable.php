@@ -38,8 +38,23 @@ class ActionSeedTable extends Seeder
         ]);
 
         DB::table('Action')->insert([
-            'key' => 'CALLUSER',
-            'value' => 'Call user'
+            'key' => 'VIDEOCALL',
+            'value' => 'Video call user'
+        ]);
+
+        DB::table('Action')->insert([
+            'key' => 'VOICECALL',
+            'value' => 'Voice call user'
+        ]);
+
+        DB::table('Action')->insert([
+            'key' => 'VIDEOJOINED',
+            'value' => 'Video joined call user'
+        ]);
+
+        DB::table('Action')->insert([
+            'key' => 'VOICEJOINED',
+            'value' => 'Voice joined call user'
         ]);
 
         DB::table('Action')->insert([
