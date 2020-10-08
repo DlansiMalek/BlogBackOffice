@@ -15,7 +15,7 @@ class Tracking extends Model
     public $timestamps = true;
     protected $table = 'Tracking';
     protected $primaryKey = 'tracking_id';
-    protected $fillable = ['date', 'type', 'comment', 'action_id', 'access_id', 'stand_id', 'user_id', 'congress_id'];
+    protected $fillable = ['date', 'type', 'comment', 'action_id', 'access_id', 'stand_id', 'user_id', 'congress_id','user_call_id'];
 
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
