@@ -487,8 +487,8 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles=null,$submissionCode = null,
-     $submissionTitle = null, $communication_type = null, $buttons = null )
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
+                        $submissionTitle = null, $communication_type = null, $buttons = null)
 
     {
         $accesses = "";
@@ -549,7 +549,7 @@ class CongressServices
                                                   <a href="{{$linkRefuse}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room ,'linkFiles' => $linkFiles,'submission_code' => $submissionCode,'submission_title' => $submissionTitle ,'communication_type' => $communication_type,'buttons' => $buttons, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'buttons' => $buttons, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse]);
 
     }
 
@@ -581,7 +581,7 @@ class CongressServices
     public
     function getAccesssByCongressId($congress_id, $name = null)
     {
-        return Access::where(function ($query) use ($name) {
+        return Access::with( ['votes'])->where(function ($query) use ($name) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
@@ -749,7 +749,7 @@ class CongressServices
                     array(
                         "stand" => $stand->name,
                         "path" => UrlUtils::getBaseUrl() . '/resource/' . $doc->path,
-                        "filename" => $doc->path,
+                        "filename" => substr($doc->path, strpos($doc->path, ')')+1),
                         "version" => $doc->pivot->version
                     )
                 );

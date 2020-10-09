@@ -1683,6 +1683,12 @@ class UserController extends Controller
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
+        $userCalledId = $request->input("user_call_id");
+
+        if ($request->has("user_call_id") && !$userCalled = $this->userServices->getUserById($userCalledId)) {
+            return response()->json(['response' => 'user called not found']);
+        }
+
 
         if (!$action = $this->sharedServices->getActionByKey($request->input("action"))) {
             return response()->json(['response' => 'action not found'], 404);
@@ -1710,6 +1716,6 @@ class UserController extends Controller
             $accessId = $accesses[0]->access_id;
         }
 
-        return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment')));
+        return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment'), $userCalledId));
     }
 }
