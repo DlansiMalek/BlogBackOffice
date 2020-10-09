@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CongressServices;
 use App\Services\StandServices;
+use App\Services\VotingServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -12,11 +13,13 @@ class StandController extends Controller
 
     protected $standServices;
     protected $congressServices;
+    protected $votingServices;
 
-    function __construct(StandServices $standServices, CongressServices $congressServices)
+    function __construct(StandServices $standServices, CongressServices $congressServices, VotingServices $votingServices)
     {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
+        $this->votingServices = $votingServices;
     }
 
 
@@ -112,6 +115,8 @@ class StandController extends Controller
         $stands = $this->standServices->getStands($congressId, $name);
 
         $accesses = $this->congressServices->getAccesssByCongressId($congressId, $name);
+
+        $accesses = $this->votingServices->getQuizInfosByAccesses($congress->config->voting_token, $accesses);
 
         $urls = $this->standServices->getUrlsByStandsAndAccess($stands, $accesses);
 
