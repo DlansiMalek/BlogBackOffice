@@ -12,6 +12,7 @@ use App\Models\AccessVote;
 use App\Models\VoteScore;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property \GuzzleHttp\Client client
@@ -147,12 +148,15 @@ class VotingServices
 
     public function voteUser($user, Request $request)
     {
+        $choicesNumbers =  $request->input('choiceNumbers');
+        if(is_string($choicesNumbers))
+            $choicesNumbers = json_decode($request->input('choiceNumbers'),true);
 
         $res = $this->client->post('/api/polls/vote-static', [
             'form_params' => [
                 "pollId" => $request->input('pollId'),
                 "questionId" => $request->input('questionId'),
-                "choiceNumbers" => $request->input('choiceNumbers'),
+                "choiceNumbers" => $choicesNumbers,
                 "secret" => $request->input("secret"),
                 "accessId" => $request->input("accessId"),
                 "clientId" => $user->user_id
