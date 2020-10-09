@@ -570,8 +570,6 @@ class UserController extends Controller
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))){
             $user = $this->userServices->saveUser($request);
-            $user->email_verified = 1;
-            $user->update();
     }
         else
             $user = $this->userServices->editUser($request, $user);

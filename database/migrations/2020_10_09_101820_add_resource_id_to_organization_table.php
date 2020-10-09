@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -17,6 +18,8 @@ class AddResourceIdToOrganizationTable extends Migration
             $table->unsignedInteger("resource_id")->nullable()->default(null);
             $table->foreign("resource_id")->references('resource_id')->on('Resource')
                 ->onDelete('cascade');
+
+            $table->string('description')->nullable()->default(null)->change();
         });
     }
 
