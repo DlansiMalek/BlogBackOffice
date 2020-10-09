@@ -14,6 +14,7 @@ use App\Services\CongressServices;
 use App\Services\UserServices;
 use App\Services\VotingServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 
 class VotingController extends Controller
@@ -106,6 +107,7 @@ class VotingController extends Controller
 
     public function getQuiz(Request $request)
     {
+
         $tokens = [];
         $associations = [];
         foreach ($request->all() as $congress_id) {
