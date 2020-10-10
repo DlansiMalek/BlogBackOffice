@@ -17,6 +17,7 @@ use App\Models\Payment;
 use App\Models\ConfigSubmission;
 use App\Models\ItemEvaluation;
 use App\Models\ItemNote;
+use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Models\Stand;
@@ -581,7 +582,7 @@ class CongressServices
     public
     function getAccesssByCongressId($congress_id, $name = null)
     {
-        return Access::with( ['votes'])->where(function ($query) use ($name) {
+        return Access::with(['votes'])->where(function ($query) use ($name) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
@@ -749,7 +750,7 @@ class CongressServices
                     array(
                         "stand" => $stand->name,
                         "path" => UrlUtils::getBaseUrl() . '/resource/' . $doc->path,
-                        "filename" => substr($doc->path, strpos($doc->path, ')')+1),
+                        "filename" => substr($doc->path, strpos($doc->path, ')') + 1),
                         "version" => $doc->pivot->version
                     )
                 );
@@ -788,6 +789,29 @@ class CongressServices
     {
         return Stand::where('congress_id', '=', $congressId)
             ->update(['status' => $status]);
+    }
+
+    public function getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId)
+    {
+        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values'])
+            ->whereHas('user', function ($query) use ($search) {
+                $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+            })
+            ->where(function ($query) use ($actionId, $accessId, $standId) {
+                if ($actionId != -1) {
+                    $query->where('action_id', '=', $actionId);
+                }
+                if ($accessId != -1) {
+                    $query->where('access_id', '=', $accessId);
+                }
+                if ($standId != -1) {
+                    $query->where('stand_id', '=', $standId);
+                }
+            })
+            ->where('congress_id', '=', $congressId)
+            ->paginate($perPage);
     }
 
 

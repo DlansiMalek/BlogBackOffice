@@ -122,5 +122,10 @@ class SharedServices
             ->first();
     }
 
+    public function getAllActions()
+    {
+        return Action::all();
+    }
+
 
 }

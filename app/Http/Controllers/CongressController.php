@@ -819,10 +819,10 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
-        if(!$user= $this->userServices->getUserById($user_id)) {
+        if (!$user = $this->userServices->getUserById($user_id)) {
             return response()->json(['error' => 'user not found'], 404);
         }
-        if(!$user_congress = $this->userServices->getUserCongress($congress_id, $user_id)) {
+        if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user_id)) {
             return response()->json(['error' => 'user is not registered in congress'], 404);
         }
         if (!($adminCongress = (AdminCongress::where('congress_id', '=', $congress_id)
@@ -830,7 +830,7 @@ class CongressController extends Controller
             return response()->json(['error' => 'bad request'], 400);
         }
         $user_congress = $this->congressServices->confirmPresence($congress_id, $user_id, $present);
-        if(!$admin = $this->adminServices->getAdminById($adminCongress->admin_id)) {
+        if (!$admin = $this->adminServices->getAdminById($adminCongress->admin_id)) {
             return response()->json(['error' => 'No admin found'], 404);
         }
         // print_r(json_encode($admin));
@@ -882,5 +882,21 @@ class CongressController extends Controller
         $results = $this->userServices->mappingPeacksourceData($users);
 
         return response()->json($results);
+    }
+
+    public function getListTrackingByCongress($congressId, Request $request)
+    {
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search', '');
+        $accessId = $request->query('access_id', -1);
+        $standId = $request->query('stand_id', -1);
+        $actionId = $request->query('action_id', -1);
+
+        return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
+
     }
 }
