@@ -33,6 +33,7 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/submissions/congress/{congressId}', 'SubmissionController@getAllSubmissionsByCongress');
 Route::get('/confirm/{congress_id}/{user_id}/{present}', 'CongressController@confirmPresence');
+Route::get('/action', 'SharedController@getAllActions');
 
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
@@ -194,7 +195,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::delete('/delete-badge/{badgeId}', 'BadgeController@deleteBadge');
-
+        Route::get('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
 
