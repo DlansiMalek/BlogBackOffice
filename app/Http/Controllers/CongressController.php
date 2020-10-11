@@ -401,7 +401,9 @@ class CongressController extends Controller
             "form_inputs.values",
             "accesss.participants.user_congresses" => function ($query) {
                 $query->where('privilege_id', '=', 3);
-            }
+            },
+            "tracking",
+            "stand"
         ]);
 
         return response()->json($congress);
