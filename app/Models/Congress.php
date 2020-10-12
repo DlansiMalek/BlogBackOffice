@@ -113,4 +113,7 @@ class Congress extends Model
     function itemEvaluation() {
         return $this->hasMany('App\Models\ItemEvaluation', 'congress_id', 'congress_id');
     }
+    public function privilegeConfig () {
+        return $this->hasMany('App\Models\PrivilegeConfig', 'congress_id', 'congress_id');
+    }
 }

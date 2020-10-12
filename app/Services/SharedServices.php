@@ -6,6 +6,7 @@ use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
 use App\Models\Privilege;
+use App\Models\PrivilegeConfig;
 use App\Models\Service;
 use App\Models\Etablissement;
 use GuzzleHttp\Exception\ClientException;
@@ -20,16 +21,42 @@ class SharedServices
         return Privilege::where('privilege_id', '>=', 3)->get();
     }
 
-    public function getCorPrivileges($congress_id,$priv_ref)
+    public function getAllThePrivileges($congress_id)
     {
-        return Privilege::where('priv_reference','=',$priv_ref)->where('priv_reference', '=', $congress_id)->get();
-        
-     }
+        $privilegeBase = Privilege::where('priv_reference', '=', null)
+            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            }])
+            ->get()->toArray();
+        for ($i = 0; $i < count($privilegeBase); $i++) {
+            if ($privilegeBase[$i]['privilege_config'] != null) {
+                unset($privilegeBase[$i]);
+            }
+        }
+        $newPrivileges = Privilege::join('Privilege_Config', function ($join) use ($congress_id) {
+            $join->on('Privilege.privilege_id', '=', 'Privilege_Config.privilege_id')
+                ->where('Privilege_Config.congress_id', '=', $congress_id)
+                ->where('Privilege_Config.status', '=', 1);
+        })->get()->toArray();
+        $result = array_merge($privilegeBase, $newPrivileges);
+        return $result;
+    }
 
-    public function getPrivilegesWithBadges()
+    public function getPrivilegesWithBadges($congress_id)
     {
-        return Privilege::with(['badges'])->where('priv_reference', '=', NULL)->where('internal', '!=', -1)
-            ->get();
+        $privilegeBase = Privilege::where('priv_reference', '=', null)
+            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+                $query->where('status', '=', 2);
+            }])
+            ->get()->toArray();
+        for ($i = 0; $i < count($privilegeBase); $i++) {
+            if ($privilegeBase[$i]['privilege_config'] != null) {
+                unset($privilegeBase[$i]);
+            }
+        }
+        $result = array_merge($privilegeBase);
+        return $result;
     }
 
     public function getAllServices()
@@ -79,30 +106,30 @@ class SharedServices
     }
 
     public function textMapping($badge, $user, $qrCode)
-    {   if ($user->first_name) {
-        $mappingList = ['first_name' => $user->first_name,
-            'last_name' => '',
-            'email' => $user->email,
-            'country' => '',
-            'mobile' => $user->mobile];
-    }
-    else {
-        $mappingList = ['first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'email' => $user->email,
-            'country' => $user->country->name,
-            'mobile' => $user->mobile];
-    }
+    {
+        if ($user->first_name) {
+            $mappingList = ['first_name' => $user->first_name,
+                'last_name' => '',
+                'email' => $user->email,
+                'country' => '',
+                'mobile' => $user->mobile];
+        } else {
+            $mappingList = ['first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'country' => $user->country->name,
+                'mobile' => $user->mobile];
+        }
         $badgeParams = $badge['badge_param'];
 
         $params = [];
         foreach ($badgeParams as $param) {
             if ($param['key'] === 'default') {
-                $params[]=
+                $params[] =
                     ["key" => $param['key'], "value" => $mappingList['first_name'] . ' ' . $mappingList['last_name']];
 
             } else {
-                $params[]=
+                $params[] =
                     ["key" => $param['key'], "value" => $this->mappingBadgeKey($param['key'], $mappingList)];
             }
         }

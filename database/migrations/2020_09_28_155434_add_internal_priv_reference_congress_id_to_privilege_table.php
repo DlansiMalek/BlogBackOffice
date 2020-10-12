@@ -14,16 +14,11 @@ class AddInternalPrivReferenceCongressIdToPrivilegeTable extends Migration
     public function up()
     {
         Schema::table('Privilege', function (Blueprint $table) {
-            $table->unsignedInteger('priv_reference')->nullable()
-            ->default(null);
+            $table->unsignedInteger('priv_reference')->after('name')
+                ->nullable()->default(null);
             $table->foreign('priv_reference')->references('privilege_id')
                 ->on('Privilege')
                 ->onDelete('cascade');
-            $table->tinyInteger('internal')->default(0);
-            $table->unsignedInteger('congress_id')->nullable()->default(null);
-            $table->foreign('congress_id')->references('congress_id')->on('Congress')
-                ->onDelete('cascade');
-
         });
     }
 
@@ -35,7 +30,7 @@ class AddInternalPrivReferenceCongressIdToPrivilegeTable extends Migration
     public function down()
     {
         Schema::table('Privilege', function (Blueprint $table) {
-            $table->dropColumn(['priv_reference','internal','congress_id']);
+            $table->dropColumn(['priv_reference']);
         }); 
     }
 }

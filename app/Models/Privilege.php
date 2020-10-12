@@ -25,4 +25,8 @@ class Privilege extends Model
     {
         return $this->hasMany('App\Models\Badge', 'privilege_id', 'privilege_id');
     }
+
+    public function privilegeConfig () {
+        return $this->hasMany('App\Models\PrivilegeConfig', 'privilege_id', 'privilege_id');
+    }
 }
