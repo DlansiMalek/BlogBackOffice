@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Action;
 use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
@@ -146,6 +147,17 @@ class SharedServices
             $val = $val . $mappingList[$k] . ' ';
         }
         return $val;
+    }
+
+    public function getActionByKey($key)
+    {
+        return Action::where('key', '=', $key)
+            ->first();
+    }
+
+    public function getAllActions()
+    {
+        return Action::all();
     }
 
 

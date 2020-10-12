@@ -31,6 +31,7 @@ class BadgeServices
         $badge->badge_id_generator = $badgeIdGenerator;
         $badge->privilege_id = $privilegeId;
         $badge->enable = 1;
+        $badge->num_downloaded = 0;
         $badge->save();
 
         return $badge;

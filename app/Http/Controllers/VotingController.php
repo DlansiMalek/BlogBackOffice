@@ -14,6 +14,7 @@ use App\Services\CongressServices;
 use App\Services\UserServices;
 use App\Services\VotingServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 
 class VotingController extends Controller
@@ -106,6 +107,7 @@ class VotingController extends Controller
 
     public function getQuiz(Request $request)
     {
+
         $tokens = [];
         $associations = [];
         foreach ($request->all() as $congress_id) {
@@ -123,6 +125,24 @@ class VotingController extends Controller
         }
 
         return response()->json(['quiz' => $polls, 'associations' => $associations], 200);
+    }
+
+    public function voteUser(Request $request)
+    {
+
+        if (!$request->has(['pollId', 'questionId', 'choiceNumbers', 'secret', 'accessId'])) {
+            return response()->json(['response' => 'invalid request',
+                'required fields' => ['pollId', 'questionId', 'choiceNumbers', 'secret', 'accessId']], 400);
+        }
+
+        $user = $this->userService->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(["error" => "user not found"], 404);
+        }
+
+        return response()->json($this->votingService->voteUser($user, $request));
+
+
     }
 
     public function getMultipleListPolls(Request $request)

@@ -11,6 +11,8 @@ namespace App\Services;
 use App\Models\AccessVote;
 use App\Models\VoteScore;
 use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property \GuzzleHttp\Client client
@@ -24,7 +26,8 @@ class VotingServices
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-            ]
+            ],
+            'http_errors' => false
         ]);
 
     }
@@ -48,6 +51,20 @@ class VotingServices
 
 
         $res = $this->client->get('/api/polls', [
+            'headers' => $headers
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function getPollById($token, $pollId)
+    {
+        $headers = [
+            'Authorization' => 'Bearer ' . $token,
+        ];
+
+
+        $res = $this->client->get('/api/polls/' . $pollId, [
             'headers' => $headers
         ]);
 
@@ -101,6 +118,53 @@ class VotingServices
     {
         $oldVoteScore->score = $scoreVoteData['score'];
         $oldVoteScore->update();
+    }
+
+    public function getQuizInfosByAccesses($votingToken, $accesses)
+    {
+        $userResponse = $this->signinUser($votingToken);
+
+        foreach ($accesses as $access) {
+            $res = array();
+            foreach ($access->votes as $quiz) {
+                $quizInfo = $this->getPollById($userResponse['token'], $quiz->vote_id);
+                array_push(
+                    $res,
+                    array(
+                        "id" => $quizInfo['_id'],
+                        "label" => $quizInfo['title'],
+                        "secret" => $quizInfo['secret'],
+                        "access_id" => $quiz->access_vote_id,
+                        "questions" => $quizInfo['questions']
+                    )
+
+                );
+                $access['quizs'] = $res;
+            }
+        }
+
+        return $accesses;
+    }
+
+    public function voteUser($user, Request $request)
+    {
+        $choicesNumbers =  $request->input('choiceNumbers');
+        if(is_string($choicesNumbers))
+            $choicesNumbers = json_decode($request->input('choiceNumbers'),true);
+
+        $res = $this->client->post('/api/polls/vote-static', [
+            'form_params' => [
+                "pollId" => $request->input('pollId'),
+                "questionId" => $request->input('questionId'),
+                "choiceNumbers" => $choicesNumbers,
+                "secret" => $request->input("secret"),
+                "accessId" => $request->input("accessId"),
+                "clientId" => $user->user_id
+            ]
+        ]);
+
+        return json_decode($res->getBody(), true);
+
     }
 
 
