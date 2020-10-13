@@ -186,6 +186,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('badge', 'CongressController@getCongressByIdBadge');
         Route::get('stats', 'CongressController@getStatsByCongressId');
         Route::get('statsAccess', 'CongressController@getStatsAccessByCongressId');
+        Route::get('statsStand', 'CongressController@getStatsStandByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
         Route::get('config', 'CongressController@getCongressConfigById');
         Route::post('/upload-logo', 'FileController@uploadLogo');

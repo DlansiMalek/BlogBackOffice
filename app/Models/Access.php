@@ -93,6 +93,9 @@ class Access extends Model
     {
         return $this->belongsToMany('App\Models\Pack', 'Access_Pack', 'access_id', 'pack_id');
     }
+    function tracking() {
+        return $this->hasMany(Tracking::class,'access_id','access_id');
+    }
 
 
 }

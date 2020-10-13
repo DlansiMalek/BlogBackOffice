@@ -416,9 +416,42 @@ class AccessServices
             $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
             }));
-            $accesss->unsetRelation('participants');
         }
         return $accesses    ;
+    }
+
+    public function getAccessPassedTime($access,$congress) {
+        $timePassed = array();
+        foreach($access as $acc) {
+            $acc['timePassed'] = 0;
+            foreach ($acc->participants as $part) {
+                $timePassed = 0;
+                if (isset($part->user_congresses[0])) {
+                foreach($part->user_congresses[0]->tracking as $key => $value) {
+                    $time1 = null;                   
+                    if($value->access_id == $acc->access_id &&  $value->action_id == 3 && (isset($part->user_congresses[0]->tracking[$key + 1]) && $part->user_congresses[0]->tracking[$key + 1]->action_id == 4)) {
+                        $time1 = new DateTime($part->user_congresses[0]->tracking[$key + 1]->date);                 
+                    } else if ($value->access_id == $acc->access_id && $value->action_id == 3 && !isset($part->user_congresses[0]->tracking[$key + 1])) {
+                        $time1 = new DateTime($congress->end_date);
+                    } else if ($value->action_id == 4) {
+                    break;
+                    }
+                    if ($time1) {
+                        $time2 = new DateTime($value->date);
+                        $interval = $time1->diff($time2);
+                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                        $timePassed+= $interval;                  
+                        $acc['timePassed']+= $timePassed;
+                    }
+                       
+                    }
+                    
+                }
+                }
+                
+            
+        }  
+        return $access;  
     }
 
     private function addSubAccess(Access $access, $sub)

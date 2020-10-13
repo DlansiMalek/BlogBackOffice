@@ -6,7 +6,7 @@ use App\Models\Stand;
 use App\Models\ResourceStand;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Storage;
-
+use DateTime;
 
 class StandServices
 {
@@ -53,6 +53,48 @@ class StandServices
         }
         
     }
+
+    public function getAllStandByCongressId($congressId, $relations)
+    {
+        $stands =  Stand::with($relations)
+            ->where("congress_id", "=", $congressId)
+            ->get();
+         return $stands;
+        }
+
+    public function getStandPassedTime($stands,$congress) {
+        foreach($stands as $stand) {
+            $stand['timePassed'] = 0;
+            $timePassed = 0;
+            for ($i = 0 ; $i< sizeof($stand->tracking); $i++) {  
+                $user_id = $stand->tracking[$i]->user_id;
+                $time1 = null;
+                for ($j = 1 ; $i< sizeof($stand->tracking)  ; $j++) {
+                    
+                    
+                    if ($stand->tracking[$j]->user_id == $user_id &&
+                    $stand->tracking[$j]->action_id == 4) {
+                        $time1 = new DateTime($stand->tracking[$j]->date);
+                    break;
+                    }
+                  
+                  
+                }
+                if (!$time1) {
+                    $time1 = new DateTime($congress->end_date);
+                }
+                
+                $time2 = new DateTime($stand->tracking[$i]->date);
+                $interval = $time1->diff($time2);
+                $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                $timePassed+= $interval;                
+            }
+            $stand['timePassed'] = $timePassed;
+            
+        }  
+        return $stands;
+    }
+        
 
     public function addResourceStand($resourceId, $stand_id)
     {
