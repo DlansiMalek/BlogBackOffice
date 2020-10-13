@@ -760,10 +760,6 @@ class CongressController extends Controller
         return response()->json(["status" => "success added demo congress"], 200);
     }
 
-    public function getTimePassed($congressId) {
-
-    }
-
     public function getStatsByCongressId($congressId)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)){
