@@ -69,9 +69,7 @@ class StandServices
             for ($i = 0 ; $i< sizeof($stand->tracking); $i++) {  
                 $user_id = $stand->tracking[$i]->user_id;
                 $time1 = null;
-                for ($j = 1 ; $i< sizeof($stand->tracking)  ; $j++) {
-                    
-                    
+                for ($j = 1 ; $j< sizeof($stand->tracking)  ; $j++) {
                     if ($stand->tracking[$j]->user_id == $user_id &&
                     $stand->tracking[$j]->action_id == 4) {
                         $time1 = new DateTime($stand->tracking[$j]->date);
