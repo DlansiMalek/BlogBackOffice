@@ -15,8 +15,10 @@ use App\Models\Location;
 use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\Payment;
+use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\Stand;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use JWTAuth;
@@ -487,7 +489,6 @@ class CongressServices
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
                         $submissionTitle = null, $communication_type = null, $submissions = [])
     {
-
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "<ul>";
@@ -550,14 +551,20 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
+        $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
+        $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;
         $template = str_replace('{{$submissionParams}}', $submissionsParms, $template);
+        $template = str_replace('{{$buttons}}', '
+                                                  <a href="{{$linkAccept}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
+                                                  <a href="{{$linkRefuse}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
+
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse]);
+
     }
 
-
-    function getMailType($name, $type = 'event')
+    public function getMailType($name, $type = 'event')
     {
         return MailType::where("name", "=", $name)
             ->where('type', '=', $type)
@@ -579,9 +586,13 @@ class CongressServices
         return Mail::find($id);
     }
 
-    public function getAccesssByCongressId($congress_id)
+    public function getAccesssByCongressId($congress_id, $name = null)
     {
-        return Access::with(['participants', 'attestation'])
+        return Access::with(['votes'])->where(function ($query) use ($name) {
+            if ($name) {
+                $query->where('name', '=', $name);
+            }
+        })
             ->where('congress_id', '=', $congress_id)
             ->get();
     }
@@ -702,4 +713,108 @@ class CongressServices
         return $congresses_filter;
 
     }
+
+
+    public function confirmPresence($congress_id, $user_id, $will_be_present)
+    {
+        $userCongress = UserCongress::where('user_id', '=', $user_id)
+            ->where('congress_id', '=', $congress_id)
+            ->first();
+        $userCongress->will_be_present = $will_be_present;
+        $userCongress->update();
+        return $userCongress;
+    }
+
+    public function getStands($congress_id, $name = null)
+    {
+        return Stand::where(function ($query) use ($name) {
+            if ($name) {
+                $query->where('name', '=', $name);
+            }
+        })
+            ->with(['docs'])
+            ->where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function getStandById($stand_id)
+    {
+        return Stand::where('congress_id', '=', $stand_id)->get();
+    }
+
+    public function getDocsByStands($stands)
+    {
+        $res = array();
+
+        foreach ($stands as $stand) {
+            foreach ($stand->docs as $doc) {
+                array_push(
+                    $res,
+                    array(
+                        "stand" => $stand->name,
+                        "path" => UrlUtils::getBaseUrl() . '/resource/' . $doc->path,
+                        "filename" => substr($doc->path, strpos($doc->path, ')') + 1),
+                        "version" => $doc->pivot->version
+                    )
+                );
+            }
+        }
+        return $res;
+    }
+
+    public function getUrlsByStandsAndAccess($stands, $accesses)
+    {
+        $res = array();
+
+        foreach ($stands as $stand) {
+            array_push(
+                $res,
+                array(
+                    "channel_name" => $stand->name,
+                    "url" => $stand->url_streaming
+                )
+            );
+        }
+
+        foreach ($accesses as $access) {
+            array_push(
+                $res,
+                array(
+                    "channel_name" => $access->name,
+                    "url" => $access->url_streaming
+                )
+            );
+        }
+        return $res;
+    }
+
+    public function modifyAllStatusStand($congressId, $status)
+    {
+        return Stand::where('congress_id', '=', $congressId)
+            ->update(['status' => $status]);
+    }
+
+    public function getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId)
+    {
+        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values'])
+            ->whereHas('user', function ($query) use ($search) {
+                $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+            })
+            ->where(function ($query) use ($actionId, $accessId, $standId) {
+                if ($actionId != -1) {
+                    $query->where('action_id', '=', $actionId);
+                }
+                if ($accessId != -1) {
+                    $query->where('access_id', '=', $accessId);
+                }
+                if ($standId != -1) {
+                    $query->where('stand_id', '=', $standId);
+                }
+            })
+            ->where('congress_id', '=', $congressId)
+            ->paginate($perPage);
+    }
+
+
 }

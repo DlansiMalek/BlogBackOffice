@@ -84,4 +84,9 @@ class SharedController extends Controller
     {
         return bcrypt($password);
     }
+
+    public function getAllActions()
+    {
+        return $this->sharedServices->getAllActions();
+    }
 }

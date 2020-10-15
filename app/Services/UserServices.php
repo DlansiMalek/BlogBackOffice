@@ -10,6 +10,7 @@ use App\Models\Evaluation_Inscription;
 use App\Models\FormInputResponse;
 use App\Models\Payment;
 use App\Models\ResponseValue;
+use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
@@ -53,27 +54,29 @@ class UserServices
         return $user;
     }
 
-    public function saveUserWithFbOrGoogle($user) {
+    public function saveUserWithFbOrGoogle($user)
+    {
         $name_array = explode(" ", $user->name);
-        $first_name =$name_array[0];
+        $first_name = $name_array[0];
         //make sure we get all the rest of his name
-        $last_name='';
-        for ($i=1;$i<count($name_array);$i++){
-        $last_name=$last_name. " ". $name_array[$i];
+        $last_name = '';
+        for ($i = 1; $i < count($name_array); $i++) {
+            $last_name = $last_name . " " . $name_array[$i];
         }
         $last_name = substr($last_name, 1); //Remove first space
 
-        $newUser=new User();
-        $newUser->email=$user->email;
-        $newUser->email_verified=1;
-        $newUser->first_name=$first_name;
-        $newUser->last_name=$last_name;
+        $newUser = new User();
+        $newUser->email = $user->email;
+        $newUser->email_verified = 1;
+        $newUser->first_name = $first_name;
+        $newUser->last_name = $last_name;
         $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
         $newUser->save();
-        
+
         return $newUser;
     }
+
     public function editerUser(Request $request, $newUser)
     {
         $newUser->first_name = $request->input('first_name');
@@ -423,38 +426,38 @@ class UserServices
                     }
                 }
             ]);
-            $users = $users->leftjoin('Payment', 'Payment.user_id', '=', 'User.user_id')
-                ->select('User.*', 'Payment.price', 'Payment.isPaid', 'Payment.payment_type_id')
-                ->where(function ($query) use ($search) {
-                    if ($search != "") {
-                        if (Str::lower($search) == 'payé') {
-                            $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 1);
-                        }
-                        if (Str::lower($search) == 'non payé') {
-                            $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 0);
-                        }
-                        if (Str::lower($search) == 'en ligne') {
-                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '4');
-                        }
-                        if (Str::lower($search) == 'cash') {
-                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '1');
-                        }
-                        if (Str::lower($search) == 'check') {
-                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '2');
-                        }
-                        if (Str::lower($search) == 'transfert') {
-                            $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id','=', '3');
-                        } else {
-                            $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                            $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                            $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                            $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
-                            $query->orWhereRaw('Payment.price like (?)', ["%{$search}%"]);
-
-                        }
+        /*$users = $users->leftjoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+            ->select('User.*', 'Payment.price', 'Payment.isPaid', 'Payment.payment_type_id')
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    if (Str::lower($search) == 'payé') {
+                        $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 1);
+                    }
+                    if (Str::lower($search) == 'non payé') {
+                        $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 0);
+                    }
+                    if (Str::lower($search) == 'en ligne') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '4');
+                    }
+                    if (Str::lower($search) == 'cash') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '1');
+                    }
+                    if (Str::lower($search) == 'check') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '2');
+                    }
+                    if (Str::lower($search) == 'transfert') {
+                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '3');
+                    } else {
+                        $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('Payment.price like (?)', ["%{$search}%"]);
 
                     }
-                });
+
+                }
+            });*/ //TODO
 
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
@@ -479,13 +482,13 @@ class UserServices
                 })
                 ->orderBy($tri, $order);
         }
-        if ($order && $tri=='score') {
+        if ($order && $tri == 'score') {
             if (!$admin_id) {
                 $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
-                ->where('User_Congress.congress_id', '=', $congressId)->orderBy('globale_score',$order);
+                    ->where('User_Congress.congress_id', '=', $congressId)->orderBy('globale_score', $order);
             } else {
-                $users = $users->join('Evaluation_Inscription','Evaluation_Inscription.user_id','=','User.user_id')
-                ->where('Evaluation_Inscription.congress_id','=',$congressId)->where('admin_id','=',$admin_id)->orderBy('note',$order);
+                $users = $users->join('Evaluation_Inscription', 'Evaluation_Inscription.user_id', '=', 'User.user_id')
+                    ->where('Evaluation_Inscription.congress_id', '=', $congressId)->where('admin_id', '=', $admin_id)->orderBy('note', $order);
             }
         }
         return $perPage ? $users->paginate($perPage) : $users->get();
@@ -646,6 +649,46 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             })
             ->delete();
+    }
+
+    public function mappingPeacksourceData($users)
+    {
+        $res = array();
+
+        foreach ($users as $user) {
+            $channelName = Utils::getChannelNameByUser($user);
+            array_push($res,
+                array(
+                    "user_id" => $user->user_id,
+                    "name" => $user->last_name . ' ' . $user->first_name,
+                    "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
+                    "channel_name" => $channelName,
+                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
+                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
+                )
+            );
+        }
+
+        return $res;
+    }
+
+    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment, $userCalledId)
+    {
+        $tracking = new Tracking();
+
+        $tracking->congress_id = $congressId;
+        $tracking->action_id = $actionId;
+        $tracking->user_id = $userId;
+        $tracking->access_id = $accessId;
+        $tracking->stand_id = $standId;
+        $tracking->type = $type;
+        $tracking->comment = $comment;
+        $tracking->user_call_id = $userCalledId;
+        $tracking->date = date('Y-m-d H:i:s');
+
+        $tracking->save();
+
+        return $tracking;
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -1104,6 +1147,7 @@ class UserServices
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
+        if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1129,6 +1173,7 @@ class UserServices
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
+        if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
 
         $user->update();
         return $user;
@@ -1143,7 +1188,9 @@ class UserServices
             }, 'user'])
             ->first();
     }
-    public function getUsersCongressByCongressId($congress_id){
+
+    public function getUsersCongressByCongressId($congress_id)
+    {
         return UserCongress::where('congress_id', '=', $congress_id)
             ->get();
     }

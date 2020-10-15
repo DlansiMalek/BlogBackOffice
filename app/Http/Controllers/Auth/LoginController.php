@@ -83,9 +83,10 @@ class LoginController extends Controller
             return response()->json(['error' => 'invalid credentials'], 401);
         }
 
-        // if ($user->email_verified == 0) {
-        //     return response()->json(['error' => 'email not verified'], 405);
-        // }
+        // TODO Je le déscative pour l'instant (à valider la tache d'envoi de mail)
+        /*if ($user->email_verified == 0) {
+            return response()->json(['error' => 'email not verified'], 405);
+        }*/
 
         return response()->json(['user' => $user, 'token' => $token], 200);
     }
