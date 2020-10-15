@@ -63,34 +63,39 @@ class StandServices
         }
 
     public function getStandPassedTime($stands,$congress) {
+        $timePassedArray = array();
         foreach($stands as $stand) {
             $stand['timePassed'] = 0;
-            $timePassed = 0;
-            for ($i = 0 ; $i< sizeof($stand->tracking); $i++) {  
-                $user_id = $stand->tracking[$i]->user_id;
-                $time1 = null;
-                for ($j = 1 ; $i< sizeof($stand->tracking)  ; $j++) {
-                    
-                    
-                    if ($stand->tracking[$j]->user_id == $user_id &&
-                    $stand->tracking[$j]->action_id == 4) {
-                        $time1 = new DateTime($stand->tracking[$j]->date);
-                    break;
-                    }
-                  
-                  
-                }
-                if (!$time1) {
-                    $time1 = new DateTime($congress->end_date);
-                }
-                
-                $time2 = new DateTime($stand->tracking[$i]->date);
-                $interval = $time1->diff($time2);
-                $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                $timePassed+= $interval;                
+            if (sizeof($stand->tracking) > 0) {
+            $timePassedArrayPerStand = array_fill(
+                0,$stand->tracking[sizeof($stand->tracking) - 1]->user_id + 1,0);
             }
-            $stand['timePassed'] = $timePassed;
-            
+            for ($i = 0 ; $i< sizeof($stand->tracking); $i++) { 
+                $time1 = null;    
+                if ($stand->tracking[$i]->action_id == 3 &&
+                 isset($stand->tracking[$i + 1]) && $stand->tracking[$i +1]->action_id == 4 &&
+                  $stand->tracking[$i +1]->user_id == $stand->tracking[$i]->user_id ) {   
+                    $time2 = new DateTime($stand->tracking[$i]->date);            
+                    $time1 = new DateTime($stand->tracking[$i + 1]->date);
+                }
+             else if ($stand->tracking[$i]->action_id == 3 &&
+              (!isset($stand->tracking[$i + 1])  || $stand->tracking[$i + 1]->user_id!= $stand->tracking[$i]->user_id ) ) {
+                $time2 = new DateTime($stand->tracking[$i]->date);     
+                  if (date('Y-m-d h:i:s') > $congress->end_date) {
+                    $time1 = new DateTime($congress->end_date . '18:00:00');
+                  
+                  } else {
+                    $time1 = new DateTime(date('Y-m-d h:i:s'));
+                  }
+              }
+              if ($time1) {
+              $interval = $time1->diff($time2);
+              $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+              $timePassedArrayPerStand[$stand->tracking[$i]->user_id]+= $interval;
+              $stand['timePassed'] +=  $timePassedArrayPerStand[$stand->tracking[$i]->user_id];
+              }
+
+            }
         }  
         return $stands;
     }

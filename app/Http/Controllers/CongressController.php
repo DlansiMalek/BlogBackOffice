@@ -796,12 +796,12 @@ class CongressController extends Controller
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
                     $query->where('privilege_id', '=', 3);
-                    $query->with(['tracking' => function($q) {
-                        $q->whereIn('action_id',[3,4]);
-                    }]);
                 },
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
+                },
+                'tracking' => function($query) use ($congressId) {
+                    $query->whereIn('action_id',[3,4])->where('congress_id','=',$congressId)->orderBy('user_id');
                 }
                 ]);
          $access = $this->accessServices->getAccessPassedTime($access,$congress);

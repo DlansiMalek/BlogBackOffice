@@ -244,10 +244,16 @@ class CongressServices
         foreach($congress->user_congresses as $user) {
             foreach($user->tracking as $key => $value  ){
                 $time1 = null;
-                    if ($value->action_id == 1 && (isset($user->tracking[$key + 1]) && $user->tracking[$key + 1]->action_id == 2) ) {
+                    if ($value->action_id == 1 && (isset($user->tracking[$key + 1]) && $user->tracking[$key + 1]->action_id == 2 &&
+                    $user->tracking[$key +1]->user_id == $user->tracking[$key]->user_id ) ) {
                         $time1 = new DateTime($user->tracking[$key + 1]->date);
-                    } else if ($value->action_id == 1 && (!isset($user->tracking[$key + 1]))) {
-                        $time1 = new DateTime($congress->end_date);
+                    } else if ($value->action_id == 1 && (!isset($user->tracking[$key + 1]) || $user->tracking[$key + 1]->user_id!= $user->tracking[$key]->user_id )) {
+                        if (date('Y-m-d h:i:s') > $congress->end_date) {
+                            $time1 = new DateTime($congress->end_date . '18:00:00');
+                          
+                          } else {
+                            $time1 = new DateTime(date('Y-m-d h:i:s'));
+                          }
                     } else if ($value->action_id == 2) {
                     break;
                     }
@@ -523,7 +529,7 @@ class CongressServices
     }
 
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null, $buttons = null)
+                        $submissionTitle = null, $communication_type = null)
 
     {
         $accesses = "";

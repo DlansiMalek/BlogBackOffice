@@ -424,33 +424,39 @@ class AccessServices
         $timePassed = array();
         foreach($access as $acc) {
             $acc['timePassed'] = 0;
-            foreach ($acc->participants as $part) {
-                $timePassed = 0;
-                if (isset($part->user_congresses[0])) {
-                foreach($part->user_congresses[0]->tracking as $key => $value) {
-                    $time1 = null;                   
-                    if($value->access_id == $acc->access_id &&  $value->action_id == 3 && (isset($part->user_congresses[0]->tracking[$key + 1]) && $part->user_congresses[0]->tracking[$key + 1]->action_id == 4)) {
-                        $time1 = new DateTime($part->user_congresses[0]->tracking[$key + 1]->date);                 
-                    } else if ($value->access_id == $acc->access_id && $value->action_id == 3 && !isset($part->user_congresses[0]->tracking[$key + 1])) {
-                        $time1 = new DateTime($congress->end_date);
-                    } else if ($value->action_id == 4) {
-                    break;
+            if (sizeof($acc->tracking) > 0) {
+                $timePassedArrayPerAcc = array_fill(
+                    0,$acc->tracking[sizeof($acc->tracking) - 1]->user_id + 1,0);
+                }
+                for ($i = 0 ; $i< sizeof($acc->tracking); $i++) { 
+                    $time1 = null;    
+                    if ($acc->tracking[$i]->action_id == 3 &&
+                     isset($acc->tracking[$i + 1]) && ($acc->tracking[$i +1]->action_id == 4 && $acc->tracking[$i +1]->user_id == $acc->tracking[$i]->user_id) ) {   
+                        $time1 = new DateTime($acc->tracking[$i]->date);            
+                        $time2 = new DateTime($acc->tracking[$i + 1]->date);
                     }
-                    if ($time1) {
-                        $time2 = new DateTime($value->date);
-                        $interval = $time1->diff($time2);
-                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                        $timePassed+= $interval;                  
-                        $acc['timePassed']+= $timePassed;
-                    }
-                       
-                    }
-                    
+                 else if ($acc->tracking[$i]->action_id == 3 &&
+                  (!isset($acc->tracking[$i + 1]) || ($acc->tracking[$i + 1]->user_id!=$acc->tracking[$i]->user_id)  ) ) {
+                    $time1 = new DateTime($acc->tracking[$i]->date);     
+                      if (date('Y-m-d h:i:s') > $congress->end_date) {
+                        $time2 = new DateTime($congress->end_date . '18:00:00');
+                      
+                      } else {
+                        $time2 = new DateTime(date('Y-m-d h:i:s'));
+                      }
+                  }
+                  if ($time1) {
+                  $interval = $time2->diff($time1);
+                  $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                  $timePassedArrayPerAcc[$acc->tracking[$i]->user_id]+= $interval;
+                  $acc['timePassed'] +=  $timePassedArrayPerAcc[$acc->tracking[$i]->user_id];
+                  }
+    
                 }
                 }
                 
             
-        }  
+        
         return $access;  
     }
 
