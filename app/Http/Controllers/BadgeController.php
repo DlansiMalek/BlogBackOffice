@@ -54,8 +54,9 @@ class BadgeController extends Controller
             }
             $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $request->input('privilegeId'));
             $this->badgeServices->activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator);
-            return response()->json($this->congressServices->getMinimalCongress($congressId));
-        } catch (Exception $e) {
+            return response()->json($this->congressServices->getMinimalCongressById($congressId));
+        }
+        catch (Exception $e) {
             Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
@@ -140,12 +141,8 @@ class BadgeController extends Controller
 
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!($adminCongress = (AdminCongress::where('congress_id', '=', $congressId)
-                ->where('admin_id', '=', $admin->admin_id)->first()))) {
+            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
                 return response()->json(['error' => 'bad request'], 400);
-            }
-            if ($adminCongress->privilege_id != 1) {
-                return response()->json(['error' => 'forbidden'], 403);
             }
             $badges = $this->badgeServices->getBadgesByCongress($congressId);
             return response($badges, 200);
@@ -169,12 +166,8 @@ class BadgeController extends Controller
         }
         try {
             $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!($adminCongress = (AdminCongress::where('congress_id', '=', $congressId)
-                ->where('admin_id', '=', $admin->admin_id)->first()))) {
+            if (!$adminCongress = $this->adminServices->getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin->admin_id, 1)) {
                 return response()->json(['error' => 'bad request'], 400);
-            }
-            if ($adminCongress->privilege_id != 1) {
-                return response()->json(['error' => 'forbidden'], 403);
             }
             $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $privilegeId);
             $response = $this->badgeServices->activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator);
@@ -185,6 +178,7 @@ class BadgeController extends Controller
 
         }
     }
+
 
     function deleteBadge($congressId, $badgeId)
     {
