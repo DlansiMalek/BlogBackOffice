@@ -103,7 +103,7 @@ class PrivilegeServices
         $privileges = Privilege::where('priv_reference', '=', $privilege->priv_reference)
             ->get()->toArray();
         if (count($privileges) == 0) {
-            $privilege_base_config = PrivilegeConfig::where('privilege_id', '=', $privilege_id)
+            $privilege_base_config = PrivilegeConfig::where('privilege_id', '=', $privilege->priv_reference)
                 ->where('congress_id', '=', $congress_id)
                 ->where('status', '=', 0)->first();
             $privilege_base_config->delete();

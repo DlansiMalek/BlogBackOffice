@@ -411,12 +411,12 @@ Route::group(['prefix' => 'organization'], function () {
 //Privilege API
 
    Route::group(['prefix' => 'privilege'], function () {
-    Route::get('{congress_id}/list-base', 'SharedController@getPrivilegesWithBadges');
-    Route::get('{congress_id}/list-correspondence', 'SharedController@getAllThePrivileges');
-    Route::post('addPrivilege','SharedController@addPrivilege');
-    Route::get('getPrivilegeById/{id_privilege}/{congress_id}','sharedController@checkValidPrivilege');
-    Route::delete('{congress_id}/deletePrivilege/{id_privilege}','sharedController@deletePrivilege');
-    Route::get('{congress_id}/hidePrivilege/{id_privilege}','SharedController@hidePrivilege');
+    Route::get('{congress_id}/list-base', 'CongressController@getPrivilegesWithBadges');
+    Route::get('{congress_id}/list-correspondence', 'CongressController@getAllThePrivileges');
+    Route::post('addPrivilege','CongressController@addPrivilege');
+    Route::get('getPrivilegeById/{id_privilege}/{congress_id}','CongressController@checkValidPrivilege');
+    Route::delete('{congress_id}/deletePrivilege/{id_privilege}','CongressController@deletePrivilege');
+    Route::get('{congress_id}/hidePrivilege/{id_privilege}','CongressController@hidePrivilege');
   });
 
 

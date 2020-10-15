@@ -899,4 +899,68 @@ class CongressController extends Controller
         return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
 
     }
+
+
+    public function getAllThePrivileges($congress_id)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin not found'], 404);
+        }
+        return response()->json($this->sharedServices->getAllThePrivileges($congress_id));
+    }
+
+    public function addPrivilege(Request $request)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin not found'], 404);
+        }
+        $privilege = $this->privilegeServices->addPrivilege(
+            $request->input('name'),
+            $request->input('priv_reference'),
+            $request->input('congress_id')
+        );
+        return response()->json(['response' => $privilege], 200);
+    }
+
+
+    public function deletePrivilege($congress_id, $id_privilege)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin not found'], 404);
+        }
+        if (!$privilege = $this->privilegeServices->getPrivilegeById($id_privilege)) {
+            return response()->json(['response' => 'Privilege not found'],404);
+        }
+        $this->privilegeServices->deletePrivilege($id_privilege, $congress_id, $privilege);
+        $privileges = $this->sharedServices->getAllThePrivileges($congress_id);
+        return response()->json(['response' => 'deleted successfully!', 'privileges' => $privileges ],200);
+
+    }
+
+    public function checkValidPrivilege ($id_privilege,$congress_id)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin not found'], 404);
+        }
+        return $this->privilegeServices->checkValidPrivilege($id_privilege);
+    }
+
+    public function hidePrivilege($congress_id, $id_privilege)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin not found'], 404);
+        }
+        $this->privilegeServices->hidePrivilege($congress_id, $id_privilege);
+        $privileges = $this->sharedServices->getPrivilegesWithBadges($congress_id);
+        return response()->json(['response' => 'hided successfully!', 'privileges' => $privileges ],200);
+    }
+
+
+    public function getPrivilegesWithBadges($congress_id)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        return response()->json($this->sharedServices->getPrivilegesWithBadges($congress_id));
+    }
 }
