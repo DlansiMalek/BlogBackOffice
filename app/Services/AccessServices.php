@@ -418,13 +418,15 @@ class AccessServices
             $accesss->nb_participants = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0;
             }));
-            $accesss->nb_presence = sizeof(f(json_decode($accesss->participants, true), function ($item) {
+            $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
             }));
         }
         return $accesses    ;
     }
 
+
+                    
     private function addSubAccess(Access $access, $sub)
     {
         $sub_access = new Access();

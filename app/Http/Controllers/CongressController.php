@@ -822,23 +822,6 @@ class CongressController extends Controller
 
 
     }
-    public function getStatsStandByCongressId($congressId)
-    {
-        //Cette stats concerne les participants et les ateliers qui ont choisit.
-        if (!$congress = $this->congressServices->getCongressById($congressId)){
-            return response()->json('no congress found' ,404);
-        }
-        $stands = $this->standServices->getAllStandByCongressId($congressId,
-        ['tracking' => function($query) use ($congressId) {
-            $query->whereIn('action_id',[3,4])->where('congress_id','=',$congressId)->orderBy('user_id');
-        }]
-    );
-      
-        $stands = $this->standServices->getStandPassedTime($stands,$congress);
-        return response()->json($stands);
-
-
-    }
 
     public function getUserCongress(Request $request)
     {

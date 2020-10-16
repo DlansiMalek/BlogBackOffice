@@ -54,6 +54,16 @@ class StandServices
         
     }
 
+    public function getAllStandByCongressId($congressId)
+    {
+        $stands =  Stand::where("congress_id", "=", $congressId)
+        ->select('stand_id','name')
+            ->get();
+         return $stands;
+        }
+
+        
+
     public function addResourceStand($resourceId, $stand_id)
     {
         $resourceStand = new ResourceStand();
