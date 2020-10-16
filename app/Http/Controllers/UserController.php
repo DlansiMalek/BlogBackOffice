@@ -1697,6 +1697,11 @@ class UserController extends Controller
             return response()->json(['response' => 'Bad request type must be [STAND|ACCESS]'], 400);
         }
 
+        // LOGOUT & LEAVE IF TRACK STILL OPEN
+        if ($request->input('action') == 'LOGIN') {
+             $this->userServices->closeTracking($congressId,$userId);
+        }
+
         $standId = null;
         $accessId = null;
         if ($request->input('type') == 'STAND') {

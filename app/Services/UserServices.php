@@ -32,6 +32,7 @@ class UserServices
     {
         ini_set('max_execution_time', 300);
     }
+
     public function getAllUsers()
     {
         return User::orderBy('updated_at', 'asc')
@@ -638,7 +639,7 @@ class UserServices
         return $res;
     }
 
-    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment, $userCalledId)
+    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment, $userCalledId, $date = null)
     {
         $tracking = new Tracking();
 
@@ -650,11 +651,23 @@ class UserServices
         $tracking->type = $type;
         $tracking->comment = $comment;
         $tracking->user_call_id = $userCalledId;
-        $tracking->date = date('Y-m-d H:i:s');
+        $tracking->date = $date ? $date : date('Y-m-d H:i:s');
 
         $tracking->save();
 
         return $tracking;
+    }
+
+    public function closeTracking($congressId, $userId)
+    {
+        $tracking = $this->getLastTracking($congressId, $userId);
+
+        if ($tracking) {
+            if($tracking->action_id === 3)
+            $this->addTracking($congressId, 4, $userId, $tracking->access_id, $tracking->stand_id, $tracking->type, 'FOCED CLOSE', null, $tracking->date);
+            if($tracking->action_id !== 2)
+            $this->addTracking($congressId, 2, $userId, null, null, null, 'FOCED CLOSE', null, $tracking->date);
+        }
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -1155,6 +1168,16 @@ class UserServices
             ->first();
     }
 
+    public function getUsersTracking($congress_id)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id)->where('privilege_id', '=', 3);
+        })->with(['tracking' => function ($query) {
+            $query->whereIn('action_id', [1, 2, 3, 4])->orderBy('date');
+        }])
+            ->get();
+    }
+
     public function getUsersCongressByCongressId($congress_id)
     {
         return UserCongress::where('congress_id', '=', $congress_id)
@@ -1575,5 +1598,12 @@ class UserServices
         //users who got refused with mails refused
         return User::whereIn('user_id', $accepted_user_id_array)
             ->whereNotIn('email', $emails_array)->get();
+    }
+
+    private function getLastTracking($congressId, $userId)
+    {
+        return Tracking::where('user_id', '=', $userId)
+            ->where('congress_id', '=', $congressId)
+            ->latest()->get()->first();
     }
 }
