@@ -418,51 +418,11 @@ class AccessServices
             $accesss->nb_participants = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0;
             }));
-            $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+            $accesss->nb_presence = sizeof(f(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
             }));
         }
         return $accesses    ;
-    }
-
-    public function getAccessPassedTime($access,$congress) {
-        $timePassed = array();
-        foreach($access as $acc) {
-            $acc['timePassed'] = 0;
-            if (sizeof($acc->tracking) > 0) {
-                $timePassedArrayPerAcc = array_fill(
-                    0,$acc->tracking[sizeof($acc->tracking) - 1]->user_id + 1,0);
-                }
-                for ($i = 0 ; $i< sizeof($acc->tracking); $i++) { 
-                    $time1 = null;    
-                    if ($acc->tracking[$i]->action_id == 3 &&
-                     isset($acc->tracking[$i + 1]) && ($acc->tracking[$i +1]->action_id == 4 && $acc->tracking[$i +1]->user_id == $acc->tracking[$i]->user_id) ) {   
-                        $time1 = new DateTime($acc->tracking[$i]->date);            
-                        $time2 = new DateTime($acc->tracking[$i + 1]->date);
-                    }
-                 else if ($acc->tracking[$i]->action_id == 3 &&
-                  (!isset($acc->tracking[$i + 1]) || ($acc->tracking[$i + 1]->user_id!=$acc->tracking[$i]->user_id)  ) ) {
-                    $time1 = new DateTime($acc->tracking[$i]->date);     
-                      if (date('Y-m-d h:i:s') > $congress->end_date) {
-                        $time2 = new DateTime($congress->end_date . '18:00:00');
-                      
-                      } else {
-                        $time2 = new DateTime(date('Y-m-d h:i:s'));
-                      }
-                  }
-                  if ($time1) {
-                  $interval = $time2->diff($time1);
-                  $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                  $timePassedArrayPerAcc[$acc->tracking[$i]->user_id]+= $interval;
-                  $acc['timePassed'] +=  $timePassedArrayPerAcc[$acc->tracking[$i]->user_id];
-                  }
-    
-                }
-                }
-                
-            
-        
-        return $access;  
     }
 
     private function addSubAccess(Access $access, $sub)

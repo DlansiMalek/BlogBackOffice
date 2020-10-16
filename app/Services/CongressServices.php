@@ -224,13 +224,7 @@ class CongressServices
                 'accesss.topic',
                 'accesss.type',
                 'accesss.votes',
-                'attestation',
-                'user_congresses' => function ($query) {
-                    $query->where('privilege_id','=',3);
-                    $query->with(['tracking' => function($q)  {
-                        $q->whereIn('action_id',[1,2]);
-                    }]);
-                }
+                'attestation'
             ])
             ->where("congress_id", "=", $id_Congress)
             ->first();
@@ -417,38 +411,7 @@ class CongressServices
     return [$access,$stands,$congress['totalTimePassed']];
     }
 
-    public function getTimePassedInCongress($congress) {
-        $timePassed = 0;
-        $congress['timePassed'] = 0;
-        foreach($congress->user_congresses as $user) {
-            foreach($user->tracking as $key => $value  ){
-                $time1 = null;
-                    if ($value->action_id == 1 && (isset($user->tracking[$key + 1]) && $user->tracking[$key + 1]->action_id == 2 &&
-                    $user->tracking[$key +1]->user_id == $user->tracking[$key]->user_id ) ) {
-                        $time1 = new DateTime($user->tracking[$key + 1]->date);
-                    } else if ($value->action_id == 1 && (!isset($user->tracking[$key + 1]) || $user->tracking[$key + 1]->user_id!= $user->tracking[$key]->user_id )) {
-                        if (date('Y-m-d h:i:s') > $congress->end_date) {
-                            $time1 = new DateTime($congress->end_date . '18:00:00');
-                          
-                          } else {
-                            $time1 = new DateTime(date('Y-m-d h:i:s'));
-                          }
-                    }
-                    if ($time1) {
-                      
-                        $time2 = new DateTime($value->date);
-                        $interval = $time1->diff($time2);
-                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                        $timePassed+= $interval;
-                        $congress['timePassed'] = $timePassed; 
-                    }
-                    
-            }
-            
-           
-        }
-        return $congress['timePassed'];
-    }
+   
 
     public function getDemoCongress($name)
     {
