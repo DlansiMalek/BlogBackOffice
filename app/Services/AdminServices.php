@@ -505,4 +505,8 @@ class AdminServices
         return $admin;
     }
 
+    public function getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin_id, int $int)
+    {
+    }
+
 }
