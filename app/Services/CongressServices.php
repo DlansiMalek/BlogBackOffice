@@ -237,8 +237,6 @@ class CongressServices
         $congress['totalTimePassed'] = 0;
         foreach($users as $user) {
             $user['timePassedCongress'] = 0;
-            $user['timePassedPerAccess'] = array();
-            $user['timePassedPerStand'] = array();
             $usertimePassedPerStand = [];
             $usertimePassedPerAcc = [];
             $timeCongess1 = null;
@@ -248,7 +246,7 @@ class CongressServices
             $timeStand1 = null;
             $timeStand2 = null;
             foreach($user->tracking as $key => $tracking) {
-          
+                
                 if ($tracking->action_id == 1) {
                     $timeCongess1 = new DateTime($tracking->date);
                 }
@@ -264,23 +262,29 @@ class CongressServices
                 
                 }
                 if ($tracking->action_id == 3) {
-                    if ($tracking->access_id && !isset($usertimePassedPerAcc[$tracking->access_id])) {
+                    
+                    if ($tracking->access_id ) {
+                        if (!isset($usertimePassedPerAcc[$tracking->access_id])) {
                         $usertimePassedPerAcc[$tracking->access_id] = ['access_id' => $tracking->access_id , 'timePassed' => 0];
-                    //  $usertimePassedPerAcc = array_fill(0,$tracking->access_id + 1,['access_id' => $tracking->access_id , 'timePassed' => 0]);  
+                        }
                       $timeAccess1 = new DateTime($tracking->date);
-                } else if ($tracking->stand_id && !isset($usertimePassedPerStand[$tracking->stand_id]) ) {
-                    $usertimePassedPerStand[$tracking->stand_id] = ['stand_id' => $tracking->stand_id , 'timePassed' => 0];
-                    // $usertimePassedPerStand = array_fill(0,$tracking->stand_id + 1,['stand_id' => $tracking->stand_id , 'timePassed' => 0]);  
+                      
+                } else if ($tracking->stand_id) {
+                    if (!isset($usertimePassedPerStand[$tracking->stand_id])) {
+                    $usertimePassedPerStand[$tracking->stand_id] = ['stand_id' => $tracking->stand_id , 'timePassed' => 0];  
+                    }
                     $timeStand1 = new DateTime($tracking->date);
- 
                 }
             
             } 
             if ($tracking->action_id == 4  ) {
-
-                    if ($tracking->access_id &&  isset($usertimePassedPerAcc[$tracking->access_id]) ) {
+          
+                    if ($tracking->access_id) {
+                        
                         $timeAccess2 = new DateTime($tracking->date);
+
                           if ($timeAccess2 && $timeAccess1) {
+                      
                                 $interval = $timeAccess2->diff($timeAccess1);
                                 $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
                                 $usertimePassedPerAcc[$tracking->access_id]['timePassed'] += $interval;
@@ -290,72 +294,26 @@ class CongressServices
                           }
                           
                     }
-                    if ($tracking->stand_id &&  isset($usertimePassedPerStand[$tracking->stand_id]) ) {
+                    if ($tracking->stand_id) {
+                      
                         $timeStand2 = new DateTime($tracking->date);
                           if ($timeStand1 && $timeStand2) {
+                           
                                 $interval = $timeStand2->diff($timeStand1);
                                 $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                                $usertimePassedPerStand[$tracking->stand_id]['timePassed'] += $interval   ;
                                 $usertimePassedPerStand[$tracking->stand_id]['stand_id'] = $tracking->stand_id;
-                                $usertimePassedPerStand[$tracking->stand_id]['timePassed'] += $interval;
+                               
                                 $timeStand2 = null;
                                 $timeStand1 = null;
                                 
                           }
                         
                     }
-            }
-                if ($key == sizeof($user->tracking ) - 1 &&   $timeCongess1 && !$timeCongess2) {
-                    if (date('Y-m-d h:i:s') > $congress->end_date && $timeCongess1 < new DateTime($congress->end_date.'18:00:00')) {
-                        $timeCongess2 = new DateTime($congress->end_date . '18:00:00');
-                      
-                      } else if (date('Y-m-d h:i:s') < $congress->end_date) {
-                        $timeCongess2 = new DateTime(date('Y-m-d h:i:s'));
-                      }
-                      if ($timeCongess2 && $timeCongess1) {
-                            $interval = $timeCongess2->diff($timeCongess1);
-                            $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                            $user['timePassedCongress'] += $interval;
-                      }
-                  $timeCongess1 = null;
-                  $timeCongess2 = null;
-                }
-                if ( $key == sizeof($user->tracking ) - 1  && $timeAccess1 && !$timeAccess2) {
-           
-                    if (date('Y-m-d h:i:s') > $congress->end_date && $timeAccess1 < new DateTime($congress->end_date.'18:00:00')) {
-                        $timeAccess2 = new DateTime($congress->end_date . '18:00:00');
-                      } else if (date('Y-m-d h:i:s') < $congress->end_date) {
-                        $timeAccess2 = new DateTime(date('Y-m-d h:i:s'));
-                      }
-                      if ($timeAccess2 && $timeAccess1) {
-                        $interval = $timeAccess2->diff($timeAccess1);
-                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                        $usertimePassedPerAcc[$tracking->access_id]['timePassed'] += $interval;
-                        $usertimePassedPerAcc[$tracking->access_id]['access_id'] = $tracking->access_id;
-                       
-                      }
-                  $timeAccess1 = null;
-                  $timeAccess2 = null;
-                }
-                if ($key == sizeof($user->tracking ) - 1 && $tracking->action_id == 3  && $timeStand1 && !$timeStand2) {
-                    if (date('Y-m-d h:i:s') > $congress->end_date && $timeStand1 < new DateTime($congress->end_date.'18:00:00')) {
-                        $timeStand2 = new DateTime($congress->end_date . '18:00:00');
-                         
-                      } else if (date('Y-m-d h:i:s') < $congress->end_date) {
-                        $timeStand2 = new DateTime(date('Y-m-d h:i:s'));
-                         
-                      }
-                      if ($timeStand1 && $timeStand2) {
-                        $interval = $timeStand2->diff($timeStand1);
-                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
-                        $usertimePassedPerStand[$tracking->stand_id]['stand_id'] = $tracking->stand_id;
-                        $usertimePassedPerStand[$tracking->stand_id]['timePassed'] += $interval;
-                        
-                      }
-                  $timeStand1 = null;
-                  $timeStand2 = null;
-                }
-                }
+            } 
+                } 
                 $user['timePassedPerStand'] = $usertimePassedPerStand;
+               
                 $user['timePassedPerAccess'] = $usertimePassedPerAcc;
                 $congress['totalTimePassed'] += $user['timePassedCongress'];
             }
