@@ -54,10 +54,10 @@ class StandServices
         
     }
 
-    public function getAllStandByCongressId($congressId, $relations)
+    public function getAllStandByCongressId($congressId)
     {
-        $stands =  Stand::with($relations)
-            ->where("congress_id", "=", $congressId)
+        $stands =  Stand::where("congress_id", "=", $congressId)
+        ->select('stand_id','name')
             ->get();
          return $stands;
         }

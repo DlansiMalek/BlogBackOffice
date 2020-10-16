@@ -19,6 +19,7 @@ use App\Models\UserAccess;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Mpdf\Tag\Select;
 
 class AccessServices
 {
@@ -185,6 +186,10 @@ class AccessServices
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
+    }
+
+    public function getAccesssByCongressId($congress_id) {
+        return Access::where('congress_id','=',$congress_id)->select('access_id')->get();
     }
 
     public function deleteAccess($access_id)

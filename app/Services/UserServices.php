@@ -1188,6 +1188,14 @@ class UserServices
             }, 'user'])
             ->first();
     }
+    public function getUsersTracking($congress_id) {
+        return User::whereHas('user_congresses' , function($query)  use($congress_id){
+            $query->where('congress_id','=',$congress_id)->where('privilege_id','=',3);
+        })->with( ['tracking'=>function($query) {
+            $query->whereIn('action_id',[1,2,3,4])->orderBy('date');
+        }])
+        ->get();
+    }
 
     public function getUsersCongressByCongressId($congress_id)
     {

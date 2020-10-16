@@ -771,7 +771,20 @@ class CongressController extends Controller
         $gratuitNb = $this->paymentServices->getFreeUserByCongressId($congressId);
         $totalPresenceUsers = $this->congressServices->getParticipantsCount($congressId, null, 1);
         $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, 3, 1);
-        $timePassed = $this->congressServices->getTimePassedInCongress($congress);
+        $users = $this->userServices->getUsersTracking($congressId);
+        $access = $this->accessServices->getAllAccessByCongress($congressId, null,
+            [
+                'participants.user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                    $query->where('privilege_id', '=', 3);
+                },
+                'participants.payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }
+        ]);
+        $stands = $this->standServices->getAllStandByCongressId($congressId);
+        $usersData = $this->congressServices->getTimePassedInCongressAccessAndStand($users,$congress,$access,$stands);
+
         return response()->json([
             'total_users' => $totalUsers,
             'participant_users' => $participantUsers,
@@ -779,7 +792,8 @@ class CongressController extends Controller
             'total_free' => $gratuitNb,
             'total_presence_users' => $totalPresenceUsers,
             'total_presence_participants' => $totalParPresenceUsers,
-            'timePassed' => $timePassed
+            'usersData' => $usersData
+            // 'timePassed' => $timePassed
         ]);
 
 
@@ -791,6 +805,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)){
             return response()->json('no congress found' ,404);
         }
+
         $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
@@ -799,13 +814,11 @@ class CongressController extends Controller
                 },
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                },
-                'tracking' => function($query) use ($congressId) {
-                    $query->whereIn('action_id',[3,4])->where('congress_id','=',$congressId)->orderBy('user_id');
                 }
-                ]);
-         $access = $this->accessServices->getAccessPassedTime($access,$congress);
-     
+        ]);
+        
+        //  $access = $this->accessServices->getAccessPassedTime($access,$congress);
+                
         return response()->json($access);
 
 
