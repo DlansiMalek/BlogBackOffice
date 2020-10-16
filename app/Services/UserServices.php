@@ -28,6 +28,10 @@ class UserServices
 
     private $path = 'profile-pic/';
 
+    public function __construct()
+    {
+        ini_set('max_execution_time', 300);
+    }
     public function getAllUsers()
     {
         return User::orderBy('updated_at', 'asc')
@@ -402,14 +406,14 @@ class UserServices
                 $query->whereIn('privilege_id', $privilegeIds);
             }
         })
-            ->with(['user_congresses' => function ($query) use ($congressId, $search) {
+            ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                 $query->where('congress_id', '=', $congressId);
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order, $search) {
+            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
@@ -421,40 +425,14 @@ class UserServices
                         $query->where('congress_id', '=', $congressId);
                     }
                 }
-            ]);
-        /*$users = $users->leftjoin('Payment', 'Payment.user_id', '=', 'User.user_id')
-            ->select('User.*', 'Payment.price', 'Payment.isPaid', 'Payment.payment_type_id')
+            ])
             ->where(function ($query) use ($search) {
                 if ($search != "") {
-                    if (Str::lower($search) == 'payé') {
-                        $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 1);
-                    }
-                    if (Str::lower($search) == 'non payé') {
-                        $query->whereNotNull('Payment.isPaid')->where('Payment.isPaid', '=', 0);
-                    }
-                    if (Str::lower($search) == 'en ligne') {
-                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '4');
-                    }
-                    if (Str::lower($search) == 'cash') {
-                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '1');
-                    }
-                    if (Str::lower($search) == 'check') {
-                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '2');
-                    }
-                    if (Str::lower($search) == 'transfert') {
-                        $query->whereNotNull('Payment.payment_type_id')->where('Payment.payment_type_id', '=', '3');
-                    } else {
-                        $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                        $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                        $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                        $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
-                        $query->orWhereRaw('Payment.price like (?)', ["%{$search}%"]);
-
-                    }
-
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                 }
-            });*/ //TODO
-
+            });
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
                 || $tri == 'mobile')) {
@@ -470,7 +448,7 @@ class UserServices
                 $users->orderBy('User_Congress.updated_at', $order);
         }
         if ($order && ($tri == 'isPaid' || $tri == 'price')) {
-            $users = $users
+            $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
                 ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where(function ($query) use ($congressId) {
                     $query->where('Payment.congress_id', '=', $congressId)
@@ -478,17 +456,9 @@ class UserServices
                 })
                 ->orderBy($tri, $order);
         }
-        if ($order && $tri == 'score') {
-            if (!$admin_id) {
-                $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
-                    ->where('User_Congress.congress_id', '=', $congressId)->orderBy('globale_score', $order);
-            } else {
-                $users = $users->join('Evaluation_Inscription', 'Evaluation_Inscription.user_id', '=', 'User.user_id')
-                    ->where('Evaluation_Inscription.congress_id', '=', $congressId)->where('admin_id', '=', $admin_id)->orderBy('note', $order);
-            }
-        }
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
+
 
     public function getAllUsersByCongress($congressId, $privilegeId)
     {
@@ -605,6 +575,17 @@ class UserServices
             ->with($relations)
             ->get();
     }
+
+    public function getUsersSubmissionWithRelations($congressId, $relations)
+    {
+        return User::whereHas('submissions', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('status', '=', 1);
+        })
+            ->with($relations)
+            ->get();
+    }
+
 
     public function getUserByEmailAndCode($email, $code)
     {
@@ -919,6 +900,64 @@ class UserServices
             $userMail->status = 1;
         } catch (\Exception $exception) {
             Storage::delete('app/badge.png');
+            $userMail->status = -1;
+        }
+        $userMail->update();
+        return $user;
+    }
+
+    public function sendMailAttesationSubmissionToUser($user, $congress, $userMail, $object, $view)
+    {
+        $email = $user->email;
+
+        $pathToFile = storage_path() . "/app/attestationSubmission.png";
+
+        try {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+
+                if ($congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
+                $message->attach($pathToFile);
+                $message->to($email)->subject($object);
+            });
+//            $userMail->status = 1;
+        } catch (\Exception $exception) {
+            Storage::delete('app/attestationSubmission.png');
+//            $userMail->status = -1;
+        }
+//        $userMail->update();
+        return $user;
+    }
+
+    public function sendMailAttesationSubmissionZipToUser($user, $congress, $userMail, $object, $view)
+    {
+        $email = $user->email;
+
+        $pathToFile = storage_path() . "/app/attestationsSubmission.zip";
+
+        try {
+            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
+                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+
+                if ($congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
+                $message->subject($object);
+                $message->setBody($view, 'text/html');
+                $message->attach($pathToFile);
+                $message->to($email)->subject($object);
+            });
+            $userMail->status = 1;
+        } catch (\Exception $exception) {
+            Storage::delete('app/attestationsSubmission.zip');
             $userMail->status = -1;
         }
         $userMail->update();

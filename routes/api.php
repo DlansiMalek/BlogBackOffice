@@ -33,6 +33,7 @@ Route::get('/congress-types', 'SharedController@getAllCongressTypes');
 Route::get('/payement-user-recu/{path}', 'SharedController@getRecuPaiement');
 Route::get('/submissions/congress/{congressId}', 'SubmissionController@getAllSubmissionsByCongress');
 Route::get('/confirm/{congress_id}/{user_id}/{present}', 'CongressController@confirmPresence');
+Route::get('/action', 'SharedController@getAllActions');
 
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
@@ -194,10 +195,14 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::delete('/delete-badge/{badgeId}', 'BadgeController@deleteBadge');
-
+        Route::get('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
-
+        Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
+        Route::post('attestation-submission/activate', 'SubmissionController@activateAttestationByCongressByType')->middleware("admin");
+        Route::post('attestation-submission/delete', 'SubmissionController@deleteAttestationByCongress')->middleware("admin");
+        Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
+        Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
 
         Route::post('program-link', 'CongressController@setProgramLink');
 
@@ -235,7 +240,12 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
 });
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
+    Route::get('types', 'SubmissionController@getSubmissionType');
     Route::get('congress/{congressId}', 'SubmissionController@getCongressSubmission');
+    Route::get('{submissionId}/send-mail-attestation/{congressId}', 'SubmissionController@sendMailAttestationById');
+    Route::get('{congressId}/status/{status}', 'SubmissionController@getSubmissionByStatus');
+    Route::get('{submissionId}/make_eligible/{congressId}', 'SubmissionController@makeSubmissionEligible');
+    Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::post('congress/{congressId}/changeSubmissionsStatus', 'SubmissionController@changeMultipleSubmissionsStatus');
     Route::put('{submissionId}/evaluate/type/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::get('{submissionId}', 'SubmissionController@getCongressSubmissionDetailById');
@@ -243,8 +253,6 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
     Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
-
-
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
@@ -343,6 +351,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::group(['prefix' => 'email'], function () {
                     Route::get('send-confirm-inscription', 'CongressController@sendMailAllParticipants');
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
+                    Route::get('send-mails-all-attestations-submissions', 'SubmissionController@sendMailAttestationAllSubmission');
                     Route::get('send-mail-all-sondage', 'CongressController@sendMailAllParticipantsSondage');
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
