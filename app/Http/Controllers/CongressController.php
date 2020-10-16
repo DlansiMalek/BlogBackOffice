@@ -784,7 +784,6 @@ class CongressController extends Controller
         ]);
         $stands = $this->standServices->getAllStandByCongressId($congressId);
         $usersData = $this->congressServices->getTimePassedInCongressAccessAndStand($users,$congress,$access,$stands);
-
         return response()->json([
             'total_users' => $totalUsers,
             'participant_users' => $participantUsers,
