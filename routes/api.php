@@ -410,8 +410,8 @@ Route::group(['prefix' => 'organization'], function () {
 
 //Privilege API
 
-   Route::group(['prefix' => 'privilege'], function () {
-    Route::get('{congress_id}/list-base', 'CongressController@getPrivilegesWithBadges');
+   Route::group(['prefix' => 'privilege', "middleware" => ["assign.guard:admins"]], function () {
+    Route::get('{congress_id}/list-base', 'CongressController@getPrivilegesDeBase');
     Route::get('{congress_id}/list-correspondence', 'CongressController@getAllThePrivileges');
     Route::post('addPrivilege','CongressController@addPrivilege');
     Route::get('getPrivilegeById/{id_privilege}/{congress_id}','CongressController@checkValidPrivilege');

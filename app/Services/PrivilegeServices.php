@@ -112,11 +112,16 @@ class PrivilegeServices
 
     public function hidePrivilege($congress_id, $id_privilege)
     {
-        $privilege_config = new PrivilegeConfig();
-        $privilege_config->privilege_id = $id_privilege;
-        $privilege_config->congress_id = $congress_id;
-        $privilege_config->status = 2;
-        $privilege_config->save();
+        if($privilege_config = $this->getPrivilegeConfig($id_privilege, $congress_id)) {
+            $privilege_config->status = 2;
+            $privilege_config->update();
+        } else {
+            $privilege_config = new PrivilegeConfig();
+            $privilege_config->privilege_id = $id_privilege;
+            $privilege_config->congress_id = $congress_id;
+            $privilege_config->status = 2;
+            $privilege_config->save();
+        }
         return $privilege_config;
     }
 

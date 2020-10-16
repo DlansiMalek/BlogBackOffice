@@ -951,16 +951,16 @@ class CongressController extends Controller
             return response()->json(['error' => 'admin not found'], 404);
         }
         $this->privilegeServices->hidePrivilege($congress_id, $id_privilege);
-        $privileges = $this->sharedServices->getPrivilegesWithBadges($congress_id);
+        $privileges = $this->sharedServices->getPrivilegesDeBase($congress_id);
         return response()->json(['response' => 'hided successfully!', 'privileges' => $privileges ],200);
     }
 
 
-    public function getPrivilegesWithBadges($congress_id)
+    public function getPrivilegesDeBase($congress_id)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        return response()->json($this->sharedServices->getPrivilegesWithBadges($congress_id));
+        return response()->json($this->sharedServices->getPrivilegesDeBase($congress_id));
     }
 }

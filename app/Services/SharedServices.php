@@ -43,21 +43,16 @@ class SharedServices
         return $result;
     }
 
-    public function getPrivilegesWithBadges($congress_id)
+    public function getPrivilegesDeBase($congress_id)
     {
         $privilegeBase = Privilege::where('priv_reference', '=', null)
-            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
-                $query->where('congress_id', '=', $congress_id);
-                $query->where('status', '=', 2);
-            }])
+            ->whereDoesntHave('privilegeConfig', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)->where('status', '=', 2);
+            })
+
             ->get()->toArray();
-        for ($i = 0; $i < count($privilegeBase); $i++) {
-            if ($privilegeBase[$i]['privilege_config'] != null) {
-                unset($privilegeBase[$i]);
-            }
-        }
-        $result = array_merge($privilegeBase);
-        return $result;
+        return $privilegeBase;
+
     }
 
     public function getAllServices()
