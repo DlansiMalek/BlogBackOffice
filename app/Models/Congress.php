@@ -113,4 +113,10 @@ class Congress extends Model
     function itemEvaluation() {
         return $this->hasMany('App\Models\ItemEvaluation', 'congress_id', 'congress_id');
     }
+    function tracking () {
+        return $this->hasMany(Tracking::class,'congress_id','congress_id');
+    }
+    function stand() {
+        return $this->hasMany(Stand::class,'congress_id','congress_id');
+    }
 }

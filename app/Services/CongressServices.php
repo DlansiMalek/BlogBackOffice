@@ -19,6 +19,8 @@ use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Models\Stand;
+use DateTime;
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use JWTAuth;
@@ -228,6 +230,133 @@ class CongressServices
             ->first();
         return $congress;
     }
+
+
+    public function getTimePassedInCongressAccessAndStand($users, $congress, $access, $stands)
+    {
+        $congress['totalTimePassed'] = 0;
+        foreach ($users as $user) {
+            $user['timePassedCongress'] = 0;
+            $usertimePassedPerStand = [];
+            $usertimePassedPerAcc = [];
+            $timeCongess1 = null;
+            $timeCongess2 = null;
+            $timeAccess1 = null;
+            $timeAccess2 = null;
+            $timeStand1 = null;
+            $timeStand2 = null;
+            foreach ($user->tracking as $key => $tracking) {
+
+                if ($tracking->action_id == 1) {
+                    $timeCongess1 = new DateTime($tracking->date);
+                }
+                if ($tracking->action_id == 2) {
+                    $timeCongess2 = new DateTime($tracking->date);
+                    if ($timeCongess2 && $timeCongess1) {
+                        $interval = $timeCongess2->diff($timeCongess1);
+                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                        $user['timePassedCongress'] += $interval;
+                        $timeCongess2 = null;
+                        $timeCongess1 = null;
+                    }
+
+                }
+                if ($tracking->action_id == 3)
+                    $timeAccess1 = new DateTime($tracking->date);
+                if ($tracking->access_id && !isset($usertimePassedPerAcc[$tracking->access_id]))
+                    $usertimePassedPerAcc[$tracking->access_id] = ['access_id' => $tracking->access_id, 'timePassed' => 0];
+                if ($tracking->stand_id && !isset($usertimePassedPerStand[$tracking->stand_id]))
+                    $usertimePassedPerStand[$tracking->stand_id] = ['stand_id' => $tracking->stand_id, 'timePassed' => 0];
+
+
+                if ($tracking->action_id == 4) {
+                    if ($tracking->access_id) {
+                        $timeAccess2 = new DateTime($tracking->date);
+                        if ($timeAccess2 && $timeAccess1) {
+                            $interval = $timeAccess2->diff($timeAccess1);
+                            $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                            $usertimePassedPerAcc[$tracking->access_id]['timePassed'] += $interval;
+                            $usertimePassedPerAcc[$tracking->access_id]['access_id'] = $tracking->access_id;
+                            $timeAccess2 = null;
+                            $timeAccess1 = null;
+                        }
+
+                    }
+                    if ($tracking->stand_id) {
+
+                        $timeStand2 = new DateTime($tracking->date);
+                        if ($timeStand1 && $timeStand2) {
+
+                            $interval = $timeStand2->diff($timeStand1);
+                            $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                            $usertimePassedPerStand[$tracking->stand_id]['timePassed'] += $interval;
+                            $usertimePassedPerStand[$tracking->stand_id]['stand_id'] = $tracking->stand_id;
+
+                            $timeStand2 = null;
+                            $timeStand1 = null;
+
+                        }
+
+                    }
+                }
+            }
+            $user['timePassedPerStand'] = $usertimePassedPerStand;
+
+            $user['timePassedPerAccess'] = $usertimePassedPerAcc;
+            $congress['totalTimePassed'] += $user['timePassedCongress'];
+        }
+
+        foreach ($users as $user) {
+            foreach ($user['timePassedPerAccess'] as $key => $timeAcc) {
+
+                $left = 0;
+                $right = sizeof($access) - 1;
+                $index = -1;
+                while ($left <= $right) {
+                    $midpoint = (int)floor(($left + $right) / 2);
+
+                    if ($access[$midpoint]['access_id'] < $timeAcc['access_id']) {
+                        $left = $midpoint + 1;
+                    } elseif ($access[$midpoint]['access_id'] > $timeAcc['access_id']) {
+                        $right = $midpoint - 1;
+                    } else {
+                        if (isset($access[$midpoint]['timePassed'])) {
+                            $access[$midpoint]['timePassed'] += $timeAcc['timePassed'];
+                        } else {
+                            $access[$midpoint]['timePassed'] = $timeAcc['timePassed'];
+                        }
+                        break;
+                    }
+                }
+            }
+            foreach ($user['timePassedPerStand'] as $key => $timeStand) {
+
+                $left = 0;
+                $right = sizeof($stands) - 1;
+                $index = -1;
+                while ($left <= $right) {
+                    $midpoint = (int)floor(($left + $right) / 2);
+
+                    if ($stands[$midpoint]['stand_id'] < $timeStand['stand_id']) {
+                        $left = $midpoint + 1;
+                    } elseif ($stands[$midpoint]['stand_id'] > $timeStand['stand_id']) {
+                        $right = $midpoint - 1;
+                    } else {
+                        if (isset($stands[$midpoint]['timePassed'])) {
+                            $stands[$midpoint]['timePassed'] += $timeStand['timePassed'];
+                        } else {
+                            $stands[$midpoint]['timePassed'] = $timeStand['timePassed'];
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        return [$access, $stands, $congress['totalTimePassed']];
+    }
+
 
     public function getDemoCongress($name)
     {
@@ -517,9 +646,9 @@ class CongressServices
         if (sizeof($submissions) > 0) {
             $submissionsParms = "<ul>";
             foreach ($submissions as $submission) {
-                $type= $submission->communicationType ? $submission->communicationType->label : " ";
+                $type = $submission->communicationType ? $submission->communicationType->label : " ";
                 $submissionsParms = $submissionsParms
-                . "<li>" . $submission->code . ": " . $submission->title . " ( " . $type . " ) " . "</li>";
+                    . "<li>" . $submission->code . ": " . $submission->title . " ( " . $type . " ) " . "</li>";
             }
             $submissionsParms = $submissionsParms . "</ul>";
         }
