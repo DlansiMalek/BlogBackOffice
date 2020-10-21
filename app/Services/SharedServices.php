@@ -22,7 +22,7 @@ class SharedServices
         return Privilege::where('privilege_id', '>=', 3)->get();
     }
 
-    public function getAllThePrivileges($congress_id)
+    public function getAllPrivilegesCorrespondence($congress_id)
     {
         $privilegeBase = Privilege::where('priv_reference', '=', null)
             ->with(['privilegeConfig' => function ($query) use ($congress_id) {
@@ -43,15 +43,29 @@ class SharedServices
         return $result;
     }
 
-    public function getPrivilegesDeBase($congress_id)
+    public function getPrivilegesDeBase()
     {
         $privilegeBase = Privilege::where('priv_reference', '=', null)
-            ->whereDoesntHave('privilegeConfig', function ($query) use ($congress_id) {
-                $query->where('congress_id', '=', $congress_id)->where('status', '=', 2);
-            })
-
-            ->get()->toArray();
+            ->get();
         return $privilegeBase;
+
+    }
+
+    public function getPrivilegesByCongress($congress_id)
+    {
+        $privilegeBase = Privilege::where('priv_reference', '=', null)
+            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            }])
+            ->get()->toArray();
+        $otherPrivileges = Privilege::where('priv_reference', '!=', null)
+        ->whereHas('privilegeConfig', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            })
+            ->with(['privilegeConfig', 'privilege'])
+            ->get()->toArray();
+        $result = array_merge($privilegeBase, $otherPrivileges);
+        return $result;
 
     }
 

@@ -29,4 +29,7 @@ class Privilege extends Model
     public function privilegeConfig () {
         return $this->hasMany('App\Models\PrivilegeConfig', 'privilege_id', 'privilege_id');
     }
+    public function privilege () {
+        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'priv_reference');
+    }
 }

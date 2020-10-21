@@ -125,5 +125,11 @@ class PrivilegeServices
         return $privilege_config;
     }
 
+    public function activatePrivilege($congress_id, $privilege_id) {
+        $privilege_config = $this->getPrivilegeConfig($privilege_id, $congress_id);
+        $privilege_config->status = 1;
+        $privilege_config->update();
+        return $privilege_config;
+    }
 
 }
