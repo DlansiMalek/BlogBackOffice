@@ -19,6 +19,7 @@ use App\Models\UserAccess;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Mpdf\Tag\Select;
 
 class AccessServices
 {
@@ -185,6 +186,10 @@ class AccessServices
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
+    }
+
+    public function getAccesssByCongressId($congress_id) {
+        return Access::where('congress_id','=',$congress_id)->select('access_id')->get();
     }
 
     public function deleteAccess($access_id)
@@ -416,11 +421,12 @@ class AccessServices
             $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
             }));
-            $accesss->unsetRelation('participants');
         }
         return $accesses    ;
     }
 
+
+                    
     private function addSubAccess(Access $access, $sub)
     {
         $sub_access = new Access();

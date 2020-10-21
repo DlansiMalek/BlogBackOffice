@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Author;
+use App\Models\AttestationParams;
+use App\Models\AttestationSubmission;
+use App\Models\CommunicationType;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
+use Illuminate\Support\Facades\DB;
 
 class SubmissionServices
 {
@@ -73,11 +76,11 @@ class SubmissionServices
         $oldResources = ResourceSubmission::where('submission_id', '=', $submission_id)->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resourceIds as $resourceId) {
-                $isExist = false ;
+                $isExist = false;
                 foreach ($oldResources as $oldResource) {
                     if ($oldResource['resource_id'] == $resourceId) {
-                      $isExist = true ;
-                    break;
+                        $isExist = true;
+                        break;
                     }
                 }
                 if (!$isExist) {
@@ -164,7 +167,6 @@ class SubmissionServices
             $allSubmission = $perPage ? $allSubmission->paginate($perPage) : $allSubmission->get();
 
             return $allSubmission;
-
         } elseif ($privilege_id == 11) {
             $allSubmission = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
                 $query->where('admin_id', '=', $admin->admin_id);
@@ -195,7 +197,6 @@ class SubmissionServices
 
             return $allSubmission;
         }
-
         return [];
     }
 
@@ -282,34 +283,184 @@ class SubmissionServices
             ->when($status !== "null", function ($query) use ($status) {
                 $query->where('status', '=', $status);
             })
-            ->where('title', 'LIKE', '%' . $search . '%')
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(code) like (?)', ["%{$search}%"]);
+                }
+            })
             ->get();
     }
 
-    public function getAllSubmissionsByCongress($congressId, $search, $status)
+    public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
     {
         $allSubmission = Submission::with([
             'resources', 'authors'
-        ])
-        ->where('congress_id', '=', $congressId)
-            ->where('status', '=', 1)
-            ->whereHas("authors", function ($query) use ($search) {
-                $query->where('Author.first_name', 'like', '%' . $search . '%');
-                $query->orWhere('Author.last_name', 'like', '%' . $search . '%');
-            });
-            $otherSubmissions = Submission::with([
-                'resources', 'authors'
-            ])->where('status', '=', 1)
-        ->when($search != "null" && $search != ""  && $search != null,
+        ])->when($search !== "null" && $search !== "" && $search !== null,
             function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%');
                 $query->orWhere('code', 'like', '%' . $search . '%');
             })->where('status', '=', 1)
-                ->union($allSubmission)
+            ->where('congress_id', '=', $congressId)
+            ->where('communication_type_id', '=', $communication_type_id);
+        $otherSubmissions = Submission::with([
+            'resources', 'authors'
+        ])->where('communication_type_id', '=', $communication_type_id)
+            ->where('congress_id', '=', $congressId)
+            ->where('status', '=', 1)
+            ->whereHas("authors", function ($query) use ($search) {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
 
+            })
+            ->union($allSubmission)
+            ->paginate($perPage);
+        return $otherSubmissions;
+    }
+
+    public function getAttestationSubmissionById($attestationSubmissionId)
+    {
+        return AttestationSubmission::where('attestation_submission_id', '=', $attestationSubmissionId)->first();
+    }
+
+    public function getAttestationsSubmissionsByCongressAndType($congressId, $communication_type_id)
+    {
+        return AttestationSubmission::where('congress_id', '=', $congressId)
+            ->where('communication_type_id', '=', $communication_type_id)->get();
+    }
+
+    public function activateAttestationSubmission($attestationsSubmissions, $attestationSubmissionId)
+    {
+        foreach ($attestationsSubmissions as $a) {
+            if ($a->attestation_submission_id == $attestationSubmissionId) {
+                $a->enable = 1;
+                $a->update();
+            } else {
+                $a->enable = 0;
+                $a->update();
+            }
+        }
+        return "activated successfully";
+    }
+
+    public function makeSubmissionEligible($submission)
+    {
+        $submission->eligible = 1;
+        $submission->update();
+        return 'submission is eligible';
+    }
+
+    public function deleteAttestationSubmission($attestationSubmission)
+    {
+
+        AttestationParams::where('generator_id', '=', $attestationSubmission->attestation_generator_id)->delete();
+        AttestationParams::where('generator_id', '=', $attestationSubmission->attestation_generator_id_blank)->delete();
+        $attestationSubmission->delete();
+        return "deleted successfully";
+    }
+
+    public function getAttestationSubmissionByCongress($congressId)
+    {
+        return AttestationSubmission::with([
+            'communicationType',
+            'attestation_param',
+            'attestation_blanc_param'
+        ])->where('congress_id', '=', $congressId)
+            ->orderBy('communication_type_id')
             ->get();
+    }
 
-        return $otherSubmissions->values();
+    public function getCommunicationTypeById($communication_type_id)
+    {
+        return CommunicationType::where('communication_type_id', '=', $communication_type_id)->first();
+    }
+
+    public function getAttestationByGeneratorId($generatorId)
+    {
+        return AttestationSubmission::where('attestation_generator_id', '=', $generatorId)
+            ->first();
+    }
+
+    public function getAttestationByGeneratorBlankId($generatorId)
+    {
+        return AttestationSubmission::where('attestation_generator_id_blank', '=', $generatorId)
+            ->first();
+    }
+
+
+    public function updateOrCreateAttestationParams($generatorId, $keys, $update)
+    {
+        if ($update) {
+            AttestationParams::where('generator_id', '=', $generatorId)->delete();
+        }
+        foreach ($keys as $key) {
+            $attestationParam = new AttestationParams();
+            $attestationParam->generator_id = $generatorId;
+            $attestationParam->key = $key;
+            $attestationParam->save();
+        }
+    }
+
+    public function validerAttestation($congressId, $idGenerator, $communicationTypeId, $blank = false)
+    {
+        $attestationSubmission = new AttestationSubmission();
+        $attestationSubmission->congress_id = $congressId;
+
+        if ($blank) {
+            $attestationSubmission->attestation_generator_id_blank = $idGenerator;
+            $attestationSubmission->attestation_generator_id = null;
+
+        } else {
+            $attestationSubmission->attestation_generator_id = $idGenerator;
+            $attestationSubmission->attestation_generator_id_blank = null;
+
+        }
+        $attestationSubmission->communication_type_id = $communicationTypeId;
+        $attestationSubmission->enable = 1;
+        $attestationSubmission->save();
+
+        return $attestationSubmission;
+    }
+
+    public function getSubmissionType()
+    {
+        return CommunicationType::get();
+    }
+
+    public function getSubmissionByStatus($congressId, $status, $eligible)
+    {
+        if ($eligible === '1' or $eligible === '0') {
+            $submission = Submission::with([
+                'user:user_id,first_name,last_name,email',
+                'authors:submission_id,author_id,first_name,last_name'])
+                ->where('congress_id', '=', $congressId)
+                ->where('status', '=', $status)
+                ->where('eligible', '=', $eligible)
+                ->get();
+        } else {
+            $submission = Submission::with([
+                'user:user_id,first_name,last_name,email',
+                'authors:submission_id,author_id,first_name,last_name'])
+                ->where('congress_id', '=', $congressId)
+                ->where('status', '=', $status)
+                ->get();
+        }
+        return $submission;
+    }
+
+    public function getAttestationSubmissionEnabled($congressId)
+    {
+        return AttestationSubmission::with([
+            'attestation_param',
+            'attestation_blanc_param'
+        ])
+            ->where('congress_id', '=', $congressId)
+            ->where('enable', '=', 1)->get();
+    }
+
+    public function getSubmissionByIdWithRelation($relations, $submissionId)
+    {
+        return Submission::with($relations)
+            ->where('submission_id', '=', $submissionId)->first();
     }
 
 }

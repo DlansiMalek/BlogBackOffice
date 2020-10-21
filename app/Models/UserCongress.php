@@ -36,4 +36,7 @@ class UserCongress extends Model
     {
         return $this->belongsTo('App\Models\Pack', 'pack_id', 'pack_id');
     }
+    public function tracking() {
+        return $this->hasMany(Tracking::class,'user_id','user_id');
+    }
 }

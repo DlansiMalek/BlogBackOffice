@@ -1697,6 +1697,25 @@ class UserController extends Controller
             return response()->json(['response' => 'Bad request type must be [STAND|ACCESS]'], 400);
         }
 
+        // LOGOUT & LEAVE IF TRACK STILL OPEN
+        if ($request->input('action') == 'LOGIN') {
+             $this->userServices->closeTracking($congressId,$userId);
+
+            $participator = $this->userServices->getUserByIdWithRelations($userId,
+                ['user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }]);
+
+
+            if (sizeof($participator->user_congresses) > 0 && $participator->user_congresses[0]) {
+                /* Make it present in congress */
+                $userCongress = $participator->user_congresses[0];
+                $userCongress->isPresent = 1;
+                $userCongress->update();
+            }
+
+        }
+
         $standId = null;
         $accessId = null;
         if ($request->input('type') == 'STAND') {
@@ -1713,6 +1732,13 @@ class UserController extends Controller
                 return response()->json(['response' => 'access not found'], 404);
             }
             $accessId = $accesses[0]->access_id;
+
+            $user_access = $this->userServices->getUserAccessByUser($userId, $accessId);
+
+            if ($user_access) {
+                $user_access->isPresent = 1;
+                $user_access->update();
+            }
         }
 
         return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment'), $userCalledId));

@@ -23,6 +23,10 @@ class Stand extends Model
         return $this->hasOne(Organization::class,'organization_id','organization_id');
     }
 
+    function tracking() {
+        return $this->hasMany(Tracking::class,'stand_id','stand_id');
+    }
+
 }
 
 
