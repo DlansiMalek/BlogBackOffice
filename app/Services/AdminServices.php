@@ -15,6 +15,7 @@ use App\Models\Congress;
 use App\Models\Evaluation_Inscription;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
+use App\Models\Offre;
 use App\Models\SubmissionEvaluation;
 use App\Models\ThemeAdmin;
 use DateInterval;
@@ -507,6 +508,24 @@ class AdminServices
 
     public function getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin_id, int $int)
     {
+    }
+
+    public function getOffreById ($offre_id) {
+        return Offre::where('offre_id', '=', $offre_id)->first();
+    }
+
+    public function editOffre ($offre_id, Request $request) {
+        $offre = $this->getOffreById($offre_id);
+        if (!$offre)
+            return null;
+        $offre->name = $request->input('name');
+        $offre->prix = $request->input('prix');
+        $offre->start_date = $request->input('start_date');
+        $offre->end_date = $request->input('end_date');
+        $offre->type_commission_id = $request->input('type_commission_id');
+        $offre->update();
+        return $offre;
+
     }
 
 }

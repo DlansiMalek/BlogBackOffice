@@ -662,5 +662,12 @@ class AdminController extends Controller
         $admin = $this->adminServices->editClient($request,$updatedAdmin);
         return response()->json($admin);
     }
+
+    public function editOffre ($offre_id, Request $request) {
+        if (!$request->has(['name', 'prix']))
+            return response()->json(['message' => 'bad request'], 400);
+        $offre = $this->adminServices->editOffre($offre_id, $request);
+        return response()->json($offre);
+    }
 }
 
