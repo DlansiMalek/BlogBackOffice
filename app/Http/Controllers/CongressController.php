@@ -840,14 +840,6 @@ class CongressController extends Controller
         return response()->json($events, 200);
     }
 
-    public function getLatestCongresses(){
-        $latestCongreses =  $this->congressServices->getLatestCongresses();
-        if (sizeof($latestCongreses) < 4) {
-            $latestCongreses = $this->congressServices->getCongressPagination(0,9,'','','','');
-        }
-        return $latestCongreses ;
-    }
-
     public function confirmPresence($congress_id, $user_id, $present)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
