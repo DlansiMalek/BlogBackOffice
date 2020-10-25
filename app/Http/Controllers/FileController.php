@@ -118,14 +118,14 @@ class FileController extends Controller
 
     public function uploadResource(Request $request)
     {
-        $file = $request->file('files');
-
+        $file = $request->file('files'); 
         $chemin = config('media.resource');
         $path = $file->store($chemin);
         $savedPath = str_replace('resource/', '', $path);
         $resource = $this->resourceServices->saveResource($savedPath, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
+
     public function getResouce($path)
     {
         $chemin = config('media.resource');
@@ -144,6 +144,16 @@ class FileController extends Controller
         return response()->json(['resource_id' => $resource->resource_id]);
     }
 
+    public function uploadResourceStand(Request $request)
+    {       
+        $file = $request->file('files'); 
+        $chemin = config('media.resource');
+        $resource = $this->resourceServices->saveResource($file->getClientOriginalName(), $file->getSize());
+        $resource->path = '('.$resource->resource_id.')'.$resource->path ;
+        $resource->update();
+        $path = $file->storeAs($chemin,$resource->path);  
+        return response()->json(['resource' => $resource]);
+    }
     public function deleteLogoCongress($path)
     {
 

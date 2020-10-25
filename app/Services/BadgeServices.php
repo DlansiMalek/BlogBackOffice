@@ -31,6 +31,7 @@ class BadgeServices
         $badge->badge_id_generator = $badgeIdGenerator;
         $badge->privilege_id = $privilegeId;
         $badge->enable = 1;
+        $badge->num_downloaded = 0;
         $badge->save();
 
         return $badge;
@@ -107,24 +108,27 @@ class BadgeServices
             ->first();
     }
 
-    public function getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $privilegeId,$badgeIdGenerator) {
+    public function getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $privilegeId, $badgeIdGenerator)
+    {
         return Badge::with(['privilege:privilege_id,name',
-                'badge_param:badge_id,key'])->where('congress_id', '=', $congressId)
-            ->where('privilege_id', '=', $privilegeId)->where('badge_id_generator','=',$badgeIdGenerator)
+            'badge_param:badge_id,key'])->where('congress_id', '=', $congressId)
+            ->where('privilege_id', '=', $privilegeId)->where('badge_id_generator', '=', $badgeIdGenerator)
             ->first();
     }
 
-    public function updateOrCreateBadgeParams($badge_id,$keys,$update) {
-        if ($update)
-        {BadgeParams::where('badge_id','=',$badge_id)->delete();}
-        foreach($keys as $key){
+    public function updateOrCreateBadgeParams($badge_id, $keys, $update)
+    {
+        if ($update) {
+            BadgeParams::where('badge_id', '=', $badge_id)->delete();
+        }
+        foreach ($keys as $key) {
             $badgeParam = new BadgeParams();
-            $badgeParam->badge_id =$badge_id;
-            $badgeParam->key =$key;
+            $badgeParam->badge_id = $badge_id;
+            $badgeParam->key = $key;
             $badgeParam->save();
         }
 
-}
+    }
 
 
     public function getBadgesByCongressAndPrivilege($congressId, $privilegeId)
@@ -162,31 +166,32 @@ class BadgeServices
             ->get();
     }
 
-    public function getBadgesByCongress($congressId) {
-        if (Badge::where('congress_id','=',$congressId)->get())
-        {
-            $badges =  Badge::with(['privilege:privilege_id,name',
+    public function getBadgesByCongress($congressId)
+    {
+        if (Badge::where('congress_id', '=', $congressId)->get()) {
+            $badges = Badge::with(['privilege:privilege_id,name',
                 'badge_param:badge_id,key'])
-                ->where('congress_id','=',$congressId)->orderBy('privilege_id')->get();
+                ->where('congress_id', '=', $congressId)->orderBy('privilege_id')->get();
             $badgesToRender = $badges->map(function ($submission) {
-                
+
                 return collect($submission->toArray())
-                    ->only(['badge_id','privilege','congress_id','badge_id_generator','enable','badge_param','created_at'])
+                    ->only(['badge_id', 'privilege', 'congress_id', 'badge_id_generator', 'enable', 'badge_param', 'created_at'])
                     ->all();
             });
             return $badgesToRender;
         }
+
+        return [];
     }
 
 
-
-    public function activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator) {
-        foreach($badges as $b) {
+    public function activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator)
+    {
+        foreach ($badges as $b) {
             if ($b->badge_id_generator == $badgeIdGenerator) {
                 $b->enable = 1;
                 $b->update();
-            }
-            else {
+            } else {
                 $b->enable = 0;
                 $b->update();
             }
@@ -194,16 +199,20 @@ class BadgeServices
         return "activated successfully";
     }
 
+    public function getBadgeByIdGenerator($badgeIdGenerator)
+    {
+        return Badge::where('badge_id_generator', '=', $badgeIdGenerator)->first();
+    }
+
     public function getBadgeByCongress($congressId, $badgeId)
     {
-        return Badge::where('congress_id','=',$congressId)->where('badge_id', '=', $badgeId)
+        return Badge::where('congress_id', '=', $congressId)->where('badge_id', '=', $badgeId)
             ->first();
     }
 
-    public function deleteBadge ($badgeId) {
+    public function deleteBadge($badgeId)
+    {
         Badge::where('badge_id', '=', $badgeId)->delete();
         BadgeParams::where('badge_id', '=', $badgeId)->delete();
     }
-
-
 }

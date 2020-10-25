@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Action;
 use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
@@ -35,6 +36,42 @@ class SharedServices
     {
         return Etablissement::all();
     }
+
+    public function saveAttestationsSubmissionsInPublic(array $request)
+    {   if ($request) {
+        $zipName =  'attestationsSubmission.zip';
+        $client = new \GuzzleHttp\Client();
+
+        $res = $client->request('POST',
+//          'http://127.0.0.1:8000'  
+          UrlUtils::getUrlBadge()  . '/badge/generateParticipantsPro/multiple', [
+                'json' =>
+                    [
+                        'participants' => $request,
+                    ]
+
+            ]);
+        Storage::put($zipName, $res->getBody(), 'public');
+        return $zipName;
+    }}
+    public function saveAttestationSubmissionInPublic(array $request, $IdGenerator)
+    {   if ($request) {
+        try {
+            // 'http://127.0.0.1:8000'
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('POST',
+                 UrlUtils::getUrlBadge() . '/badge/generateParticipantPro', [
+                    'json' => [
+                        'badgeIdGenerator' => $IdGenerator,
+                        'fill' => $request
+                    ]
+                ]);
+            Storage::put('attestationSubmission.png', $res->getBody(), 'public');
+            return true;
+        } catch (ClientException $e) {
+            return false;
+        }
+    }}
 
     public function saveBadgeInPublic($badge, $user, $qrCode, $privilegeId)
     {
@@ -73,30 +110,30 @@ class SharedServices
     }
 
     public function textMapping($badge, $user, $qrCode)
-    {   if ($user->first_name) {
-        $mappingList = ['first_name' => $user->first_name,
-            'last_name' => '',
-            'email' => $user->email,
-            'country' => '',
-            'mobile' => $user->mobile];
-    }
-    else {
-        $mappingList = ['first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'email' => $user->email,
-            'country' => $user->country->name,
-            'mobile' => $user->mobile];
-    }
+    {
+        if ($user->first_name) {
+            $mappingList = ['first_name' => $user->first_name,
+                'last_name' => '',
+                'email' => $user->email,
+                'country' => '',
+                'mobile' => $user->mobile];
+        } else {
+            $mappingList = ['first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'country' => $user->country->name,
+                'mobile' => $user->mobile];
+        }
         $badgeParams = $badge['badge_param'];
 
         $params = [];
         foreach ($badgeParams as $param) {
             if ($param['key'] === 'default') {
-                $params[]=
+                $params[] =
                     ["key" => $param['key'], "value" => $mappingList['first_name'] . ' ' . $mappingList['last_name']];
 
             } else {
-                $params[]=
+                $params[] =
                     ["key" => $param['key'], "value" => $this->mappingBadgeKey($param['key'], $mappingList)];
             }
         }
@@ -113,6 +150,37 @@ class SharedServices
             $val = $val . $mappingList[$k] . ' ';
         }
         return $val;
+    }
+
+    public function getActionByKey($key)
+    {
+        return Action::where('key', '=', $key)
+            ->first();
+    }
+
+    public function getAllActions()
+    {
+        return Action::all();
+    }
+
+    public function submissionMapping($submission_title, $principal_author, $co_authors,$paramsSubmission)
+    {
+        $authors = "";
+        foreach ($co_authors as $author) {
+            $authors.= strtoupper($author->first_name[0].'. '.$author->last_name).' ,';
+        }
+        $authors = substr($authors, 0, -1);
+        $mappingList = ['principal_author' => $principal_author,
+            'submission_title' => $submission_title,
+            'co-authors' => $authors,];
+        $params = [];
+        foreach ($paramsSubmission as $param) {
+
+            $params[] =
+                ["key" => $param['key'], "value" => $this->mappingBadgeKey($param['key'], $mappingList)];
+
+        }
+        return ['qrCode' => false, 'texts' => $params];
     }
 
 

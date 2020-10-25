@@ -21,6 +21,10 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(UserMail::class, "user_id", "user_id");
     }
+    function submissions()
+    {
+        return $this->hasMany(Submission::class, "user_id", "user_id");
+    }
 
     function inscription_evaluation() {
         return $this->hasMany(Evaluation_Inscription::class, 'user_id','user_id');
@@ -119,5 +123,9 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function tracking(){
+        return $this->hasMany(Tracking::class,'user_id','user_id');
     }
 }
