@@ -400,9 +400,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'marketing'], function () {
     Route::put('{admin_id}', "AdminController@editClient");
 });
 
-Route::group(['prefix' => 'offre'], function () {
-    Route::post('add-offre', 'AdminController@addOffre');
-    Route::put('edit-offre/{offre_id}', 'AdminController@editOffre');
+Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
+    Route::get('list', 'AdminController@getAllOffres');
 });
 
 

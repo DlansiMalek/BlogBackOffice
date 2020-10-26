@@ -11,11 +11,13 @@ namespace App\Services;
 
 use App\Models\Admin;
 use App\Models\AdminCongress;
+use App\Models\AdminOffre;
 use App\Models\Congress;
 use App\Models\Evaluation_Inscription;
 use App\Models\MailTypeAdmin;
 use App\Models\MailAdmin;
 use App\Models\Offre;
+use App\Models\PaymentAdmin;
 use App\Models\SubmissionEvaluation;
 use App\Models\ThemeAdmin;
 use DateInterval;
@@ -25,6 +27,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use JWTAuth;
+use phpDocumentor\Reflection\Types\Null_;
 
 class AdminServices
 {
@@ -68,6 +71,7 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
+            ->with(['adminPayment'])
             ->get();
     }
 
@@ -88,32 +92,36 @@ class AdminServices
 
         return Admin::where("privilege_id", "=", 11)->get();
     }
-    public function affectUsersToEvaluator($users,$numEvalutors,$admin_id,$congress_id){
+
+    public function affectUsersToEvaluator($users, $numEvalutors, $admin_id, $congress_id)
+    {
         $loopLength = sizeof($users) < $numEvalutors ? sizeof($users) : $numEvalutors;
-        for ($i=0;$i<sizeof($users);$i++) {
+        for ($i = 0; $i < sizeof($users); $i++) {
             $this->addEvaluationInscription(
                 $admin_id,
                 $congress_id,
                 $users[$i]->user_id
             );
         }
-    } 
-    public function affectEvaluatorToSubmissions($submissions,$admin_id,$themeIds,$congress_id) {
-        $evalutors = $this->getEvaluatorsByTheme($submissions[0]->theme_id,$congress_id,11); //get by theme or all admin congress
+    }
+
+    public function affectEvaluatorToSubmissions($submissions, $admin_id, $themeIds, $congress_id)
+    {
+        $evalutors = $this->getEvaluatorsByTheme($submissions[0]->theme_id, $congress_id, 11); //get by theme or all admin congress
         $max = sizeof($evalutors) > 0 ? $evalutors[sizeof($evalutors) - 1]['submission_count'] : 0;
         $count = 0;
-        foreach($submissions as $submission) {
+        foreach ($submissions as $submission) {
             foreach ($themeIds as $themeId) {
-                if (($submission->theme_id == $themeId) &&  ($count <= $max)) {
-                    $congress = json_decode($submission['congress'],true);
-                    if (sizeof($submission['submissions_evaluations']) <  $congress['config_submission']['num_evaluators']) {
-                            $this->addSubmissionEvaluation($admin_id,$submission->submission_id);
+                if (($submission->theme_id == $themeId) && ($count <= $max)) {
+                    $congress = json_decode($submission['congress'], true);
+                    if (sizeof($submission['submissions_evaluations']) < $congress['config_submission']['num_evaluators']) {
+                        $this->addSubmissionEvaluation($admin_id, $submission->submission_id);
                     }
-                break;
+                    break;
                 }
             }
         }
-        
+
         return 1;
     }
 
@@ -126,22 +134,23 @@ class AdminServices
         return $submissionEvaluation;
     }
 
-    public function getEvaluatorsBySubmissionId($submission_id) {
-        return SubmissionEvaluation::where('submission_id','=',$submission_id)->get();
-    }   
+    public function getEvaluatorsBySubmissionId($submission_id)
+    {
+        return SubmissionEvaluation::where('submission_id', '=', $submission_id)->get();
+    }
 
-    public function getEvaluatorsByCongress($congressId, $privilegeId,$relation)
+    public function getEvaluatorsByCongress($congressId, $privilegeId, $relation)
     {
 
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('privilege_id', '=', $privilegeId);
-           
+
         })
             ->withCount([$relation => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }])
-            ->orderBy($relation.'_count', 'asc')
+            ->orderBy($relation . '_count', 'asc')
             ->get();
     }
 
@@ -149,30 +158,32 @@ class AdminServices
     {
 
         return Admin::whereHas('themeAdmin', function ($query) use ($privilegeId, $themeId) {
-           
+
             $query->where('theme_id', '=', $themeId);
         })
-        ->whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
-            $query->where('congress_id', '=', $congressId);
-            $query->where('privilege_id', '=', $privilegeId);
-        })
+            ->whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('privilege_id', '=', $privilegeId);
+            })
             ->withCount(['submission' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }])
             ->orderBy('submission_count', 'asc')
             ->get();
     }
-    public function getEvaluationInscriptionByIdAndCongressId($evaluation_inscription_id,$congress_id) {
-        return Evaluation_Inscription::where('evaluation_inscription_id','=',$evaluation_inscription_id)
-        ->where('congress_id','=',$congress_id)
-        ->first();
+
+    public function getEvaluationInscriptionByIdAndCongressId($evaluation_inscription_id, $congress_id)
+    {
+        return Evaluation_Inscription::where('evaluation_inscription_id', '=', $evaluation_inscription_id)
+            ->where('congress_id', '=', $congress_id)
+            ->first();
     }
 
     public function getEvaluatorsByThemeOrByCongress($themeId, $congressId, $privilegeId)
     {
         $admins = $this->getEvaluatorsByTheme($themeId, $congressId, $privilegeId);
         if (sizeof($admins) < 1) {
-            $admins = $this->getEvaluatorsByCongress($congressId, $privilegeId,'submission');
+            $admins = $this->getEvaluatorsByCongress($congressId, $privilegeId, 'submission');
         }
         return $admins;
     }
@@ -291,7 +302,7 @@ class AdminServices
     {
     }
 
-    public function addPersonnel($admin,$password)
+    public function addPersonnel($admin, $password)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
@@ -440,11 +451,11 @@ class AdminServices
         return 1;
     }
 
-    public function addClient($admin, Request $request)
+    public function addClient($admin, $request, $offreRequest, $adminPaymentRequest)
     {
-        if(!$admin)
+        if (!$admin)
             $admin = new Admin();
-        
+
         $admin->name = $request->input("name");
         $admin->email = $request->input("email");
         $admin->mobile = $request->input("mobile");
@@ -455,30 +466,50 @@ class AdminServices
         }
         $admin->privilege_id = 1;
         $admin->save();
+
+        $offre = new Offre();
+        $offre->type_offre_id = $offreRequest['type_offre_id'];
+        $offre->admin_id = $admin->admin_id;
+        $offre->start_date = $offreRequest['start_date'] ? $offreRequest['start_date'] : Null;
+        $offre->end_date = $offreRequest['end_date'] ? $offreRequest['end_date'] : Null;
+        $offre->type_commission_id = $offreRequest['type_commission_id'] ? $offreRequest['type_commission_id'] : Null;
+        $offre->prix_unitaire = $offreRequest['prix_unitaire'] ? $offreRequest['prix_unitaire'] : 0;
+        $offre->save();
+
+        $paymentAdmin = new PaymentAdmin();
+        $paymentAdmin->isPaid = 0;
+        $paymentAdmin->admin_id = $admin->admin_id;
+        $paymentAdmin->price = $adminPaymentRequest['price'] ? $adminPaymentRequest['price'] : 0;
+        $paymentAdmin->deadline = $adminPaymentRequest['deadline'] ? $adminPaymentRequest['deadline'] : Null;
+        $paymentAdmin->save();
+
         return $admin;
     }
 
-    public function affectEvaluatorsToUser($evaluators,$numEvalutors,$congress_id,$user_id){
-        $loopLength = sizeof($evaluators) < $numEvalutors  ? sizeof($evaluators) : $numEvalutors;
-        for ($i=0;$i<$loopLength;$i++) {
-           $this->addEvaluationInscription(
-               $evaluators[$i]->admin_id,
-               $congress_id,
-               $user_id
-           );
+    public function affectEvaluatorsToUser($evaluators, $numEvalutors, $congress_id, $user_id)
+    {
+        $loopLength = sizeof($evaluators) < $numEvalutors ? sizeof($evaluators) : $numEvalutors;
+        for ($i = 0; $i < $loopLength; $i++) {
+            $this->addEvaluationInscription(
+                $evaluators[$i]->admin_id,
+                $congress_id,
+                $user_id
+            );
         }
     }
-    public function addEvaluationInscription($admin_id,$congress_id,$user_id) {
-      
-            $evaluation = new Evaluation_Inscription();
-            $evaluation->admin_id = $admin_id;
-            $evaluation->congress_id = $congress_id;
-            $evaluation->user_id = $user_id;
-            $evaluation->save();
-        
+
+    public function addEvaluationInscription($admin_id, $congress_id, $user_id)
+    {
+
+        $evaluation = new Evaluation_Inscription();
+        $evaluation->admin_id = $admin_id;
+        $evaluation->congress_id = $congress_id;
+        $evaluation->user_id = $user_id;
+        $evaluation->save();
+
     }
 
-    public function renderMail($template, $admin = null, $user=null ,$activationLink = null, $linkBackOffice = null)
+    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null)
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
@@ -489,12 +520,15 @@ class AdminServices
 
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink]);
     }
-    public function  getClientById($admin_id){
-        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=',1)
-        ->first();
+
+    public function getClientById($admin_id)
+    {
+        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=', 1)
+            ->with(['offre', 'adminPayment', 'offre.type_offre', 'offre.type_commission'])
+            ->first();
     }
 
-    public function editClient($request, $admin)
+    public function editClient($request, $admin, $adminPayment)
     {
         if (!$admin) {
             return null;
@@ -503,6 +537,11 @@ class AdminServices
         $admin->mobile = $request->input('mobile');
         $admin->valid_date = $request->input('valid_date');
         $admin->update();
+
+        if ($request->has('isPaid')) {
+            $adminPayment->isPaid = $request->input('isPaid');
+            $adminPayment->update();
+        }
         return $admin;
     }
 
@@ -510,22 +549,15 @@ class AdminServices
     {
     }
 
-    public function getOffreById ($offre_id) {
-        return Offre::where('offre_id', '=', $offre_id)->first();
+    public function getAdminPayment($admin_id)
+    {
+        return PaymentAdmin::where('admin_id', '=', $admin_id)->first();
     }
 
-    public function editOffre ($offre_id, Request $request) {
-        $offre = $this->getOffreById($offre_id);
-        if (!$offre)
-            return null;
-        $offre->name = $request->input('name');
-        $offre->prix = $request->input('prix');
-        $offre->start_date = $request->input('start_date');
-        $offre->end_date = $request->input('end_date');
-        $offre->type_commission_id = $request->input('type_commission_id');
-        $offre->update();
-        return $offre;
-
+    public function getAllOffres()
+    {
+        return Offre::with(['admin', 'admin.adminPayment', 'type_offre', 'type_commission'])
+        ->get();
     }
 
 }

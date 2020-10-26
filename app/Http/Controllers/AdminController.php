@@ -618,12 +618,12 @@ class AdminController extends Controller
 
     public function addClient(Request $request)
     {
-        if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
+        if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile', 'offre', 'admin_payment']))
             return response()->json(['message' => 'bad request'], 400);
 
         if ($admin = $this->adminServices->getAdminByLogin($request->input("email"))) {
             if($admin->privilege_id)
-            return response()->json(['message' => 'admin exists'], 400);
+            return response()->json(['message' => 'admin exists'], 402);
         }
 
         if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin')) {
@@ -636,12 +636,13 @@ class AdminController extends Controller
             return response()->json(['message' => 'Mail not found'], 400);
         }
 
-        $admin = $this->adminServices->addClient($admin, $request);
+        $admin = $this->adminServices->addClient($admin, $request, $request->input('offre'), $request->input('admin_payment'));
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
+       // $paymentLink = UrlUtils::getUrlEventizerWeb() . "/#/auth/admin/" . $admin->admin_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId
         $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
 
-        return response()->json(['message' => 'Client added success']);
+        return response()->json(['message' => 'Client added success', 'admin'=> $admin]);
     }
 
     public function getClientById($admin_id)
@@ -659,15 +660,16 @@ class AdminController extends Controller
         if (!$updatedAdmin= $this->adminServices->getClientById($clientId)) {
             return response()->json(["message" => "client not found"], 404);
         }
-        $admin = $this->adminServices->editClient($request,$updatedAdmin);
+        if (!$adminPayment = $this->adminServices->getAdminPayment($clientId)) {
+            return response()->json(['messsage' => 'no admin payment found'], 404);
+        }
+
+        $admin = $this->adminServices->editClient($request,$updatedAdmin, $adminPayment);
         return response()->json($admin);
     }
 
-    public function editOffre ($offre_id, Request $request) {
-        if (!$request->has(['name', 'prix']))
-            return response()->json(['message' => 'bad request'], 400);
-        $offre = $this->adminServices->editOffre($offre_id, $request);
-        return response()->json($offre);
+    public function getAllOffres() {
+        return $this->adminServices->getAllOffres();
     }
 }
 

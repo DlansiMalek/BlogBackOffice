@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Admin;
 use App\Models\ConfigCongress;
 use App\Models\Congress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AdminTest extends TestCase
 {
@@ -31,4 +33,5 @@ class AdminTest extends TestCase
         $this->get('/api/admin/me/congress/' . $congress->congress_id .'/edit-status/' . $status )
             ->assertStatus(200);
     }
+
 }

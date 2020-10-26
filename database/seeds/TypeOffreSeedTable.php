@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class OffreSeedTable extends Seeder
+class TypeOffreSeedTable extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,18 +12,18 @@ class OffreSeedTable extends Seeder
      */
     public function run()
     {
-        DB::table('Offre')->insert([
-            'offre_id' => 1,
+        DB::table('Type_Offre')->insert([
+            'type_offre_id' => 1,
             'name' => 'Forfait',
         ]);
 
-        DB::table('Offre')->insert([
-            'offre_id' => 2,
+        DB::table('Type_Offre')->insert([
+            'type_offre_id' => 2,
             'name' => 'Commission ',
         ]);
 
-        DB::table('Offre')->insert([
-            'offre_id' => 3,
+        DB::table('Type_Offre')->insert([
+            'type_offre_id' => 3,
             'name' => 'Abonnement',
         ]);
 
