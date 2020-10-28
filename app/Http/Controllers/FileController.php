@@ -4,10 +4,12 @@
 namespace App\Http\Controllers;
 
 use App\Services\UserServices;
+use App\Services\CongressServices;
 use App\Services\FileServices;
 use App\Services\ResourcesServices;
 use App\Services\Utils;
 use App\Models\Resource;
+use App\Models\Congress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,12 +18,14 @@ class FileController extends Controller
     protected $fileServices;
     protected $userServices;
     protected $resourceServices;
+    protected $congressServices;
 
-    function __construct(FileServices $fileService, UserServices $userServices, ResourcesServices $resourceServices)
+    function __construct(FileServices $fileService, UserServices $userServices, ResourcesServices $resourceServices, CongressServices $congressServices)
     {
         $this->fileServices = $fileService;
         $this->userServices = $userServices;
         $this->resourceServices = $resourceServices;
+        $this->congressServices = $congressServices;
     }
 
     public function uploadCV(Request $request, $congressId, $userId)
@@ -36,7 +40,29 @@ class FileController extends Controller
         if (!$user = $this->userServices->updateUserPathCV($path, $user))
             return response()->json(['response' => 'Path not found'], 400);
 
-        return response()->json(['path' => $path]);
+        return response()->json(['path' => $path]); 
+    }
+
+    public function uploadAbstractBook(Request $request , $congressId)
+    {
+        
+        $file = $request->file("abstract-book-file");
+        $chemin = config('media.user-abstract-book');
+        $path = $file->store($chemin);
+        $savedPath = str_replace('user-abstract-book/', '', $path);
+        $congress = $this->congressServices->getById($congressId);
+        $congress->path_abstract_book = $savedPath;
+        $congress->update();
+         return response()->json(['path' => $savedPath]); 
+    }
+
+    public function downloadBook($path)
+    {
+        if (!$path)
+            return response()->json(['response' => 'No Book Found'], 400);
+
+        $chemin = config('media.user-abstract-book');
+        return response()->download(storage_path('app/' . $chemin . "/" . $path));
     }
 
 
@@ -92,14 +118,14 @@ class FileController extends Controller
 
     public function uploadResource(Request $request)
     {
-        $file = $request->file('files');
-
+        $file = $request->file('files'); 
         $chemin = config('media.resource');
         $path = $file->store($chemin);
         $savedPath = str_replace('resource/', '', $path);
         $resource = $this->resourceServices->saveResource($savedPath, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
+
     public function getResouce($path)
     {
         $chemin = config('media.resource');
@@ -118,6 +144,16 @@ class FileController extends Controller
         return response()->json(['resource_id' => $resource->resource_id]);
     }
 
+    public function uploadResourceStand(Request $request)
+    {       
+        $file = $request->file('files'); 
+        $chemin = config('media.resource');
+        $resource = $this->resourceServices->saveResource($file->getClientOriginalName(), $file->getSize());
+        $resource->path = '('.$resource->resource_id.')'.$resource->path ;
+        $resource->update();
+        $path = $file->storeAs($chemin,$resource->path);  
+        return response()->json(['resource' => $resource]);
+    }
     public function deleteLogoCongress($path)
     {
 
@@ -148,5 +184,12 @@ class FileController extends Controller
     {
         $chemin = config('media.congress-banner');
         return response()->download(storage_path('app/' . $chemin . "/" . $path));
+    }
+
+    public function getResouceSubmission($path, Request $request)
+    {
+        $ext = $request->query('ext');
+        $chemin = config('media.resource');
+        return response()->download(storage_path('app/' . $chemin. "/" . $path  . $ext ));
     }
 }

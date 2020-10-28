@@ -19,6 +19,7 @@ use App\Models\UserAccess;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Mpdf\Tag\Select;
 
 class AccessServices
 {
@@ -75,6 +76,7 @@ class AccessServices
         if ($request->has('seuil')) $access->seuil = $request->input('seuil');
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
         if ($request->has('show_in_program')) $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
+        if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
 
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
@@ -184,6 +186,10 @@ class AccessServices
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->get();
+    }
+
+    public function getAccesssByCongressId($congress_id) {
+        return Access::where('congress_id','=',$congress_id)->select('access_id')->get();
     }
 
     public function deleteAccess($access_id)
@@ -415,11 +421,12 @@ class AccessServices
             $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent']==1;
             }));
-            $accesss->unsetRelation('participants');
         }
         return $accesses    ;
     }
 
+
+                    
     private function addSubAccess(Access $access, $sub)
     {
         $sub_access = new Access();

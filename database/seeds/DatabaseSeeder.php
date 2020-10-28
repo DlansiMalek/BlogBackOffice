@@ -58,16 +58,11 @@ class DatabaseSeeder extends Seeder
         $this->call(LikeSeedTable::class);
         $this->call(CitySeedTable::class);
         $this->call(LocationSeedTable::class);
-        $this->call(ModuleSeedTable::class);
-        $this->call(HistoryTableSeeder::class);
-        $this->call(PaymentAdminSeedTable::class);
         $this->call(SubmissionModuleSeeders::class);
 
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
 
         // $this->call(MigrationOldData::class);
-
-
     }
 }

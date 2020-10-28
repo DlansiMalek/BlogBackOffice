@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\User;
 use App\Models\UserAccess;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
@@ -68,6 +68,7 @@ class AccessController extends Controller
         return response()->json($access);
 
     }
+
 
     public function addAccess(Request $request, $congress_id)
     {

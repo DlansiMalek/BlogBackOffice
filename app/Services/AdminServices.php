@@ -89,7 +89,7 @@ class AdminServices
     }
     public function affectUsersToEvaluator($users,$numEvalutors,$admin_id,$congress_id){
         $loopLength = sizeof($users) < $numEvalutors ? sizeof($users) : $numEvalutors;
-        for ($i=0;$i<$loopLength;$i++) {
+        for ($i=0;$i<sizeof($users);$i++) {
             $this->addEvaluationInscription(
                 $admin_id,
                 $congress_id,
@@ -290,13 +290,12 @@ class AdminServices
     {
     }
 
-    public function addPersonnel($admin)
+    public function addPersonnel($admin,$password)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
         $personnel->email = $admin["email"];
         $personnel->mobile = $admin["mobile"];
-        $password = Str::random(8);
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
         $personnel->save();
@@ -504,6 +503,10 @@ class AdminServices
         $admin->valid_date = $request->input('valid_date');
         $admin->update();
         return $admin;
+    }
+
+    public function getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin_id, int $int)
+    {
     }
 
 }

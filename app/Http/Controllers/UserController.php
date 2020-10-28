@@ -25,9 +25,11 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\ContactServices;
 
 class UserController extends Controller
 {
+    protected $contactServices;
     protected $smsServices;
     protected $userServices;
     protected $congressServices;
@@ -51,6 +53,7 @@ class UserController extends Controller
                          OrganizationServices $organizationServices,
                          PaymentServices $paymentServices,
                          SmsServices $smsServices,
+                         ContactServices $contactServices,
                          RoomServices $roomServices,
                          MailServices $mailServices,
                          ResourcesServices $resourcesServices)
@@ -67,6 +70,7 @@ class UserController extends Controller
         $this->paymentServices = $paymentServices;
         $this->mailServices = $mailServices;
         $this->roomServices = $roomServices;
+        $this->contactServices = $contactServices;
         $this->resourcesServices = $resourcesServices;
     }
 
@@ -100,6 +104,69 @@ class UserController extends Controller
         }
 
         return response()->json($user);
+    }
+
+    public function addContact(Request $request)
+    {
+        if (!$request->has('qrCode')) {
+            return response()->json(['qrCode is needed'], 400);
+        }
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['no user found'], 404);
+        }
+        if (!$user_viewed = $this->userServices->getUserByQrCode($request->input('qrCode'))) {
+            return response()->json(['contact not found'], 404);
+        }
+        if ($contact = $this->contactServices->getContactByUserViewedId(
+            $user_viewed->user_id,
+            $user->user_id
+        )) {
+            return response()->json(['contact already registred'], 200);
+        }
+
+        $this->contactServices->addContact(
+            $user->user_id,
+            $user_viewed->user_id,
+            $request->has('congressId') ? $request->input('congressId') : null
+        );
+
+        return response()->json('conctact added', 200);
+
+    }
+
+    public function deleteContact($user_viewed_id, Request $request)
+    {
+
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
+        }
+        if (!$user_viewed = $this->userServices->getUserById($user_viewed_id)) {
+            return response()->json('no user found', 404);
+        }
+        $congress_id = $request->query('congress_id');
+        if (!$contact = $this->contactServices->getContactByUserViewedId($user_viewed_id, $user->user_id, $congress_id)) {
+            return response()->json('no contact found', 404);
+        }
+
+        $contact->delete();
+        return response()->json('contact deleted', 201);
+
+    }
+
+    public function listContacts(Request $request)
+    {
+
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
+        }
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = $request->query('search', '');
+        $congressId = $request->query('eventId');
+        $contacts = $this->contactServices->getAllContacts($offset, $perPage, $search, $congressId, $user->user_id);
+
+        return response()->json($contacts, 200);
+
     }
 
     public function confirmInscription(Request $request, $userId)
@@ -144,6 +211,8 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             }, 'user_congresses.congress.itemEvaluation' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
+            }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'responses.form_input.values',
@@ -180,26 +249,26 @@ class UserController extends Controller
 
     }
 
-    public function delete($userId, $congressId=null)
+    public function delete($userId, $congressId = null)
     {
         if ($congressId) {
-        $this->userServices->deleteUserAccesses($userId, $congressId);
-        $this->userServices->deleteFormInputUser($userId, $congressId);
-        $userCongress = $this->userServices->getUserCongress($congressId, $userId);
-        $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
-        $evaluations = $this->userServices->getAllEvaluationInscriptionByUserId($userId, $congressId);
-        if ($userCongress) {
-            $userCongress->delete();
-        }
-        if ($payment) {
-            $payment->delete();
-        }
-        foreach ($evaluations as $evaluation) {
-            $evaluation->delete();
-        }
-        return response()->json(['response' => 'user disaffected to congress'], 202);
-        }
-        else {
+            $this->userServices->deleteUserAccesses($userId, $congressId);
+            $this->userServices->deleteFormInputUser($userId, $congressId);
+            $this->userServices->deleteUserPacks($userId, $congressId);
+            $userCongress = $this->userServices->getUserCongress($congressId, $userId);
+            $payment = $this->userServices->getPaymentInfoByUserAndCongress($userId, $congressId);
+            $evaluations = $this->userServices->getAllEvaluationInscriptionByUserId($userId, $congressId);
+            if ($userCongress) {
+                $userCongress->delete();
+            }
+            if ($payment) {
+                $payment->delete();
+            }
+            foreach ($evaluations as $evaluation) {
+                $evaluation->delete();
+            }
+            return response()->json(['response' => 'user disaffected to congress'], 202);
+        } else {
             $this->userServices->deleteById($userId);
             return response()->json(['response' => 'user deleted'], 202);
         }
@@ -287,7 +356,7 @@ class UserController extends Controller
                     $index = $midpoint;
                     $status = json_decode($users[$i]['user_congresses'][0]['isSelected']);
                     $this->userServices->changeUserStatus($usersCongress[$midpoint], $status);
-                    $this->acceptOrRefuseUser($status, $congress, $users[$i], $usersCongress[$midpoint]);
+                    $this->acceptOrRefuseUser($status, $congress, json_decode(json_encode($users[$i])), $usersCongress[$midpoint]);
                     break;
                 }
             }
@@ -450,7 +519,7 @@ class UserController extends Controller
                 $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id . '?verification_code=' . $user->verification_code;
                 if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $activationLink), $user, null, $mail->object, null, $userMail);
+                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $user, $activationLink), $user, null, $mail->object, null, $userMail);
                 }
             }
         } else
@@ -496,8 +565,10 @@ class UserController extends Controller
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
+        if ($request->has('avatar_id') && $privilegeId != 7) {
+            $request->merge(['avatar_id' => null]);
+        }
         //check if date limit
-
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email')))
             $user = $this->userServices->saveUser($request);
@@ -514,6 +585,11 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
+        $packIds = $request->input('packIds', 0);
+        if (sizeof($congress->packs) > 0 && sizeof($packIds) === 0) {
+            return response()->json('you should select at least one pack', 400);
+        }
+
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
@@ -531,6 +607,10 @@ class UserController extends Controller
         $privilegeId = $request->input('privilege_id');
         if ($privilegeId == 3 && !$request->has('price')) {
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
+        }
+
+        if ($request->has('avatar_id') && $privilegeId != 7) {
+            $request->merge(['avatar_id' => null]);
         }
 
         // Get User perId
@@ -785,7 +865,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSms($congress->congress_id, $user, $congress);
+            $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
         }
         $userPayement->isPaid = $isPaid;
         $userPayement->update();
@@ -1579,7 +1659,7 @@ class UserController extends Controller
                     $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
-            $this->smsServices->sendSmsToUsers($user,null,$congress_id,$congress);
+            $this->smsServices->sendSmsToUsers($user, null, $congress_id, $congress);
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
@@ -1593,7 +1673,7 @@ class UserController extends Controller
                 }
             }
         }
-        if ($privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+        if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
             $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
             $this->adminServices->affectEvaluatorsToUser(
                 $evalutors,
@@ -1610,5 +1690,90 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
+    }
+
+    public function trackingUser(Request $request)
+    {
+
+        $user = $this->userServices->retrieveUserFromToken();
+
+        if (!$user) {
+            return response()->json(['response' => 'user not found'], 404);
+        }
+
+        $userId = $user->user_id;
+        if (!$request->has(['action', 'congress_id']))
+            return response()->json(['response' => 'bad request', 'required fields' => ['action', 'congress_id']], 400);
+
+        if (($request->has('channel_name') && !$request->has('type')) || ((!$request->has('channel_name') || $request->has('channel_name') == '') && $request->has('type'))) {
+            return response()->json(['response' => 'bad request', 'required fields' => ['type', 'channel_name']], 400);
+        }
+
+        $congressId = $request->input("congress_id");
+
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+        $userCalledId = $request->input("user_call_id");
+
+        if ($request->has("user_call_id") && !$userCalled = $this->userServices->getUserById($userCalledId)) {
+            return response()->json(['response' => 'user called not found']);
+        }
+
+
+        if (!$action = $this->sharedServices->getActionByKey($request->input("action"))) {
+            return response()->json(['response' => 'action not found'], 404);
+        }
+
+        if ($request->input('type') && $request->input('type') != 'STAND' && $request->input('type') != 'ACCESS') {
+            return response()->json(['response' => 'Bad request type must be [STAND|ACCESS]'], 400);
+        }
+
+        // LOGOUT & LEAVE IF TRACK STILL OPEN
+        if ($request->input('action') == 'LOGIN') {
+             $this->userServices->closeTracking($congressId,$userId);
+
+            $participator = $this->userServices->getUserByIdWithRelations($userId,
+                ['user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }]);
+
+
+            if (sizeof($participator->user_congresses) > 0 && $participator->user_congresses[0]) {
+                /* Make it present in congress */
+                $userCongress = $participator->user_congresses[0];
+                $userCongress->isPresent = 1;
+                $userCongress->update();
+            }
+
+        }
+
+        $standId = null;
+        $accessId = null;
+        if ($request->input('type') == 'STAND') {
+            $stands = $this->congressServices->getStands($congressId, $request->input('channel_name'));
+            if (sizeof($stands) == 0) {
+                return response()->json(['response' => 'stand not found'], 404);
+            }
+            $standId = $stands[0]->stand_id;
+        }
+
+        if ($request->input('type') == 'ACCESS') {
+            $accesses = $this->congressServices->getAccesssByCongressId($congressId, $request->input('channel_name'));
+            if (sizeof($accesses) == 0) {
+                return response()->json(['response' => 'access not found'], 404);
+            }
+            $accessId = $accesses[0]->access_id;
+
+            $user_access = $this->userServices->getUserAccessByUser($userId, $accessId);
+
+            if ($user_access) {
+                $user_access->isPresent = 1;
+                $user_access->update();
+            }
+        }
+
+        return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment'), $userCalledId));
     }
 }

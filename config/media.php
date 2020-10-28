@@ -5,5 +5,6 @@ return [
     'congress-banner' => 'congress-banner',
     'user-cv'=>'user-cv',
     'resource'=>'resource',
-    'payement-user-recu' => 'payement-user-recu'
+    'payement-user-recu' => 'payement-user-recu',
+    'user-abstract-book' => 'user-abstract-book'
 ];
