@@ -378,7 +378,9 @@ class UserController extends Controller
         $status = $request->input('status');
 
         $this->userServices->changeUserStatus($user_congress, $status);
-        $user = $this->userServices->getUserById($user_id);
+        $user = $this->userServices->getUserByIdWithRelations($user_id, ['accesses' => function ($query) use ($congress_id) {
+            $query->where('congress_id', '=', $congress_id);
+        }]);
         $congress = $this->congressServices->getCongressById($congress_id);
         $this->acceptOrRefuseUser($status, $congress, $user, $user_congress);
         return response()->json(['message' => 'change status success'], 200);

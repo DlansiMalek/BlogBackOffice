@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use JWTAuth;
 use PDF;
+use function foo\func;
 
 
 /**
@@ -202,6 +203,9 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'users.responses.form_input',
+                'users.accesses' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
+                },
                 'config',
                 'config_selection',
                 "badges",
@@ -926,7 +930,7 @@ class CongressServices
 
     public function getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId)
     {
-        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values'])
+        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values', 'user_call'])
             ->whereHas('user', function ($query) use ($search) {
                 $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                 $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
