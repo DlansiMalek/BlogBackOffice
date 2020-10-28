@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use JWTAuth;
 use PDF;
+use function foo\func;
 
 
 /**
@@ -199,6 +200,9 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'users.responses.form_input',
+                'users.accesses' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
+                },
                 'config',
                 'config_selection',
                 "badges",
