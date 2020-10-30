@@ -20,6 +20,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('login/facebook/callback', 'Auth\LoginController@handleFacebookProviderCallback');
 });
 
+Route::get('updateTokens/{congressId}','AccessController@updateTokensJitsi');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');

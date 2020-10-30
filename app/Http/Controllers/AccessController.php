@@ -78,12 +78,16 @@ class AccessController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id))
             return response()->json(['response' => 'congress not found'], 404);
 
-        if (!$admin=$this->adminServices->retrieveAdminFromToken())
+        if (!$admin = $this->adminServices->retrieveAdminFromToken())
             return response()->json(['response' => 'admin not found'], 404);
 
         $access = $this->accessServices->addAccess($congress_id, $request);
-        $token_jitsi = $this->roomServices->createToken($admin->email, 'eventizer_room_' .$congress_id  .$access->access_id, true,  $admin->name);
-        $access->token_jitsi=$token_jitsi;
+        $token_jitsi = $this->roomServices->createToken($admin->email, 'eventizer_room_' . $congress_id . $access->access_id, true, $admin->name);
+        $jitsi_moderator = $this->roomServices->createToken('moderator@eventizer.io', 'eventizer_room_' . $congress_id . $access->access_id, true, "Moderator");
+        $jitsi_participant = $this->roomServices->createToken('participant@eventizer.io', 'eventizer_room_' . $congress_id . $access->access_id, false, "Participant");
+        $access->token_jitsi_moderator = $jitsi_moderator;
+        $access->token_jitsi_participant = $jitsi_participant;
+        $access->token_jitsi = $token_jitsi;
         $access->update();
 
         if ($request->has('chair_ids') && count($request->input('chair_ids'))) {
@@ -136,7 +140,7 @@ class AccessController extends Controller
 
         $access = $this->accessServices->editAccess($access, $request);
 
-        if($request->has('is_recorder')) {
+        if ($request->has('is_recorder')) {
             $this->accessServices->editVideoUrl($access, $request->input('is_recorder'));
         }
 
@@ -193,6 +197,20 @@ class AccessController extends Controller
         }
 
         return response()->json(['message' => 'not found'], 404);
+    }
+
+    function updateTokensJitsi($congressId)
+    {
+        $accesses = $this->accessServices->getAccesssByCongressId($congressId);
+
+        foreach ($accesses as $access) {
+                $jitsi_moderator = $this->roomServices->createToken('moderator@eventizer.io', 'eventizer_room_' . $congressId . $access->access_id, true, "Moderator");
+                $jitsi_participant = $this->roomServices->createToken('participant@eventizer.io', 'eventizer_room_' . $congressId . $access->access_id, false, "Participant");
+                $access->token_jitsi_moderator = $jitsi_moderator;
+                $access->token_jitsi_participant = $jitsi_participant;
+                $access->update();
+
+        }
     }
 
 }
