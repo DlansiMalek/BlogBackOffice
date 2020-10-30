@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TypeOffre extends Model
+class Type extends Model
 {
-    protected $table = 'Type_Offre';
-    protected $primaryKey = 'type_offre_id';
+    protected $table = 'Type';
+    protected $primaryKey = 'type_id';
     protected $fillable = ['name'];
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at','deleted_at'];
+
 }

@@ -15,21 +15,20 @@ class CreateTableOffre extends Migration
     {
         Schema::create('Offre', function (Blueprint $table) {
             $table->increments('offre_id');
-            $table->double('prix_unitaire')->default(0);
-            $table->date('start_date')->default(Null)->nullable();
-            $table->date('end_date')->default(Null)->nullable();
+            $table->string('nom');
+            $table->double('value')->default(0);
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->integer("status");
 
-            $table->unsignedInteger("type_commission_id")->default(Null)->nullable();
-            $table->foreign("type_commission_id")->references('type_commission_id')
-                ->on('Type_Commission');
+            $table->unsignedInteger("type_id");
+            $table->foreign("type_id")->references('type_id')
+                ->on('Type');
 
             $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
 
-            $table->unsignedInteger('type_offre_id');
-            $table->foreign('type_offre_id')->references('type_offre_id')
-                ->on('Type_Offre');
 
             $table->timestamps();
         });
@@ -44,9 +43,8 @@ class CreateTableOffre extends Migration
     {
         Schema::table('Offre', function (Blueprint $table) {
             $table->dropForeign(['admin_id']);
-            $table->dropForeign(['type_commission_id']);
-            $table->dropForeign(['type_offre_id']);
+            $table->dropForeign(['type_id']);
         });
-        Schema::dropIfExists('Admin_Offre');
+        Schema::dropIfExists('Offre');
     }
 }

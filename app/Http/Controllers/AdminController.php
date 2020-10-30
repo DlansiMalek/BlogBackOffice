@@ -618,12 +618,12 @@ class AdminController extends Controller
 
     public function addClient(Request $request)
     {
-        if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile', 'offre', 'admin_payment']))
+        if (!$request->has(['name', 'email', 'passwordDecrypt', 'mobile']))
             return response()->json(['message' => 'bad request'], 400);
 
         if ($admin = $this->adminServices->getAdminByLogin($request->input("email"))) {
             if($admin->privilege_id)
-            return response()->json(['message' => 'admin exists'], 402);
+                return response()->json(['message' => 'admin exists'], 400);
         }
 
         if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('creation_admin')) {
@@ -636,10 +636,11 @@ class AdminController extends Controller
             return response()->json(['message' => 'Mail not found'], 400);
         }
 
-        $admin = $this->adminServices->addClient($admin, $request, $request->input('offre'), $request->input('admin_payment'));
+        $admin = $this->adminServices->addClient($admin, $request);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-       // $paymentLink = UrlUtils::getUrlEventizerWeb() . "/#/auth/admin/" . $admin->admin_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId
+
+        // $paymentLink = UrlUtils::getUrlEventizerWeb() . "/#/auth/admin/" . $admin->admin_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId
         $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
 
         return response()->json(['message' => 'Client added success', 'admin'=> $admin]);
@@ -670,6 +671,31 @@ class AdminController extends Controller
 
     public function getAllOffres() {
         return $this->adminServices->getAllOffres();
+    }
+
+    public function getOffreById($offre_id) {
+        return $this->adminServices->getOffreById($offre_id);
+    }
+
+    public function addOffre(Request $request) {
+        if (!$request->has(['nom', 'value', 'start_date', 'end_date', 'type_id', 'admin_id']))
+            return response()->json(['message' => 'bad request'], 400);
+        if (!$admin = $this->adminServices->getAdminById($request->input('admin_id')))
+            return response()->json(['message' => 'admin not found'], 404);
+        if($oldOffre = $this->adminServices->getOffreByAdminId($request->input('admin_id')))
+            $this->adminServices->desactivateOffre($oldOffre);
+        $offre = $this->adminServices->addOffre($request);
+        return response()->json(['messsage' => 'offre created successfully', 'offre' => $offre], 200);
+    }
+
+    public function editOffre( Request $request, $offre_id) {
+        if (!$offre = $this->adminServices->getOffreById($offre_id))
+            return response()->json(['message' => 'offre not found'], 404);
+        if (!$request->has(['nom', 'value', 'start_date', 'end_date', 'type_id', 'admin_id']))
+            return response()->json(['message' => 'bad request'], 400);
+        $offre = $this->adminServices->editOffre($offre, $request);
+        return response()->json(['messsage' => 'offre edited successfully', 'offre' => $offre], 200);
+
     }
 }
 

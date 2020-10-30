@@ -71,7 +71,9 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
-            ->with(['adminPayment'])
+            ->with(['adminPayment', 'offres'=> function ($query) {
+                $query->where('status', '=', 1);
+            },])
             ->get();
     }
 
@@ -451,9 +453,9 @@ class AdminServices
         return 1;
     }
 
-    public function addClient($admin, $request, $offreRequest, $adminPaymentRequest)
+    public function addClient($admin, $request)
     {
-        if (!$admin)
+        if(!$admin)
             $admin = new Admin();
 
         $admin->name = $request->input("name");
@@ -466,24 +468,8 @@ class AdminServices
         }
         $admin->privilege_id = 1;
         $admin->save();
-
-        $offre = new Offre();
-        $offre->type_offre_id = $offreRequest['type_offre_id'];
-        $offre->admin_id = $admin->admin_id;
-        $offre->start_date = $offreRequest['start_date'] ? $offreRequest['start_date'] : Null;
-        $offre->end_date = $offreRequest['end_date'] ? $offreRequest['end_date'] : Null;
-        $offre->type_commission_id = $offreRequest['type_commission_id'] ? $offreRequest['type_commission_id'] : Null;
-        $offre->prix_unitaire = $offreRequest['prix_unitaire'] ? $offreRequest['prix_unitaire'] : 0;
-        $offre->save();
-
-        $paymentAdmin = new PaymentAdmin();
-        $paymentAdmin->isPaid = 0;
-        $paymentAdmin->admin_id = $admin->admin_id;
-        $paymentAdmin->price = $adminPaymentRequest['price'] ? $adminPaymentRequest['price'] : 0;
-        $paymentAdmin->deadline = $adminPaymentRequest['deadline'] ? $adminPaymentRequest['deadline'] : Null;
-        $paymentAdmin->save();
-
         return $admin;
+
     }
 
     public function affectEvaluatorsToUser($evaluators, $numEvalutors, $congress_id, $user_id)
@@ -556,8 +542,64 @@ class AdminServices
 
     public function getAllOffres()
     {
-        return Offre::with(['admin', 'admin.adminPayment', 'type_offre', 'type_commission'])
+        return Offre::with(['admin', 'type'])
         ->get();
+    }
+
+    public function getOffreById($offre_id)
+    {
+        return Offre::where('offre_id', '=', $offre_id)
+            ->first();
+    }
+    public function getOffreByAdminId($admin_id)
+    {
+        return Offre::where('admin_id', '=', $admin_id)->where('status', '=', 1)
+            ->first();
+    }
+
+
+    public function addOffre($request)
+    {
+        $offre = new Offre();
+        $offre->nom = $request->input('nom');
+        $offre->start_date = $request->input('start_date');
+        $offre->end_date = $request->input('end_date');
+        $offre->value = $request->input('value');
+        $offre->status = 1;
+        $offre->type_id = $request->input('type_id');
+        $offre->admin_id = $request->input('admin_id');
+        $offre->save();
+
+        $paymentAdmin = new PaymentAdmin();
+        $paymentAdmin->isPaid = 0;
+        $paymentAdmin->admin_id = $request->input('admin_id');
+        $paymentAdmin->offre_id = $offre->offre_id;
+        if ($offre->type_id == 1 || $offre->type_id == 4) {
+            $paymentAdmin->price = $request->input('value');
+        } else {
+            $paymentAdmin->price = 0 ;
+        }
+        $paymentAdmin->save();
+
+        return $offre;
+    }
+
+    public function editOffre($offre, $request)
+    {
+        $offre->nom = $request->input('nom');
+        $offre->start_date = $request->input('start_date');
+        $offre->end_date = $request->input('end_date');
+        $offre->value = $request->input('value');
+        $offre->type_id = $request->input('type_id');
+        $offre->admin_id = $request->input('admin_id');
+        $offre->update();
+        return $offre;
+    }
+
+    public function desactivateOffre($offre)
+    {
+        $offre->status = 0;
+        $offre->update();
     }
 
 }

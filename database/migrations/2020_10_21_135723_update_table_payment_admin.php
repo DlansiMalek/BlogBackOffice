@@ -14,12 +14,20 @@ class UpdateTablePaymentAdmin extends Migration
     public function up()
     {
         Schema::table('Payment_Admin', function (Blueprint $table) {
-            $table->dropColumn('reference');
-            $table->dropColumn('authorization');
-            $table->dropColumn('path');
-            $table->dropForeign(['pack_admin_id']);
+            $table->string('reference')->default(Null)->nullable()->change();
+            $table->string('authorization')->default(Null)->nullable()->change();
+            $table->string('path')->default(Null)->nullable()->change();
+
+           /* $table->dropForeign(['pack_admin_id']);
             $table->dropColumn('pack_admin_id');
-            $table->date('deadline')->default(Null)->nullable()->after('price');
+
+            $table->unsignedInteger('offre_id')->after('admin_id');
+            $table->foreign('offre_id')->references('offre_id')
+                ->on('Offre');
+
+            $table->unsignedInteger('payment_type_id')->nullable()->default(null)->after('offre_id');
+            $table->foreign('payment_type_id')->references('payment_type_id')
+                ->on('Payment_Type')->onDelete('set null');*/
         });
     }
 
@@ -31,12 +39,12 @@ class UpdateTablePaymentAdmin extends Migration
     public function down()
     {
         Schema::table('Payment_Admin', function (Blueprint $table) {
-            $table->string('reference');
-            $table->string('authorization');
-            $table->string('path');
             $table->foreign('pack_admin_id')->references('pack_admin_id')
                 ->on('Pack_Admin')->onDelete('cascade');
-            $table->dropColumn("deadline");
+            $table->dropForeign(['offre_id']);
+            $table->dropColumn('offre_id');
+            $table->dropForeign(['payment_type_id']);
+            $table->dropColumn('payment_type_id');
         });
     }
 }
