@@ -192,6 +192,31 @@ class Utils
         return null;
     }
 
+    public static function mappingInputResponse($formInputs, $responses)
+    {
+        $responses = json_decode($responses, true);
+        $res = array();
+        foreach ($formInputs as $formInput) {
+            $index = array_search($formInput->form_input_id, array_column($responses, 'form_input_id'));
+            if ($index >= 0) {
+                if ($responses[$index]['response']) {
+                    $values = $responses[$index]['response'];
+                } else if ($responses[$index]['values'] && sizeof($responses[$index]['values']) > 0) {
+                    $values = array();
+                    foreach ($responses[$index]['values'] as $value) {
+                        $key = array_search($value['form_input_value_id'], array_column(json_decode($formInput->values), 'form_input_value_id'));
+                        if ($key >= 0 && $formInput->values[$key] && $formInput->values[$key]->value) {
+                            array_push($values, $formInput->values[$key]->value);
+                        }
+                    }
+                }
+            }
+            $res[$formInput->label] = $values;
+        }
+
+        return $res;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");

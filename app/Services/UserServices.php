@@ -352,7 +352,7 @@ class UserServices
 
     public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
-        return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
+        return User::with(["responses.values","accesses" => function ($query) use ($congressId, $showInRegister) {
             $query->where('congress_id', '=', $congressId);
             if ($showInRegister)
                 $query->where('show_in_register', '=', $showInRegister);

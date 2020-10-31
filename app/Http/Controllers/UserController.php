@@ -15,6 +15,7 @@ use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\SmsServices;
 use App\Services\ResourcesServices;
+use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -41,6 +42,7 @@ class UserController extends Controller
     protected $mailServices;
     protected $roomServices;
     protected $resourcesServices;
+    protected $trackingServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -54,7 +56,8 @@ class UserController extends Controller
                          ContactServices $contactServices,
                          RoomServices $roomServices,
                          MailServices $mailServices,
-                         ResourcesServices $resourcesServices)
+                         ResourcesServices $resourcesServices,
+                         TrackingServices $trackingServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -70,6 +73,7 @@ class UserController extends Controller
         $this->roomServices = $roomServices;
         $this->contactServices = $contactServices;
         $this->resourcesServices = $resourcesServices;
+        $this->trackingServices = $trackingServices;
     }
 
     public function getLoggedUser()
@@ -1659,6 +1663,8 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
+
+        $this->trackingServices->sendUserInfo($congress, $user);
     }
 
     public function trackingUser(Request $request)
@@ -1701,7 +1707,7 @@ class UserController extends Controller
 
         // LOGOUT & LEAVE IF TRACK STILL OPEN
         if ($request->input('action') == 'LOGIN') {
-             $this->userServices->closeTracking($congressId,$userId);
+            $this->userServices->closeTracking($congressId, $userId);
 
             $participator = $this->userServices->getUserByIdWithRelations($userId,
                 ['user_congresses' => function ($query) use ($congressId) {

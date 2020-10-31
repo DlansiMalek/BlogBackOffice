@@ -150,4 +150,9 @@ class UrlUtils
 
         return "https://discovery.recordings.meet.eventizer.io";
     }
+
+    public static function getElasticBaseUrl()
+    {
+        return "https://" . env('ELASTIC_USER') . ":" . env('ELASTIC_PASSWORD') . '@elastic.tracking.master.vayetek.com';
+    }
 }
