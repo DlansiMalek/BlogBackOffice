@@ -20,6 +20,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('login/facebook/callback', 'Auth\LoginController@handleFacebookProviderCallback');
 });
 
+Route::get('updateTokens/{congressId}', 'AccessController@updateTokensJitsi');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
@@ -111,6 +112,13 @@ Route::group(['prefix' => 'auth'], function () {
         Route::post('login/user', 'Auth\LoginController@loginUser');
     });
 
+});
+
+// Tracking API
+Route::group(['prefix' => 'tracking', 'middleware' => ['assign.guard:admins']], function () {
+    Route::group(['prefix' => 'congress/{congressId}'], function () {
+        Route::post('migrate-users', 'TrackingController@migrateUsers');
+    });
 });
 
 //User API

@@ -61,8 +61,11 @@ class PaymentController extends Controller
             return "";
         }
 
-        $user = $userPayment->user;
         $congress = $userPayment->congress;
+
+        $user = $this->userServices->getUserByIdWithRelations($userPayment->user->user_id, ['accesses' => function ($query) use ($congress) {
+            $query->where('congress_id', '=', $congress->congress_id);
+        }]);
 
         switch ($action) {
             case "DETAIL" :
