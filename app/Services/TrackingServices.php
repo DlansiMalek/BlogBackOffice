@@ -27,14 +27,18 @@ class TrackingServices
         ]);
     }
 
-    public function sendUserInfo($congress, $user)
+    public function sendUserInfo($congressId, $formInputs, $user)
     {
-        $formInputs = $congress->form_inputs;
-        $congressId = $congress->congress_id;
 
         $object = $this->getBasicUserInfos($congressId, $user);
 
         $object = array_merge($object, Utils::mappingInputResponse($formInputs, $user->responses));
+
+        if (sizeof($user->user_congresses) > 0) {
+            $object['privilege_name'] = $user->user_congresses[0]->privilege->name;
+            $user->user_congresses[0]->is_tracked = 1;
+            $user->user_congresses[0]->update();
+        }
 
         $object['env'] = env('APP_ENV');
 

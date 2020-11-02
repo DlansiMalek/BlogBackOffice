@@ -1664,7 +1664,9 @@ class UserController extends Controller
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
 
-        $this->trackingServices->sendUserInfo($congress, $user);
+        $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
+
+        $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
     }
 
     public function trackingUser(Request $request)
