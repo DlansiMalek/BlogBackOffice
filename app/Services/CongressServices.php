@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use JWTAuth;
 use PDF;
+use function foo\func;
 
 
 /**
@@ -109,7 +110,10 @@ class CongressServices
         $all_congresses = Congress::with([
             "config:congress_id,logo,banner,program_link,status,free,currency_code",
             "theme:label,description",
-            "location.city:city_id,name"
+            "location.city:city_id,name",
+            'admin_congresses' => function ($query) {
+                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
+            },
         ])->orderBy('start_date', 'desc')
             ->offset($offset)->limit($perPage)
             ->where('name', 'LIKE', '%' . $search . '%')
@@ -135,7 +139,7 @@ class CongressServices
 
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date",
+                ->only(["congress_id", "name", "start_date","admin_congresses",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
@@ -199,6 +203,9 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'users.responses.form_input',
+                'users.accesses' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
+                },
                 'config',
                 'config_selection',
                 "badges",
@@ -843,7 +850,6 @@ class CongressServices
 
     }
 
-
     public function confirmPresence($congress_id, $user_id, $will_be_present)
     {
         $userCongress = UserCongress::where('user_id', '=', $user_id)
@@ -924,7 +930,7 @@ class CongressServices
 
     public function getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId)
     {
-        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values'])
+        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values', 'user_call'])
             ->whereHas('user', function ($query) use ($search) {
                 $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                 $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
@@ -944,6 +950,4 @@ class CongressServices
             ->where('congress_id', '=', $congressId)
             ->paginate($perPage);
     }
-
-
 }

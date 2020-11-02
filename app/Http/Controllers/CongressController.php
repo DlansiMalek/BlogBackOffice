@@ -840,7 +840,6 @@ class CongressController extends Controller
         return response()->json($events, 200);
     }
 
-
     public function confirmPresence($congress_id, $user_id, $present)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
@@ -1003,4 +1002,5 @@ class CongressController extends Controller
         }
         return response()->json($this->privilegeServices->activatePrivilege($congress_id, $privilege_id));
     }
+
 }
