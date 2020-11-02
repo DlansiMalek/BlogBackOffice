@@ -599,4 +599,21 @@ class AdminServices
         $offre->update();
     }
 
+    public function getOffreByCongressId($congress_id)
+    {
+        return Offre::where('status', '=', 1)
+            ->join('admin_congress', function ($join) use ($congress_id) {
+                $join->on('admin_congress.admin_id', '=', 'offre.admin_id')
+                    ->where('congress_id', '=', $congress_id)
+                    ->where('privilege_id', '=', 1);
+            })->first();
+    }
+
+    public function updatePaymentAdminPrice($adminPayment, $value)
+    {
+        $adminPayment->price+= $value;
+        $adminPayment->update();
+        return $adminPayment;
+    }
+
 }

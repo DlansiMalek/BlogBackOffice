@@ -491,6 +491,12 @@ class UserController extends Controller
         $user = $this->userServices->addParticipant($request, $congressId);
         $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
+        if($offre = $this->adminServices->getOffreByCongressId($congressId)) {
+            if ($offre->type_id == 2) {
+                $adminPayment = $this->adminServices->getAdminPayment($offre->admin_id, $offre->offre_id);
+                $this->adminServices->updatePaymentAdminPrice($adminPayment, $offre->value);
+            }
+        }
         return response()->json(['add success'], 200);
     }
 
@@ -547,6 +553,12 @@ class UserController extends Controller
 
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        if($offre = $this->adminServices->getOffreByCongressId($congress_id)) {
+            if ($offre->type_id == 2) {
+                $adminPayment = $this->adminServices->getAdminPayment($offre->admin_id, $offre->offre_id);
+                $this->adminServices->updatePaymentAdminPrice($adminPayment, $offre->value);
+            }
+        }
 
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
 
@@ -590,6 +602,12 @@ class UserController extends Controller
 
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+        if($offre = $this->adminServices->getOffreByCongressId($congress_id)) {
+            if ($offre->type_id == 2) {
+                $adminPayment = $this->adminServices->getAdminPayment($offre->admin_id, $offre->offre_id);
+                $this->adminServices->updatePaymentAdminPrice($adminPayment, $offre->value);
+            }
+        }
 
         $packId = $request->input('packIds', 0);
         $accessesIds = $request->input('accessIds', []);
