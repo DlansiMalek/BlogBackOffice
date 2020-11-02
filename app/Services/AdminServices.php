@@ -71,9 +71,9 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
-            ->with(['adminPayment', 'offres'=> function ($query) {
-                $query->where('status', '=', 1);
-            },])
+            ->with(['offres'=> function ($query) {
+                $query->where('status', '=', 1)->with('payment_admin');
+            }])
             ->get();
     }
 
@@ -199,15 +199,18 @@ class AdminServices
         $history->save();
     }
 
-    public function addPayment($payment, $admin, $pack)
+    public function addPayment($admin_id, $offre)
     {
-        $payment->admin_id = $admin->admin_id;
-        $payment->pack_admin_id = $pack->pack_admin_id;
-        $payment->isPaid = false;
-        $payment->reference = "";
-        $payment->authorization = "";
-        $payment->path = "";
-        $payment->save();
+        $paymentAdmin = new PaymentAdmin();
+        $paymentAdmin->isPaid = 0;
+        $paymentAdmin->admin_id = $admin_id;
+        $paymentAdmin->offre_id = $offre->offre_id;
+        if ($offre->type_id == 1 || $offre->type_id == 4) {
+            $paymentAdmin->price = $offre->value;
+        } else {
+            $paymentAdmin->price = 0 ;
+        }
+        $paymentAdmin->save();
     }
 
     public function addValidatedHistory($history, $admin, $pack, $lasthistory)
@@ -495,16 +498,15 @@ class AdminServices
 
     }
 
-    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null)
+    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null, $paymentLink = null)
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
-        $template = str_replace('{{$admin-&gt;first_name}}', '{{$admin->first_name}}', $template);
-        $template = str_replace('{{$admin-&gt;last_name}}', '{{$admin->last_name}}', $template);
+        $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
 
-        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink]);
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink]);
     }
 
     public function getClientById($admin_id)
@@ -514,7 +516,7 @@ class AdminServices
             ->first();
     }
 
-    public function editClient($request, $admin, $adminPayment)
+    public function editClient($request, $admin)
     {
         if (!$admin) {
             return null;
@@ -524,20 +526,25 @@ class AdminServices
         $admin->valid_date = $request->input('valid_date');
         $admin->update();
 
-        if ($request->has('isPaid')) {
-            $adminPayment->isPaid = $request->input('isPaid');
-            $adminPayment->update();
-        }
         return $admin;
+    }
+
+    public function editAdminPayment($adminPayment, $isPaid)
+    {
+        $adminPayment->isPaid = $isPaid;
+        $adminPayment->update();
+        return $adminPayment;
     }
 
     public function getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin_id, int $int)
     {
     }
 
-    public function getAdminPayment($admin_id)
+    public function getAdminPayment($admin_id, $offre_id)
     {
-        return PaymentAdmin::where('admin_id', '=', $admin_id)->first();
+        return PaymentAdmin::where('admin_id', '=', $admin_id)
+            ->where('offre_id', '=', $offre_id)
+            ->first();
     }
 
     public function getAllOffres()
@@ -551,7 +558,7 @@ class AdminServices
         return Offre::where('offre_id', '=', $offre_id)
             ->first();
     }
-    public function getOffreByAdminId($admin_id)
+    public function getActiveOffreByAdminId($admin_id)
     {
         return Offre::where('admin_id', '=', $admin_id)->where('status', '=', 1)
             ->first();
@@ -570,17 +577,7 @@ class AdminServices
         $offre->admin_id = $request->input('admin_id');
         $offre->save();
 
-        $paymentAdmin = new PaymentAdmin();
-        $paymentAdmin->isPaid = 0;
-        $paymentAdmin->admin_id = $request->input('admin_id');
-        $paymentAdmin->offre_id = $offre->offre_id;
-        if ($offre->type_id == 1 || $offre->type_id == 4) {
-            $paymentAdmin->price = $request->input('value');
-        } else {
-            $paymentAdmin->price = 0 ;
-        }
-        $paymentAdmin->save();
-
+        $this->addPayment($request->input('admin_id'), $offre);
         return $offre;
     }
 
@@ -596,7 +593,7 @@ class AdminServices
         return $offre;
     }
 
-    public function desactivateOffre($offre)
+    public function deactivateOffre($offre)
     {
         $offre->status = 0;
         $offre->update();

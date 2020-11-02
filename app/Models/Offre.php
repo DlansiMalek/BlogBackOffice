@@ -22,4 +22,8 @@ class Offre extends Model
         return $this->hasOne('App\Models\Admin', 'admin_id', 'admin_id');
     }
 
+    public function payment_admin() {
+        return $this->belongsTo('App\Models\PaymentAdmin', 'offre_id', 'offre_id');
+    }
+
 }

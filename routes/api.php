@@ -398,6 +398,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'marketing'], function () {
     Route::get('mailtype/{mailTypeAdminId}', 'MailController@getMailTypeAdminByMailTypeAdminId');
     Route::post('mail/{mailTypeAdminId}', 'MailController@saveMailAdmin');
     Route::put('{admin_id}', "AdminController@editClient");
+    Route::put('{admin_id}/offre/{offreId}', "AdminController@editClientPayment");
 });
 
 Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {

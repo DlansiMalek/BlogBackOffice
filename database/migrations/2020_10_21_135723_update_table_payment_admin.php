@@ -18,7 +18,7 @@ class UpdateTablePaymentAdmin extends Migration
             $table->string('authorization')->default(Null)->nullable()->change();
             $table->string('path')->default(Null)->nullable()->change();
 
-           /* $table->dropForeign(['pack_admin_id']);
+            $table->dropForeign(['pack_admin_id']);
             $table->dropColumn('pack_admin_id');
 
             $table->unsignedInteger('offre_id')->after('admin_id');
@@ -27,7 +27,7 @@ class UpdateTablePaymentAdmin extends Migration
 
             $table->unsignedInteger('payment_type_id')->nullable()->default(null)->after('offre_id');
             $table->foreign('payment_type_id')->references('payment_type_id')
-                ->on('Payment_Type')->onDelete('set null');*/
+                ->on('Payment_Type')->onDelete('set null');
         });
     }
 
