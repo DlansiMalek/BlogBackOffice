@@ -198,6 +198,7 @@ class Utils
         $res = array();
         foreach ($formInputs as $formInput) {
             $index = array_search($formInput->form_input_id, array_column($responses, 'form_input_id'));
+            $values = "";
             if ($index >= 0) {
                 if ($responses[$index]['response']) {
                     $values = $responses[$index]['response'];
