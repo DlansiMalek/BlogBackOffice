@@ -118,6 +118,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'tracking', 'middleware' => ['assign.guard:admins']], function () {
     Route::group(['prefix' => 'congress/{congressId}'], function () {
         Route::post('migrate-users', 'TrackingController@migrateUsers');
+        Route::post('migrate-tracking', 'TrackingController@migrateTracking');
     });
 });
 
