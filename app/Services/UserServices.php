@@ -1176,13 +1176,19 @@ class UserServices
             ->first();
     }
 
-    public function getUsersTracking($congress_id)
+    public function getUsersTracking($congress_id, $actionsId = null, $privilegeId = null)
     {
-        return User::whereHas('user_congresses', function ($query) use ($congress_id) {
-            $query->where('congress_id', '=', $congress_id)->where('privilege_id', '=', 3);
-        })->with(['tracking' => function ($query) {
-            $query->whereIn('action_id', [1, 2, 3, 4])->orderBy('date');
-        }])
+        return User::whereHas('user_congresses', function ($query) use ($congress_id, $privilegeId) {
+            $query->where('congress_id', '=', $congress_id);
+            if ($privilegeId != null) {
+                $query->where('privilege_id', '=', $privilegeId);
+            }
+        })->with(['tracking' => function ($query) use ($congress_id, $actionsId) {
+            $query->where('congress_id', '=', $congress_id);
+            if (sizeof($actionsId) > 0)
+                $query->whereIn('action_id', $actionsId);
+            $query->orderBy('date');
+        }, 'tracking.access', 'tracking.stand'])
             ->get();
     }
 
