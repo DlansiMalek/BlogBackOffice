@@ -260,6 +260,64 @@ class MailServices
 
     }
 
+    public function getOffreByCongressId($congress_id)
+    {
+        return Offre::where('status', '=', 1)
+            ->join('admin_congress', function ($join) use ($congress_id) {
+                $join->on('admin_congress.admin_id', '=', 'offre.admin_id')
+                    ->where('congress_id', '=', $congress_id)
+                    ->where('privilege_id', '=', 1);
+            })->first();
+    }
+
+
+    public function sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile)
+    {
+        $html = $view->render();
+        $img = file_get_contents($pathToFile);
+        $content = base64_encode($img);
+        $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+        $message = array(
+            'sender' => array(
+                'email' =>  env('MAIL_USERNAME', 'contact@eventizer.io'),
+                'name' => $fromMailName,
+            ),
+            'htmlContent' => $html,
+            'subject' => $objectMail,
+            'to' => array(
+                array(
+                    'email' => $email,
+                ),
+            ),
+        );
+        if ($fileAttached)
+        {
+            $file =array( 'attachment' => array(
+                array(
+                    // 'url' =>  $pathToFile,
+                    'content' => $content,
+                    'name' => 'badge.png'
+                    // try this for test: https://i1.wp.com/africanelephantjournal.com/wp-content/uploads/2019/04/3ac2e367385a4a378fb5cf7fc58d8ebc.jpg?resize=800%2C500&ssl=1
+                )
+            )
+            );
+            $message = array_merge($message, $file);
+        }
+        $this->client = new Client([
+            'base_uri' => UrlUtils::getUrlSendInBlue(),
+            'headers' => [
+                'accept' => 'application/json',
+                'content-type' => 'application/json',
+                'api-key' => env('API_KEY')
+            ],
+        ]);
+        $httpBody = \GuzzleHttp\json_encode($message);
+        $res = $this->client->post('', [
+            'body' =>  $httpBody
+        ]);
+        return json_decode($res->getBody(), true);
+    }
+
 /*    public function sendMailUsingSendPulse ($view, $user, $congress, $objectMail, $fileAttached, $email, $pathToFile, $token_mail = null)
     {
         $token = $token_mail ? $token_mail : ($congress ? $congress->config['token_mail_pro'] : '');
@@ -314,16 +372,6 @@ class MailServices
         return json_decode($res->getBody(), true);
     }*/
 
-    public function getOffreByCongressId($congress_id)
-    {
-        return Offre::where('status', '=', 1)
-            ->join('admin_congress', function ($join) use ($congress_id) {
-                $join->on('admin_congress.admin_id', '=', 'offre.admin_id')
-                    ->where('congress_id', '=', $congress_id)
-                    ->where('privilege_id', '=', 1);
-            })->first();
-    }
-
 /*    public function getKey($config)
     {
         $this->client = new Client([
@@ -348,49 +396,5 @@ class MailServices
 
         return json_decode($res->getBody(), true)['access_token'];
     }*/
-
-    public function sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile)
-    {
-        $html = $view->render();
-        $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-        $message = array(
-            'sender' => array(
-                'email' =>  env('MAIL_USERNAME', 'contact@eventizer.io'),
-                'name' => $fromMailName,
-            ),
-            'htmlContent' => $html,
-            'subject' => $objectMail,
-            'to' => array(
-                array(
-                    'email' => $email,
-                ),
-            ),
-        );
-        if ($fileAttached)
-        {
-            $file =array( 'attachment' => array(
-                array(
-                    'url' =>  $pathToFile
-                    // try this for test: https://i1.wp.com/africanelephantjournal.com/wp-content/uploads/2019/04/3ac2e367385a4a378fb5cf7fc58d8ebc.jpg?resize=800%2C500&ssl=1
-                )
-            )
-            );
-            $message = array_merge($message, $file);
-        }
-        $this->client = new Client([
-            'base_uri' => UrlUtils::getUrlSendInBlue(),
-            'headers' => [
-                'accept' => 'application/json',
-                'content-type' => 'application/json',
-                'api-key' => env('API_KEY')
-            ],
-        ]);
-        $httpBody = \GuzzleHttp\json_encode($message);
-        $res = $this->client->post('', [
-           'body' =>  $httpBody
-        ]);
-        return json_decode($res->getBody(), true);
-    }
-
 
 }
