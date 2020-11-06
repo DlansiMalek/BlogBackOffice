@@ -762,8 +762,8 @@ class CongressController extends Controller
 
     public function getStatsByCongressId($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)){
-            return response()->json('no congress found' ,404);
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json('no congress found', 404);
         }
         $totalUsers = $this->congressServices->getParticipantsCount($congressId, null, null);
         $participantUsers = $this->congressServices->getParticipantsCount($congressId, 3, null);
@@ -771,7 +771,7 @@ class CongressController extends Controller
         $gratuitNb = $this->paymentServices->getFreeUserByCongressId($congressId);
         $totalPresenceUsers = $this->congressServices->getParticipantsCount($congressId, null, 1);
         $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, 3, 1);
-        $users = $this->userServices->getUsersTracking($congressId);
+        $users = $this->userServices->getUsersTracking($congressId, [1, 2, 3, 4], 3);
         $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
@@ -781,9 +781,9 @@ class CongressController extends Controller
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
                 }
-        ]);
+            ]);
         $stands = $this->standServices->getAllStandByCongressId($congressId);
-        $usersData = $this->congressServices->getTimePassedInCongressAccessAndStand($users,$congress,$access,$stands);
+        $usersData = $this->congressServices->getTimePassedInCongressAccessAndStand($users, $congress, $access, $stands);
         return response()->json([
             'total_users' => $totalUsers,
             'participant_users' => $participantUsers,
@@ -801,8 +801,8 @@ class CongressController extends Controller
     public function getStatsAccessByCongressId($congressId)
     {
         //Cette stats concerne les participants et les ateliers qui ont choisit.
-        if (!$congress = $this->congressServices->getCongressById($congressId)){
-            return response()->json('no congress found' ,404);
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json('no congress found', 404);
         }
 
         $access = $this->accessServices->getAllAccessByCongress($congressId, null,
@@ -814,10 +814,10 @@ class CongressController extends Controller
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
                 }
-        ]);
-        
+            ]);
+
         //  $access = $this->accessServices->getAccessPassedTime($access,$congress);
-                
+
         return response()->json($access);
 
 
@@ -839,7 +839,6 @@ class CongressController extends Controller
         $events = $this->congressServices->getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user);
         return response()->json($events, 200);
     }
-
 
     public function confirmPresence($congress_id, $user_id, $present)
     {
@@ -926,4 +925,5 @@ class CongressController extends Controller
         return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
 
     }
+
 }

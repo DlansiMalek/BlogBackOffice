@@ -352,11 +352,17 @@ class UserServices
 
     public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
-        return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
-            $query->where('congress_id', '=', $congressId);
-            if ($showInRegister)
-                $query->where('show_in_register', '=', $showInRegister);
-        }])
+        return User::with([
+            "responses.values"
+            , 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }
+            , 'user_congresses.privilege'
+            , "accesses" => function ($query) use ($congressId, $showInRegister) {
+                $query->where('congress_id', '=', $congressId);
+                if ($showInRegister)
+                    $query->where('show_in_register', '=', $showInRegister);
+            }])
             ->where("user_id", "=", $userId)
             ->first();
     }
@@ -461,18 +467,20 @@ class UserServices
     }
 
 
-    public function getAllUsersByCongress($congressId, $privilegeId)
+    public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId, $isTracked) {
             $query->where('congress_id', '=', $congressId);
             if ($privilegeId)
                 $query->where('privilege_id', '=', $privilegeId);
+            if ($isTracked == 0 || $isTracked == 1)
+                $query->where('is_tracked', '=', $isTracked);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.values', 'country'])
+            }, 'responses.values', 'user_congresses.privilege', 'country'])
             ->with(['accesses'])
             ->get();
         return $users;
@@ -663,10 +671,10 @@ class UserServices
         $tracking = $this->getLastTracking($congressId, $userId);
 
         if ($tracking) {
-            if($tracking->action_id === 3)
-            $this->addTracking($congressId, 4, $userId, $tracking->access_id, $tracking->stand_id, $tracking->type, 'FOCED CLOSE', null, $tracking->date);
-            if($tracking->action_id !== 2)
-            $this->addTracking($congressId, 2, $userId, null, null, null, 'FOCED CLOSE', null, $tracking->date);
+            if ($tracking->action_id === 3)
+                $this->addTracking($congressId, 4, $userId, $tracking->access_id, $tracking->stand_id, $tracking->type, 'FOCED CLOSE', null, $tracking->date);
+            if ($tracking->action_id !== 2)
+                $this->addTracking($congressId, 2, $userId, null, null, null, 'FOCED CLOSE', null, $tracking->date);
         }
     }
 
@@ -1129,13 +1137,19 @@ class UserServices
             ->first();
     }
 
-    public function getUsersTracking($congress_id)
+    public function getUsersTracking($congress_id, $actionsId = null, $privilegeId = null)
     {
-        return User::whereHas('user_congresses', function ($query) use ($congress_id) {
-            $query->where('congress_id', '=', $congress_id)->where('privilege_id', '=', 3);
-        })->with(['tracking' => function ($query) {
-            $query->whereIn('action_id', [1, 2, 3, 4])->orderBy('date');
-        }])
+        return User::whereHas('user_congresses', function ($query) use ($congress_id, $privilegeId) {
+            $query->where('congress_id', '=', $congress_id);
+            if ($privilegeId != null) {
+                $query->where('privilege_id', '=', $privilegeId);
+            }
+        })->with(['tracking' => function ($query) use ($congress_id, $actionsId) {
+            $query->where('congress_id', '=', $congress_id);
+            if (sizeof($actionsId) > 0)
+                $query->whereIn('action_id', $actionsId);
+            $query->orderBy('date');
+        }, 'tracking.access', 'tracking.stand'])
             ->get();
     }
 
