@@ -10,6 +10,7 @@ use App\Models\Privilege;
 use App\Models\Service;
 use App\Models\Etablissement;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -176,14 +177,17 @@ class SharedServices
 
     public function submissionMapping($submission_title, $principal_author, $co_authors, $paramsSubmission)
     {
+
+        $co_authors = json_decode($co_authors, true);
+        array_shift($co_authors);
         $authors = "";
-        foreach ($co_authors as $author) {
-            $authors .= strtoupper($author->first_name[0] . '. ' . $author->last_name) . ' ,';
+        for ($i = 0; $i < sizeof($co_authors); $i++) {
+            $authors .= strtoupper($co_authors[$i]['first_name'][0] . '. ' . $co_authors[$i]['last_name']) . ' ,';
         }
         $authors = substr($authors, 0, -1);
         $mappingList = ['principal_author' => $principal_author,
             'submission_title' => $submission_title,
-            'co-authors' => $authors,];
+            'co-authors' => $authors];
         $params = [];
         foreach ($paramsSubmission as $param) {
 
