@@ -398,7 +398,7 @@ class UserController extends Controller
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
         } else if ($status == -1) {
@@ -406,7 +406,7 @@ class UserController extends Controller
             if ($mailtype = $this->congressServices->getMailType('refus')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail(
+                    $this->mailServices->sendMail(
                         $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail);
                 }
             }
@@ -491,7 +491,7 @@ class UserController extends Controller
         $user = $this->userServices->addParticipant($request, $congressId);
         $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
-        if($offre = $this->adminServices->getOffreByCongressId($congressId)) {
+        if($offre = $this->mailServices->getOffreByCongressId($congressId)) {
             if ($offre->type_id == 2) {
                 $adminPayment = $this->adminServices->getAdminPayment($offre->admin_id, $offre->offre_id);
                 $this->adminServices->updatePaymentAdminPrice($adminPayment, $offre->value);
@@ -523,7 +523,7 @@ class UserController extends Controller
                 $activationLink = $activationLink = UrlUtils::getBaseUrl() . '/users/confirmInscription/' . $user->user_id . '?verification_code=' . $user->verification_code;
                 if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
                     $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-                    $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, $user, $activationLink), $user, null, $mail->object, null, $userMail);
+                    $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, null, $user, $activationLink), $user, null, $mail->object, null, $userMail);
                 }
             }
         } else
@@ -553,7 +553,7 @@ class UserController extends Controller
 
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
-        if($offre = $this->adminServices->getOffreByCongressId($congress_id)) {
+        if($offre = $this->mailServices->getOffreByCongressId($congress_id)) {
             if ($offre->type_id == 2) {
                 $adminPayment = $this->adminServices->getAdminPayment($offre->admin_id, $offre->offre_id);
                 $this->adminServices->updatePaymentAdminPrice($adminPayment, $offre->value);
@@ -602,7 +602,7 @@ class UserController extends Controller
 
         // Affect User to Congress
         $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
-        if($offre = $this->adminServices->getOffreByCongressId($congress_id)) {
+        if($offre = $this->mailServices->getOffreByCongressId($congress_id)) {
             if ($offre->type_id == 2) {
                 $adminPayment = $this->adminServices->getAdminPayment($offre->admin_id, $offre->offre_id);
                 $this->adminServices->updatePaymentAdminPrice($adminPayment, $offre->value);
@@ -878,7 +878,7 @@ class UserController extends Controller
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
@@ -1009,7 +1009,7 @@ class UserController extends Controller
                             $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
+                                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
                             }
                         }
                         //delete the access if no longer exists on the excel sheet
@@ -1051,7 +1051,7 @@ class UserController extends Controller
                 if ($mailtype = $this->congressServices->getMailType('refus')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $refused_participant->user_id);
-                        $this->userServices->sendMail(
+                        $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, $congress, $refused_participant, null, null, null),
                             $refused_participant,
                             $congress,
@@ -1188,7 +1188,7 @@ class UserController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
                     $user,
                     $congress,
@@ -1306,7 +1306,7 @@ class UserController extends Controller
             if ($mail = $this->congressServices->getMail($paymentUser->congress_id, $mailtype->mail_type_id)) {
                 $congress = $this->congressServices->getCongressById($paymentUser->congress_id);
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $paymentUser->user_id);
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices
                         ->renderMail($mail->template, $congress, $user, null, null, null),
                     $user,
@@ -1343,7 +1343,7 @@ class UserController extends Controller
         if (!$mail = $this->congressServices->getEmailById($mail_id))
             return response()->json(['response' => 'mail not found'], 404);
         $congress = $this->congressServices->getCongressById($user->congress_id);
-        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
 
@@ -1483,7 +1483,7 @@ class UserController extends Controller
 
         $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-        $this->userServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
+        $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
 
         return response()->json(['response' => 'Check your mail to reset password !'], 200);
 
@@ -1526,7 +1526,7 @@ class UserController extends Controller
         $user->password = bcrypt($password);
         $user->update();
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-        $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
+        $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
 
         return response()->json(['response' => 'password successfully updated'], 200);
     }
@@ -1548,7 +1548,7 @@ class UserController extends Controller
 
         if ($mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
             $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
-            $this->userServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
+            $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
         }
 
         return response()->json($user, 200);
@@ -1621,7 +1621,7 @@ class UserController extends Controller
                 if ($mailtype = $this->congressServices->getMailType('free')) {
                     if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
                     }
                 }
             }
@@ -1641,7 +1641,7 @@ class UserController extends Controller
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSmsToUsers($user, null, $congress_id, $congress);
@@ -1654,7 +1654,7 @@ class UserController extends Controller
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
                 }
             }
         }

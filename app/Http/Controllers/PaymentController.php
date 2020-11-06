@@ -92,7 +92,7 @@ class PaymentController extends Controller
                 if ($mailtype = $this->congressServices->getMailType('paiement')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, false,
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, false,
                             $userMail);
                     }
                 }
@@ -100,7 +100,7 @@ class PaymentController extends Controller
                     $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
                     }
 
                     $this->smsServices->sendSms($congress->congress_id, $user, $congress);

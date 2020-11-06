@@ -116,7 +116,7 @@ class SubmissionController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
                 );
             }
@@ -202,7 +202,7 @@ class SubmissionController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
                 );
             }
@@ -282,7 +282,7 @@ class SubmissionController extends Controller
                     $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
                     if (!$userMail) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail(
+                        $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
                         );
                     }
@@ -353,7 +353,7 @@ class SubmissionController extends Controller
             $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
             if (!$userMail) {
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
                 );
             }
@@ -422,7 +422,7 @@ class SubmissionController extends Controller
                     . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
             }
             $user = $this->userServices->getUserById($submission->user_id);
-            $this->userServices->sendMail(
+            $this->mailServices->sendMail(
                 $this->congressServices->renderMail(
                     $mail->template,
                     null,
@@ -475,7 +475,7 @@ class SubmissionController extends Controller
                 $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
                 if (!$userMail) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
-                    $this->userServices->sendMail(
+                    $this->mailServices->sendMail(
                         $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
                     );
                 }

@@ -850,45 +850,6 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
-    {
-        //TODO detect email sended user
-        $email = $toSendEmail ? $toSendEmail : $user->email;
-        $pathToFile = storage_path() . "/app/badge.png";
-
-        if ($congress != null && $congress->username_mail)
-            config(['mail.from.name', $congress->username_mail]);
-
-        try {
-            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-                if ($congress != null && $congress->config && $congress->config->replyto_mail) {
-                    $message->replyTo($congress->config->replyto_mail);
-                }
-
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
-                $message->subject($objectMail);
-                $message->setBody($view, 'text/html');
-                if ($fileAttached)
-                    $message->attach($pathToFile);
-                $message->to($email)->subject($objectMail);
-            });
-        } catch (\Exception $exception) {
-            if ($userMail) {
-                $userMail->status = -1;
-                $userMail->update();
-            }
-            Storage::delete('/app/badge.png');
-            return 1;
-        }
-        if ($userMail) {
-            $userMail->status = 1;
-            $userMail->update();
-        }
-        Storage::delete('/app/badge.png');
-        return 1;
-    }
-
 
     public function sendMailAttesationToUser($user, $congress, $userMail, $object, $view)
     {

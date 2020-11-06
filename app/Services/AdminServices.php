@@ -575,6 +575,7 @@ class AdminServices
         $offre->status = 1;
         $offre->type_id = $request->input('type_id');
         $offre->admin_id = $request->input('admin_id');
+        $offre->is_mail_pro = $request->input('is_mail_pro');
         $offre->save();
 
         $this->addPayment($request->input('admin_id'), $offre);
@@ -589,6 +590,7 @@ class AdminServices
         $offre->value = $request->input('value');
         $offre->type_id = $request->input('type_id');
         $offre->admin_id = $request->input('admin_id');
+        $offre->is_mail_pro = $request->input('is_mail_pro');
         $offre->update();
         return $offre;
     }
@@ -597,16 +599,6 @@ class AdminServices
     {
         $offre->status = 0;
         $offre->update();
-    }
-
-    public function getOffreByCongressId($congress_id)
-    {
-        return Offre::where('status', '=', 1)
-            ->join('admin_congress', function ($join) use ($congress_id) {
-                $join->on('admin_congress.admin_id', '=', 'offre.admin_id')
-                    ->where('congress_id', '=', $congress_id)
-                    ->where('privilege_id', '=', 1);
-            })->first();
     }
 
     public function updatePaymentAdminPrice($adminPayment, $value)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\AdminServices;
 use App\Services\CongressServices;
+use App\Services\MailServices;
 use App\Services\RoomServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
@@ -17,18 +18,21 @@ class RoomController extends Controller
     protected $roomServices;
     protected $congressServices;
     protected $userServices;
+    protected $mailServices;
 
     function __construct(
         AdminServices $adminServices,
         RoomServices $roomServices,
         CongressServices $congressServices,
-        UserServices $userServices
+        UserServices $userServices,
+        MailServices $mailServices
     )
     {
         $this->adminServices = $adminServices;
         $this->roomServices = $roomServices;
         $this->congressServices = $congressServices;
         $this->userServices = $userServices;
+        $this->mailServices = $mailServices;
     }
 
     public function getAdminRooms()
@@ -71,7 +75,7 @@ class RoomController extends Controller
         $urlModerator = UrlUtils::getMeetEventizerUrl() . '/' . $room->name . '?jwt=' . $moderator_token;
         $urlInvitee = UrlUtils::getMeetEventizerUrl() . '/' . $room->name . '?jwt=' . $invitee_token;
 
-        $this->userServices->sendMail(
+        $this->mailServices->sendMail(
             $this->congressServices->renderMail(
                 $mail->template,
                 null,
