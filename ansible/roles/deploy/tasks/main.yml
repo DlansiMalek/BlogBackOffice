@@ -43,12 +43,12 @@
           labels:
             - "traefik.enable=true"
             - "traefik.docker.network=nginx-proxy"
-            - "traefik.http.routers.{{ project_name }}.entrypoints=https"
-            - "traefik.http.routers.{{ project_name }}.rule=Host(`{{ host_name }}`)"
-            - "traefik.http.routers.{{ project_name }}.tls=true"
-            - "traefik.http.routers.{{ project_name }}.tls.certresolver=letsencrypt"
-            - "traefik.http.routers.{{ project_name }}.middlewares=security-headers"
-            - "traefik.http.services.{{ project_name }}.loadbalancer.server.port=80"
+            - "traefik.http.routers.{{ project_name }}-{{project_version}}-web.entrypoints=https"
+            - "traefik.http.routers.{{ project_name }}-{{project_version}}-web.rule=Host(`{{ host_name }}`)"
+            - "traefik.http.routers.{{ project_name }}-{{project_version}}-web.tls=true"
+            - "traefik.http.routers.{{ project_name }}-{{project_version}}-web.tls.certresolver=letsencrypt"
+            - "traefik.http.routers.{{ project_name }}-{{project_version}}-web.middlewares=security-headers"
+            - "traefik.http.services.{{ project_name }}-{{project_version}}-web.loadbalancer.server.port=80"
 
         app:
           image: "{{ lookup('env','APP_IMAGE_NAME') }}"
