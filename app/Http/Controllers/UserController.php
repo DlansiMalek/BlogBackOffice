@@ -954,15 +954,12 @@ class UserController extends Controller
                     if (!$user_congress) {
                         $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
                         $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
-                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     } else {
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->update();
-                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     }
 
                     $new_access_array = null;
-                    $old_access_id_array = [];
                     $old_access_array = $user->accesses;
                     for ($i = 0; $i < sizeof($emails); $i++) {
                         //if statement to get the right index i of accessIdTable corresponding to our user 
@@ -987,9 +984,8 @@ class UserController extends Controller
                             if (!$exists) {
                                 // this means we have a new access to add
                                 // add the new access
-                                $access_added = $this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
+                                $this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
                             }
-                            $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
 
                         }
                         // send mail confirmation
@@ -1026,6 +1022,13 @@ class UserController extends Controller
                     }
 
                 }
+
+                if ($congress->congress_type_id == 2) {
+                    $this->userServices->changeUserStatus($user_congress, 1);
+                }
+                if ($congress->congress_type_id == 1) {
+                    $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
+                }
             }
         }
 
@@ -1034,7 +1037,12 @@ class UserController extends Controller
             $all_refused_participants = $this->userServices->getRefusedParticipants($congressId, $emails);
             foreach ($all_refused_participants as $refused_participant) {
                 //change user payment status
-                $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
+                if ($congress->congress_type_id == 2 && sizeof($refused_participant->user_congresses) > 0) {
+                    $this->userServices->changeUserStatus($refused_participant->user_congresses[0], -1);
+                }
+                if ($congress->congress_type_id == 1) {
+                    $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
+                }
                 //envoi de mail de refus
                 if ($mailtype = $this->congressServices->getMailType('refus')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
