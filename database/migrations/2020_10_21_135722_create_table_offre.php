@@ -43,7 +43,7 @@ class CreateTableOffre extends Migration
     {
         Schema::table('Offre', function (Blueprint $table) {
             $table->dropForeign(['admin_id']);
-            $table->dropForeign(['type_id']);
+            $table->dropForeign(['offre_type_id']);
         });
         Schema::dropIfExists('Offre');
     }
