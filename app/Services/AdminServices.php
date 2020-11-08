@@ -71,7 +71,7 @@ class AdminServices
     public function getClients()
     {
         return Admin::where("privilege_id", "=", 1)
-            ->with(['offres'=> function ($query) {
+            ->with(['offres' => function ($query) {
                 $query->where('status', '=', 1)->with('payment_admin');
             }])
             ->get();
@@ -199,20 +199,6 @@ class AdminServices
         $history->save();
     }
 
-    public function addPayment($admin_id, $offre)
-    {
-        $paymentAdmin = new PaymentAdmin();
-        $paymentAdmin->isPaid = 0;
-        $paymentAdmin->admin_id = $admin_id;
-        $paymentAdmin->offre_id = $offre->offre_id;
-        if ($offre->type_id == 1 || $offre->type_id == 4) {
-            $paymentAdmin->price = $offre->value;
-        } else {
-            $paymentAdmin->price = 0 ;
-        }
-        $paymentAdmin->save();
-    }
-
     public function addValidatedHistory($history, $admin, $pack, $lasthistory)
     {
         $history->admin_id = $admin->admin_id;
@@ -301,10 +287,6 @@ class AdminServices
                 'password' => bcrypt($newPassword)
             ]);
         return $newPassword;
-    }
-
-    public function sendForgetPasswordEmail(Admin $admin)
-    {
     }
 
     public function addPersonnel($admin, $password)
@@ -458,7 +440,7 @@ class AdminServices
 
     public function addClient($admin, $request)
     {
-        if(!$admin)
+        if (!$admin)
             $admin = new Admin();
 
         $admin->name = $request->input("name");
@@ -536,10 +518,6 @@ class AdminServices
         return $adminPayment;
     }
 
-    public function getAdminByCongressByAdminIdByPrivilegeId($congressId, $admin_id, int $int)
-    {
-    }
-
     public function getAdminPayment($admin_id, $offre_id)
     {
         return PaymentAdmin::where('admin_id', '=', $admin_id)
@@ -547,63 +525,9 @@ class AdminServices
             ->first();
     }
 
-    public function getAllOffres()
-    {
-        return Offre::with(['admin', 'type'])
-        ->get();
-    }
-
-    public function getOffreById($offre_id)
-    {
-        return Offre::where('offre_id', '=', $offre_id)
-            ->first();
-    }
-    public function getActiveOffreByAdminId($admin_id)
-    {
-        return Offre::where('admin_id', '=', $admin_id)->where('status', '=', 1)
-            ->first();
-    }
-
-
-    public function addOffre($request)
-    {
-        $offre = new Offre();
-        $offre->nom = $request->input('nom');
-        $offre->start_date = $request->input('start_date');
-        $offre->end_date = $request->input('end_date');
-        $offre->value = $request->input('value');
-        $offre->status = 1;
-        $offre->type_id = $request->input('type_id');
-        $offre->admin_id = $request->input('admin_id');
-        $offre->is_mail_pro = $request->input('is_mail_pro');
-        $offre->save();
-
-        $this->addPayment($request->input('admin_id'), $offre);
-        return $offre;
-    }
-
-    public function editOffre($offre, $request)
-    {
-        $offre->nom = $request->input('nom');
-        $offre->start_date = $request->input('start_date');
-        $offre->end_date = $request->input('end_date');
-        $offre->value = $request->input('value');
-        $offre->type_id = $request->input('type_id');
-        $offre->admin_id = $request->input('admin_id');
-        $offre->is_mail_pro = $request->input('is_mail_pro');
-        $offre->update();
-        return $offre;
-    }
-
-    public function deactivateOffre($offre)
-    {
-        $offre->status = 0;
-        $offre->update();
-    }
-
     public function updatePaymentAdminPrice($adminPayment, $value)
     {
-        $adminPayment->price+= $value;
+        $adminPayment->price += $value;
         $adminPayment->update();
         return $adminPayment;
     }

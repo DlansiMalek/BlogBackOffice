@@ -23,7 +23,8 @@ class UpdateTablePaymentAdmin extends Migration
 
             $table->unsignedInteger('offre_id')->after('admin_id');
             $table->foreign('offre_id')->references('offre_id')
-                ->on('Offre');
+                ->on('Offre')
+                ->onDelete('cascade');
 
             $table->unsignedInteger('payment_type_id')->nullable()->default(null)->after('offre_id');
             $table->foreign('payment_type_id')->references('payment_type_id')

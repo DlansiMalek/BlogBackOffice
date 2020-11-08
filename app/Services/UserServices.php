@@ -471,9 +471,9 @@ class UserServices
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId, $isTracked) {
             $query->where('congress_id', '=', $congressId);
-            if ($privilegeId)
+            if ($privilegeId != null)
                 $query->where('privilege_id', '=', $privilegeId);
-            if ($isTracked == 0 || $isTracked == 1)
+            if ($isTracked === 0 || $isTracked === 1)
                 $query->where('is_tracked', '=', $isTracked);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
@@ -626,7 +626,7 @@ class UserServices
             ->delete();
     }
 
-    public function mappingPeacksourceData($users)
+    public function mappingPeacksourceData($congress, $users)
     {
         $res = array();
 
@@ -636,6 +636,7 @@ class UserServices
                 array(
                     "user_id" => $user->user_id,
                     "name" => $user->last_name . ' ' . $user->first_name,
+                    "is_valid" => $this->checkValidUser($congress, $user),
                     "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
                     "channel_name" => $channelName,
                     "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
@@ -1571,7 +1572,9 @@ class UserServices
         $accepted_user_id_array = UserCongress::select('user_id')->where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', 3);
         //users who got refused with mails refused
-        return User::whereIn('user_id', $accepted_user_id_array)
+        return User::with(['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }])->whereIn('user_id', $accepted_user_id_array)
             ->whereNotIn('email', $emails_array)->get();
     }
 
@@ -1580,5 +1583,24 @@ class UserServices
         return Tracking::where('user_id', '=', $userId)
             ->where('congress_id', '=', $congressId)
             ->latest()->get()->first();
+    }
+
+    private function checkValidUser($congress, $user)
+    {
+
+        if ($congress->congress_type_id === 3) { // Valid if congress is free without selection
+            return true;
+        }
+        // check if isSelected = 1
+        // check if isPaid = 1
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected != -1) {
+            return true;
+        }
+
+        if (sizeof($user->payments) > 0 && $user->payments[0]->isPaid === 1) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -15,20 +15,20 @@ class CreateTableOffre extends Migration
     {
         Schema::create('Offre', function (Blueprint $table) {
             $table->increments('offre_id');
-            $table->string('nom');
+            $table->string('name');
             $table->double('value')->default(0);
             $table->date('start_date');
             $table->date('end_date');
             $table->integer("status");
 
-            $table->unsignedInteger("type_id");
-            $table->foreign("type_id")->references('type_id')
-                ->on('Type');
+            $table->unsignedInteger("offre_type_id");
+            $table->foreign("offre_type_id")->references('offre_type_id')
+                ->on('Offre_Type')
+                 ->onDelete('cascade');
 
             $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')->on('Admin')
                 ->onDelete('cascade');
-
 
             $table->timestamps();
         });
@@ -43,7 +43,7 @@ class CreateTableOffre extends Migration
     {
         Schema::table('Offre', function (Blueprint $table) {
             $table->dropForeign(['admin_id']);
-            $table->dropForeign(['type_id']);
+            $table->dropForeign(['offre_type_id']);
         });
         Schema::dropIfExists('Offre');
     }

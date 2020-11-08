@@ -411,10 +411,10 @@ Route::group(['prefix' => 'admin', 'middleware' => 'marketing'], function () {
 });
 
 Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
-    Route::get('list', 'AdminController@getAllOffres');
-    Route::post('add', 'AdminController@addOffre');
-    Route::get('get/{offre_id}', 'AdminController@getOffreById');
-    Route::put('edit/{offre_id}', 'AdminController@editOffre');
+    Route::get('list', 'OffreController@getAllOffres');
+    Route::post('add', 'OffreController@addOffre');
+    Route::get('get/{offre_id}', 'OffreController@getOffreById');
+    Route::put('edit/{offre_id}', 'OffreController@editOffre');
 });
 
 

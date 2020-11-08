@@ -456,7 +456,7 @@ class CongressController extends Controller
                         $query->where('mail_id', '=', $mailId);
                     }], null);
             foreach ($users as $user) {
-                if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
+                if (Utils::isValidSendMail($user)) {
                     $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
                     $badgeIdGenerator = $badge['badge_id_generator'];
@@ -644,31 +644,38 @@ class CongressController extends Controller
 
     public function sendCustomMailToAllUsers($mail_id)
     {
+
         if (!$mail = $this->congressServices->getEmailById($mail_id))
             return response()->json(['response' => 'mail not found'], 404);
+        $congressId = $mail->congress_id;
+        $mailId = $mail->mail_id;
         $congress = $this->congressServices->getCongressById($mail->congress_id);
-        foreach ($congress->users as $user) {
-            $userMail = UserMail::where('user_id', '=', $user->user_id)
-                ->where('mail_id', '=', $mail->mail_id)
-                ->first();
 
-            if (!$userMail) {
-                $userMail = new UserMail();
-                $userMail->user_id = $user->user_id;
-                $userMail->mail_id = $mail_id;
-                $userMail->save();
-            } else if ($userMail->status == 1) {
+        $users = $this->userServices->getUsersWithRelations($congressId,
+            ['accesses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+            }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }], null);
+
+
+        foreach ($users as $user) {
+            if (Utils::isValidSendMail($user)) {
                 $userMail = null;
-            } else {
-                $userMail->status = 1;
-                $userMail->update();
+                if (sizeof($user->user_mails) == 0) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                } else {
+                    $userMail = $user->user_mails[0];
+                }
+
+                if ($userMail->status != 1) {
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
+                        , $user, $congress, $mail->object, false, $userMail);
+                }
             }
-
-            if ($userMail) {
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false, $userMail);
-            }
-
-
         }
 
         return response()->json(["status" => "success"], 200);
@@ -905,7 +912,7 @@ class CongressController extends Controller
             }], null);
 
 
-        $results = $this->userServices->mappingPeacksourceData($users);
+        $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
         return response()->json($results);
     }
