@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
 use App\Models\Mail;
-use App\Models\PaymentAdmin;
-use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -21,7 +18,6 @@ use GuzzleHttp\Client;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AdminController extends Controller
@@ -486,11 +482,9 @@ class AdminController extends Controller
             return response()->json(["error" => "admin not found"]);
         }
 
-
         $file = new Filesystem();
 
         Utils::generateQRcode($admin->passwordDecrypt, "qrcode.png");
-
 
         if ($file->exists(public_path() . "/qrcode.png")) {
             return response()->download(public_path() . "/qrcode.png")
@@ -683,53 +677,6 @@ class AdminController extends Controller
         $isPaid = $request->input('isPaid');
         $adminPayment = $this->adminServices->editAdminPayment($adminPayment, $isPaid);
         return response()->json(['payment_admin' => $adminPayment], 200);
-    }
-
-    public function getAllOffres()
-    {
-        $offres = $this->adminServices->getAllOffres();
-        return response()->json($offres, 200);
-    }
-
-    public function getOffreById($offre_id)
-    {
-        $offre = $this->adminServices->getOffreById($offre_id);
-        return response()->json($offre, 200);
-    }
-
-    public function addOffre(Request $request)
-    {
-        if (!$request->has(['nom', 'value', 'start_date', 'end_date', 'type_id', 'admin_id'])) {
-            return response()->json(['message' => 'bad request'], 400);
-        }
-        if (!$admin = $this->adminServices->getAdminById($request->input('admin_id'))) {
-            return response()->json(['message' => 'admin not found'], 404);
-        }
-        if ($oldOffre = $this->adminServices->getActiveOffreByAdminId($request->input('admin_id'))) {
-            $this->adminServices->deactivateOffre($oldOffre);
-        }
-        if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('create_offre')) {
-            return response()->json(['message' => 'Mail type not found'], 400);
-        }
-        $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
-        if (!$mailAdmin) {
-            return response()->json(['message' => 'Mail not found'], 400);
-        }
-        $offre = $this->adminServices->addOffre($request);
-
-        $paymentLink = UrlUtils::getUrlEventizerWeb() . "/#/auth/admin/" . $admin->admin_id . "/upload-payement";
-        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, null, $paymentLink), null, $mailAdmin->object, $admin, null, null);
-        return response()->json(['messsage' => 'offre created successfully', 'offre' => $offre], 200);
-    }
-
-    public function editOffre(Request $request, $offre_id)
-    {
-        if (!$offre = $this->adminServices->getOffreById($offre_id))
-            return response()->json(['message' => 'offre not found'], 404);
-        if (!$request->has(['nom', 'value', 'start_date', 'end_date', 'type_id', 'admin_id']))
-            return response()->json(['message' => 'bad request'], 400);
-        $offre = $this->adminServices->editOffre($offre, $request);
-        return response()->json(['messsage' => 'offre edited successfully', 'offre' => $offre], 200);
     }
 }
 

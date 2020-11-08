@@ -15,7 +15,7 @@ class Offre extends Model
 
 
     public function type() {
-        return $this->hasOne('App\Models\Type', 'type_id', 'type_id');
+        return $this->hasOne('App\Models\OffreType', 'offre_type_id', 'offre_type_id');
     }
 
     public function admin() {
