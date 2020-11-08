@@ -38,5 +38,10 @@ class MailAdminSeedTable extends Seeder
             'template' => '<p>Votre profil à été mis à jour avec succès</p>',
             'mail_type_admin_id' => 6
         ]);
+        DB::table('Mail_Admin')->insert([
+            'object' => "Paiement de votre offre",
+            'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre paiement: <a href="{{$paymentLink}}">Lien</a></p>',
+            'mail_type_admin_id' => 7
+        ]);
     }
 }

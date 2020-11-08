@@ -8,6 +8,7 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
+use App\Services\OffreServices;
 use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
@@ -43,6 +44,7 @@ class UserController extends Controller
     protected $roomServices;
     protected $resourcesServices;
     protected $trackingServices;
+    protected $offreServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -57,7 +59,8 @@ class UserController extends Controller
                          RoomServices $roomServices,
                          MailServices $mailServices,
                          ResourcesServices $resourcesServices,
-                         TrackingServices $trackingServices)
+                         TrackingServices $trackingServices,
+                         OffreServices $offreServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -74,6 +77,7 @@ class UserController extends Controller
         $this->contactServices = $contactServices;
         $this->resourcesServices = $resourcesServices;
         $this->trackingServices = $trackingServices;
+        $this->offreServices = $offreServices;
     }
 
     public function getLoggedUser()
@@ -445,31 +449,6 @@ class UserController extends Controller
         return response()->json('Evaluation has been updated successfully', 200);
 
     }
-
-    public function getUsersByPrivilegeByCongress(Request $request, $congressId)
-    {
-        if (!$request->has(['privileges'])) {
-            return response()->json(["error" => "privileges is required"], 400);
-        }
-        $privileges = $request->input('privileges');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(["error" => "congress not found"], 404);
-        }
-        $users = $this->userServices->getUsersByCongressByPrivileges($congressId, $privileges);
-
-        foreach ($users as $user) {
-            foreach ($user->accesss as $access) {
-                if ($access->pivot->isPresent == 1) {
-                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                    $access->attestation_status = $infoPresence['enabled'];
-                    $access->time_in_access = $infoPresence['time'];
-                } else
-                    $access->attestation_status = 0;
-            }
-        }
-        return response()->json($users);
-    }
-
 
     function validateUserAccount($userId = null, $congressId = null, $token = null)
     {

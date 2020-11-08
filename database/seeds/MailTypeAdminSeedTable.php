@@ -47,6 +47,11 @@ class MailTypeAdminSeedTable extends Seeder
             'name' => 'update_profile',
             'display_name' => 'Update profile'
         ]);
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 7,
+            'name' => 'create_offre',
+            'display_name' => 'Création d\'un offre'
+        ]);
 
     }
 }
