@@ -401,6 +401,7 @@ class UserController extends Controller
             $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $user_congress->privilege_id);
             $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
+            $fileName = "badge.png";
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic($badge, $user, $user->qr_code, $user_congress->privilege_id);
             }
@@ -408,7 +409,7 @@ class UserController extends Controller
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
         } else if ($status == -1) {
@@ -824,6 +825,7 @@ class UserController extends Controller
             $badge = $this->congressServices->getBadgeByPrivilegeId($congress, $userCongress->privilege_id);
             $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
+            $fileName = "badge.png";
             if ($badgeIdGenerator != null) {
                 $fileAttached = $this->sharedServices->saveBadgeInPublic(
                     $badge,
@@ -845,7 +847,7 @@ class UserController extends Controller
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
             $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
@@ -1123,14 +1125,10 @@ class UserController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
+                $fileName = 'attestations.zip';
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser(
-                    $user,
-                    $congress,
-                    $userMail,
-                    $mail->object,
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
-                );
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                    $user, $congress, $mail->object, true, $userMail, null, $fileName);
             }
         } else {
             return response()->json(['error' => 'user not present or empty email'], 501);
@@ -1251,15 +1249,10 @@ class UserController extends Controller
                 if (!$userMail) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
-
+                $fileName = 'attestations.zip';
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->userServices->sendMailAttesationToUser(
-                    $user,
-                    $congress,
-                    $userMail,
-                    $mail->object,
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
-                );
+                $this->mailServices->sendMail( $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                    $user, $congress, $mail->object, true, $userMail, null, $fileName);
             }
         } else {
             return response()->json(['error' => 'user not present or empty email'], 501);

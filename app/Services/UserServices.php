@@ -889,35 +889,6 @@ class UserServices
         return $user;
     }
 
-    public function sendMailAttesationSubmissionToUser($user, $congress, $userMail, $object, $view)
-    {
-        $email = $user->email;
-
-        $pathToFile = storage_path() . "/app/attestationSubmission.png";
-
-        try {
-            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
-                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-
-                if ($congress->config && $congress->config->replyto_mail) {
-                    $message->replyTo($congress->config->replyto_mail);
-                }
-
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
-                $message->subject($object);
-                $message->setBody($view, 'text/html');
-                $message->attach($pathToFile);
-                $message->to($email)->subject($object);
-            });
-//            $userMail->status = 1;
-        } catch (\Exception $exception) {
-            Storage::delete('app/attestationSubmission.png');
-//            $userMail->status = -1;
-        }
-//        $userMail->update();
-        return $user;
-    }
-
     public function sendMailAttesationSubmissionZipToUser($user, $congress, $userMail, $object, $view)
     {
         $email = $user->email;

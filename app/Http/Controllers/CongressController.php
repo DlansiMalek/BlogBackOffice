@@ -462,6 +462,7 @@ class CongressController extends Controller
                     $badgeIdGenerator = $badge['badge_id_generator'];
 
                     $fileAttached = false;
+                    $fileName = "badge.png";
                     if ($badgeIdGenerator != null) {
                         $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                             $user,
@@ -479,7 +480,7 @@ class CongressController extends Controller
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $this->mailServices->sendMail($this->congressServices
                             ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice),
-                            $user, $congress, $mail->object, $fileAttached, $userMail);
+                            $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                     }
                 }
             }
@@ -626,10 +627,11 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
+                        $fileName = 'attestations.zip';
                         $this->badgeServices->saveAttestationsInPublic($request);
-                        $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
-                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
-                    }
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                            $user, $congress, $mail->object, true, $userMail, null, $fileName);
+                        }
                 }
             }
         }

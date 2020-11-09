@@ -182,11 +182,11 @@ class MailServices
     }
 
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null)
     {
             //TODO detect email sended user
             $email = $toSendEmail ? $toSendEmail : $user->email;
-            $pathToFile = storage_path() . "/app/badge.png";
+            $pathToFile = storage_path() . '/app/' . $fileName;
             $offre = null;
 
             if ($congress != null && $congress->username_mail)
@@ -196,7 +196,16 @@ class MailServices
                  $offre = $this->getOffreByCongressId($congress->congress_id);
 
             if ( $offre!=null && $offre->is_mail_pro ==1) {
-                /*while ($this->maxRequest <= 3) {
+                $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
+            } else {
+                $this->sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
+            }
+
+    }
+
+    public function sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName)
+    {
+        /*while ($this->maxRequest <= 3) {
                     try {
                         $this->sendMailUsingSendPulse($view, $user, $congress, $objectMail, $fileAttached, $email, $pathToFile);
                         return 1;
@@ -211,53 +220,67 @@ class MailServices
                         return $e->getMessage();
                     }
                 }*/
-                try {
-                    $this->sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile);
-                } catch (Exception $e) {
-                    if ($userMail) {
-                        $userMail->status = -1;
-                        $userMail->update();
-                    }
-                    Storage::delete('/app/badge.png');
-                    return 1;
-                }
-                    if ($userMail) {
-                        $userMail->status = 1;
-                        $userMail->update();
-                    }
-                    Storage::delete('/app/badge.png');
-                    return 1;
-            } else {
-                try {
-                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                        $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-                        if ($congress != null && $congress->config && $congress->config->replyto_mail) {
-                            $message->replyTo($congress->config->replyto_mail);
-                        }
+            $response = $this->sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $fileName);
 
-                        $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
-                        $message->subject($objectMail);
-                        $message->setBody($view, 'text/html');
-                        if ($fileAttached)
-                            $message->attach($pathToFile);
-                        $message->to($email)->subject($objectMail);
-                    });
-                } catch (\Exception $exception) {
-                    if ($userMail) {
-                        $userMail->status = -1;
-                        $userMail->update();
-                    }
-                    Storage::delete('/app/badge.png');
-                    return 1;
-                }
+            if ($response == 201) {
                 if ($userMail) {
                     $userMail->status = 1;
                     $userMail->update();
                 }
-                Storage::delete('/app/badge.png');
+                if($fileAttached) {
+                    $path = '/app/' . $fileName;
+                    Storage::delete($path);
+                }
+                return 1;
+            } else {
+                if ($userMail) {
+                    $userMail->status = -1;
+                    $userMail->update();
+                }
+                if($fileAttached) {
+                    $path = '/app/' . $fileName;
+                    Storage::delete($path);
+                }
                 return 1;
             }
+    }
 
+    public function sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName)
+    {
+        try {
+            \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
+                $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+                if ($congress != null && $congress->config && $congress->config->replyto_mail) {
+                    $message->replyTo($congress->config->replyto_mail);
+                }
+
+                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
+                $message->subject($objectMail);
+                $message->setBody($view, 'text/html');
+                if ($fileAttached)
+                    $message->attach($pathToFile);
+                $message->to($email)->subject($objectMail);
+            });
+        } catch (\Exception $exception) {
+            if ($userMail) {
+                $userMail->status = -1;
+                $userMail->update();
+            }
+            if($fileAttached) {
+                $path = '/app/' . $fileName;
+                Storage::delete($path);
+            }
+            return 1;
+        }
+        if ($userMail) {
+            $userMail->status = 1;
+            $userMail->update();
+        }
+        if($fileAttached) {
+            $path = '/app/' . $fileName;
+            Storage::delete($path);
+        }
+        return 1;
     }
 
     public function getOffreByCongressId($congress_id)
@@ -271,11 +294,13 @@ class MailServices
     }
 
 
-    public function sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile)
+    public function sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $fileName)
     {
         $html = $view->render();
-        $img = file_get_contents($pathToFile);
-        $content = base64_encode($img);
+        if ($fileAttached) {
+            $img = file_get_contents($pathToFile);
+            $content = base64_encode($img);
+        }
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
         $message = array(
             'sender' => array(
@@ -296,7 +321,7 @@ class MailServices
                 array(
                     // 'url' =>  $pathToFile,
                     'content' => $content,
-                    'name' => 'badge.png'
+                    'name' => $fileName
                     // try this for test: https://i1.wp.com/africanelephantjournal.com/wp-content/uploads/2019/04/3ac2e367385a4a378fb5cf7fc58d8ebc.jpg?resize=800%2C500&ssl=1
                 )
             )
@@ -315,7 +340,7 @@ class MailServices
         $res = $this->client->post('', [
             'body' =>  $httpBody
         ]);
-        return json_decode($res->getBody(), true);
+        return json_decode($res->getStatusCode(), true);
     }
 
 /*    public function sendMailUsingSendPulse ($view, $user, $congress, $objectMail, $fileAttached, $email, $pathToFile, $token_mail = null)

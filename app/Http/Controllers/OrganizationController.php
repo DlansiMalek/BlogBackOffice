@@ -182,6 +182,7 @@ class OrganizationController extends Controller
         $badgeIdGenerator = $badge['badge_id_generator'];
 
         $fileAttached = false;
+        $fileName = "badge.png";
         if ($badgeIdGenerator != null) {
             $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                 $user,
@@ -199,7 +200,7 @@ class OrganizationController extends Controller
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, null, null ,$fileName);
             }
         }
     }
