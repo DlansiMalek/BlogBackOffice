@@ -883,4 +883,9 @@ class SubmissionController extends Controller
 
     }
 
+    public function uploadSubmissions($congressId, Request $request)
+    {
+
+    }
+
 }
