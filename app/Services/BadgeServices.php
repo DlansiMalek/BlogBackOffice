@@ -143,9 +143,9 @@ class BadgeServices
     {
         $client = new \GuzzleHttp\Client();
         $res = $client->request('POST',
-            UrlUtils::getUrlBadge() . '/badge/generateParticipantsAll', [
+            UrlUtils::getUrlBadge() . '/badge/generateParticipants/multiple', [
                 'json' => [
-                    'data' => $request
+                    'participants' => $request
                 ]
             ]);
         Storage::put('attestations.zip', $res->getBody(), 'public');
