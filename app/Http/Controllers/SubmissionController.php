@@ -8,17 +8,19 @@ use App\Services\CommunicationTypeService;
 use App\Services\CongressServices;
 use App\Services\EstablishmentServices;
 use App\Services\MailServices;
+use App\Services\ResourcesServices;
 use App\Services\ServiceServices;
+use App\Services\SharedServices;
 use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
-use DateTime;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
-use App\Services\SharedServices;
+use Illuminate\Support\Facades\Storage;
+use Madnest\Madzipper\Facades\Madzipper;
+use Illuminate\Filesystem\Filesystem;
 
 class SubmissionController extends Controller
 {
@@ -33,6 +35,7 @@ class SubmissionController extends Controller
     protected $mailServices;
     protected $sharedServices;
     protected $communicationTypeService;
+    protected $resourcesServices;
 
     function __construct(
         SubmissionServices $submissionServices,
@@ -44,7 +47,8 @@ class SubmissionController extends Controller
         CongressServices $congressServices,
         MailServices $mailServices,
         SharedServices $sharedServices,
-        CommunicationTypeService $communicationTypeService
+        CommunicationTypeService $communicationTypeService,
+        ResourcesServices $resourcesServices
     )
     {
         $this->submissionServices = $submissionServices;
@@ -57,6 +61,7 @@ class SubmissionController extends Controller
         $this->mailServices = $mailServices;
         $this->sharedServices = $sharedServices;
         $this->communicationTypeService = $communicationTypeService;
+        $this->resourcesServices = $resourcesServices;
 
     }
 
@@ -885,7 +890,31 @@ class SubmissionController extends Controller
 
     public function uploadSubmissions($congressId, Request $request)
     {
+        $fileSystem = new Filesystem();
+        $fileSystem->deleteDirectory(storage_path('app/zip'));
 
+        // Extract Zip File
+        $file = $request->file('files');
+        $path = $file->store('/zip');
+        Madzipper::make(storage_path('app/' . $path))->extractTo(storage_path('app/submissions'));
+
+        $data = json_decode($request->input('data'), true);
+        foreach ($data as $item) {
+            if (isset($item['author_email'])) {
+                $user = $this->userServices->addPrincipalUserAuthorExternal($item);
+                $submission = $this->submissionServices->addSubmissionExternal($congressId, $item, $user);
+                $this->authorServices->deleteAllAuthorsBySubmission($submission->submission_id);
+                $principalAuthor = $this->authorServices->addPrincipalAuthor($submission, $user, $item);
+                $authors = $this->authorServices->addAuthorsExternal($submission, $item);
+                $this->submissionServices->deleteAllResourcesBySubmission($submission->submission_id);
+                $this->resourcesServices->addRessourcesExternal($submission, $item);
+            }
+        }
+
+        $fileSystem = new Filesystem();
+        $fileSystem->deleteDirectory(storage_path('app/submissions'));
+
+        return response()->json(['message' => 'import success'], 200);
     }
 
 }

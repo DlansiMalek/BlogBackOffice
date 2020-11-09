@@ -5,15 +5,18 @@ namespace App\Services;
 use App\Models\AttestationParams;
 use App\Models\AttestationSubmission;
 use App\Models\CommunicationType;
+use App\Models\Resource;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionServices
 {
 
-    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id)
+    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id, $extId = null, $status = null, $eligible = null)
     {
         $submission = new Submission();
         $submission->title = $title;
@@ -23,6 +26,14 @@ class SubmissionServices
         $submission->congress_id = $congress_id;
         $submission->theme_id = $theme_id;
         $submission->user_id = $user_id;
+        if ($status !== null) {
+            $submission->status = $status;
+        }
+        if ($eligible !== null) {
+            $submission->eligible = $eligible;
+        }
+        $submission->extId = $extId;
+
         $submission->save();
         return $submission;
     }
@@ -462,5 +473,56 @@ class SubmissionServices
         return Submission::with($relations)
             ->where('submission_id', '=', $submissionId)->first();
     }
+
+    public function getCommunicationTypeByKey($key)
+    {
+        return CommunicationType::where('abrv', '=', $key)
+            ->first();
+    }
+
+    public function getSubmissionExternal($extId)
+    {
+        return Submission::where('extId', '=', $extId)
+            ->first();
+    }
+
+    public function addSubmissionExternal($congressId, $data, $user)
+    {
+
+        $communicationType = $this->getCommunicationTypeById($data['communication_type']);
+        $communicationTypeId = $communicationType ? $communicationType : 1;
+        $submissionTitle = isset($data['submission_title']) ? $data['submission_title'] : '-';
+        $submissionType = isset($data['submission_type']) ? $data['submission_type'] : '-';
+        $submissionDescription = isset($data['description']) ? $data['description'] : '-';
+        $themeId = 1;
+        $userId = $user->user_id;
+
+        $submission = $this->getSubmissionExternal($data['submission_extId']);
+
+        if ($submission) {
+            return $this->editSubmission($submission, $submissionTitle, $submissionType, 1, $communicationTypeId, $submissionDescription, $themeId, null);
+        } else {
+            return $this->addSubmission($submissionTitle, $submissionType, $communicationTypeId, $submissionDescription, $congressId, $themeId, $userId, $data['submission_extId'], 1, 1);
+        }
+    }
+
+    public function getAllResourcesBySubmission($submission_id)
+    {
+        return ResourceSubmission::with('resource')
+            ->where('submission_id', '=', $submission_id)
+            ->get();
+    }
+
+    public function deleteAllResourcesBySubmission($submission_id)
+    {
+        $resources = $this->getAllResourcesBySubmission($submission_id);
+        foreach ($resources as $item) {
+            $resource = $item->resource;
+            Storage::delete('/resource/' . $resource->path);
+            $item->delete();
+            $resource->delete();
+        }
+    }
+
 
 }
