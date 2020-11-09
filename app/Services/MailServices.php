@@ -221,7 +221,6 @@ class MailServices
                     }
                 }*/
             $response = $this->sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $fileName);
-
             if ($response == 201) {
                 if ($userMail) {
                     $userMail->status = 1;
