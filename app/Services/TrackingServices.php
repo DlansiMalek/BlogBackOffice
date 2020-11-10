@@ -31,7 +31,7 @@ class TrackingServices
     public function sendUserInfo($congressId, $formInputs, $user)
     {
 
-        $object = $this->getBasicUserInfos($congressId, $user);
+        $object = $this->getBasicUserInfos($user);
 
         $object = array_merge($object, Utils::mappingInputResponse($formInputs, $user->responses));
 
@@ -41,24 +41,23 @@ class TrackingServices
             $user->user_congresses[0]->update();
         }
 
-        $object['env'] = env('APP_ENV');
+        $env = env('APP_ENV');
 
-        $res = $this->client->post('/eventizer-tracking-users/_doc', [
+        $res = $this->client->post('/eventizer-tracking-users-' . $env . '-' . $congressId . '/_doc', [
             'body' => json_encode($object, true)
         ]);
 
         return json_decode($res->getBody(), true);
     }
 
-    private function getBasicUserInfos($congressId, $user)
+    private function getBasicUserInfos($user)
     {
         return array(
             "user_id" => strval($user->user_id),
             "first_name" => $user->first_name,
             "last_name" => $user->last_name,
             "email" => $user->email,
-            "mobile" => strval($user->mobile),
-            "congress_id" => strval($congressId)
+            "mobile" => strval($user->mobile)
         );
     }
 
