@@ -11,7 +11,10 @@ class SubmissionModuleSeeders extends Seeder
      */
     public function run()
     {
+        $this->call(EtablissementSeeder::class);
+        $this->call(ServiceSeeder::class);
         $this->call(ThemeTableSeeder::class);
+        $this->call(CommunicationTypeSeeder::class);
         $this->call(SubmissionTableSeeder::class);
         $this->call(SubmissionEvaluationTableSeeder::class);
         $this->call(CongressThemeTableSeeder::class);

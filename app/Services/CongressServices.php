@@ -14,6 +14,7 @@ use App\Models\ItemNote;
 use App\Models\Location;
 use App\Models\Mail;
 use App\Models\MailType;
+use App\Models\Offre;
 use App\Models\Payment;
 use App\Models\Tracking;
 use App\Models\User;
@@ -110,7 +111,10 @@ class CongressServices
         $all_congresses = Congress::with([
             "config:congress_id,logo,banner,program_link,status,free,currency_code",
             "theme:label,description",
-            "location.city:city_id,name"
+            "location.city:city_id,name",
+            'admin_congresses' => function ($query) {
+                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
+            },
         ])->orderBy('start_date', 'desc')
             ->offset($offset)->limit($perPage)
             ->where('name', 'LIKE', '%' . $search . '%')
@@ -136,7 +140,7 @@ class CongressServices
 
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date",
+                ->only(["congress_id", "name", "start_date","admin_congresses",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
@@ -847,7 +851,6 @@ class CongressServices
 
     }
 
-
     public function confirmPresence($congress_id, $user_id, $will_be_present)
     {
         $userCongress = UserCongress::where('user_id', '=', $user_id)
@@ -948,6 +951,5 @@ class CongressServices
             ->where('congress_id', '=', $congressId)
             ->paginate($perPage);
     }
-
 
 }

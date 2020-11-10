@@ -8,6 +8,7 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
+use App\Services\OffreServices;
 use App\Services\OrganizationServices;
 use App\Services\PackServices;
 use App\Services\PaymentServices;
@@ -15,6 +16,7 @@ use App\Services\RoomServices;
 use App\Services\SharedServices;
 use App\Services\SmsServices;
 use App\Services\ResourcesServices;
+use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
@@ -41,6 +43,8 @@ class UserController extends Controller
     protected $mailServices;
     protected $roomServices;
     protected $resourcesServices;
+    protected $trackingServices;
+    protected $offreServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -54,7 +58,9 @@ class UserController extends Controller
                          ContactServices $contactServices,
                          RoomServices $roomServices,
                          MailServices $mailServices,
-                         ResourcesServices $resourcesServices)
+                         ResourcesServices $resourcesServices,
+                         TrackingServices $trackingServices,
+                         OffreServices $offreServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -70,6 +76,8 @@ class UserController extends Controller
         $this->roomServices = $roomServices;
         $this->contactServices = $contactServices;
         $this->resourcesServices = $resourcesServices;
+        $this->trackingServices = $trackingServices;
+        $this->offreServices = $offreServices;
     }
 
     public function getLoggedUser()
@@ -441,31 +449,6 @@ class UserController extends Controller
         return response()->json('Evaluation has been updated successfully', 200);
 
     }
-
-    public function getUsersByPrivilegeByCongress(Request $request, $congressId)
-    {
-        if (!$request->has(['privileges'])) {
-            return response()->json(["error" => "privileges is required"], 400);
-        }
-        $privileges = $request->input('privileges');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
-            return response()->json(["error" => "congress not found"], 404);
-        }
-        $users = $this->userServices->getUsersByCongressByPrivileges($congressId, $privileges);
-
-        foreach ($users as $user) {
-            foreach ($user->accesss as $access) {
-                if ($access->pivot->isPresent == 1) {
-                    $infoPresence = $this->badgeServices->getAttestationEnabled($user->user_id, $access);
-                    $access->attestation_status = $infoPresence['enabled'];
-                    $access->time_in_access = $infoPresence['time'];
-                } else
-                    $access->attestation_status = 0;
-            }
-        }
-        return response()->json($users);
-    }
-
 
     function validateUserAccount($userId = null, $congressId = null, $token = null)
     {
@@ -950,15 +933,12 @@ class UserController extends Controller
                     if (!$user_congress) {
                         $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
                         $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
-                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     } else {
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->update();
-                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     }
 
                     $new_access_array = null;
-                    $old_access_id_array = [];
                     $old_access_array = $user->accesses;
                     for ($i = 0; $i < sizeof($emails); $i++) {
                         //if statement to get the right index i of accessIdTable corresponding to our user 
@@ -983,9 +963,8 @@ class UserController extends Controller
                             if (!$exists) {
                                 // this means we have a new access to add
                                 // add the new access
-                                $access_added = $this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
+                                $this->userServices->affectAccessById($user->user_id, $new_access_array[$j]);
                             }
-                            $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
 
                         }
                         // send mail confirmation
@@ -1022,6 +1001,13 @@ class UserController extends Controller
                     }
 
                 }
+
+                if ($congress->congress_type_id == 2) {
+                    $this->userServices->changeUserStatus($user_congress, 1);
+                }
+                if ($congress->congress_type_id == 1) {
+                    $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
+                }
             }
         }
 
@@ -1030,7 +1016,12 @@ class UserController extends Controller
             $all_refused_participants = $this->userServices->getRefusedParticipants($congressId, $emails);
             foreach ($all_refused_participants as $refused_participant) {
                 //change user payment status
-                $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
+                if ($congress->congress_type_id == 2 && sizeof($refused_participant->user_congresses) > 0) {
+                    $this->userServices->changeUserStatus($refused_participant->user_congresses[0], -1);
+                }
+                if ($congress->congress_type_id == 1) {
+                    $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
+                }
                 //envoi de mail de refus
                 if ($mailtype = $this->congressServices->getMailType('refus')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
@@ -1659,6 +1650,10 @@ class UserController extends Controller
             $objectMail = "Nouvelle Inscription";
             $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
         }
+
+        $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
+
+        $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
     }
 
     public function trackingUser(Request $request)
@@ -1701,7 +1696,7 @@ class UserController extends Controller
 
         // LOGOUT & LEAVE IF TRACK STILL OPEN
         if ($request->input('action') == 'LOGIN') {
-             $this->userServices->closeTracking($congressId,$userId);
+            $this->userServices->closeTracking($congressId, $userId);
 
             $participator = $this->userServices->getUserByIdWithRelations($userId,
                 ['user_congresses' => function ($query) use ($congressId) {

@@ -22,6 +22,12 @@ class SharedServices
         return Privilege::where('privilege_id', '>=', 3)->get();
     }
 
+    public function getPrivilegeById($privilegeId)
+    {
+        return Privilege::where('privilege_id', '=', $privilegeId)
+            ->first();
+    }
+
     public function getPrivilegesWithBadges()
     {
         return Privilege::with(['badges'])
