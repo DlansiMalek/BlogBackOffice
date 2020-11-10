@@ -1670,9 +1670,11 @@ class UserServices
         $user->mobile = $mobile;
         $user->country_id = $countryId;
 
-        $password =  Str::random(8);
-        $user->passwordDecrypt = $password;
-        $user->password = bcrypt($password);
+        if (!$user->password) {
+            $password = Str::random(8);
+            $user->passwordDecrypt = $password;
+            $user->password = bcrypt($password);
+        }
 
 
         $user->save();
