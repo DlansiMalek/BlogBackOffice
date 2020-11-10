@@ -1645,7 +1645,7 @@ class UserServices
         }
         // check if isSelected = 1
         // check if isPaid = 1
-        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected != -1) {
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1) {
             return true;
         }
 
