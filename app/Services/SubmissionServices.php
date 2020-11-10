@@ -539,7 +539,7 @@ class SubmissionServices
             array_push($res,
                 array(
                     "title" => $submission->title,
-                    "description" => $submission->desription,
+                    "description" => $submission->description,
                     "user" => array(
                         "user_id" => $submission->user->user_id,
                         "first_name" => $submission->user->first_name,
