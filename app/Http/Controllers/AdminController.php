@@ -204,12 +204,11 @@ class AdminController extends Controller
     public function makeUserPresentAccess(Request $request, $userId = null)
     {
         //type : 1 : Enter Or 0 : Leave
-        if (!$request->has(['isPresent', 'accessId', 'type', 'congressId'])) {
+        if (!$request->has(['isPresent', 'type', 'congressId'])) {
             return response()->json(['resposne' => 'bad request',
-                'required fields' => ['isPresent', 'accessId', 'type', 'congressId']], 400);
+                'required fields' => ['isPresent', 'type', 'congressId']], 400);
         }
         $congressId = $request->input('congressId');
-        $accessId = $request->input("accessId");
 
         if (!$userId) {
             $user = $this->userServices->retrieveUserFromToken();
@@ -233,6 +232,18 @@ class AdminController extends Controller
         $userCongress->isPresent = 1;
         $userCongress->update();
 
+        $accessId = $request->input("accessId");
+
+        if ($request->has('channel_name')) {
+            $access = $this->accessServices->getAccessByName($request->input('channel_name'));
+            if($access)
+                $accessId = $access->access_id;
+        }
+
+        if (!$accessId) {
+            return response()->json(['resposne' => 'scan congress presence success'], 200);
+        }
+
         $user_access = $this->userServices->getUserAccessByUser($participator->user_id, $accessId);
 
         if (!$user_access) {
@@ -244,7 +255,7 @@ class AdminController extends Controller
         }
 
         $this->userServices->makePresentToAccess($user_access, $participator,
-            $request->input('accessId'), $request->input('isPresent'), $request->input('type'));
+            $accessId, $request->input('isPresent'), $request->input('type'));
 
         return response()->json(["message" => "success sending and scanning"], 200);
     }
