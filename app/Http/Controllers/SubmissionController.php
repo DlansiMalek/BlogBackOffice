@@ -917,4 +917,17 @@ class SubmissionController extends Controller
         return response()->json(['message' => 'import success'], 200);
     }
 
+    public function getEpostersByCongressPeacksource($congressId, Request $request)
+    {
+        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+            return response()->json(['response' => 'congress not found'], 400);
+        }
+
+        $data = $this->submissionServices->getAllSubmissionByCongress($congressId);
+
+        $submissions = $this->submissionServices->mappingPeacksourceData($data);
+
+        return response()->json($submissions, 200);
+    }
+
 }

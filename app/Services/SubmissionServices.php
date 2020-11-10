@@ -303,10 +303,17 @@ class SubmissionServices
             ->get();
     }
 
+    public function getAllSubmissionByCongress($congressId)
+    {
+        return Submission::with(['resources', 'authors.service', 'authors.etablissment'])
+            ->where('congress_id', '=', $congressId)
+            ->get();
+    }
+
     public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
     {
         $allSubmission = Submission::with([
-            'resources', 'authors'
+            'resources', 'authors.service', 'authors.etablissment'
         ])->when($search !== "null" && $search !== "" && $search !== null,
             function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%');
@@ -522,6 +529,41 @@ class SubmissionServices
             $item->delete();
             $resource->delete();
         }
+    }
+
+    public function mappingPeacksourceData($data)
+    {
+        $res = array();
+
+        foreach ($data as $submission) {
+            array_push($res,
+                array(
+                    "title" => $submission->title,
+                    "description" => $submission->desription,
+                    "user" => array(
+                        "user_id" => $submission->user->user_id,
+                        "first_name" => $submission->user->first_name,
+                        "last_name" => $submission->user->last_name,
+                        "email" => $submission->user->email
+                    ),
+                    "authors" => array_map(function ($object) {
+                        return array(
+                            "first_name" => $object['first_name'],
+                            "last_name" => $object['last_name'],
+                            "email" => $object['email'],
+                            "rank" => $object['rank'],
+                            "service" => isset($object['service']['label']) ? $object['service']['label'] : '-',
+                            "etablissement" => isset($object['etablissment']['label']) ? $object['etablissment']['label'] : '-'
+                        );
+                    }, json_decode($submission->authors, true)),
+                    "resources" => array_map(function ($object) {
+                        return UrlUtils::getBaseUrl() . '/resource/' . $object['path'];
+                    }, json_decode($submission->resources, true))
+                )
+            );
+        }
+
+        return $res;
     }
 
 

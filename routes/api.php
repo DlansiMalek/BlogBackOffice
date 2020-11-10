@@ -528,6 +528,7 @@ Route::group(["prefix" => "user-app"], function () {
 Route::group(["prefix" => "peaksource"], function () {
     Route::group(["prefix" => '{congressId}'], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
+        Route::get('eposters', 'SubmissionController@getEpostersByCongressPeacksource');
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });
