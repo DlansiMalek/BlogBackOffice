@@ -263,6 +263,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
     Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
+    Route::post('{congressId}/upload-submissions', 'SubmissionController@uploadSubmissions');
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
@@ -527,6 +528,7 @@ Route::group(["prefix" => "user-app"], function () {
 Route::group(["prefix" => "peaksource"], function () {
     Route::group(["prefix" => '{congressId}'], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
+        Route::get('eposters', 'SubmissionController@getEpostersByCongressPeacksource');
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });
