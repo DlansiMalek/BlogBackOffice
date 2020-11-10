@@ -183,6 +183,7 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
         'Anam\PhantomMagick\ConverterServiceProvider',
+        Madnest\Madzipper\MadzipperServiceProvider::class
     ],
 
     /*
@@ -236,8 +237,8 @@ return [
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
         'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
-        'Converter' => 'Anam\PhantomMagick\Facades\Converter'
-
+        'Converter' => 'Anam\PhantomMagick\Facades\Converter',
+        'Madzipper' => Madnest\Madzipper\Madzipper::class
     ],
 
 ];

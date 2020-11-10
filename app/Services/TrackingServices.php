@@ -41,9 +41,10 @@ class TrackingServices
             $user->user_congresses[0]->update();
         }
 
-        $object['env'] = env('APP_ENV');
+        $env = env('APP_ENV');
+        $object['env'] = $env;
 
-        $res = $this->client->post('/eventizer-tracking-users/_doc', [
+        $res = $this->client->post('/eventizer-tracking-users-' . $env . '-' . $congressId . '/_doc', [
             'body' => json_encode($object, true)
         ]);
 
