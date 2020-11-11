@@ -487,9 +487,10 @@ class SubmissionServices
             ->first();
     }
 
-    public function getSubmissionExternal($extId)
+    public function getSubmissionExternal($congressId, $extId)
     {
         return Submission::where('extId', '=', $extId)
+            ->where('congress_id', '=', $congressId)
             ->first();
     }
 
@@ -504,7 +505,7 @@ class SubmissionServices
         $themeId = 1;
         $userId = $user->user_id;
 
-        $submission = $this->getSubmissionExternal($data['submission_extId']);
+        $submission = $this->getSubmissionExternal($congressId, $data['submission_extId']);
 
         if ($submission) {
             return $this->editSubmission($submission, $submissionTitle, $submissionType, 1, $communicationTypeId, $submissionDescription, $themeId, null);

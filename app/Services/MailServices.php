@@ -192,8 +192,9 @@ class MailServices
             if ($congress != null && $congress->username_mail)
                 config(['mail.from.name', $congress->username_mail]);
 
-            if ($congress!= null)
-                 $offre = $this->getOffreByCongressId($congress->congress_id);
+            if ($congress!= null) {
+                $offre = $this->getOffreByCongressId($congress->congress_id);
+            }
 
             if ( $offre!=null && $offre->is_mail_pro ==1) {
                 $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
@@ -332,7 +333,7 @@ class MailServices
             'headers' => [
                 'accept' => 'application/json',
                 'content-type' => 'application/json',
-                'api-key' => env('API_KEY')
+                'api-key' => env('API_KEY_SEND_BLUE')
             ],
         ]);
         $httpBody = \GuzzleHttp\json_encode($message);

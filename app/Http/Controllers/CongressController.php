@@ -451,12 +451,14 @@ class CongressController extends Controller
                     $query->where("congress_id", "=", $congressId);
                 }, 'user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
+                }, 'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
                 },
                     'user_mails' => function ($query) use ($mailId) {
                         $query->where('mail_id', '=', $mailId);
                     }], null);
             foreach ($users as $user) {
-                if (Utils::isValidSendMail($user)) {
+                if (Utils::isValidSendMail($congress, $user)) {
                     $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
                     $badgeIdGenerator = $badge['badge_id_generator'];
@@ -631,7 +633,7 @@ class CongressController extends Controller
                         $this->badgeServices->saveAttestationsInPublic($request);
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
                             $user, $congress, $mail->object, true, $userMail, null, $fileName);
-                        }
+                    }
                 }
             }
         }
@@ -654,18 +656,24 @@ class CongressController extends Controller
         $congress = $this->congressServices->getCongressById($mail->congress_id);
 
         $users = $this->userServices->getUsersWithRelations($congressId,
-            ['accesses' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-            }, 'user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
+            [
+                'accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                },
+                'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId);
-                }], null);
+                }
+            ], null);
 
 
         foreach ($users as $user) {
-            if (Utils::isValidSendMail($user)) {
+            if (Utils::isValidSendMail($congress, $user)) {
                 $userMail = null;
                 if (sizeof($user->user_mails) == 0) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
