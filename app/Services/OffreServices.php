@@ -49,6 +49,7 @@ class OffreServices
         $offre->value = $request->input('value');
         $offre->status = 1;
         $offre->offre_type_id = $request->input('offre_type_id');
+        $offre->is_mail_pro = $request->input('is_mail_pro');
         $offre->admin_id = $request->input('admin_id');
         $offre->save();
 
@@ -64,6 +65,7 @@ class OffreServices
         $offre->value = $request->input('value');
         $offre->offre_type_id = $request->input('offre_type_id');
         $offre->admin_id = $request->input('admin_id');
+        $offre->is_mail_pro = $request->input('is_mail_pro');
         $offre->update();
         return $offre;
     }
