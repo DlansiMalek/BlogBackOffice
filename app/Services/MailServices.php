@@ -286,8 +286,8 @@ class MailServices
     public function getOffreByCongressId($congress_id)
     {
         return Offre::where('status', '=', 1)
-            ->join('admin_congress', function ($join) use ($congress_id) {
-                $join->on('admin_congress.admin_id', '=', 'offre.admin_id')
+            ->join('Admin_Congress', function ($join) use ($congress_id) {
+                $join->on('Admin_Congress.admin_id', '=', 'Offre.admin_id')
                     ->where('congress_id', '=', $congress_id)
                     ->where('privilege_id', '=', 1);
             })->first();

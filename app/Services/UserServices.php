@@ -302,7 +302,7 @@ class UserServices
     public function affectAccessIds($user_id, $accessIds)
     {
         foreach ($accessIds as $item) {
-            $this->affectAccessById($user_id, $item);
+            $this->affectAccessById($user_id, $item->access_id);
         }
     }
 
