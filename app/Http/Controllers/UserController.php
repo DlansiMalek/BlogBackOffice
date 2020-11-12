@@ -1003,14 +1003,15 @@ class UserController extends Controller
                         }
                     }
 
+                    if ($congress->congress_type_id == 2) {
+                        $this->userServices->changeUserStatus($user_congress, 1);
+                    }
+                    if ($congress->congress_type_id == 1) {
+                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
+                    }
                 }
 
-                if ($congress->congress_type_id == 2) {
-                    $this->userServices->changeUserStatus($user_congress, 1);
-                }
-                if ($congress->congress_type_id == 1) {
-                    $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
-                }
+
             }
         }
 
