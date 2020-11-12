@@ -6,6 +6,7 @@ use App\Models\Mail;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\CongressServices;
+use App\Services\MailServices;
 use App\Services\OrganizationServices;
 use App\Services\PaymentServices;
 use App\Services\SharedServices;
@@ -24,6 +25,7 @@ class OrganizationController extends Controller
     protected $sharedServices;
     protected $paymentServices;
     protected $accessServices;
+    protected $mailServices;
 
 
     function __construct(OrganizationServices $organizationServices,
@@ -32,7 +34,8 @@ class OrganizationController extends Controller
                          UserServices $userServices,
                          SharedServices $sharedServices,
                          PaymentServices $paymentServices,
-                         AccessServices $accessServices)
+                         AccessServices $accessServices,
+                         MailServices $mailServices)
     {
         $this->organizationServices = $organizationServices;
         $this->congressServices = $congressServices;
@@ -41,6 +44,7 @@ class OrganizationController extends Controller
         $this->sharedServices = $sharedServices;
         $this->paymentServices = $paymentServices;
         $this->accessServices = $accessServices;
+        $this->mailServices = $mailServices;
     }
 
     public function addOrganization($congress_id, Request $request)
@@ -178,6 +182,7 @@ class OrganizationController extends Controller
         $badgeIdGenerator = $badge['badge_id_generator'];
 
         $fileAttached = false;
+        $fileName = "badge.png";
         if ($badgeIdGenerator != null) {
             $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                 $user,
@@ -188,14 +193,14 @@ class OrganizationController extends Controller
 
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, $organization, null), $user, $congress, $mail->object, null);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, $organization, null), $user, $congress, $mail->object, null);
             }
         }
 
         if ($mailtype = $this->congressServices->getMailType('confirmation')) {
             $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, null, null ,$fileName);
             }
         }
     }

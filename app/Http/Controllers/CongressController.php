@@ -297,7 +297,7 @@ class CongressController extends Controller
         if ($mailtype = $this->congressServices->getMailType('inscription')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
             }
         }
     }
@@ -451,17 +451,20 @@ class CongressController extends Controller
                     $query->where("congress_id", "=", $congressId);
                 }, 'user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
+                }, 'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
                 },
                     'user_mails' => function ($query) use ($mailId) {
                         $query->where('mail_id', '=', $mailId);
                     }], null);
             foreach ($users as $user) {
-                if (Utils::isValidSendMail($user)) {
+                if (Utils::isValidSendMail($congress, $user)) {
                     $badge = $this->congressServices->getBadgeByPrivilegeId($congress,
                         $user->user_congresses[0]->privilege_id);
                     $badgeIdGenerator = $badge['badge_id_generator'];
 
                     $fileAttached = false;
+                    $fileName = "badge.png";
                     if ($badgeIdGenerator != null) {
                         $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                             $user,
@@ -477,9 +480,9 @@ class CongressController extends Controller
                     }
                     if ($userMail->status != 1) {
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
-                        $this->userServices->sendMail($this->congressServices
+                        $this->mailServices->sendMail($this->congressServices
                             ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice),
-                            $user, $congress, $mail->object, $fileAttached, $userMail);
+                            $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                     }
                 }
             }
@@ -538,7 +541,7 @@ class CongressController extends Controller
 
                         Log::info($linkSondage);
 
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
                             $user, $congress, $mail->object, false, $userMail);
                     }
                 }
@@ -626,9 +629,10 @@ class CongressController extends Controller
                         $userMail = $user->user_mails[0];
                     }
                     if ($userMail->status != 1) {
+                        $fileName = 'attestations.zip';
                         $this->badgeServices->saveAttestationsInPublic($request);
-                        $this->userServices->sendMailAttesationToUser($user, $congress, $userMail, $mail->object,
-                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null));
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                            $user, $congress, $mail->object, true, $userMail, null, $fileName);
                     }
                 }
             }
@@ -652,18 +656,24 @@ class CongressController extends Controller
         $congress = $this->congressServices->getCongressById($mail->congress_id);
 
         $users = $this->userServices->getUsersWithRelations($congressId,
-            ['accesses' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-            }, 'user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
+            [
+                'accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                },
+                'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId);
-                }], null);
+                }
+            ], null);
 
 
         foreach ($users as $user) {
-            if (Utils::isValidSendMail($user)) {
+            if (Utils::isValidSendMail($congress, $user)) {
                 $userMail = null;
                 if (sizeof($user->user_mails) == 0) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
@@ -672,9 +682,8 @@ class CongressController extends Controller
                 }
 
                 if ($userMail->status != 1) {
-                    $this->userServices->sendMail($this->congressServices
-                        ->renderMail($mail->template, $congress, $user, null, null, null, null, null),
-                        $user, $congress, $mail->object, null, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
+                        , $user, $congress, $mail->object, false, $userMail);
                 }
             }
         }
@@ -874,7 +883,7 @@ class CongressController extends Controller
             $template = '<p>L\'utilisateur {{$participant-&gt;last_name}} {{$participant-&gt;first_name}} a refusé d\'être présent à votre événement {{$congress-&gt;name}}</p>';
         }
         $objectMail = 'Confirmation du présence';
-        $this->userServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, null), null, null, $objectMail, false, null, $admin->email);
+        $this->mailServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, null), null, null, $objectMail, false, null, $admin->email);
         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
         return redirect($linkFrontOffice);
     }

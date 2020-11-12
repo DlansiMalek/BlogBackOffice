@@ -494,7 +494,7 @@ class AdminServices
     public function getClientById($admin_id)
     {
         return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=', 1)
-            ->with(['offre', 'adminPayment', 'offre.type_offre', 'offre.type_commission'])
+            ->with(['offres', 'adminPayment', 'offres.type'])
             ->first();
     }
 
