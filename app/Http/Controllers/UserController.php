@@ -933,6 +933,9 @@ class UserController extends Controller
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
                     if (!$user_congress) {
+                        if ($accessNotInRegister) {
+                            $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
+                        }
                         $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
                         $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
                     } else {
@@ -949,9 +952,7 @@ class UserController extends Controller
                             $new_access_array = $accessIdTable[$i];
                         };
                     }
-                    if ($accessNotInRegister) {
-                        $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
-                    }
+
                     if ($new_access_array) {
                         //add new accesses if not already existant
                         for ($j = 0; $j < sizeof($new_access_array); $j++) {
@@ -1013,15 +1014,15 @@ class UserController extends Controller
             }
         }
 
-        if ($refused && $congress->congress_type_id == 2) {
+        if ($refused) {
             // partie gestion des participants refusés !
             $all_refused_participants = $this->userServices->getRefusedParticipants($congressId, $emails);
             foreach ($all_refused_participants as $refused_participant) {
                 //change user payment status
-                if ($congress->congress_type_id == 2 && sizeof($refused_participant->user_congresses) > 0) {
+                if ($congress->congress_type_id == 2 && sizeof($refused_participant->user_congresses) > 0 && $refused_participant->user_congresses[0]->isSelected != 1) {
                     $this->userServices->changeUserStatus($refused_participant->user_congresses[0], -1);
                 }
-                if ($congress->congress_type_id == 1) {
+                if ($congress->congress_type_id == 1 && sizeof($refused_participant->payments) > 0 && $refused_participant->payments[0]->isPaid != 1) {
                     $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
                 }
                 //envoi de mail de refus
@@ -1251,7 +1252,7 @@ class UserController extends Controller
                 }
                 $fileName = 'attestations.zip';
                 $this->badgeServices->saveAttestationsInPublic($request);
-                $this->mailServices->sendMail( $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
                     $user, $congress, $mail->object, true, $userMail, null, $fileName);
             }
         } else {
