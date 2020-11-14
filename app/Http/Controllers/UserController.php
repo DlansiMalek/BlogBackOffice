@@ -1056,19 +1056,28 @@ class UserController extends Controller
 
     public function redirectToLinkFormSondage($userId, $congressId)
     {
+
+        $congress = $this->congressServices->getCongressById($congressId);
+        $mailtype = $this->congressServices->getMailType('attestation');
+        $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
+        $mailId = $mail->mail_id;
         /* Meme Block Of Send Attestation */
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
             $query->where("congress_id", "=", $congressId);
             $query->where('with_attestation', "=", 1);
+        }, 'payments' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
         }, 'user_congresses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
-        }])) {
+        },
+            'user_mails' => function ($query) use ($mailId) {
+                $query->where('mail_id', '=', $mailId);
+            }])) {
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $congress = $this->congressServices->getCongressById($congressId);
         $request = array();
-        if ($user->email != null && $user->email != "-" && $user->email != "") {
+        if (Utils::isValidSendMail($congress, $user)) {
             if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isPresent == 1 && $congress->attestation) {
                 array_push(
                     $request,
@@ -1118,19 +1127,20 @@ class UserController extends Controller
                     );
                 }
             }
-            $mailtype = $this->congressServices->getMailType('attestation');
-            $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-                if (!$userMail) {
+                $userMail = null;
+                if (sizeof($user->user_mails) == 0) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                } else {
+                    $userMail = $user->user_mails[0];
                 }
-
-                $fileName = 'attestations.zip';
-                $this->badgeServices->saveAttestationsInPublic($request);
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
-                    $user, $congress, $mail->object, true, $userMail, null, $fileName);
+                if ($userMail->status != 1) {
+                    $fileName = 'attestations.zip';
+                    $this->badgeServices->saveAttestationsInPublic($request);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                        $user, $congress, $mail->object, true, $userMail, null, $fileName);
+                }
             }
         } else {
             return response()->json(['error' => 'user not present or empty email'], 501);
@@ -1143,7 +1153,8 @@ class UserController extends Controller
         return response()->redirectTo($linkForm);
     }
 
-    public function sendSondage($userId, $congressId)
+    public
+    function sendSondage($userId, $congressId)
     {
 
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, [])) {
@@ -1178,7 +1189,8 @@ class UserController extends Controller
         return response()->json(['message' => 'email sended success']);
     }
 
-    public function sendMailAttesation($userId, $congressId, $strict = 1)
+    public
+    function sendMailAttesation($userId, $congressId, $strict = 1)
     {
         // $strict = 0;
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, ['accesses' => function ($query) use ($congressId) {
@@ -1262,7 +1274,8 @@ class UserController extends Controller
         return response()->json(['message' => 'email sended success']);
     }
 
-    public function uploadPayement($userId, $congressId, Request $request)
+    public
+    function uploadPayement($userId, $congressId, Request $request)
     {
         if (!$paymentUser = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found'], 404);
@@ -1291,7 +1304,8 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function calculPrice($congress, $packId, $accessIds)
+    public
+    function calculPrice($congress, $packId, $accessIds)
     {
         $price = $congress->price;
         if ($packId) {
@@ -1306,7 +1320,8 @@ class UserController extends Controller
         return $price;
     }
 
-    public function sendCustomMail($user_id, $mail_id)
+    public
+    function sendCustomMail($user_id, $mail_id)
     {
         if (!$user = $this->userServices->getParticipatorById($user_id))
             return response()->json(['response' => 'user not found'], 404);
@@ -1394,7 +1409,8 @@ class UserController extends Controller
         return $res;
     }
 
-    public function setAttestationRequestStatus($user_id, $done)
+    public
+    function setAttestationRequestStatus($user_id, $done)
     {
         $requests = $this->userServices->getAttestationRequestsByUserId($user_id);
         foreach ($requests as $req) {
@@ -1404,7 +1420,8 @@ class UserController extends Controller
         return $this->userServices->getAttestationRequestsByUserId($user_id);
     }
 
-    public function mobileEditUser(Request $request, $user_id)
+    public
+    function mobileEditUser(Request $request, $user_id)
     {
         if (!$request->has(['first_name', 'last_name', 'gender', 'mobile', 'email', 'country_id']))
             return response()->json(['error' => 'bad request'], 400);
@@ -1419,20 +1436,23 @@ class UserController extends Controller
         return $user;
     }
 
-    public function uploadProfilePic(Request $request, $user_id)
+    public
+    function uploadProfilePic(Request $request, $user_id)
     {
         if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
         return $this->userServices->uploadProfilePic($request->file('file_data'), $user);
     }
 
-    public function getProfilePic($user_id)
+    public
+    function getProfilePic($user_id)
     {
         if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
         if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
         return Storage::download($user->profile_pic);
     }
 
-    public function forgetPassword(Request $request)
+    public
+    function forgetPassword(Request $request)
     {
         if (!$request->has(['email']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
@@ -1459,7 +1479,8 @@ class UserController extends Controller
 
     }
 
-    public function getUserById($user_id, Request $request)
+    public
+    function getUserById($user_id, Request $request)
     {
 
         $verification_code = $request->query('verification_code', '');
@@ -1473,7 +1494,8 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function resetUserPassword($userId, Request $request)
+    public
+    function resetUserPassword($userId, Request $request)
     {
         if (!$request->has(['verification_code', 'password']))
             return response()->json(['response' => 'bad request'], 400);
@@ -1501,7 +1523,8 @@ class UserController extends Controller
         return response()->json(['response' => 'password successfully updated'], 200);
     }
 
-    public function editUserProfile(Request $request)
+    public
+    function editUserProfile(Request $request)
     {
         if (!$request->has(['email', 'first_name', 'last_name']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'first_name', 'last_name']], 400);
@@ -1524,7 +1547,8 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    public function getResourceByResourceId($resourceId)
+    public
+    function getResourceByResourceId($resourceId)
     {
         $chemin = config('media.resource');
         $resource = $this->resourcesServices->getResourceByResourceId($resourceId);
@@ -1532,7 +1556,8 @@ class UserController extends Controller
         return response()->download(storage_path('app/' . $chemin . "/" . $resource->path));
     }
 
-    private function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds)
+    private
+    function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds)
     {
 
         if ($request->has('responses')) {
@@ -1651,7 +1676,8 @@ class UserController extends Controller
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
     }
 
-    public function trackingUser(Request $request)
+    public
+    function trackingUser(Request $request)
     {
 
         $user = $this->userServices->retrieveUserFromToken();
