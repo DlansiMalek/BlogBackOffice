@@ -414,6 +414,11 @@ class AccessServices
             ->first();
     }
 
+    public function setCurrentParticipants($accessId, $nbParticipants)
+    {
+        return Access::where('access_id', '=', $accessId)
+            ->update(['nb_current_participants' => $nbParticipants]);
+    }
 
     private function deleteAccessByCongress($congressId)
     {

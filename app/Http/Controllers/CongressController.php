@@ -944,4 +944,23 @@ class CongressController extends Controller
 
     }
 
+    public function setCurrentParticipants($congressId, Request $request)
+    {
+        if (!$request->has('nbParticipants')) {
+            return response()->json(['response' => 'bad request: missing nbParticipants'], 400);
+        }
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+        $accessId = $request->input('accessId');
+
+        if (!$accessId) {
+            $this->congressServices->setCurrentParticipants($congressId, $request->input('nbParticipants'));
+        } else {
+            $this->accessServices->setCurrentParticipants($accessId, $request->input('nbParticipants'));
+        }
+
+        return response()->json(['message' => 'current participant number set success'], 200);
+    }
+
 }

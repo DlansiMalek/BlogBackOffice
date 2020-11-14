@@ -692,6 +692,11 @@ class UserServices
         return $this->createOrUpdateUser($email, $firstName, $lastName, $gender, $mobile, $countryId);
     }
 
+    public function isUserModerator($userCongress)
+    {
+        return $userCongress->privilege_id == 5 || $userCongress->privilege_id == 8;
+    }
+
     private function sendingRTAccess($user, $accessId)
     {
         $client = new \GuzzleHttp\Client();
@@ -1163,20 +1168,6 @@ class UserServices
         return User::with($relations)
             ->where('user_id', '=', $userId)
             ->first();
-    }
-
-
-    public function checkUserRights($user, $accessId = null)
-    {
-        if ($user && sizeof($user->user_congresses) > 0 && (!$accessId || sizeof($user->accesses) > 0)) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && (!$accessId || sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
-                return 2;
-            }
-            if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
-                return 3;
-            }
-        }
-        return -1;
     }
 
     public function getEvaluationInscriptionByUserIdAndAdminId($user_id, $congress_id, $admin_id)

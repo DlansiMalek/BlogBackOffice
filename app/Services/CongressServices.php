@@ -140,7 +140,7 @@ class CongressServices
 
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date","admin_congresses",
+                ->only(["congress_id", "name", "start_date", "admin_congresses",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
@@ -950,6 +950,12 @@ class CongressServices
             })
             ->where('congress_id', '=', $congressId)
             ->paginate($perPage);
+    }
+
+    public function setCurrentParticipants($congressId, $nbParticipants)
+    {
+        return ConfigCongress::where('congress_id', '=', $congressId)
+            ->update(['nb_current_participants' => $nbParticipants]);
     }
 
 }
