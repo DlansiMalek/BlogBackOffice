@@ -118,6 +118,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'tracking', 'middleware' => ['assign.guard:admins']], function () {
     Route::group(['prefix' => 'congress/{congressId}'], function () {
         Route::post('migrate-users', 'TrackingController@migrateUsers');
+        Route::post('migrate-tracking', 'TrackingController@migrateTracking');
     });
 });
 
@@ -262,6 +263,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
     Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
+    Route::post('{congressId}/upload-submissions', 'SubmissionController@uploadSubmissions');
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
@@ -406,6 +408,14 @@ Route::group(['prefix' => 'admin', 'middleware' => 'marketing'], function () {
     Route::get('mailtype/{mailTypeAdminId}', 'MailController@getMailTypeAdminByMailTypeAdminId');
     Route::post('mail/{mailTypeAdminId}', 'MailController@saveMailAdmin');
     Route::put('{admin_id}', "AdminController@editClient");
+    Route::put('{admin_id}/offre/{offreId}', "AdminController@editClientPayment");
+});
+
+Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
+    Route::get('list', 'OffreController@getAllOffres');
+    Route::post('add', 'OffreController@addOffre');
+    Route::get('get/{offre_id}', 'OffreController@getOffreById');
+    Route::put('edit/{offre_id}', 'OffreController@editOffre');
 });
 
 
@@ -526,6 +536,7 @@ Route::group(["prefix" => "user-app"], function () {
 Route::group(["prefix" => "peaksource"], function () {
     Route::group(["prefix" => '{congressId}'], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
+        Route::get('eposters', 'SubmissionController@getEpostersByCongressPeacksource');
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });

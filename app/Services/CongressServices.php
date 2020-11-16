@@ -14,6 +14,7 @@ use App\Models\ItemNote;
 use App\Models\Location;
 use App\Models\Mail;
 use App\Models\MailType;
+use App\Models\Offre;
 use App\Models\Payment;
 use App\Models\Tracking;
 use App\Models\User;
@@ -950,4 +951,5 @@ class CongressServices
             ->where('congress_id', '=', $congressId)
             ->paginate($perPage);
     }
+
 }

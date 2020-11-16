@@ -63,6 +63,8 @@ class DatabaseSeeder extends Seeder
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
 
+        $this->call(OffreTypeSeedTable::class);
+
         // $this->call(MigrationOldData::class);
     }
 }

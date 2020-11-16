@@ -8,17 +8,19 @@ use App\Services\CommunicationTypeService;
 use App\Services\CongressServices;
 use App\Services\EstablishmentServices;
 use App\Services\MailServices;
+use App\Services\ResourcesServices;
 use App\Services\ServiceServices;
+use App\Services\SharedServices;
 use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
-use DateTime;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
-use App\Services\SharedServices;
+use Illuminate\Support\Facades\Storage;
+use Madnest\Madzipper\Facades\Madzipper;
+use Illuminate\Filesystem\Filesystem;
 
 class SubmissionController extends Controller
 {
@@ -33,6 +35,7 @@ class SubmissionController extends Controller
     protected $mailServices;
     protected $sharedServices;
     protected $communicationTypeService;
+    protected $resourcesServices;
 
     function __construct(
         SubmissionServices $submissionServices,
@@ -44,7 +47,8 @@ class SubmissionController extends Controller
         CongressServices $congressServices,
         MailServices $mailServices,
         SharedServices $sharedServices,
-        CommunicationTypeService $communicationTypeService
+        CommunicationTypeService $communicationTypeService,
+        ResourcesServices $resourcesServices
     )
     {
         $this->submissionServices = $submissionServices;
@@ -57,6 +61,7 @@ class SubmissionController extends Controller
         $this->mailServices = $mailServices;
         $this->sharedServices = $sharedServices;
         $this->communicationTypeService = $communicationTypeService;
+        $this->resourcesServices = $resourcesServices;
 
     }
 
@@ -116,7 +121,7 @@ class SubmissionController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
                 );
             }
@@ -202,7 +207,7 @@ class SubmissionController extends Controller
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 }
 
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
                 );
             }
@@ -282,7 +287,7 @@ class SubmissionController extends Controller
                     $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
                     if (!$userMail) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail(
+                        $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
                         );
                     }
@@ -353,7 +358,7 @@ class SubmissionController extends Controller
             $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
             if (!$userMail) {
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->userServices->sendMail(
+                $this->mailServices->sendMail(
                     $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
                 );
             }
@@ -422,7 +427,7 @@ class SubmissionController extends Controller
                     . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
             }
             $user = $this->userServices->getUserById($submission->user_id);
-            $this->userServices->sendMail(
+            $this->mailServices->sendMail(
                 $this->congressServices->renderMail(
                     $mail->template,
                     null,
@@ -475,7 +480,7 @@ class SubmissionController extends Controller
                 $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
                 if (!$userMail) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
-                    $this->userServices->sendMail(
+                    $this->mailServices->sendMail(
                         $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
                     );
                 }
@@ -806,10 +811,16 @@ class SubmissionController extends Controller
                             $userMail = $user->user_mails[0];
                         }
                         if ($userMail->status != 1) {
-                            $this->userServices->sendMailAttesationSubmissionZipToUser($user, $congress, $userMail,
+                            $fileName = 'attestationsSubmission.zip';
+                            $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions),
+                                $user,
+                                $congress,
                                 $mail->object,
-                                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions));
-                        }
+                                true,
+                                $userMail,
+                                null,
+                                $fileName);
+                           }
                     }
                 }
             }
@@ -871,9 +882,29 @@ class SubmissionController extends Controller
             $this->sharedServices->saveAttestationSubmissionInPublic($fill,
                 $attestationSubmission->attestation_generator_id);
 
-            $this->userServices->sendMailAttesationSubmissionToUser($user, $congress, $userMail, $mail->object,
-                $this->congressServices->renderMail($mail->template,
-                    $congress, $user, null, null, null, null, null, null, null, null, null, $submission->code, $submission->title, $submission->communicationType ? $submission->communicationType->label : null));
+            $fileName = 'attestationSubmission.png';
+            $this->mailServices->sendMail($this->congressServices->renderMail($mail->template,
+                $congress,
+                $user,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                $submission->code,
+                $submission->title,
+                $submission->communicationType ? $submission->communicationType->label : null),
+                $user,
+                $congress,
+                $mail->object,
+                true,
+                $userMail,
+                null,
+                $fileName);
             return response()->json(['message' => 'send mail successs']);
 
         } catch (Exception $e) {
@@ -881,6 +912,48 @@ class SubmissionController extends Controller
             return response()->json(['response' => $e->getMessage()], 400);
         }
 
+    }
+
+    public function uploadSubmissions($congressId, Request $request)
+    {
+        $fileSystem = new Filesystem();
+        $fileSystem->deleteDirectory(storage_path('app/zip'));
+
+        // Extract Zip File
+        $file = $request->file('files');
+        $path = $file->store('/zip');
+        Madzipper::make(storage_path('app/' . $path))->extractTo(storage_path('app/submissions'));
+
+        $data = json_decode($request->input('data'), true);
+        foreach ($data as $item) {
+            if (isset($item['author_email'])) {
+                $user = $this->userServices->addPrincipalUserAuthorExternal($item);
+                $submission = $this->submissionServices->addSubmissionExternal($congressId, $item, $user);
+                $this->authorServices->deleteAllAuthorsBySubmission($submission->submission_id);
+                $principalAuthor = $this->authorServices->addPrincipalAuthor($submission, $user, $item);
+                $authors = $this->authorServices->addAuthorsExternal($submission, $item);
+                $this->submissionServices->deleteAllResourcesBySubmission($submission->submission_id);
+                $this->resourcesServices->addRessourcesExternal($submission, $item);
+            }
+        }
+
+        $fileSystem = new Filesystem();
+        $fileSystem->deleteDirectory(storage_path('app/submissions'));
+
+        return response()->json(['message' => 'import success'], 200);
+    }
+
+    public function getEpostersByCongressPeacksource($congressId, Request $request)
+    {
+        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+            return response()->json(['response' => 'congress not found'], 400);
+        }
+
+        $data = $this->submissionServices->getAllSubmissionByCongress($congressId);
+
+        $submissions = $this->submissionServices->mappingPeacksourceData($data);
+
+        return response()->json($submissions, 200);
     }
 
 }

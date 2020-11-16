@@ -218,6 +218,12 @@ class Utils
         return $res;
     }
 
+    public static function isValidSendMail($congress, $user)
+    {
+        $isUserValid = $congress->congress_type_id === 3 ? true : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
