@@ -25,20 +25,22 @@ class PrivilegeServices
         $privilege->priv_reference = $priv_reference;
         $privilege->save();
 
-        $privilege_config = new PrivilegeConfig();
-        $privilege_config->privilege_id = $privilege->privilege_id;
-        $privilege_config->congress_id = $congress_id;
-        $privilege_config->status = 1;
-        $privilege_config->save();
+        $this->addPrivilegeConfig($privilege->privilege_id, $congress_id, 1);
 
         if (!$privilege_base_config = $this->getPrivilegeConfig($priv_reference, $congress_id)) {
-            $privilege_base_config = new PrivilegeConfig();
-            $privilege_base_config->privilege_id = $priv_reference;
-            $privilege_base_config->congress_id = $congress_id;
-            $privilege_base_config->status = 0;
-            $privilege_base_config->save();
+            $this->addPrivilegeConfig($priv_reference, $congress_id, 2);
         }
         return $privilege;
+    }
+
+    public function addPrivilegeConfig($privilege_id, $congress_id, $status)
+    {
+        $privilege_config = new PrivilegeConfig();
+        $privilege_config->privilege_id = $privilege_id;
+        $privilege_config->congress_id = $congress_id;
+        $privilege_config->status = $status;
+        $privilege_config->save();
+        return $privilege_config;
     }
 
     public function getPrivilegeConfig($privilege_id, $congress_id)
@@ -53,15 +55,57 @@ class PrivilegeServices
             ->first();
     }
 
+    public function getAllPrivilegeCorrespondentsByPrivilege($privilege_id)
+    {
+        return Privilege::where('priv_reference', '=', $privilege_id)
+            ->get();
+    }
+
+    public function getPrivilegesDeBase()
+    {
+        return Privilege::where('priv_reference', '=', null)
+            ->get();
+    }
+
+    public function getAllPrivilegesCorrespondents($congress_id)
+    {
+        $privilegeBase = Privilege::where('priv_reference', '=', null)
+            ->whereDoesntHave('privilegeConfig', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)->where('status', '=', 2);
+            })->get()->toArray();
+
+        $newPrivileges = Privilege::where('priv_reference', '!=', null)
+            ->join('Privilege_Config', function ($join) use ($congress_id) {
+            $join->on('Privilege.privilege_id', '=', 'Privilege_Config.privilege_id')
+                ->where('Privilege_Config.congress_id', '=', $congress_id)
+                ->where('Privilege_Config.status', '=', 1);
+        })->get()->toArray();
+        $result = array_merge($privilegeBase, $newPrivileges);
+        return $result;
+    }
+
+    public function getPrivilegesByCongress($congress_id)
+    {
+        $privilegeBase = Privilege::where('priv_reference', '=', null)
+            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            }])->get()->toArray();
+
+        $otherPrivileges = Privilege::where('priv_reference', '!=', null)
+            ->whereHas('privilegeConfig', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            })->with(['privilegeConfig', 'privilege'])
+            ->get()->toArray();
+        $result = array_merge($privilegeBase, $otherPrivileges);
+        return $result;
+    }
 
     public function affectPrivilegeToAdmin($privilegeId, $adminId, $congress_id)
     {
         $admin_congress = new AdminCongress();
-
         $admin_congress->admin_id = $adminId;
         $admin_congress->privilege_id = $privilegeId;
         $admin_congress->congress_id = $congress_id;
-
         $admin_congress->save();
 
         return $admin_congress;
@@ -75,7 +119,6 @@ class PrivilegeServices
 
     }
 
-
     public function checkIfAdminOfCongress($adminId, $congress_id)
     {
         return AdminCongress::where('admin_id', '=', $adminId)
@@ -88,27 +131,31 @@ class PrivilegeServices
         $admincongress->delete();
     }
 
-    public function checkValidPrivilege($privilege_id)
-    {
-        return Privilege::where('privilege_id', '=', $privilege_id)
-            ->where('priv_reference', '!=', null)
-            ->first();
-    }
-
     public function deletePrivilege($privilege_id, $congress_id, $privilege)
     {
-        $privilege_config = $this->getPrivilegeConfig($privilege_id, $congress_id);
-        $privilege_config->delete();
+        $this->deletePrivilegeConfig($privilege_id, $congress_id);
         $privilege->delete();
-        $privileges = Privilege::where('priv_reference', '=', $privilege->priv_reference)
-            ->get()->toArray();
+        $privileges = $this->getAllPrivilegeCorrespondentsByPrivilege($privilege->priv_reference);
+        $privileges->toArray();
         if (count($privileges) == 0) {
-            $privilege_base_config = PrivilegeConfig::where('privilege_id', '=', $privilege->priv_reference)
-                ->where('congress_id', '=', $congress_id)
-                ->where('status', '=', 0)->first();
-            $privilege_base_config->delete();
+            $this->deletePrivilegeConfig($privilege->priv_reference, $congress_id, 0);
         }
     }
+
+    public function deletePrivilegeConfig($privilege_id, $congress_id, $status=null)
+    {
+        if ($status != null){
+            return PrivilegeConfig::where('privilege_id', '=', $privilege_id)
+                ->where('congress_id', '=', $congress_id)
+                ->where('status', '=', $status)
+                ->delete();
+        } else {
+            return PrivilegeConfig::where('privilege_id', '=', $privilege_id)
+                ->where('congress_id', '=', $congress_id)
+                ->delete();
+        }
+    }
+
 
     public function hidePrivilege($congress_id, $id_privilege)
     {
@@ -131,5 +178,6 @@ class PrivilegeServices
         $privilege_config->update();
         return $privilege_config;
     }
+
 
 }

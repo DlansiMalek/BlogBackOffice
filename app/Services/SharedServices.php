@@ -34,55 +34,6 @@ class SharedServices
             ->get();
     }
 
-
-    public function getAllPrivilegesCorrespondence($congress_id)
-
-    {
-        $privilegeBase = Privilege::where('priv_reference', '=', null)
-            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
-                $query->where('congress_id', '=', $congress_id);
-            }])
-            ->get()->toArray();
-        for ($i = 0; $i < count($privilegeBase); $i++) {
-            if ($privilegeBase[$i]['privilege_config'] != null) {
-                unset($privilegeBase[$i]);
-            }
-        }
-        $newPrivileges = Privilege::join('Privilege_Config', function ($join) use ($congress_id) {
-            $join->on('Privilege.privilege_id', '=', 'Privilege_Config.privilege_id')
-                ->where('Privilege_Config.congress_id', '=', $congress_id)
-                ->where('Privilege_Config.status', '=', 1);
-        })->get()->toArray();
-        $result = array_merge($privilegeBase, $newPrivileges);
-        return $result;
-    }
-
-    public function getPrivilegesDeBase()
-    {
-        $privilegeBase = Privilege::where('priv_reference', '=', null)
-            ->get();
-        return $privilegeBase;
-
-    }
-
-    public function getPrivilegesByCongress($congress_id)
-    {
-        $privilegeBase = Privilege::where('priv_reference', '=', null)
-            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
-                $query->where('congress_id', '=', $congress_id);
-            }])
-            ->get()->toArray();
-        $otherPrivileges = Privilege::where('priv_reference', '!=', null)
-        ->whereHas('privilegeConfig', function ($query) use ($congress_id) {
-                $query->where('congress_id', '=', $congress_id);
-            })
-            ->with(['privilegeConfig', 'privilege'])
-            ->get()->toArray();
-        $result = array_merge($privilegeBase, $otherPrivileges);
-        return $result;
-
-    }
-
     public function getAllServices()
     {
         return Service::all();
