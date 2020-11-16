@@ -9,6 +9,9 @@
 namespace App\Services;
 
 use App\Models\AccessVote;
+use App\Models\Menu;
+use App\Models\MenuChildren;
+use App\Models\MenuChildrenOffre;
 use App\Models\Offre;
 use App\Models\PaymentAdmin;
 use App\Models\VoteScore;
@@ -30,15 +33,20 @@ class OffreServices
     public function getOffreById($offre_id)
     {
         return Offre::where('offre_id', '=', $offre_id)
-            ->first();
+            ->with(['menu_children_offre' => function ($query) use ($offre_id) {
+                $query->where('offre_id', '=', $offre_id)
+                ->with(['menu_children', 'menu']);
+            }
+            ])->first();
+
     }
 
     public function getActiveOffreByAdminId($admin_id)
     {
         return Offre::where('admin_id', '=', $admin_id)->where('status', '=', 1)
+            ->with(['menu_children_offre.menu_children', 'menu_children_offre.menu'])
             ->first();
     }
-
 
     public function addOffre($request)
     {
@@ -54,6 +62,8 @@ class OffreServices
         $offre->save();
 
         $this->addPayment($request->input('admin_id'), $offre);
+        $this->setMenuChildrenOffre($request['menus'], $offre->offre_id);
+
         return $offre;
     }
 
@@ -67,6 +77,10 @@ class OffreServices
         $offre->admin_id = $request->input('admin_id');
         $offre->is_mail_pro = $request->input('is_mail_pro');
         $offre->update();
+
+        $this->deleteNonExistentMenus($request['menus'], $offre->offre_id);
+        $this->setMenuChildrenOffre($request['menus'], $offre->offre_id);
+
         return $offre;
     }
 
@@ -98,6 +112,59 @@ class OffreServices
             $paymentAdmin->price = 0;
         }
         $paymentAdmin->save();
+    }
+
+    public function getAllMenu()
+    {
+        return Menu::with(['menu_children'])->get();
+    }
+
+    public function setMenuChildrenOffre($menus, $offre_id)
+    {
+        foreach ($menus as $new) {
+            $menu_id = $new['menu_id'];
+            $menuChildren = $new['menu_children_ids'];
+            foreach ($menuChildren as $child) {
+                if(!$exsit = $this->getMenuChildrenOffreByIds($offre_id, $menu_id, $child)){
+                    $menuChildrenOffre = new MenuChildrenOffre();
+                    $menuChildrenOffre->offre_id = $offre_id;
+                    $menuChildrenOffre->menu_children_id = $child;
+                    $menuChildrenOffre->menu_id = $menu_id;
+                    $menuChildrenOffre->save();
+                }
+            }
+        }
+    }
+
+    public function getMenuChildrenOffreByIds($offre_id, $menu_id, $menu_children_id)
+    {
+        return MenuChildrenOffre::where('offre_id', '=', $offre_id)
+            ->where('menu_id', '=', $menu_id)
+            ->where('menu_children_id', '=', $menu_children_id)
+            ->first();
+    }
+
+    public function deleteNonExistentMenus($menus, $offre_id)
+    {
+        $oldMenus = $this->getMenuChildrenOffre($offre_id);
+        foreach ($oldMenus as $old) {
+            $exists = false;
+            foreach ($menus as $new) {
+                $menuChildren = $new['menu_children_ids'];
+                foreach ($menuChildren as $child) {
+                    if ($old->menu_children_id == $child) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                if (!$exists) $old->delete();
+            }
+        }
+    }
+
+    public function getMenuChildrenOffre($offre_id)
+    {
+        return MenuChildrenOffre::where('offre_id', '=', $offre_id)->get();
     }
 
 }

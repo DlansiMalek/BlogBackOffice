@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AdminServices;
+use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
@@ -21,15 +22,18 @@ class LoginController extends Controller
     protected $adminServices;
     protected $userServices;
     protected $privilegeServices;
+    protected $offreServices;
     
 
     public function __construct(AdminServices $adminServices,
                                 PrivilegeServices $privilegeServices,
-                                UserServices $userServices)
+                                UserServices $userServices,
+                                OffreServices $offreServices)
     {
         $this->adminServices = $adminServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
+        $this->offreServices = $offreServices;
     }
 
     /**
@@ -63,13 +67,18 @@ class LoginController extends Controller
         $credentials = request(['email', 'password']);
 
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
+        $menus = [];
+        if ($admin->privilege_id == 1) {
+            $offre = $this->offreServices->getActiveOffreByAdminId($admin->admin_id);
+            $menus = $offre->menu_children_offre->sortByDesc('menu_id');
+        }
 
 
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
 
-        return response()->json(['admin' => $admin, 'token' => $token], 200);
+        return response()->json(['admin' => $admin, 'menus' => $menus, 'token' => $token], 200);
     }
 
 

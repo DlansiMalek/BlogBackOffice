@@ -418,6 +418,13 @@ Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
     Route::put('edit/{offre_id}', 'OffreController@editOffre');
 });
 
+Route::group(['prefix' => 'menu', 'middleware' => 'marketing'], function () {
+    Route::get('list','OffreController@getAllMenu' );
+    Route::group(['prefix' => 'menu-children'], function() {
+        Route::get('list', 'OffreController@getAllMenuChildren');
+    });
+
+});
 
 //Pack API
 Route::group(['prefix' => 'pack'], function () {

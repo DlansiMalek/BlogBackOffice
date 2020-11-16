@@ -40,12 +40,13 @@ class OffreController extends Controller
     public function getOffreById($offre_id)
     {
         $offre = $this->offreServices->getOffreById($offre_id);
-        return response()->json($offre, 200);
+        $menus = $offre->menu_children_offre->sortByDesc('menu_id');
+        return response()->json(['offre' => $offre, 'menus' => $menus], 200);
     }
 
     public function addOffre(Request $request)
     {
-        if (!$request->has(['name', 'value', 'start_date', 'end_date', 'offre_type_id', 'admin_id'])) {
+        if (!$request->has(['name', 'value', 'start_date', 'end_date', 'offre_type_id', 'admin_id', 'menus'])) {
             return response()->json(['message' => 'bad request'], 400);
         }
         if (!$admin = $this->adminServices->getAdminById($request->input('admin_id'))) {
@@ -78,6 +79,12 @@ class OffreController extends Controller
 
         $offre = $this->offreServices->editOffre($offre, $request);
         return response()->json(['messsage' => 'offre edited successfully', 'offre' => $offre], 200);
+    }
+
+    public function getAllMenu()
+    {
+        $menus = $this->offreServices->getAllMenu();
+        return response()->json($menus, 200);
     }
 
 }

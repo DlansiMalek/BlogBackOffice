@@ -29,4 +29,9 @@ class Offre extends Model
         return $this->belongsTo('App\Models\PaymentAdmin', 'offre_id', 'offre_id');
     }
 
+    public function menu_children_offre()
+    {
+        return $this->hasMany(MenuChildrenOffre::class, 'offre_id', 'offre_id');
+    }
+
 }
