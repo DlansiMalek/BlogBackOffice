@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
+use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
@@ -478,10 +479,70 @@ class CongressServices
         $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->register_disabled = $configCongressRequest['register_disabled'];
         $configCongress->application = $configCongressRequest['application'];
+        $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
+        $configCongress->url_streaming = $configCongressRequest['url_streaming'];
+        if (count($configCongressRequest['privileges'])!= 0)
+        {
+            $oldAllowedOnlineAccess = $this->getAllAllowedOnlineAccess($congressId);
+            foreach ($oldAllowedOnlineAccess as $old) {
+                $exists = false;
+                foreach ($configCongressRequest['privileges'] as $new) {
+                    if ($old->privilege_id == $new) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                if (!$exists) $this->deleteAllowedOnlineAccess($old);
+            }
+            foreach ($configCongressRequest['privileges'] as $new) {
+                $newAllowedOnlineAccess = null;
+                foreach ($oldAllowedOnlineAccess as $old) {
+                    if ($old->privilege_id == $new) {
+                        $newAllowedOnlineAccess = $old;
+                        break;
+                    }
+                }
+                if (!$newAllowedOnlineAccess)
+                    $this->addAllowedOnlineAccess($new, $congressId);
+                }
+        } else {
+            $oldAllowedOnlineAccess = $this->getAllAllowedOnlineAccess($congressId);
+            if (count($oldAllowedOnlineAccess) != 0) {
+                foreach ($oldAllowedOnlineAccess as $old) {
+                    $this->deleteAllowedOnlineAccess($old);
+                }
+            }
+        }
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
+    }
+
+    public function addAllowedOnlineAccess($privilege_id, $congress_id)
+    {
+        $newAllowedOnlineAccess = new AllowedOnlineAccess();
+        $newAllowedOnlineAccess->privilege_id = $privilege_id;
+        $newAllowedOnlineAccess->congress_id = $congress_id;
+        $newAllowedOnlineAccess->save();
+    }
+
+    public function getAllAllowedOnlineAccess($congress_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->get();
+    }
+
+    public function deleteAllowedOnlineAccess($allowed_access)
+    {
+        $allowed_access->delete();
+    }
+
+    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->where('privilege_id', '=', $privilege_id)
+            ->first();
     }
 
     public function addCongressSubmission($configSubmission, $submissionData, $congressId)

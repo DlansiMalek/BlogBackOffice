@@ -386,7 +386,8 @@ class CongressController extends Controller
         }
         $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congress_id);
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
-        return response()->json([$configCongress, $location, $configSubmission]);
+        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congress_id);
+        return response()->json([$configCongress, $location, $configSubmission, $allowedOnlineAccess]);
     }
 
 

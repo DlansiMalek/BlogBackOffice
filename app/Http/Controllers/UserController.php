@@ -707,13 +707,16 @@ class UserController extends Controller
 
         // TODO Evolution pour prendre en compte les privileges aussi. ($isAllowed soit en nombre des participants soit en privilege)
         if (!$accessId) {
-            $isAllowedJitsi = $congress->config->max_online_participants !== -1 ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
-            $urlStreaming = $congress->config->url_streaming;
+             $isAllowedJitsi = $congress->config->max_online_participants !== -1 ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
+             $urlStreaming = $congress->config->url_streaming;
         } else {
             $access = $this->accessServices->getAccessById($accessId);
             $isAllowedJitsi = $congress->config->max_online_participants !== -1 ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
             $urlStreaming = $access->url_streaming;
         }
+        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
+        if (count($allowedOnlineAccess )!= 0)
+            $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
         $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
