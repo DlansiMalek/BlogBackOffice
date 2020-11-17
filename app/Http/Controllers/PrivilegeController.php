@@ -71,8 +71,16 @@ class PrivilegeController extends Controller
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin not found'], 404);
         }
+        $privilege = $this->privilegeServices->getPrivilegeById($id_privilege);
         $this->privilegeServices->hidePrivilege($congress_id, $id_privilege);
-        return response()->json(['response' => 'hided successfully!' ],200);
+        if ($privilege->priv_reference == null) {
+            $privileges = $this->privilegeServices->getAllPrivilegeCorrespondentsByPrivilege($id_privilege, $congress_id);
+            foreach ($privileges as $priv)
+            {
+                $this->privilegeServices->hidePrivilege($congress_id, $priv->privilege_id);
+            }
+        }
+        return response()->json(['response' => 'hided successfully!'],200);
     }
 
     public function getPrivilegesDeBase($congress_id)

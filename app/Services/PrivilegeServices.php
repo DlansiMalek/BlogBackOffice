@@ -55,9 +55,12 @@ class PrivilegeServices
             ->first();
     }
 
-    public function getAllPrivilegeCorrespondentsByPrivilege($privilege_id)
+    public function getAllPrivilegeCorrespondentsByPrivilege($privilege_id, $congress_id)
     {
         return Privilege::where('priv_reference', '=', $privilege_id)
+            ->whereHas('privilegeConfig', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            })
             ->get();
     }
 
