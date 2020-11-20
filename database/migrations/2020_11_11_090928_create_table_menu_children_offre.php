@@ -16,7 +16,7 @@ class CreateTableMenuChildrenOffre extends Migration
         Schema::create('Menu_Children_Offre', function (Blueprint $table) {
             $table->increments('menu_children_offre_id');
 
-            $table->unsignedInteger('menu_children_id');
+            $table->unsignedInteger('menu_children_id')->nullable()->default(null);
             $table->foreign('menu_children_id')->references('menu_children_id')
                 ->on('Menu_Children')->onDelete('cascade');
 

@@ -40,8 +40,7 @@ class OffreController extends Controller
     public function getOffreById($offre_id)
     {
         $offre = $this->offreServices->getOffreById($offre_id);
-        $menus = $offre->menu_children_offre->sortByDesc('menu_id');
-        return response()->json(['offre' => $offre, 'menus' => $menus], 200);
+        return response()->json(['offre' => $offre], 200);
     }
 
     public function addOffre(Request $request)

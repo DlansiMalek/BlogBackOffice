@@ -8,6 +8,7 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
+use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\SubmissionServices;
@@ -32,6 +33,7 @@ class AdminController extends Controller
     protected $mailServices;
     protected $submissionServices;
     protected $client;
+    protected $offreServices;
 
     public function __construct(UserServices $userServices,
                                 AdminServices $adminServices,
@@ -41,7 +43,8 @@ class AdminController extends Controller
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
                                 SubmissionServices $submissionServices,
-                                MailServices $mailServices)
+                                MailServices $mailServices,
+                                OffreServices $offreServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
@@ -53,6 +56,7 @@ class AdminController extends Controller
         $this->submissionServices = $submissionServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();
+        $this->offreServices = $offreServices;
     }
 
 
@@ -293,8 +297,12 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $this->adminServices->getAdminById($admin->admin_id);
+        $offre = '';
+        if ($admin->privilege_id == 1) {
+            $offre = $this->offreServices->getActiveOffreByAdminId($admin->admin_id);
+        }
 
-        return response()->json(compact('admin'));
+        return response()->json(['admin' => $admin, 'offre' => $offre]);
     }
 
     public function getAdminCongresses()

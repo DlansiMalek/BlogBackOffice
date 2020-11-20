@@ -57,7 +57,7 @@ class MenuSeedTable extends Seeder
         DB::table('Menu')->insert([
             'menu_id' => 8,
             'key' => 'PostSondage',
-            'icon' =>'icon-align-left'
+            'icon' => 'icon-align-left'
         ]);
 
         DB::table('Menu')->insert([
@@ -87,13 +87,13 @@ class MenuSeedTable extends Seeder
         DB::table('Menu')->insert([
             'menu_id' => 13,
             'key' => 'ManagePacks',
-            'icon' =>'icon-graph'
+            'icon' => 'icon-graph'
         ]);
 
         DB::table('Menu')->insert([
             'menu_id' => 14,
             'key' => 'EspaceHorsEvent',
-            'icon' =>'icon-exit',
+            'icon' => 'icon-exit',
             'url' => '/hors-event',
             'reload' => true
         ]);
@@ -101,13 +101,15 @@ class MenuSeedTable extends Seeder
         DB::table('Menu')->insert([
             'menu_id' => 15,
             'key' => 'MarketingTools',
-            'icon' =>'fa fa-comments'
+            'icon' => 'fa fa-comments',
+            'showAfterReload' => 1
         ]);
 
         DB::table('Menu')->insert([
             'menu_id' => 16,
             'key' => 'MeetingTools',
-            'icon' =>'icon-video-camera2'
+            'icon' => 'icon-video-camera2',
+            'showAfterReload' => 1
         ]);
     }
 }

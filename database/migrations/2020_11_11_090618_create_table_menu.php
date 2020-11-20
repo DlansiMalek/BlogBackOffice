@@ -19,6 +19,7 @@ class CreateTableMenu extends Migration
             $table->string('icon');
             $table->boolean('reload')->nullable()->default(null);
             $table->string('url')->nullable()->default(null);
+            $table->boolean('showAfterReload')->default(0);
             $table->timestamps();
         });
     }

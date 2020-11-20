@@ -67,10 +67,9 @@ class LoginController extends Controller
         $credentials = request(['email', 'password']);
 
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
-        $menus = [];
+        $offre = [];
         if ($admin->privilege_id == 1) {
             $offre = $this->offreServices->getActiveOffreByAdminId($admin->admin_id);
-            $menus = $offre->menu_children_offre->sortByDesc('menu_id');
         }
 
 
@@ -78,7 +77,7 @@ class LoginController extends Controller
             return response()->json(['error' => 'invalid credentials'], 401);
         }
 
-        return response()->json(['admin' => $admin, 'menus' => $menus, 'token' => $token], 200);
+        return response()->json(['admin' => $admin, 'offre' => $offre, 'token' => $token], 200);
     }
 
 
