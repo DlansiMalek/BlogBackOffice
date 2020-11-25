@@ -1022,6 +1022,7 @@ class UserServices
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
+        if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
