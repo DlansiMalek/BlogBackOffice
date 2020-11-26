@@ -66,7 +66,7 @@ class OffreServices
         $offre->save();
 
         $this->addPayment($request->input('admin_id'), $offre);
-        $this->addMenuChildrenOffre($request['menus'], $offre->offre_id);
+        $this->addAllMenuChildrenOffre($request['menus'], $offre->offre_id);
 
         return $offre;
     }
@@ -82,8 +82,8 @@ class OffreServices
         $offre->is_mail_pro = $request->input('is_mail_pro');
         $offre->update();
 
-        $this->deleteNonExistentMenus($request['menus'], $offre->offre_id);
-        $this->addMenuChildrenOffre($request['menus'], $offre->offre_id);
+        $this->deleteAllOffreMenus($offre->offre_id);
+        $this->addAllMenuChildrenOffre($request['menus'], $offre->offre_id);
 
         return $offre;
     }
@@ -123,30 +123,31 @@ class OffreServices
         return Menu::with(['menu_children'])->get();
     }
 
-    public function addMenuChildrenOffre($menus, $offre_id)
+    public function addAllMenuChildrenOffre($menus, $offre_id)
     {
         foreach ($menus as $new) {
             $menu_id = $new['menu_id'];
             $menuChildren = $new['menu_children_ids'];
             if ($menu_id == 14) {
                 if(!$exsit = $this->getMenuChildrenOffreByIds($offre_id, $menu_id)) {
-                    $menuChildrenOffre = new MenuChildrenOffre();
-                    $menuChildrenOffre->offre_id = $offre_id;
-                    $menuChildrenOffre->menu_id = $menu_id;
-                    $menuChildrenOffre->save();
+                    $this->addMenuChildrenOffre($offre_id, $menu_id);
                 }
             } else {
                 foreach ($menuChildren as $child) {
                     if(!$exsit = $this->getMenuChildrenOffreByIds($offre_id, $menu_id, $child)){
-                        $menuChildrenOffre = new MenuChildrenOffre();
-                        $menuChildrenOffre->offre_id = $offre_id;
-                        $menuChildrenOffre->menu_children_id = $child;
-                        $menuChildrenOffre->menu_id = $menu_id;
-                        $menuChildrenOffre->save();
+                        $this->addMenuChildrenOffre($offre_id, $menu_id, $child);
                     }
                 }
             }
         }
+    }
+
+    public function addMenuChildrenOffre($offre_id, $menu_id, $menu_children_id = null) {
+        $menuChildrenOffre = new MenuChildrenOffre();
+        $menuChildrenOffre->offre_id = $offre_id;
+        $menuChildrenOffre->menu_children_id = $menu_children_id;
+        $menuChildrenOffre->menu_id = $menu_id;
+        $menuChildrenOffre->save();
     }
 
     public function getMenuChildrenOffreByIds($offre_id, $menu_id, $menu_children_id = null)
@@ -157,27 +158,10 @@ class OffreServices
             ->first();
     }
 
-    public function deleteNonExistentMenus($menus, $offre_id)
+    public function deleteAllOffreMenus($offre_id)
     {
-        $oldMenus = $this->getMenuChildrenOffre($offre_id);
-        foreach ($oldMenus as $old) {
-            $exists = false;
-            foreach ($menus as $new) {
-                $menuChildren = $new['menu_children_ids'];
-                foreach ($menuChildren as $child) {
-                    if ($old->menu_children_id == $child) {
-                        $exists = true;
-                        break;
-                    }
-                }
-                if (!$exists) $old->delete();
-            }
-        }
-    }
-
-    public function getMenuChildrenOffre($offre_id)
-    {
-        return MenuChildrenOffre::where('offre_id', '=', $offre_id)->get();
+        return MenuChildrenOffre::where('offre_id', '=', $offre_id)
+            ->delete();
     }
 
 }
