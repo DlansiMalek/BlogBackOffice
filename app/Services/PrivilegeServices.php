@@ -79,10 +79,10 @@ class PrivilegeServices
 
         $newPrivileges = Privilege::where('priv_reference', '!=', null)
             ->join('Privilege_Config', function ($join) use ($congress_id) {
-            $join->on('Privilege.privilege_id', '=', 'Privilege_Config.privilege_id')
-                ->where('Privilege_Config.congress_id', '=', $congress_id)
-                ->where('Privilege_Config.status', '=', 1);
-        })->get()->toArray();
+                $join->on('Privilege.privilege_id', '=', 'Privilege_Config.privilege_id')
+                    ->where('Privilege_Config.congress_id', '=', $congress_id)
+                    ->where('Privilege_Config.status', '=', 1);
+            })->get()->toArray();
         $result = array_merge($privilegeBase, $newPrivileges);
         return $result;
     }
@@ -138,16 +138,16 @@ class PrivilegeServices
     {
         $this->deletePrivilegeConfig($privilege_id, $congress_id);
         $privilege->delete();
-        $privileges = $this->getAllPrivilegeCorrespondentsByPrivilege($privilege->priv_reference);
+        $privileges = $this->getAllPrivilegeCorrespondentsByPrivilege($privilege->priv_reference, $congress_id);
         $privileges->toArray();
         if (count($privileges) == 0) {
             $this->deletePrivilegeConfig($privilege->priv_reference, $congress_id, 0);
         }
     }
 
-    public function deletePrivilegeConfig($privilege_id, $congress_id, $status=null)
+    public function deletePrivilegeConfig($privilege_id, $congress_id, $status = null)
     {
-        if ($status != null){
+        if ($status != null) {
             return PrivilegeConfig::where('privilege_id', '=', $privilege_id)
                 ->where('congress_id', '=', $congress_id)
                 ->where('status', '=', $status)
@@ -162,7 +162,7 @@ class PrivilegeServices
 
     public function hidePrivilege($congress_id, $id_privilege)
     {
-        if($privilege_config = $this->getPrivilegeConfig($id_privilege, $congress_id)) {
+        if ($privilege_config = $this->getPrivilegeConfig($id_privilege, $congress_id)) {
             $privilege_config->status = 2;
             $privilege_config->update();
         } else {
@@ -175,7 +175,8 @@ class PrivilegeServices
         return $privilege_config;
     }
 
-    public function activatePrivilege($congress_id, $privilege_id) {
+    public function activatePrivilege($congress_id, $privilege_id)
+    {
         $privilege_config = $this->getPrivilegeConfig($privilege_id, $congress_id);
         $privilege_config->status = 1;
         $privilege_config->update();
