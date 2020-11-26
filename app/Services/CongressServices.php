@@ -483,36 +483,12 @@ class CongressServices
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         if (count($configCongressRequest['privileges'])!= 0)
         {
-            $oldAllowedOnlineAccess = $this->getAllAllowedOnlineAccess($congressId);
-            foreach ($oldAllowedOnlineAccess as $old) {
-                $exists = false;
-                foreach ($configCongressRequest['privileges'] as $new) {
-                    if ($old->privilege_id == $new) {
-                        $exists = true;
-                        break;
-                    }
-                }
-                if (!$exists) $this->deleteAllowedOnlineAccess($old);
-            }
+            $this->deleteAllAllowedAccessByCongressId($congressId);
             foreach ($configCongressRequest['privileges'] as $new) {
-                $newAllowedOnlineAccess = null;
-                foreach ($oldAllowedOnlineAccess as $old) {
-                    if ($old->privilege_id == $new) {
-                        $newAllowedOnlineAccess = $old;
-                        break;
-                    }
-                }
-                if (!$newAllowedOnlineAccess)
                     $this->addAllowedOnlineAccess($new, $congressId);
                 }
-        } else {
-            $oldAllowedOnlineAccess = $this->getAllAllowedOnlineAccess($congressId);
-            if (count($oldAllowedOnlineAccess) != 0) {
-                foreach ($oldAllowedOnlineAccess as $old) {
-                    $this->deleteAllowedOnlineAccess($old);
-                }
-            }
         }
+
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
@@ -533,16 +509,17 @@ class CongressServices
             ->get();
     }
 
-    public function deleteAllowedOnlineAccess($allowed_access)
-    {
-        $allowed_access->delete();
-    }
-
     public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id)
     {
         return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
             ->where('privilege_id', '=', $privilege_id)
             ->first();
+    }
+
+    public function deleteAllAllowedAccessByCongressId($congress_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->delete();
     }
 
     public function addCongressSubmission($configSubmission, $submissionData, $congressId)
