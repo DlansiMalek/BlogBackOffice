@@ -105,7 +105,13 @@ class PrivilegeController extends Controller
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        return response()->json($this->privilegeServices->activatePrivilege($congress_id, $privilege_id));
+        $privilege = $this->privilegeServices->getPrivilegeById($privilege_id);
+        if ($privilege->priv_reference == null) {
+            $this->privilegeServices->deletePrivilegeConfig($privilege_id, $congress_id);
+        } else {
+            $this->privilegeServices->activatePrivilege($congress_id, $privilege_id);
+        }
+        return response()->json(['response' => 'Activated successfully']);
     }
 
 }
