@@ -635,6 +635,7 @@ class UserServices
             array_push($res,
                 array(
                     "user_id" => $user->user_id,
+                    "gender" => $user->gender,
                     "name" => $user->last_name . ' ' . $user->first_name,
                     "is_valid" => $this->checkValidUser($congress, $user),
                     "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
@@ -643,6 +644,10 @@ class UserServices
                     "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
                 )
             );
+
+            if($user->profile_img){
+                $res[sizeof($res)-1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+            }
         }
 
         return $res;
