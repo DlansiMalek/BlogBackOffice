@@ -920,7 +920,7 @@ class CongressController extends Controller
                 $query->where('Access.congress_id', '=', $congressId);
             }, 'chair_access' => function ($query) use ($congressId) {
                 $query->where('Access.congress_id', '=', $congressId);
-            }], null);
+            } , 'profile_img'], null);
 
 
         $results = $this->userServices->mappingPeacksourceData($congress, $users);
@@ -943,5 +943,6 @@ class CongressController extends Controller
         return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
 
     }
+
 
 }

@@ -478,6 +478,7 @@ class CongressServices
         $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->register_disabled = $configCongressRequest['register_disabled'];
         $configCongress->application = $configCongressRequest['application'];
+        $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->update();
         //$this->editCongressLocation($eventLocation, $congressId);
 
