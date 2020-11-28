@@ -15,7 +15,7 @@ class Privilege extends Model
 {
     protected $table = 'Privilege';
     protected $primaryKey = 'privilege_id';
-    protected $fillable = ['name'];
+    protected $fillable = ['name','priv_reference','congress_id'];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
@@ -24,5 +24,12 @@ class Privilege extends Model
     public function badges()
     {
         return $this->hasMany('App\Models\Badge', 'privilege_id', 'privilege_id');
+    }
+
+    public function privilegeConfig () {
+        return $this->hasMany('App\Models\PrivilegeConfig', 'privilege_id', 'privilege_id');
+    }
+    public function privilege () {
+        return $this->hasOne('App\Models\Privilege', 'privilege_id', 'priv_reference');
     }
 }

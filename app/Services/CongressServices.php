@@ -446,9 +446,6 @@ class CongressServices
 
     public function editConfigCongress($configCongress, $configCongressRequest, $congressId, $token)
     {
-
-        //$config_congress = ConfigCongress::where("congress_id", '=', $congressId)->first();
-
         if (!$configCongress) {
             $configCongress = new ConfigCongress();
         }
@@ -481,18 +478,17 @@ class CongressServices
         $configCongress->application = $configCongressRequest['application'];
         $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
-        if (count($configCongressRequest['privileges'])!= 0)
-        {
-            $this->deleteAllAllowedAccessByCongressId($congressId);
-            foreach ($configCongressRequest['privileges'] as $new) {
-                    $this->addAllowedOnlineAccess($new, $congressId);
-                }
-        }
-
+        $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->update();
-        //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
+    }
+
+    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId)
+    {
+        foreach ($privilegeIds as $privilegeId) {
+            $this->addAllowedOnlineAccess($privilegeId, $congressId);
+        }
     }
 
     public function addAllowedOnlineAccess($privilege_id, $congress_id)

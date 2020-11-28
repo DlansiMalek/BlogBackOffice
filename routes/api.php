@@ -436,9 +436,17 @@ Route::group(['prefix' => 'organization'], function () {
 });
 
 //Privilege API
-Route::group(['prefix' => 'privilege'], function () {
-    Route::get('list', 'SharedController@getPrivilegesWithBadges');
-});
+   Route::group(['prefix' => 'privilege', "middleware" => ["assign.guard:admins"]], function () {
+       Route::get('{congress_id}/list-base', 'PrivilegeController@getPrivilegesDeBase');
+       Route::get('{congress_id}/list', 'PrivilegeController@getPrivilegesByCongress');
+    Route::get('{congress_id}/list-correspondence', 'PrivilegeController@getAllPrivilegesCorrespondents');
+    Route::post('addPrivilege','PrivilegeController@addPrivilege');
+    Route::get('getPrivilegeById/{id_privilege}','PrivilegeController@getPrivilegeById');
+    Route::delete('{congress_id}/deletePrivilege/{id_privilege}','PrivilegeController@deletePrivilege');
+    Route::get('{congress_id}/hidePrivilege/{id_privilege}','PrivilegeController@hidePrivilege');
+    Route::get('{congress_id}/activatePrivilege/{id_privilege}','PrivilegeController@activatePrivilege');
+  });
+
 
 //Currency API 
 Route::group(['prefix' => 'currency'], function () {

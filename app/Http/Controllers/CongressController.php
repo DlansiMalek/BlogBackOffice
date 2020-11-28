@@ -258,6 +258,7 @@ class CongressController extends Controller
                 $loggedadmin->name
             );
         }
+
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
 
         $submissionData = $request->input("submission");
@@ -276,6 +277,7 @@ class CongressController extends Controller
                 $congressId);
         }
 
+        // Config Location
         $eventLocation = $request->input("eventLocation");
 
         if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
@@ -284,6 +286,10 @@ class CongressController extends Controller
 
             $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
         }
+
+        // Config OnlineAccess Allowed
+        $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
+        $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
 
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
@@ -921,7 +927,7 @@ class CongressController extends Controller
                 $query->where('Access.congress_id', '=', $congressId);
             }, 'chair_access' => function ($query) use ($congressId) {
                 $query->where('Access.congress_id', '=', $congressId);
-            }], null);
+            } , 'profile_img'], null);
 
 
         $results = $this->userServices->mappingPeacksourceData($congress, $users);

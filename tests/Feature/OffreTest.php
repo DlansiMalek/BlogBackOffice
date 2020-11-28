@@ -92,6 +92,7 @@ class OffreTest extends TestCase
             'end_date' => $this->faker->date(),
             'offre_type_id' =>$this->faker->numberBetween(1,4),
             'admin_id' =>$admin_id,
+            'is_mail_pro' => 0
         ];
     }
 }

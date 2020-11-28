@@ -7,6 +7,7 @@ use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
 use App\Models\Privilege;
+use App\Models\PrivilegeConfig;
 use App\Models\Service;
 use App\Models\Etablissement;
 use GuzzleHttp\Exception\ClientException;

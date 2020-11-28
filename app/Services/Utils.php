@@ -224,6 +224,11 @@ class Utils
         return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
     }
 
+    public static function getBase64Img(string $path)
+    {
+        return base64_encode(file_get_contents($path));
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
