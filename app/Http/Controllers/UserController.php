@@ -685,9 +685,11 @@ class UserController extends Controller
             return response()->json(['response' => 'No user found'], 401);
         }
         $userId = $user->user_id;
-        $user = $this->userServices->getUserByIdWithRelations($userId, ['user_congresses' => function ($query) use ($congressId) {
-            $query->where('congress_id', '=', $congressId);
-        },
+        $congress = $this->congressServices->getCongressById($congressId);
+        $user = $this->userServices->getUserByIdWithRelations($userId, [
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
             'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             },
@@ -698,24 +700,38 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        $userRight = $this->userServices->checkUserRights($user, $accessId);
-
-        if ($userRight == 2 || $userRight == 3) {
-            $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
-            $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
-            $token = $this->roomServices->createToken(
-                $user->email,
-                $roomName,
-                $userRight == 2 ? false : true,
-                $user->first_name . " " . $user->last_name
-            );
-            $userToUpdate->token_jitsi = $token;
-            $userToUpdate->update();
-            return response()->json(['response' => $userToUpdate], 200);
-
-        } else {
+        if (!Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
+        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+
+        if (!$accessId) {
+             $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
+             $urlStreaming = $congress->config->url_streaming;
+        } else {
+            $access = $this->accessServices->getAccessById($accessId);
+            $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
+            $urlStreaming = $access->url_streaming;
+        }
+        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
+        if (count($allowedOnlineAccess )!= 0)
+            $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
+
+        $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
+        $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
+        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        $userToUpdate->token_jitsi = $token;
+        $userToUpdate->update();
+
+        return response()->json(
+            [
+                "token" => $token,
+                "is_moderator" => $isModerator,
+                "privilege_id" => $user->user_congresses[0]->privilege_id,
+                "allowed_jitsi" => $isModerator ? true : $isAllowedJitsi,
+                "url_streaming" => $urlStreaming
+            ], 200);
+
     }
 
     public function getAllUserAccess($congressId)
