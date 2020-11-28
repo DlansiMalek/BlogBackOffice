@@ -705,13 +705,12 @@ class UserController extends Controller
         }
         $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
 
-        // TODO Evolution pour prendre en compte les privileges aussi. ($isAllowed soit en nombre des participants soit en privilege)
         if (!$accessId) {
-             $isAllowedJitsi = $congress->config->max_online_participants !== -1 ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
+             $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
              $urlStreaming = $congress->config->url_streaming;
         } else {
             $access = $this->accessServices->getAccessById($accessId);
-            $isAllowedJitsi = $congress->config->max_online_participants !== -1 ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
+            $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
             $urlStreaming = $access->url_streaming;
         }
         $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
