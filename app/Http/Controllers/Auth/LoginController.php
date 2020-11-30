@@ -67,17 +67,12 @@ class LoginController extends Controller
         $credentials = request(['email', 'password']);
 
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
-        $offre = [];
-        if ($admin->privilege_id == 1) {
-            $offre = $this->offreServices->getActiveOffreByAdminId($admin->admin_id);
-        }
-
 
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
 
-        return response()->json(['admin' => $admin, 'offre' => $offre, 'token' => $token], 200);
+        return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 
 

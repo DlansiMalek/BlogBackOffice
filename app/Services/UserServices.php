@@ -302,7 +302,7 @@ class UserServices
     public function affectAccessIds($user_id, $accessIds)
     {
         foreach ($accessIds as $item) {
-            $this->affectAccessById($user_id, $item);
+            $this->affectAccessById($user_id, $item->access_id);
         }
     }
 
@@ -578,7 +578,7 @@ class UserServices
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent) {
             $query->where('congress_id', '=', $congressId);
-            if ($isPresent != null)
+            if ($isPresent !== null)
                 $query->where('isPresent', '=', $isPresent);
         })
             ->with($relations)

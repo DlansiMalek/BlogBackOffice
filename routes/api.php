@@ -347,6 +347,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhenticatedAdmin');
+        Route::get('/congress/{congress_id}', 'AdminController@getAdminWithCurrentCongressFirst');
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
@@ -390,6 +391,11 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
         });
     });
 
+    Route::group(['prefix' => 'menus'], function () {
+        Route::post('add/{congress_id}/{privilege_id}', 'OffreController@addPrivilegeMenuChildren');
+        Route::get('{congress_id}/{privilege_id}', 'OffreController@getMenusByPrivilegeByCongress');
+        Route::post('edit/{congress_id}/{privilege_id}', 'OffreController@editPrivilegeMenuChildren');
+    });
 
 });
 //Access API
@@ -443,9 +449,17 @@ Route::group(['prefix' => 'organization'], function () {
 });
 
 //Privilege API
-Route::group(['prefix' => 'privilege'], function () {
-    Route::get('list', 'SharedController@getPrivilegesWithBadges');
-});
+   Route::group(['prefix' => 'privilege', "middleware" => ["assign.guard:admins"]], function () {
+       Route::get('{congress_id}/list-base', 'PrivilegeController@getPrivilegesDeBase');
+       Route::get('{congress_id}/list', 'PrivilegeController@getPrivilegesByCongress');
+    Route::get('{congress_id}/list-correspondence', 'PrivilegeController@getAllPrivilegesCorrespondents');
+    Route::post('addPrivilege','PrivilegeController@addPrivilege');
+    Route::get('getPrivilegeById/{id_privilege}','PrivilegeController@getPrivilegeById');
+    Route::delete('{congress_id}/deletePrivilege/{id_privilege}','PrivilegeController@deletePrivilege');
+    Route::get('{congress_id}/hidePrivilege/{id_privilege}','PrivilegeController@hidePrivilege');
+    Route::get('{congress_id}/activatePrivilege/{id_privilege}','PrivilegeController@activatePrivilege');
+  });
+
 
 //Currency API 
 Route::group(['prefix' => 'currency'], function () {

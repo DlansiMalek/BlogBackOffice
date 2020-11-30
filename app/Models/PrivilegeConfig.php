@@ -16,8 +16,5 @@ class PrivilegeConfig extends Model
         return $this->belongsTo('App\Models\Privilege', 'privilege_id', 'privilege_id');
     }
 
-    public function privilege_config_children()
-    {
-        return $this->hasMany(PrivilegeConfigChildren::class, 'privilege_config_id', 'privilege_config_id');
-    }
+
 }

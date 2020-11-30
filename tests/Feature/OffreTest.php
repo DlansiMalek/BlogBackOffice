@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Admin;
+use App\Models\Congress;
 use App\Models\Offre;
 use App\Models\PaymentAdmin;
+use App\Models\PrivilegeMenuChildren;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -36,6 +38,7 @@ class OffreTest extends TestCase
     {
         $admin = factory(Admin::class)->create(['privilege_id' => 1]);
         $offre = $this->createOffre($admin->admin_id);
+        $offre['menus'] = $this->getFakeMenus();
         $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
         $token = JWTAuth::fromUser($superAdmin);
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
@@ -55,6 +58,7 @@ class OffreTest extends TestCase
     {
         $admin = factory(Admin::class)->create(['privilege_id' => 1]);
         $offre = $this->createOffre($admin->admin_id);
+        $offre['menus'] = $this->getFakeMenus();
         $offreOld = factory(Offre::class)->create(['admin_id' => $admin->admin_id, 'status' => 1]);
         $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
         $token = JWTAuth::fromUser($superAdmin);
@@ -84,6 +88,26 @@ class OffreTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function testAddPrivilegeMenuChildren()
+    {
+        $privilege_id = $this->faker->numberBetween(1,3);
+        $congress = factory(Congress::class)->create();
+        $menus = $this->getFakeMenus();
+        $this->post('api/admin/menus/add/' . $congress->congress_id . '/' . $privilege_id,
+            ['menus' => $menus])
+            ->assertStatus(200);
+    }
+
+    public function testEditPrivilegeMenuChildren()
+    {
+        $privilege_id = $this->faker->numberBetween(1,3);
+        $congress = factory(Congress::class)->create();
+        $menus = $this->getFakeMenus();
+        $this->post('api/admin/menus/edit/' . $congress->congress_id . '/' . $privilege_id,
+            ['menus' => $menus])
+            ->assertStatus(200);
+    }
+
     public function createOffre($admin_id){
         return [
             'name' => $this->faker->word,
@@ -92,6 +116,28 @@ class OffreTest extends TestCase
             'end_date' => $this->faker->date(),
             'offre_type_id' =>$this->faker->numberBetween(1,4),
             'admin_id' =>$admin_id,
+            'is_mail_pro' => 0
+        ];
+    }
+
+    public function getFakeMenus() {
+        return [
+            [
+                'menu_id' => 1,
+                'menu_children_ids' => [$this->faker->numberBetween(1,5), $this->faker->numberBetween(1,5), $this->faker->numberBetween(1,5)]
+            ],
+            [
+                'menu_id' => 2,
+                'menu_children_ids' => [$this->faker->numberBetween(6,8), $this->faker->numberBetween(6,8)]
+            ],
+            [
+                'menu_id' => 3,
+                'menu_children_ids' => [$this->faker->numberBetween(9,11), $this->faker->numberBetween(9,11)]
+            ],
+            [
+                'menu_id' => 14,
+                'menu_children_ids' => []
+            ],
         ];
     }
 }

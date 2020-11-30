@@ -521,14 +521,18 @@ class CongressController extends Controller
             ['accesses' => function ($query) use ($congressId) {
                 $query->where("congress_id", "=", $congressId);
                 $query->where('with_attestation', "=", 1);
-            }, 'user_congresses' => function ($query) use ($congressId) {
+            },
+                'payments' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
                 $query->where('isPresent', '=', 1);
             },
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId);
                 }], 1);
         foreach ($users as $user) {
-            if ($user->email != null && $user->email != "-" && $user->email != "" && sizeof($user->user_congresses) > 0) {
+            if (Utils::isValidSendMail($congress, $user)) {
                 if ($mail) {
                     $userMail = null;
                     if (sizeof($user->user_mails) == 0) {
@@ -538,9 +542,6 @@ class CongressController extends Controller
                     }
                     if ($userMail->status != 1) {
                         $linkSondage = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
-
-                        Log::info($linkSondage);
-
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
                             $user, $congress, $mail->object, false, $userMail);
                     }
@@ -942,5 +943,6 @@ class CongressController extends Controller
         return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
 
     }
+
 
 }

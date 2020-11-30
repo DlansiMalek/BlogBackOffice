@@ -22,8 +22,8 @@ class Menu extends Model
         return $this->hasMany(MenuChildrenOffre::class, 'menu_id', 'menu_id');
     }
 
-    public function privilege_config_children()
+    public function privilege_menu_children()
     {
-        return $this->hasMany(PrivilegeConfigChildren::class, 'menu_id', 'menu_id');
+        return $this->hasMany(PrivilegeMenuChildren::class, 'menu_id', 'menu_id');
     }
 }

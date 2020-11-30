@@ -8,7 +8,7 @@ class Offre extends Model
 {
     protected $table = 'Offre';
     protected $primaryKey = 'offre_id';
-    protected $fillable = ['nom', 'value', 'start_date', 'end_date', 'status', 'offre_type_id', 'admin_id'];
+    protected $fillable = ['nom', 'value', 'start_date', 'end_date', 'status', 'offre_type_id', 'admin_id', 'is_mail_pro'];
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
