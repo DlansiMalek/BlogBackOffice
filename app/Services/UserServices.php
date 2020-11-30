@@ -635,6 +635,7 @@ class UserServices
             array_push($res,
                 array(
                     "user_id" => $user->user_id,
+                    "gender" => $user->gender,
                     "name" => $user->last_name . ' ' . $user->first_name,
                     "is_valid" => $this->checkValidUser($congress, $user),
                     "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
@@ -643,6 +644,10 @@ class UserServices
                     "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
                 )
             );
+
+            if($user->profile_img){
+                $res[sizeof($res)-1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+            }
         }
 
         return $res;
@@ -690,6 +695,11 @@ class UserServices
         $countryId = "TUN";
 
         return $this->createOrUpdateUser($email, $firstName, $lastName, $gender, $mobile, $countryId);
+    }
+
+    public function isUserModerator($userCongress)
+    {
+        return $userCongress->privilege_id == 5 || $userCongress->privilege_id == 8;
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -1022,6 +1032,7 @@ class UserServices
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
+        if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1163,20 +1174,6 @@ class UserServices
         return User::with($relations)
             ->where('user_id', '=', $userId)
             ->first();
-    }
-
-
-    public function checkUserRights($user, $accessId = null)
-    {
-        if ($user && sizeof($user->user_congresses) > 0 && (!$accessId || sizeof($user->accesses) > 0)) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && (!$accessId || sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
-                return 2;
-            }
-            if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
-                return 3;
-            }
-        }
-        return -1;
     }
 
     public function getEvaluationInscriptionByUserIdAndAdminId($user_id, $congress_id, $admin_id)
