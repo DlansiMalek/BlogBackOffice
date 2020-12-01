@@ -554,8 +554,9 @@ class UserController extends Controller
         }
         //check if date limit
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))){
             $user = $this->userServices->saveUser($request);
+    }
         else
             $user = $this->userServices->editUser($request, $user);
 

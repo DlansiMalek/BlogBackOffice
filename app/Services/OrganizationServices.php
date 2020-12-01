@@ -36,10 +36,10 @@ class OrganizationServices
     {
         $organization = new Organization();
         $organization->name = $request->input("name");
-        $organization->description = $request->input("description");
+        $organization->description = $request->has("description")? $request->input('description') : null;
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
-
+        $organization->resource_id = $request->input("resource_id");
         $organization->save();
         return $organization;
     }
