@@ -729,7 +729,7 @@ class UserController extends Controller
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => $isModerator ? true : $isAllowedJitsi,
+                "allowed_jitsi" => true ,// $isModerator ? true : $isAllowedJitsi,
                 "url_streaming" => $urlStreaming
             ], 200);
 

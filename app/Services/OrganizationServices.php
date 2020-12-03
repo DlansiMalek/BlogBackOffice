@@ -104,7 +104,7 @@ class OrganizationServices
 
 
    public function getOrganizmeByCongressId($congressId,$isLogoPosition) {      
-       return Organization::whereHas('congressOrganization',function($query) {
+       return Organization::whereHas('congressOrganization',function($query) use($congressId) {
            $query->where('congress_id','=',$congressId);
        })->when($isLogoPosition,function($query) {
             return $query->where('logoPosition','!=',NULL);

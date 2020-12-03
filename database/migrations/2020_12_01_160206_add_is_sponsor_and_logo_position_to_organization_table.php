@@ -15,7 +15,7 @@ class AddIsSponsorAndLogoPositionToOrganizationTable extends Migration
     {
         Schema::table('Organization', function (Blueprint $table) {
             $table->tinyInteger('isSponsor')->default(0);
-            $table->string('logoPosition')->default(null);
+            $table->string('logoPosition')->nullable()->default(null);
         });
     }
 
