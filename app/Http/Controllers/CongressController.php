@@ -379,6 +379,15 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
+    public function getCongressDetailsById($congress_id)
+    {
+        ini_set('memory_limit', '-1');
+        if (!$congress = $this->congressServices->getCongressDetailsById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        return response()->json($congress);
+    }
+
     public function getCongressConfigById($congress_id)
     {
         if (!$configCongress = $this->congressServices->getCongressConfigById($congress_id)) {
