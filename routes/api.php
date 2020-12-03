@@ -540,3 +540,5 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });
+
+Route::get('congress/{congressId}/organismes','OrganizationController@getOrganizmeByCongress');

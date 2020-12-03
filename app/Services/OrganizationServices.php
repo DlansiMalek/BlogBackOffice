@@ -40,6 +40,8 @@ class OrganizationServices
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
         $organization->resource_id = $request->input("resource_id");
+        $organization->isSponsor = $request->input("isSponsor");
+        $organization->logoPosition = $request->input("logoPosition");
         $organization->save();
         return $organization;
     }
@@ -101,4 +103,13 @@ class OrganizationServices
     }
 
 
+   public function getOrganizmeByCongressId($congressId,$isLogoPosition) {      
+       return Organization::whereHas('congressOrganization',function($query) {
+           $query->where('congress_id','=',$congressId);
+       })->when($isLogoPosition,function($query) {
+            return $query->where('logoPosition','!=',NULL);
+       })
+       ->with('resource')
+       ->get();
+   }
 }
