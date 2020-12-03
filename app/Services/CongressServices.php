@@ -243,10 +243,6 @@ class CongressServices
     {
         $congress = Congress::withCount('users')
             ->with([
-                'users.responses.form_input',
-                'users.accesses' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
-                },
                 'config',
                 'config_selection',
                 "packs.accesses",
