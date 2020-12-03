@@ -185,6 +185,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
+        Route::get('/details', 'CongressController@getCongressDetailsById');
         Route::post('switchRoom', 'CongressController@switchUsersRoom');
         Route::post('addItemsEvaluation', 'CongressController@addItemsEvaluation')->middleware('assign.guard:admins');
         Route::get('getItemsEvaluation', 'CongressController@getItemsEvaluation')->middleware('assign.guard:admins');
