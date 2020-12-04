@@ -14,8 +14,8 @@ class AddIsSponsorAndLogoPositionToOrganizationTable extends Migration
     public function up()
     {
         Schema::table('Organization', function (Blueprint $table) {
-            $table->tinyInteger('isSponsor')->default(0);
-            $table->string('logoPosition')->nullable()->default(null);
+            $table->tinyInteger('is_sponsor')->default(0);
+            $table->string('logo_position')->nullable()->default(null);
         });
     }
 
@@ -27,8 +27,8 @@ class AddIsSponsorAndLogoPositionToOrganizationTable extends Migration
     public function down()
     {
         Schema::table('Organization', function (Blueprint $table) {
-            $table->removeColumn('isSponsor');
-            $table->removeColumn('logoPosition');
+            $table->removeColumn('is_sponsor');
+            $table->removeColumn('logo_position');
         });
     }
 }
