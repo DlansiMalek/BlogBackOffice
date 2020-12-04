@@ -27,6 +27,7 @@ use App\Services\StandServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -927,7 +928,7 @@ class CongressController extends Controller
                 $query->where('Access.congress_id', '=', $congressId);
             }, 'chair_access' => function ($query) use ($congressId) {
                 $query->where('Access.congress_id', '=', $congressId);
-            } , 'profile_img'], null);
+            }, 'profile_img'], null);
 
 
         $results = $this->userServices->mappingPeacksourceData($congress, $users);
@@ -969,5 +970,6 @@ class CongressController extends Controller
 
         return response()->json(['message' => 'current participant number set success'], 200);
     }
+
 
 }

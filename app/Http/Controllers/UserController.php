@@ -532,9 +532,9 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
 
-        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
+        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
 
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
@@ -575,11 +575,11 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
         $packId = $request->input('packIds', 0);
         $accessesIds = $request->input('accessIds', []);
-        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
+        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
 
@@ -1573,8 +1573,11 @@ class UserController extends Controller
     }
 
     private
-    function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds)
+    function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress)
     {
+        if ($whiteList = $this->userServices->getWhiteListByEmailAndCongressId($user->email, $congress_id)) {
+            $this->userServices->changeUserStatus($user_congress, 1);
+        }
 
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
@@ -1661,6 +1664,10 @@ class UserController extends Controller
             //Add Payement Ligne
             if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
                 $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $totalPrice, false);
+            }
+            if ($congress->congress_type_id == 1 && $whiteList != null) {
+                $userPayment->isPaid  = 1;
+                $userPayment->update();
             }
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
@@ -1777,4 +1784,44 @@ class UserController extends Controller
 
         return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment'), $userCalledId));
     }
+
+    public function getWhiteList(Request $request, $congress_id)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search', '');
+
+        $whiteLists = $this->userServices->getWhiteList($congress_id, $perPage, $search);
+        return response()->json($whiteLists, 200);
+    }
+
+    public function addWhiteList(Request $request, $congress_id)
+    {
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        ini_set('max_execution_time', 500);
+        $users = $request->input("data");
+        foreach ($users as $userData) {
+            if (!$userData['EMAIL']) {
+                return response()->json(['response' => 'bad request'], 400);
+            }
+            if (!$whiteList = $this->userServices->getWhiteListByEmailAndCongressId($userData['EMAIL'], $congress_id)) {
+                $this->userServices->addWhiteList($congress_id, $userData['EMAIL'], $userData['first_name'], $userData['last_name'], $userData['mobile']);
+            }
+        }
+        return response()->json(['message' => 'added successfully'], 200);
+    }
+
+    public function deleteWhiteList($congress_id, $white_list_id)
+    {
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        if (!$white_list = $this->userServices->getWhiteListById($white_list_id)) {
+            return response()->json(["error" => "white-list not found"], 404);
+        }
+        $this->userServices->deleteWhiteList($white_list);
+        return response()->json(['message' => 'deleted successfully'], 200);
+    }
+
 }

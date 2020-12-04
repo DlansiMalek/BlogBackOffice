@@ -16,6 +16,7 @@ use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
 use App\Models\UserPack;
+use App\Models\WhiteList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -1553,5 +1554,48 @@ class UserServices
             $user->update();
         }
         return $user;
+    }
+
+    public function getWhiteList($congress_id, $perPage, $search)
+    {
+        $whiteLists = WhiteList::where('congress_id', '=', $congress_id)
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                }
+            });
+        return $whiteLists->paginate($perPage);
+    }
+
+    public function addWhiteList($congress_id, $email, $first_name, $last_name, $mobile)
+    {
+        $whiteList = new WhiteList();
+        $whiteList->congress_id = $congress_id;
+        $whiteList->email = $email;
+        $whiteList->first_name = $first_name;
+        $whiteList->last_name = $last_name;
+        $whiteList->mobile = $mobile;
+        $whiteList->save();
+    }
+
+    public function getWhiteListByEmailAndCongressId($email, $congress_id)
+    {
+        $email = strtolower($email);
+        return WhiteList::where('congress_id', '=', $congress_id)
+            ->whereRaw('lower(email) = (?)', ["{$email}"])
+            ->first();
+    }
+
+    public function getWhiteListById($white_list_id)
+    {
+        return WhiteList::where('white_list_id', '=', $white_list_id)
+            ->first();
+    }
+
+    public function deleteWhiteList($white_list)
+    {
+        $white_list->delete();
     }
 }
