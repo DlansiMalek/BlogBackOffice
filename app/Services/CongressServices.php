@@ -21,7 +21,6 @@ use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Models\Stand;
-use App\Models\WhiteList;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Config;
