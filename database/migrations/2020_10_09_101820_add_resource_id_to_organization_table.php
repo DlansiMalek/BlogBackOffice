@@ -19,6 +19,9 @@ class AddResourceIdToOrganizationTable extends Migration
             $table->foreign("resource_id")->references('resource_id')->on('Resource')
                 ->onDelete('cascade');
 
+            $table->tinyInteger('is_sponsor')->default(0);
+            $table->string('logo_position')->nullable()->default(null);
+
             $table->string('description')->nullable()->default(null)->change();
         });
     }
@@ -32,6 +35,8 @@ class AddResourceIdToOrganizationTable extends Migration
     {
         Schema::table('Organization', function (Blueprint $table) {
             $table->dropForeign(['resource_id']);
+            $table->removeColumn('is_sponsor');
+            $table->removeColumn('logo_position');
         });
     }
 }

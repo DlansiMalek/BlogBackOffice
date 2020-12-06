@@ -40,8 +40,8 @@ class OrganizationServices
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
         $organization->resource_id = $request->input("resource_id");
-        $organization->isSponsor = $request->input("is_sponsor");
-        $organization->logoPosition = $request->input("logo_position");
+        $organization->is_sponsor = $request->input("is_sponsor");
+        $organization->logo_position = $request->input("logo_position");
         $organization->save();
         return $organization;
     }
