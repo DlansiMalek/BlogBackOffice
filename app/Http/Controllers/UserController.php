@@ -1802,12 +1802,10 @@ class UserController extends Controller
         ini_set('max_execution_time', 500);
         $users = $request->input("data");
         foreach ($users as $userData) {
-            if (!$userData['EMAIL']) {
-                return response()->json(['response' => 'bad request'], 400);
-            }
-            if (!$whiteList = $this->userServices->getWhiteListByEmailAndCongressId($userData['EMAIL'], $congress_id)) {
+            if ($userData['EMAIL'] && !$whiteList = $this->userServices->getWhiteListByEmailAndCongressId($userData['EMAIL'], $congress_id)) {
                 $this->userServices->addWhiteList($congress_id, $userData['EMAIL'], $userData['first_name'], $userData['last_name'], $userData['mobile']);
             }
+        
         }
         return response()->json(['message' => 'added successfully'], 200);
     }
