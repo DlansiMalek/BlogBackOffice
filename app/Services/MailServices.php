@@ -22,18 +22,17 @@ use Exception;
  * @return void
  * @property \GuzzleHttp\Client client
  */
-
 class MailServices
 {
     protected $maxRequest = 0;
 
     public function getAllMailTypes($congressId = null, $type)
     {
-        return MailType::where('type','=',$type)
-        ->with(['mails' => function ($query) use ($congressId) {
-            if ($congressId)
-                $query->where('congress_id', '=', $congressId);
-        }])
+        return MailType::where('type', '=', $type)
+            ->with(['mails' => function ($query) use ($congressId) {
+                if ($congressId)
+                    $query->where('congress_id', '=', $congressId);
+            }])
             ->get();
     }
 
@@ -159,14 +158,14 @@ class MailServices
         return $mail;
     }
 
-    public function updateMailAdmin($mail,$objet,$template,$mail_type_admin_id)
+    public function updateMailAdmin($mail, $objet, $template, $mail_type_admin_id)
     {
         if (!$mail) {
             return null;
         }
         $mail->object = $objet;
         $mail->template = $template;
-        $mail->mail_type_admin_id =$mail_type_admin_id;
+        $mail->mail_type_admin_id = $mail_type_admin_id;
         $mail->update();
         return $mail;
     }
@@ -184,23 +183,23 @@ class MailServices
 
     public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null)
     {
-            //TODO detect email sended user
-            $email = $toSendEmail ? $toSendEmail : $user->email;
-            $pathToFile = storage_path() . '/app/' . $fileName;
-            $offre = null;
+        //TODO detect email sended user
+        $email = $toSendEmail ? $toSendEmail : $user->email;
+        $pathToFile = storage_path() . '/app/' . $fileName;
+        $offre = null;
 
-            if ($congress != null && $congress->username_mail)
-                config(['mail.from.name', $congress->username_mail]);
+        if ($congress != null && $congress->username_mail)
+            config(['mail.from.name', $congress->username_mail]);
 
-            if ($congress!= null) {
-                $offre = $this->getOffreByCongressId($congress->congress_id);
-            }
+        if ($congress != null) {
+            $offre = $this->getOffreByCongressId($congress->congress_id);
+        }
 
-            if ( $offre!=null && $offre->is_mail_pro ==1) {
-                $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
-            } else {
-                $this->sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
-            }
+        if ($offre != null && $offre->is_mail_pro == 1) {
+            $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
+        } else {
+            $this->sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
+        }
 
     }
 
@@ -221,28 +220,28 @@ class MailServices
                         return $e->getMessage();
                     }
                 }*/
-            $response = $this->sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $fileName);
-            if ($response == 201) {
-                if ($userMail) {
-                    $userMail->status = 1;
-                    $userMail->update();
-                }
-                if($fileAttached) {
-                    $path = '/app/' . $fileName;
-                    Storage::delete($path);
-                }
-                return 1;
-            } else {
-                if ($userMail) {
-                    $userMail->status = -1;
-                    $userMail->update();
-                }
-                if($fileAttached) {
-                    $path = '/app/' . $fileName;
-                    Storage::delete($path);
-                }
-                return 1;
+        $response = $this->sendMailUsingSendInBlue($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $fileName);
+        if ($response == 201) {
+            if ($userMail) {
+                $userMail->status = 1;
+                $userMail->update();
             }
+            if ($fileAttached) {
+                $path = '/app/' . $fileName;
+                Storage::delete($path);
+            }
+            return 1;
+        } else {
+            if ($userMail) {
+                $userMail->status = -1;
+                $userMail->update();
+            }
+            if ($fileAttached) {
+                $path = '/app/' . $fileName;
+                Storage::delete($path);
+            }
+            return 1;
+        }
     }
 
     public function sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName)
@@ -266,7 +265,7 @@ class MailServices
                 $userMail->status = -1;
                 $userMail->update();
             }
-            if($fileAttached) {
+            if ($fileAttached) {
                 $path = '/app/' . $fileName;
                 Storage::delete($path);
             }
@@ -276,7 +275,7 @@ class MailServices
             $userMail->status = 1;
             $userMail->update();
         }
-        if($fileAttached) {
+        if ($fileAttached) {
             $path = '/app/' . $fileName;
             Storage::delete($path);
         }
@@ -304,7 +303,7 @@ class MailServices
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
         $message = array(
             'sender' => array(
-                'email' =>  env('MAIL_USERNAME', 'contact@eventizer.io'),
+                'email' => env('MAIL_USERNAME', 'contact@eventizer.io'),
                 'name' => $fromMailName,
             ),
             'htmlContent' => $html,
@@ -314,10 +313,10 @@ class MailServices
                     'email' => $email,
                 ),
             ),
+            'tags' => array(strval($congress->congress_id))
         );
-        if ($fileAttached)
-        {
-            $file =array( 'attachment' => array(
+        if ($fileAttached) {
+            $file = array('attachment' => array(
                 array(
                     // 'url' =>  $pathToFile,
                     'content' => $content,
@@ -338,88 +337,88 @@ class MailServices
         ]);
         $httpBody = \GuzzleHttp\json_encode($message);
         $res = $this->client->post('', [
-            'body' =>  $httpBody
+            'body' => $httpBody
         ]);
         return json_decode($res->getStatusCode(), true);
     }
 
-/*    public function sendMailUsingSendPulse ($view, $user, $congress, $objectMail, $fileAttached, $email, $pathToFile, $token_mail = null)
-    {
-        $token = $token_mail ? $token_mail : ($congress ? $congress->config['token_mail_pro'] : '');
-        if (!$token) {
-            $token = 'erreur_token'; // car en cas où il n'ya pas de token le serveur envoie le status 400 et on passe jamais à l'obtention du token
-        }
-        $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-        $name = $user ? $user->first_name .' ' . $user->last_name : '';
-        $message = array(
-            'html' => $view,
-            // 'text' => 'Hello!',
-            'subject' => $objectMail,
-            'from' => array(
-                'email' =>  env('MAIL_USERNAME', 'contact@eventizer.io'),
-                'name' => $fromMailName,
-            ),
-            'to' => array(
-                array(
-                    'name' => $name,
-                    'email' => $email,
-                ),
-            ),
-        );
-        if ($fileAttached)
+    /*    public function sendMailUsingSendPulse ($view, $user, $congress, $objectMail, $fileAttached, $email, $pathToFile, $token_mail = null)
         {
-           $file =array( 'attachments' => array(
-            'file.txt' => file_get_contents($pathToFile),
-               )
-           );
-            $message = array_merge($message, $file);
-        }
+            $token = $token_mail ? $token_mail : ($congress ? $congress->config['token_mail_pro'] : '');
+            if (!$token) {
+                $token = 'erreur_token'; // car en cas où il n'ya pas de token le serveur envoie le status 400 et on passe jamais à l'obtention du token
+            }
+            $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
+            $name = $user ? $user->first_name .' ' . $user->last_name : '';
+            $message = array(
+                'html' => $view,
+                // 'text' => 'Hello!',
+                'subject' => $objectMail,
+                'from' => array(
+                    'email' =>  env('MAIL_USERNAME', 'contact@eventizer.io'),
+                    'name' => $fromMailName,
+                ),
+                'to' => array(
+                    array(
+                        'name' => $name,
+                        'email' => $email,
+                    ),
+                ),
+            );
+            if ($fileAttached)
+            {
+               $file =array( 'attachments' => array(
+                'file.txt' => file_get_contents($pathToFile),
+                   )
+               );
+                $message = array_merge($message, $file);
+            }
 
-        if(isset($message['html'])){
-            $message['html'] = base64_encode($message['html']);
-        }
-        $data = array(
-            'email' => serialize($message),
-        );
+            if(isset($message['html'])){
+                $message['html'] = base64_encode($message['html']);
+            }
+            $data = array(
+                'email' => serialize($message),
+            );
 
-        $this->client = new Client([
-            'base_uri' => UrlUtils::getUrlSendPulse(),
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' .  $token
-            ]
-        ]);
+            $this->client = new Client([
+                'base_uri' => UrlUtils::getUrlSendPulse(),
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' .  $token
+                ]
+            ]);
 
-        $res = $this->client->post('/smtp/emails', [
-            'form_params' => $data
-        ]);
+            $res = $this->client->post('/smtp/emails', [
+                'form_params' => $data
+            ]);
 
-        return json_decode($res->getBody(), true);
-    }*/
+            return json_decode($res->getBody(), true);
+        }*/
 
-/*    public function getKey($config)
-    {
-        $this->client = new Client([
-            'base_uri' => UrlUtils::getUrlSendPulse(),
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-            'http_errors' => false
-        ]);
-        $res = $this->client->post('/oauth/access_token', [
-            'form_params' => [
-                'client_id' => env('API_USER_ID_SENPULSE'),
-                'client_secret' => env('API_SECRET_SENPULSE'),
-                'grant_type' => 'client_credentials'
-            ]
-        ]);
-        if ($config) {
-            $config->token_mail_pro = json_decode($res->getBody(), true)['access_token'];
-            $config->update();
-        }
+    /*    public function getKey($config)
+        {
+            $this->client = new Client([
+                'base_uri' => UrlUtils::getUrlSendPulse(),
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ],
+                'http_errors' => false
+            ]);
+            $res = $this->client->post('/oauth/access_token', [
+                'form_params' => [
+                    'client_id' => env('API_USER_ID_SENPULSE'),
+                    'client_secret' => env('API_SECRET_SENPULSE'),
+                    'grant_type' => 'client_credentials'
+                ]
+            ]);
+            if ($config) {
+                $config->token_mail_pro = json_decode($res->getBody(), true)['access_token'];
+                $config->update();
+            }
 
-        return json_decode($res->getBody(), true)['access_token'];
-    }*/
+            return json_decode($res->getBody(), true)['access_token'];
+        }*/
 
 }
