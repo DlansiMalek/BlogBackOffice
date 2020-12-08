@@ -646,8 +646,8 @@ class UserServices
                 )
             );
 
-            if($user->profile_img){
-                $res[sizeof($res)-1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+            if ($user->profile_img) {
+                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
             }
         }
 
@@ -1574,9 +1574,12 @@ class UserServices
         $whiteList = new WhiteList();
         $whiteList->congress_id = $congress_id;
         $whiteList->email = $email;
-        $whiteList->first_name = $first_name;
-        $whiteList->last_name = $last_name;
-        $whiteList->mobile = $mobile;
+        if ($first_name)
+            $whiteList->first_name = $first_name;
+        if ($last_name)
+            $whiteList->last_name = $last_name;
+        if ($mobile)
+            $whiteList->mobile = $mobile;
         $whiteList->save();
     }
 

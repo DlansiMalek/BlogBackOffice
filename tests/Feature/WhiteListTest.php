@@ -50,19 +50,19 @@ class WhiteListTest extends TestCase
                     'first_name' => $this->faker->firstName,
                     'last_name' => $this->faker->lastName,
                     'mobile' => $this->faker->phoneNumber,
-                    'EMAIL' => $this->faker->email,
+                    'email' => $this->faker->email,
                 ],
                 [
                     'first_name' => $this->faker->firstName,
                     'last_name' => $this->faker->lastName,
                     'mobile' => $this->faker->phoneNumber,
-                    'EMAIL' => $this->faker->email,
+                    'email' => $this->faker->email,
                 ],
                 [
                     'first_name' => $this->faker->firstName,
                     'last_name' => $this->faker->lastName,
                     'mobile' => $this->faker->phoneNumber,
-                    'EMAIL' => $this->faker->email,
+                    'email' => $this->faker->email,
                 ]
             ]
         ];
