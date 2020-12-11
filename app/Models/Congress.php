@@ -123,4 +123,7 @@ class Congress extends Model
     function stand() {
         return $this->hasMany(Stand::class,'congress_id','congress_id');
     }
+    function white_list() {
+        return $this->hasMany(WhiteList::class,'congress_id','congress_id');
+    }
 }

@@ -323,6 +323,11 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
                     Route::get('presence/list', 'UserController@getPresencesByAccess');
                 });
             });
+            Route::group(['prefix' => 'white-list'], function () {
+                Route::get('', 'UserController@getWhiteList');
+                Route::post('', 'UserController@addWhiteList');
+                Route::delete('{white_list_id}', 'UserController@deleteWhiteList');
+            });
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
 
