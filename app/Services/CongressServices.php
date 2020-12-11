@@ -240,6 +240,27 @@ class CongressServices
         return $congress;
     }
 
+    public function getCongressDetailsById($congressId)
+    {
+        $congress = Congress::withCount('users')
+            ->with([
+                'config',
+                'config_selection',
+                "packs.accesses",
+                'ConfigSubmission' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'location.city.country',
+                'accesss.speakers',
+                'accesss.chairs',
+                'accesss.sub_accesses',
+                'accesss.topic',
+                'accesss.type'
+            ])
+            ->where("congress_id", "=", $congressId)
+            ->first();
+        return $congress;
+    }
 
     public function getTimePassedInCongressAccessAndStand($users, $congress, $access, $stands)
     {
