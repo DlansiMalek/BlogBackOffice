@@ -532,9 +532,9 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
 
-        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
+        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
 
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
@@ -576,11 +576,11 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
         $packId = $request->input('packIds', 0);
         $accessesIds = $request->input('accessIds', []);
-        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds);
+        $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
 
@@ -707,15 +707,15 @@ class UserController extends Controller
         $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
 
         if (!$accessId) {
-             $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
-             $urlStreaming = $congress->config->url_streaming;
+            $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
+            $urlStreaming = $congress->config->url_streaming;
         } else {
             $access = $this->accessServices->getAccessById($accessId);
             $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
             $urlStreaming = $access->url_streaming;
         }
         $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
-        if (count($allowedOnlineAccess )!= 0)
+        if (count($allowedOnlineAccess) != 0)
             $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
@@ -919,7 +919,7 @@ class UserController extends Controller
         $emails = [];
         $accessIdTable = [];
         foreach ($users as $e) {
-            $emails[] = $e["EMAIL"];
+            $emails[] = $e["email"];
             $accessIdTable[] = $e["accessIdTable"];
         }
 
@@ -928,13 +928,13 @@ class UserController extends Controller
         $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
         $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
         foreach ($users as $userData) {
-            if ($userData['EMAIL']) {
+            if ($userData['email']) {
 
                 $request->merge(['privilege_id' => $privilegeId,
-                    'email' => $userData['EMAIL']
+                    'email' => $userData['email']
                 ]);
                 // Get User per mail
-                if ($user_by_mail = $this->userServices->getUserByEmail($userData['EMAIL'])) {
+                if ($user_by_mail = $this->userServices->getUserByEmail($userData['email'])) {
                     $user_id = $user_by_mail->user_id;
                     $user = $this->userServices->getUserByIdWithRelations($user_id, [
                         'accesses' => function ($query) use ($congressId) {
@@ -964,7 +964,7 @@ class UserController extends Controller
                     $old_access_array = $user->accesses;
                     for ($i = 0; $i < sizeof($emails); $i++) {
                         //if statement to get the right index i of accessIdTable corresponding to our user 
-                        if ($emails[$i] == $userData['EMAIL']) {
+                        if ($emails[$i] == $userData['email']) {
                             //put all new accesses ID in the new access array 
                             $new_access_array = $accessIdTable[$i];
                         };
@@ -1574,8 +1574,11 @@ class UserController extends Controller
     }
 
     private
-    function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds)
+    function handleCongressInscription(Request $request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress)
     {
+        if ($whiteList = $this->userServices->getWhiteListByEmailAndCongressId($user->email, $congress_id)) {
+            $this->userServices->changeUserStatus($user_congress, 1);
+        }
 
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
@@ -1627,7 +1630,7 @@ class UserController extends Controller
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
 
-        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $totalPrice == 0) || $isFree) {
+        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $totalPrice == 0) || $isFree || $whiteList) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -1663,6 +1666,7 @@ class UserController extends Controller
             if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
                 $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $totalPrice, false);
             }
+
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
@@ -1778,4 +1782,46 @@ class UserController extends Controller
 
         return response()->json($this->userServices->addTracking($congressId, $action->action_id, $userId, $accessId, $standId, $request->input('type'), $request->input('comment'), $userCalledId));
     }
+
+    public function getWhiteList(Request $request, $congress_id)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search', '');
+
+        $whiteLists = $this->userServices->getWhiteList($congress_id, $perPage, $search);
+        return response()->json($whiteLists, 200);
+    }
+
+    public function addWhiteList(Request $request, $congress_id)
+    {
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        ini_set('max_execution_time', 500);
+        $users = $request->input("data");
+        foreach ($users as $userData) {
+            if ($userData['email'] && !$whiteList = $this->userServices->getWhiteListByEmailAndCongressId($userData['email'], $congress_id)) {
+                $firstName = isset($userData['first_name']) ? $userData['first_name'] : null;
+                $lastName = isset($userData['last_name']) ? $userData['last_name'] : null;
+                $mobile = isset($userData['mobile']) ? $userData['mobile'] : null;
+
+                $this->userServices->addWhiteList($congress_id, $userData['email'], $firstName, $lastName, $mobile);
+            }
+
+        }
+        return response()->json(['message' => 'added successfully'], 200);
+    }
+
+    public function deleteWhiteList($congress_id, $white_list_id)
+    {
+        if (!$congress = $this->congressServices->getById($congress_id)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        if (!$white_list = $this->userServices->getWhiteListById($white_list_id)) {
+            return response()->json(["error" => "white-list not found"], 404);
+        }
+        $this->userServices->deleteWhiteList($white_list);
+        return response()->json(['message' => 'deleted successfully'], 200);
+    }
+
 }
