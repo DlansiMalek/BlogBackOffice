@@ -36,10 +36,12 @@ class OrganizationServices
     {
         $organization = new Organization();
         $organization->name = $request->input("name");
-        $organization->description = $request->input("description");
+        $organization->description = $request->has("description")? $request->input('description') : null;
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
-
+        $organization->resource_id = $request->input("resource_id");
+        $organization->is_sponsor = $request->input("is_sponsor");
+        $organization->logo_position = $request->input("logo_position");
         $organization->save();
         return $organization;
     }
@@ -101,4 +103,13 @@ class OrganizationServices
     }
 
 
+   public function getOrganizmeByCongressId($congressId,$isLogoPosition) {      
+       return Organization::whereHas('congressOrganization',function($query) use($congressId) {
+           $query->where('congress_id','=',$congressId);
+       })->when($isLogoPosition,function($query) {
+            return $query->where('logo_position','!=',NULL);
+       })
+       ->with('resource')
+       ->get();
+   }
 }

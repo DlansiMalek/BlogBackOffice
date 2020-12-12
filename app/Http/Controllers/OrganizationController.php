@@ -120,6 +120,16 @@ class OrganizationController extends Controller
         return response()->json($organizations);
     }
 
+    public function getOrganizmeByCongress(Request $request,$congressId) {
+        $isLogoPosition = $request->query('logo');
+        if (!$this->congressServices->getCongressById($congressId)) {
+            return response()->json('no congress found',404);
+        }
+        return  $this->organizationServices->getOrganizmeByCongressId($congressId,$isLogoPosition);
+
+
+    }
+
     public function getCongress($admin_id)
     {
         $organization = $this->organizationServices->getOrganizationByAdminId($admin_id);
