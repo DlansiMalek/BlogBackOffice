@@ -220,7 +220,7 @@ class Utils
 
     public static function isValidSendMail($congress, $user)
     {
-        $isUserValid = $congress->congress_type_id === 3 ? true : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
         return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
     }
 

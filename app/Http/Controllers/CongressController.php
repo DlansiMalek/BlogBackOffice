@@ -258,6 +258,7 @@ class CongressController extends Controller
                 $loggedadmin->name
             );
         }
+
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
 
         $submissionData = $request->input("submission");
@@ -276,6 +277,7 @@ class CongressController extends Controller
                 $congressId);
         }
 
+        // Config Location
         $eventLocation = $request->input("eventLocation");
 
         if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
@@ -284,6 +286,10 @@ class CongressController extends Controller
 
             $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
         }
+
+        // Config OnlineAccess Allowed
+        $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
+        $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
 
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
@@ -395,7 +401,8 @@ class CongressController extends Controller
         }
         $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congress_id);
         $location = $this->geoServices->getCongressLocationByCongressId($congress_id);
-        return response()->json([$configCongress, $location, $configSubmission]);
+        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congress_id);
+        return response()->json([$configCongress, $location, $configSubmission, $allowedOnlineAccess]);
     }
 
 
@@ -929,7 +936,7 @@ class CongressController extends Controller
                 $query->where('Access.congress_id', '=', $congressId);
             }, 'chair_access' => function ($query) use ($congressId) {
                 $query->where('Access.congress_id', '=', $congressId);
-            } , 'profile_img'], null);
+            }, 'profile_img'], null);
 
 
         $results = $this->userServices->mappingPeacksourceData($congress, $users);
@@ -951,6 +958,25 @@ class CongressController extends Controller
 
         return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
 
+    }
+
+    public function setCurrentParticipants($congressId, Request $request)
+    {
+        if (!$request->has('nbParticipants')) {
+            return response()->json(['response' => 'bad request: missing nbParticipants'], 400);
+        }
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+        $accessId = $request->input('accessId');
+
+        if (!$accessId) {
+            $this->congressServices->setCurrentParticipants($congressId, $request->input('nbParticipants'));
+        } else {
+            $this->accessServices->setCurrentParticipants($accessId, $request->input('nbParticipants'));
+        }
+
+        return response()->json(['message' => 'current participant number set success'], 200);
     }
 
 

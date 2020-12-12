@@ -16,6 +16,7 @@ use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
 use App\Models\UserPack;
+use App\Models\WhiteList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -645,8 +646,8 @@ class UserServices
                 )
             );
 
-            if($user->profile_img){
-                $res[sizeof($res)-1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+            if ($user->profile_img) {
+                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
             }
         }
 
@@ -695,6 +696,11 @@ class UserServices
         $countryId = "TUN";
 
         return $this->createOrUpdateUser($email, $firstName, $lastName, $gender, $mobile, $countryId);
+    }
+
+    public function isUserModerator($userCongress)
+    {
+        return $userCongress->privilege_id == 5 || $userCongress->privilege_id == 8;
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -1171,20 +1177,6 @@ class UserServices
             ->first();
     }
 
-
-    public function checkUserRights($user, $accessId = null)
-    {
-        if ($user && sizeof($user->user_congresses) > 0 && (!$accessId || sizeof($user->accesses) > 0)) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && (!$accessId || sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
-                return 2;
-            }
-            if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
-                return 3;
-            }
-        }
-        return -1;
-    }
-
     public function getEvaluationInscriptionByUserIdAndAdminId($user_id, $congress_id, $admin_id)
     {
         $conditionsToMatch = ['user_id' => $user_id, 'congress_id' => $congress_id, 'admin_id' => $admin_id];
@@ -1562,5 +1554,51 @@ class UserServices
             $user->update();
         }
         return $user;
+    }
+
+    public function getWhiteList($congress_id, $perPage, $search)
+    {
+        $whiteLists = WhiteList::where('congress_id', '=', $congress_id)
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                }
+            });
+        return $whiteLists->paginate($perPage);
+    }
+
+    public function addWhiteList($congress_id, $email, $first_name, $last_name, $mobile)
+    {
+        $whiteList = new WhiteList();
+        $whiteList->congress_id = $congress_id;
+        $whiteList->email = $email;
+        if ($first_name)
+            $whiteList->first_name = $first_name;
+        if ($last_name)
+            $whiteList->last_name = $last_name;
+        if ($mobile)
+            $whiteList->mobile = $mobile;
+        $whiteList->save();
+    }
+
+    public function getWhiteListByEmailAndCongressId($email, $congress_id)
+    {
+        $email = strtolower($email);
+        return WhiteList::where('congress_id', '=', $congress_id)
+            ->whereRaw('lower(email) = (?)', ["{$email}"])
+            ->first();
+    }
+
+    public function getWhiteListById($white_list_id)
+    {
+        return WhiteList::where('white_list_id', '=', $white_list_id)
+            ->first();
+    }
+
+    public function deleteWhiteList($white_list)
+    {
+        $white_list->delete();
     }
 }

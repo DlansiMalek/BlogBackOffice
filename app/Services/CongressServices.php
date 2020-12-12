@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
+use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
@@ -140,7 +141,7 @@ class CongressServices
 
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date","admin_congresses",
+                ->only(["congress_id", "name", "start_date", "admin_congresses",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
@@ -466,9 +467,6 @@ class CongressServices
 
     public function editConfigCongress($configCongress, $configCongressRequest, $congressId, $token)
     {
-
-        //$config_congress = ConfigCongress::where("congress_id", '=', $congressId)->first();
-
         if (!$configCongress) {
             $configCongress = new ConfigCongress();
         }
@@ -499,11 +497,46 @@ class CongressServices
         $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->register_disabled = $configCongressRequest['register_disabled'];
         $configCongress->application = $configCongressRequest['application'];
+        $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
+        $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->update();
-        //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
+    }
+
+    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId)
+    {
+        foreach ($privilegeIds as $privilegeId) {
+            $this->addAllowedOnlineAccess($privilegeId, $congressId);
+        }
+    }
+
+    public function addAllowedOnlineAccess($privilege_id, $congress_id)
+    {
+        $newAllowedOnlineAccess = new AllowedOnlineAccess();
+        $newAllowedOnlineAccess->privilege_id = $privilege_id;
+        $newAllowedOnlineAccess->congress_id = $congress_id;
+        $newAllowedOnlineAccess->save();
+    }
+
+    public function getAllAllowedOnlineAccess($congress_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->get();
+    }
+
+    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->where('privilege_id', '=', $privilege_id)
+            ->first();
+    }
+
+    public function deleteAllAllowedAccessByCongressId($congress_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->delete();
     }
 
     public function addCongressSubmission($configSubmission, $submissionData, $congressId)
@@ -972,6 +1005,12 @@ class CongressServices
             })
             ->where('congress_id', '=', $congressId)
             ->paginate($perPage);
+    }
+
+    public function setCurrentParticipants($congressId, $nbParticipants)
+    {
+        return ConfigCongress::where('congress_id', '=', $congressId)
+            ->update(['nb_current_participants' => $nbParticipants]);
     }
 
 }
