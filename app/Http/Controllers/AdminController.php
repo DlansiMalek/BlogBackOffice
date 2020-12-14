@@ -309,9 +309,18 @@ class AdminController extends Controller
         $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
         if ($admin->privilege_id == 1) {
             $offre = $this->offreServices->getActiveOffreByAdminId($admin->admin_id);
-            $menus = $this->offreServices->getMenusByOffre($offre->offre_id);
+            if (!$offre) {
+                $menus = $this->offreServices->getAllMenu();
+            } else {
+                $menus = $this->offreServices->getMenusByOffre($offre->offre_id);
+                if (count($menus) == 0) {
+                    $menus = $this->offreServices->getAllMenu();
+                }
+            }
         } else {
-            $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
+            if (count($admin->admin_congresses) > 0) {
+                $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
+            }
         }
         return response()->json(['admin' => $admin, 'menus' => $menus]);
     }

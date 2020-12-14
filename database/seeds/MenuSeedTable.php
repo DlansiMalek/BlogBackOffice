@@ -102,14 +102,14 @@ class MenuSeedTable extends Seeder
             'menu_id' => 15,
             'key' => 'MarketingTools',
             'icon' => 'fa fa-comments',
-            'showAfterReload' => 1
+            'show_after_reload' => 1
         ]);
 
         DB::table('Menu')->insert([
             'menu_id' => 16,
             'key' => 'MeetingTools',
             'icon' => 'icon-video-camera2',
-            'showAfterReload' => 1
+            'show_after_reload' => 1
         ]);
     }
 }

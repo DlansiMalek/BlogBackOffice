@@ -138,12 +138,12 @@ class OffreServices
             $menu_id = $new['menu_id'];
             $menuChildren = $new['menu_children_ids'];
             if ($menuChildren == []) {
-                if (!$exsit = $this->getMenuChildrenOffreByIds($offre_id, $menu_id)) {
+                if (!$exist = $this->getMenuChildrenOffreByIds($offre_id, $menu_id)) {
                     $this->addMenuChildrenOffre($offre_id, $menu_id);
                 }
             } else {
                 foreach ($menuChildren as $child) {
-                    if (!$exsit = $this->getMenuChildrenOffreByIds($offre_id, $menu_id, $child)) {
+                    if (!$exist = $this->getMenuChildrenOffreByIds($offre_id, $menu_id, $child)) {
                         $this->addMenuChildrenOffre($offre_id, $menu_id, $child);
                     }
                 }
