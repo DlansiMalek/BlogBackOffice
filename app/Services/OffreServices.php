@@ -138,16 +138,18 @@ class OffreServices
             $menu_id = $new['menu_id'];
             $menuChildren = $new['menu_children_ids'];
             if ($menuChildren == []) {
-                if (!$exist = $this->getMenuChildrenOffreByIds($offre_id, $menu_id)) {
-                    $this->addMenuChildrenOffre($offre_id, $menu_id);
-                }
+                $this->handleMenuChildrenOffre($offre_id, $menu_id);
             } else {
                 foreach ($menuChildren as $child) {
-                    if (!$exist = $this->getMenuChildrenOffreByIds($offre_id, $menu_id, $child)) {
-                        $this->addMenuChildrenOffre($offre_id, $menu_id, $child);
-                    }
+                    $this->handleMenuChildrenOffre($offre_id, $menu_id, $child);
                 }
             }
+        }
+    }
+
+    public function handleMenuChildrenOffre($offre_id, $menu_id, $child=null) {
+        if (!$exist = $this->getMenuChildrenOffreByIds($offre_id, $menu_id, $child)) {
+            $this->addMenuChildrenOffre($offre_id, $menu_id, $child);
         }
     }
 
@@ -219,16 +221,18 @@ class OffreServices
             $menu_id = $new['menu_id'];
             $menuChildren = $new['menu_children_ids'];
             if ($menuChildren == []) {
-                if (!$exsit = $this->getPrivilegeMenuChildrenByIds($privilege_id, $congress_id, $menu_id)) {
-                    $this->addPrivilegeMenuChildren($privilege_id, $congress_id, $menu_id);
-                }
+                $this->handlePrivilegeMenuChildren($privilege_id, $congress_id, $menu_id);
             } else {
                 foreach ($menuChildren as $child) {
-                    if (!$exsit = $this->getPrivilegeMenuChildrenByIds($privilege_id, $congress_id, $menu_id, $child)) {
-                        $this->addPrivilegeMenuChildren($privilege_id, $congress_id, $menu_id, $child);
-                    }
+                    $this->handlePrivilegeMenuChildren($privilege_id, $congress_id, $menu_id, $child);
                 }
             }
+        }
+    }
+
+    public function handlePrivilegeMenuChildren($privilege_id, $congress_id, $menu_id, $child = null) {
+        if (!$exsit = $this->getPrivilegeMenuChildrenByIds($privilege_id, $congress_id, $menu_id, $child)) {
+            $this->addPrivilegeMenuChildren($privilege_id, $congress_id, $menu_id, $child);
         }
     }
 
