@@ -546,9 +546,7 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         $privilegeId = $request->input('privilege_id');
-        if ($privilegeId == 3 && !$request->has('price')) {
-            return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
-        }
+        
         if ($request->has('avatar_id') && $privilegeId != 7) {
             $request->merge(['avatar_id' => null]);
         }
@@ -578,7 +576,7 @@ class UserController extends Controller
         // Affect User to Congress
         $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
-        $packId = $request->input('packIds', 0);
+        $packId = $request->input('packIds', []);
         $accessesIds = $request->input('accessIds', []);
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
