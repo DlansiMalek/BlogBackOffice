@@ -308,21 +308,30 @@ class AdminController extends Controller
         }
         $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
         if ($admin->privilege_id == 1) {
-            $offre = $this->offreServices->getActiveOffreByAdminId($admin->admin_id);
-            if (!$offre) {
-                $menus = $this->offreServices->getAllMenu();
-            } else {
-                $menus = $this->offreServices->getMenusByOffre($offre->offre_id);
-                if (count($menus) == 0) {
-                    $menus = $this->offreServices->getAllMenu();
-                }
-            }
+            $menus = $this->getAdminMenus($admin->admin_id);
         } else {
             if (count($admin->admin_congresses) > 0) {
                 $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
+                if ($admin->admin_congresses[0]->privilege_id == 2 && count($menus) == 0) {
+                    $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
+                    $menus = $this->getAdminMenus($admin_congress->admin_id);
+                }
             }
         }
         return response()->json(['admin' => $admin, 'menus' => $menus]);
+    }
+
+    public function getAdminMenus($admin_id) {
+        $offre = $this->offreServices->getActiveOffreByAdminId($admin_id);
+        if (!$offre) {
+            $menus = $this->offreServices->getAllMenu();
+        } else {
+            $menus = $this->offreServices->getMenusByOffre($offre->offre_id);
+            if (count($menus) == 0) {
+                $menus = $this->offreServices->getAllMenu();
+            }
+        }
+        return $menus;
     }
 
     public function getAdminCongresses()

@@ -544,4 +544,9 @@ class AdminServices
         return $adminPayment;
     }
 
+    public function getAdminOfCongress($congress_id) {
+        return AdminCongress::where('congress_id', '=', $congress_id)
+        ->where('privilege_id', '=', 1)->first();
+    }
+
 }
