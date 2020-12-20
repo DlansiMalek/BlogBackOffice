@@ -353,6 +353,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhenticatedAdmin');
+        Route::get('/congress/{congress_id}', 'AdminController@getAdminWithCurrentCongressFirst');
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
@@ -396,6 +397,11 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
         });
     });
 
+    Route::group(['prefix' => 'menus'], function () {
+        Route::post('add/{congress_id}/{privilege_id}', 'OffreController@addPrivilegeMenuChildren');
+        Route::get('{congress_id}/{privilege_id}', 'OffreController@getMenusByPrivilegeByCongress');
+        Route::post('edit/{congress_id}/{privilege_id}', 'OffreController@editPrivilegeMenuChildren');
+    });
 
 });
 //Access API
@@ -424,6 +430,13 @@ Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
     Route::put('edit/{offre_id}', 'OffreController@editOffre');
 });
 
+Route::group(['prefix' => 'menu', 'middleware' => 'marketing'], function () {
+    Route::get('list','OffreController@getAllMenu' );
+    Route::group(['prefix' => 'menu-children'], function() {
+        Route::get('list', 'OffreController@getAllMenuChildren');
+    });
+
+});
 
 //Pack API
 Route::group(['prefix' => 'pack'], function () {
