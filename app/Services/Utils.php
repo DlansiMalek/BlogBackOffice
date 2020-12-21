@@ -273,5 +273,12 @@ class Utils
         return 'eventizer_room_' . $congressId . $accessId;
     }
 
+    public static function isSimilar( string $string1 , string $string2 , float $percent = null ) 
+    {
+        similar_text($string1, $string2, $perc);
+        $result = $perc < $percent ?  false :  true;
+        return $result;
+    }
+
 
 }

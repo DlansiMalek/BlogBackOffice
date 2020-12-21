@@ -303,7 +303,7 @@ class UserController extends Controller
             return response()->json('no admin found', 404);
         }
         $perPage = $request->query('perPage', 10);
-        $search = $request->query('search', '');
+        $search = Str::lower($request->query('search', ''));
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
         $admin_id = $admin_congress->privilege_id == 13 ? $admin->admin_id : null;
