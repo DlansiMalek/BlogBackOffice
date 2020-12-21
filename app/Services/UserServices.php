@@ -435,18 +435,35 @@ class UserServices
                 }
             ])
             ->where(function ($query) use ($search) {
-                if ($search != "") {
+                if ($search != "" && Str::lower($search)!="payé" && Str::lower($search)!="non payé") {
                     $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
                 }
             });
 
+        if (Str::lower($search)== "payé") {
+            $users = $users->whereHas('payments', function ($query){
+                $query->where('isPaid', '=', 1);
+            });
+        }
+
+       // $users = $users->whereHas('payments', function ($query) use ($search) {
+       //     var $isPaid = Str::lower($search)== "payé" ? 1 : 0;
+       //     $query->where('isPaid', '=', $isPaid);
+       // });
+
+        if (Str::lower($search)== "non payé") {
+            $users = $users->whereHas('payments', function ($query){
+                $query->where('isPaid', '=', 0);
+            });
+        }
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
                 || $tri == 'mobile')) {
             $users = $users->orderBy($tri, $order);
         }
-        if ($order && ($tri == 'type' || $tri == 'date')) {
+        if ($order && ($tri == 'type' || $tri == 'date' || $tri == 'status')) {
             $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where('User_Congress.congress_id', '=', $congressId);
 
@@ -454,16 +471,20 @@ class UserServices
                 $users->orderBy('privilege_id', $order);
             if ($tri == 'date')
                 $users->orderBy('User_Congress.updated_at', $order);
+            if ($tri == 'status')  
+                 $users->orderBy('User_Congress.isSelected', $order);
+                
         }
         if ($order && ($tri == 'isPaid' || $tri == 'price')) {
             $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
                 ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
                 ->where(function ($query) use ($congressId) {
                     $query->where('Payment.congress_id', '=', $congressId)
-                        ->orWhere('User_Congress.congress_id', '=', $congressId);
+                        ->where('User_Congress.congress_id', '=', $congressId);
                 })
                 ->orderBy($tri, $order);
         }
+        
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
