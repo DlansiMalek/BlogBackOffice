@@ -110,6 +110,30 @@ class OrganizationController extends Controller
         return response()->json($organization);
     }
 
+    function editOrganization (Request $request, $organization_id) {
+        $oldOrg = $this->organizationServices->getOrganizationById($organization_id);
+     
+      $this->organizationServices->editOrganization(
+         $oldOrg,
+         $request->input("name"),
+         $request->input("mobile"),
+         $request->input("description")
+      );
+      return response()->json('organization updated',200);
+ }
+
+
+   function deleteOrganization($congress_id , $organization_id)
+      {  
+          if (!$organization = $this->organizationServices->getOrganizationById($organization_id)) {
+          return response()->json('no organization found' ,404);
+      }
+        $organization->delete();
+         return response()->json(['response' => 'organization deleted'],200);
+      }
+
+
+
     public function getCongressOrganizations($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id))

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCongressOrganization extends Migration
+class CreateCongressOrganizationTable extends Migration
 {
     /**
      * Run the migrations.
@@ -19,13 +19,13 @@ class CreateCongressOrganization extends Migration
 
             $table->unsignedInteger('organization_id');
             $table->foreign("organization_id")
-                ->references('organization_id')
+                ->references('organization_id')->onDelete('cascade')
                 ->on('Organization');
 
 
             $table->unsignedInteger('congress_id');
             $table->foreign("congress_id")
-                ->references('congress_id')
+                ->references('congress_id')->onDelete('cascade')
                 ->on('Congress');
 
 

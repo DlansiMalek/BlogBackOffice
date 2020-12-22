@@ -19,10 +19,6 @@ class Organization extends Model
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
-    function users()
-    {
-        return $this->hasMany('App\Models\User', 'organization_id', 'organization_id');
-    }
 
     function congressOrganization()
     {

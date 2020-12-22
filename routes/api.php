@@ -248,6 +248,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
 
     });
+
 });
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
@@ -559,3 +560,6 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });
+
+Route::put('organization/{organization_id}/edit','OrganizationController@editOrganization');
+Route::delete('congress/{congress_id}/deleteOrganization/{organization_id}', 'OrganizationController@deleteOrganization');
