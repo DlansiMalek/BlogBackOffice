@@ -10,7 +10,7 @@ $factory->define(Admin::class, function (Faker $faker) {
     return [
         'email' => $faker->email,
         'mobile' => $faker->phoneNumber,
-        'name' => $faker->sentence,
+        'name' => $faker->firstName,
         'privilege_id' => $faker->numberBetween(1, 3),
         'password' => bcrypt($password),
         'passwordDecrypt' => $password

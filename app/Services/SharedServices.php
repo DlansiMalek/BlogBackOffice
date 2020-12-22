@@ -7,9 +7,11 @@ use App\Models\AttestationType;
 use App\Models\CongressType;
 use App\Models\Country;
 use App\Models\Privilege;
+use App\Models\PrivilegeConfig;
 use App\Models\Service;
 use App\Models\Etablissement;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -19,6 +21,12 @@ class SharedServices
     public function getAllPrivileges()
     {
         return Privilege::where('privilege_id', '>=', 3)->get();
+    }
+
+    public function getPrivilegeById($privilegeId)
+    {
+        return Privilege::where('privilege_id', '=', $privilegeId)
+            ->first();
     }
 
     public function getPrivilegesWithBadges()
@@ -35,6 +43,47 @@ class SharedServices
     public function getAllEtablissements()
     {
         return Etablissement::all();
+    }
+
+    public function saveAttestationsSubmissionsInPublic(array $request)
+    {
+        if ($request) {
+            $zipName = 'attestationsSubmission.zip';
+            $client = new \GuzzleHttp\Client();
+
+            $res = $client->request('POST',
+//          'http://127.0.0.1:8000'  
+                UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro/multiple', [
+                    'json' =>
+                        [
+                            'participants' => $request,
+                        ]
+
+                ]);
+            Storage::put($zipName, $res->getBody(), 'public');
+            return $zipName;
+        }
+    }
+
+    public function saveAttestationSubmissionInPublic(array $request, $IdGenerator)
+    {
+        if ($request) {
+            try {
+                // 'http://127.0.0.1:8000'
+                $client = new \GuzzleHttp\Client();
+                $res = $client->request('POST',
+                    UrlUtils::getUrlBadge() . '/badge/generateParticipantPro', [
+                        'json' => [
+                            'badgeIdGenerator' => $IdGenerator,
+                            'fill' => $request
+                        ]
+                    ]);
+                Storage::put('attestationSubmission.png', $res->getBody(), 'public');
+                return true;
+            } catch (ClientException $e) {
+                return false;
+            }
+        }
     }
 
     public function saveBadgeInPublic($badge, $user, $qrCode, $privilegeId)
@@ -120,6 +169,35 @@ class SharedServices
     {
         return Action::where('key', '=', $key)
             ->first();
+    }
+
+    public function getAllActions()
+    {
+        return Action::all();
+    }
+
+    public function submissionMapping($submission_title, $principal_author, $co_authors, $paramsSubmission)
+    {
+
+        $co_authors = json_decode($co_authors, true);
+        array_shift($co_authors);
+        $authors = "";
+        for ($i = 0; $i < sizeof($co_authors); $i++) {
+            $firstName = isset($co_authors[$i]['first_name'][0]) ? $co_authors[$i]['first_name'][0] : '';
+            $authors .= strtoupper($firstName . '. ' . $co_authors[$i]['last_name']) . ' ,';
+        }
+        $authors = substr($authors, 0, -1);
+        $mappingList = ['principal_author' => $principal_author,
+            'submission_title' => $submission_title,
+            'co-authors' => $authors];
+        $params = [];
+        foreach ($paramsSubmission as $param) {
+
+            $params[] =
+                ["key" => $param['key'], "value" => $this->mappingBadgeKey($param['key'], $mappingList)];
+
+        }
+        return ['qrCode' => false, 'texts' => $params];
     }
 
 

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         //TODO VoteScore Seeder
         //TODO UserMail Seeder
 
+        $this->call(MenuDatabaseSeeder::class);
         $this->call(CongressTypeTableSeeder::class);
         $this->call(CongressSeedTable::class);
         $this->call(ConfigCongressSeedTable::class);
@@ -62,6 +63,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
+
+        $this->call(OffreTypeSeedTable::class);
 
         // $this->call(MigrationOldData::class);
     }

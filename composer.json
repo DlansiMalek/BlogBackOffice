@@ -9,6 +9,7 @@
   "type": "project",
   "require": {
     "php": ">=7.2",
+    "ext-json": "*",
     "anam/phantomjs-linux-x86-binary": "^2.1",
     "anam/phantommagick": "^2.0",
     "barryvdh/laravel-cors": "^0.11.0",
@@ -21,15 +22,16 @@
     "laravel/framework": "^6.0",
     "laravel/socialite": "^5.0",
     "laravel/tinker": "~1.0",
+    "madnest/madzipper": "^1.0",
     "nesbot/carbon": "^2.0",
     "niklasravnsborg/laravel-pdf": "2.0.0",
     "phpoffice/phpspreadsheet": "^1.2",
     "ramsey/uuid": "^3.7",
     "simplesoftwareio/simple-qrcode": "^1.5",
     "tymon/jwt-auth": "1.0.0",
+    "lcobucci/jwt": "3.3.3",
     "wpb/string-blade-compiler": "4.0.0",
-    "zircote/swagger-php": "2.0.9",
-    "ext-json": "*"
+    "zircote/swagger-php": "2.0.9"
   },
   "require-dev": {
     "beyondcode/laravel-er-diagram-generator": "^1.4",

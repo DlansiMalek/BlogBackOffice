@@ -34,7 +34,7 @@ class BadgeController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
-        if (!$this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
+        if (!$privilege = $this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
             return response(['error' => "invalid privilege"], 404);
         }
         try {
@@ -54,8 +54,9 @@ class BadgeController extends Controller
             }
             $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $request->input('privilegeId'));
             $this->badgeServices->activateBadgeByCongressByPriviledge($badges, $badgeIdGenerator);
-            return response()->json($this->congressServices->getMinimalCongress($congressId));
-        } catch (Exception $e) {
+            return response()->json($this->congressServices->getMinimalCongressById($congressId));
+        }
+        catch (Exception $e) {
             Log::info($e->getMessage());
             return response()->json(['response' => $e->getMessage()], 400);
         }
@@ -67,7 +68,7 @@ class BadgeController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
-        if (!$this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
+        if (!$privilege = $this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
             return response(['error' => "invalid privilege"], 404);
         }
         if ($badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'), $badgeIdGenerator)) {
@@ -147,6 +148,7 @@ class BadgeController extends Controller
             if ($adminCongress->privilege_id != 1) {
                 return response()->json(['error' => 'forbidden'], 403);
             }
+
             $badges = $this->badgeServices->getBadgesByCongress($congressId);
             return response($badges, 200);
         } catch (Exception $e) {
@@ -161,7 +163,7 @@ class BadgeController extends Controller
     {
         $badgeIdGenerator = $request->input('badgeIdGenerator');
         $privilegeId = $request->input('privilegeId');
-        if (!($privilege = $this->privilegeServices->checkValidPrivilege($privilegeId))) {
+        if (!$privilege = $this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
             return response(['error' => $privilegeId], 404);
         }
         if (!$badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $privilegeId, $badgeIdGenerator)) {
@@ -185,6 +187,7 @@ class BadgeController extends Controller
 
         }
     }
+
 
     function deleteBadge($congressId, $badgeId)
     {

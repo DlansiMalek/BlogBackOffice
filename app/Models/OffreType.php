@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CommunicationType extends Model
+class OffreType extends Model
 {
+    protected $table = 'Offre_Type';
+    protected $primaryKey = 'offre_type_id';
+    protected $fillable = ['name'];
+
     public $timestamps = true;
-    protected $table = 'Communication_Type';
-    protected $primaryKey = 'communication_type_id';
-    protected $fillable = ['label'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 }

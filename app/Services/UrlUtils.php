@@ -26,6 +26,7 @@ class UrlUtils
             return "http://vayevoting-backend-master:3000";
         }
         return "https://ws.vayetek.com";
+        //return "http://localhost:3000";
     }
 
     public static function getMeetEventizerUrl()
@@ -148,5 +149,21 @@ class UrlUtils
         }
 
         return "https://discovery.recordings.meet.eventizer.io";
+    }
+
+
+    public static function getUrlSendPulse()
+    {
+        return "https://api.sendpulse.com";
+    }
+
+    public static function getUrlSendInBlue()
+    {
+        return "https://api.sendinblue.com/v3/smtp/email";
+    }
+
+    public static function getElasticBaseUrl()
+    {
+        return "https://" . env('ELASTIC_USER') . ":" . env('ELASTIC_PASSWORD') . '@elastic.tracking.master.vayetek.com';
     }
 }

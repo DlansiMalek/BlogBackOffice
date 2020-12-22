@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AdminServices;
+use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
@@ -21,15 +22,18 @@ class LoginController extends Controller
     protected $adminServices;
     protected $userServices;
     protected $privilegeServices;
+    protected $offreServices;
     
 
     public function __construct(AdminServices $adminServices,
                                 PrivilegeServices $privilegeServices,
-                                UserServices $userServices)
+                                UserServices $userServices,
+                                OffreServices $offreServices)
     {
         $this->adminServices = $adminServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
+        $this->offreServices = $offreServices;
     }
 
     /**
@@ -64,7 +68,6 @@ class LoginController extends Controller
 
         $admin = $this->adminServices->getAdminByLogin($request->input("email"));
 
-
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
@@ -84,9 +87,9 @@ class LoginController extends Controller
         }
 
         // TODO Je le déscative pour l'instant (à valider la tache d'envoi de mail)
-        if ($user->email_verified == 0) {
+        /*if ($user->email_verified == 0) {
             return response()->json(['error' => 'email not verified'], 405);
-        }
+        }*/
 
         return response()->json(['user' => $user, 'token' => $token], 200);
     }

@@ -169,6 +169,10 @@ class Utils
             return 'MODERATOR';
         }
 
+        if ($privilege_id === 1) {
+            return 'ADMIN';
+        }
+
         return 'PARTICIPANT';
     }
 
@@ -186,6 +190,43 @@ class Utils
                 return $user->speaker_access[0]->name;
         }
         return null;
+    }
+
+    public static function mappingInputResponse($formInputs, $responses)
+    {
+        $responses = json_decode($responses, true);
+        $res = array();
+        foreach ($formInputs as $formInput) {
+            $index = array_search($formInput->form_input_id, array_column($responses, 'form_input_id'));
+            $values = "";
+            if ($index >= 0) {
+                if ($responses[$index]['response']) {
+                    $values = $responses[$index]['response'];
+                } else if ($responses[$index]['values'] && sizeof($responses[$index]['values']) > 0) {
+                    $values = array();
+                    foreach ($responses[$index]['values'] as $value) {
+                        $key = array_search($value['form_input_value_id'], array_column(json_decode($formInput->values), 'form_input_value_id'));
+                        if ($key >= 0 && $formInput->values[$key] && $formInput->values[$key]->value) {
+                            array_push($values, $formInput->values[$key]->value);
+                        }
+                    }
+                }
+            }
+            $res[$formInput->label] = $values;
+        }
+
+        return $res;
+    }
+
+    public static function isValidSendMail($congress, $user)
+    {
+        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
+    }
+
+    public static function getBase64Img(string $path)
+    {
+        return base64_encode(file_get_contents($path));
     }
 
     function base64_to_jpeg($base64_string, $output_file)

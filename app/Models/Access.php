@@ -16,9 +16,9 @@ class Access extends Model
     protected $table = 'Access';
     protected $primaryKey = 'access_id';
     protected $fillable = ['name', 'price', 'duration', 'max_places', 'total_present_in_congress',
-        'seuil', 'room', 'token_jitsi', 'description', 'congress_id', 'packless',
+        'seuil', 'room', 'token_jitsi', 'token_jitsi_moderator', 'token_jitsi_participant', 'description', 'congress_id', 'packless',
         'start_date', 'real_start_date', 'end_date', 'parent_id', 'show_in_program',
-        'show_in_register', 'with_attestation','is_online'];
+        'show_in_register', 'with_attestation', 'is_online'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
@@ -88,10 +88,15 @@ class Access extends Model
     {
         return $this->hasOne('App\Models\AccessType', 'access_type_id', 'access_type_id');
     }
-    
+
     function packs()
     {
         return $this->belongsToMany('App\Models\Pack', 'Access_Pack', 'access_id', 'pack_id');
+    }
+
+    function tracking()
+    {
+        return $this->hasMany(Tracking::class, 'access_id', 'access_id');
     }
 
 
