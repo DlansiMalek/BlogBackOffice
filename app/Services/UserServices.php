@@ -750,7 +750,7 @@ class UserServices
 
     public function getUserByVerificationCodeAndId($code, $user_id)
     {
-        $conditions = ['verification_code' => $code, 'user_id' => $user_id, 'email_verified' => 0];
+        $conditions = ['verification_code' => $code, 'user_id' => $user_id];
         return User::where($conditions)->first();
     }
 
