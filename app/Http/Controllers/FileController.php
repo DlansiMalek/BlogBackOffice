@@ -119,10 +119,11 @@ class FileController extends Controller
     public function uploadResource(Request $request)
     {
         $file = $request->file('files'); 
-        $chemin = config('media.resource');
-        $path = $file->store($chemin);
-        $savedPath = str_replace('resource/', '', $path);
-        $resource = $this->resourceServices->saveResource($savedPath, $file->getSize());
+        $path_parts = pathinfo($file->getClientOriginalName());
+        $ACCESS_LEVEL = 'public';
+        $FILE_NAME = now()->timestamp . '_' . uniqid() . '.' . $path_parts['extension'];
+        Storage::disk('digitalocean')->putFile($FILE_NAME, request()->file, $ACCESS_LEVEL);
+        $resource = $this->resourceServices->saveResource($FILE_NAME, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
 
