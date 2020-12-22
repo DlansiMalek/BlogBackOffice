@@ -642,13 +642,11 @@ class UserServices
                     "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
                     "channel_name" => $channelName,
                     "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
-                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
+                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : [],
+                    "profile_img" => $user->img_base64
                 )
             );
 
-            if ($user->profile_img) {
-                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
-            }
         }
 
         return $res;
@@ -1014,7 +1012,7 @@ class UserServices
         return $user;
     }
 
-    public function saveUser(Request $request)
+    public function saveUser(Request $request, $resource = null)
     {
         $user = new User();
         $user->email = $request->email;
@@ -1034,6 +1032,8 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
+        if ($resource != null) 
+        $user->img_base64 = Utils::getBase64Img(storage_path('app/resource') . '/' . $resource->path);
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1044,7 +1044,7 @@ class UserServices
         return $user;
     }
 
-    public function editUser(Request $request, $user)
+    public function editUser(Request $request, $user, $resource = null)
     {
         $user->email = $request->email;
 
@@ -1060,7 +1060,9 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
-
+        if ($resource != null) 
+        $user->img_base64 = Utils::getBase64Img(storage_path('app/resource') . '/' . $resource->path);
+       
         $user->update();
         return $user;
     }
@@ -1601,4 +1603,12 @@ class UserServices
     {
         $white_list->delete();
     }
+
+    public function getUsersWithResources()
+    {
+        return User::where('resource_id', '!=', null)
+        ->with('profile_img')
+        ->get();
+    }
+
 }
