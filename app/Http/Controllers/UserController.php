@@ -573,7 +573,7 @@ class UserController extends Controller
         $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
         $packId = $request->input('packIds', []);
-        $accessesIds = $request->input('accessIds', []);
+        $accessesIds = $request->has('accessIds') ? $request->input('accessIds', []) : $request->input('accessesId', []);
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
