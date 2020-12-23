@@ -8,6 +8,7 @@ use App\Services\AdminServices;
 use App\Services\BadgeServices;
 use App\Services\CongressServices;
 use App\Services\MailServices;
+use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
 use App\Services\SharedServices;
 use App\Services\SubmissionServices;
@@ -32,6 +33,7 @@ class AdminController extends Controller
     protected $mailServices;
     protected $submissionServices;
     protected $client;
+    protected $offreServices;
 
     public function __construct(UserServices $userServices,
                                 AdminServices $adminServices,
@@ -41,7 +43,8 @@ class AdminController extends Controller
                                 BadgeServices $badgeServices,
                                 AccessServices $accessServices,
                                 SubmissionServices $submissionServices,
-                                MailServices $mailServices)
+                                MailServices $mailServices,
+                                OffreServices $offreServices)
     {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
@@ -53,6 +56,7 @@ class AdminController extends Controller
         $this->submissionServices = $submissionServices;
         $this->mailServices = $mailServices;
         $this->client = new Client();
+        $this->offreServices = $offreServices;
     }
 
 
@@ -294,7 +298,40 @@ class AdminController extends Controller
         }
         $admin = $this->adminServices->getAdminById($admin->admin_id);
 
-        return response()->json(compact('admin'));
+        return response()->json(['admin' => $admin]);
+    }
+
+    public function getAdminWithCurrentCongressFirst($congress_id)
+    {
+        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
+        if ($admin->privilege_id == 1) {
+            $menus = $this->getAdminMenus($admin->admin_id);
+        } else {
+            if (count($admin->admin_congresses) > 0) {
+                $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
+                if ($admin->admin_congresses[0]->privilege_id == 2 && count($menus) == 0) {
+                    $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
+                    $menus = $this->getAdminMenus($admin_congress->admin_id);
+                }
+            }
+        }
+        return response()->json(['admin' => $admin, 'menus' => $menus]);
+    }
+
+    public function getAdminMenus($admin_id) {
+        $offre = $this->offreServices->getActiveOffreByAdminId($admin_id);
+        if (!$offre) {
+            $menus = $this->offreServices->getAllMenu();
+        } else {
+            $menus = $this->offreServices->getMenusByOffre($offre->offre_id);
+            if (count($menus) == 0) {
+                $menus = $this->offreServices->getAllMenu();
+            }
+        }
+        return $menus;
     }
 
     public function getAdminCongresses()

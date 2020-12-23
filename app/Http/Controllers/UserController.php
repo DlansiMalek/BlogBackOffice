@@ -224,7 +224,7 @@ class UserController extends Controller
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }
+            }, 'profile_img'
         ]);
 
         return response()->json($user);

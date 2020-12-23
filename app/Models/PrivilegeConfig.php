@@ -15,4 +15,6 @@ class PrivilegeConfig extends Model
     public function privilege () {
         return $this->belongsTo('App\Models\Privilege', 'privilege_id', 'privilege_id');
     }
+
+
 }
