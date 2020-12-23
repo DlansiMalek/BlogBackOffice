@@ -546,16 +546,15 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         $privilegeId = $request->input('privilege_id');
-        if ($privilegeId == 3 && !$request->has('price')) {
-            return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
-        }
+        
         if ($request->has('avatar_id') && $privilegeId != 7) {
             $request->merge(['avatar_id' => null]);
         }
         //check if date limit
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
+        if (!$user = $this->userServices->getUserByEmail($request->input('email'))){
             $user = $this->userServices->saveUser($request);
+    }
         else
             $user = $this->userServices->editUser($request, $user);
 
@@ -569,16 +568,12 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
-        $packIds = $request->input('packIds', 0);
-        if (sizeof($congress->packs) > 0 && sizeof($packIds) === 0) {
-            return response()->json('you should select at least one pack', 400);
-        }
 
         // Affect User to Congress
         $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
-        $packId = $request->input('packIds', 0);
-        $accessesIds = $request->input('accessIds', []);
+        $packId = $request->input('packIds', []);
+        $accessesIds = $request->has('accessIds') ? $request->input('accessIds', []) : $request->input('accessesId', []);
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
