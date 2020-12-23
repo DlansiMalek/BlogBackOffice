@@ -1033,7 +1033,7 @@ class UserServices
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         if ($resource != null) 
-        $user->img_base64 = Utils::getBase64Img(storage_path('app/resource') . '/' . $resource->path);
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1061,7 +1061,7 @@ class UserServices
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($resource != null) 
-        $user->img_base64 = Utils::getBase64Img(storage_path('app/resource') . '/' . $resource->path);
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
        
         $user->update();
         return $user;

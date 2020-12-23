@@ -5,6 +5,8 @@ namespace App\Services;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Validation\ValidationException;
+
 
 class Utils
 {
@@ -225,8 +227,13 @@ class Utils
     }
 
     public static function getBase64Img(string $path)
-    {
-        return base64_encode(file_get_contents($path));
+    { 
+          $file = @file_get_contents($path);
+          if($file===false)
+          {
+            abort(403, "Cannot access '$path' to read contents.");
+          }
+        return base64_encode($file);
     }
 
     function base64_to_jpeg($base64_string, $output_file)
