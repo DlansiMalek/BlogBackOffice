@@ -5,7 +5,6 @@ namespace App\Services;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Validation\ValidationException;
 
 
 class Utils
