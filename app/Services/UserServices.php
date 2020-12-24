@@ -443,12 +443,19 @@ class UserServices
                     }
                 }
             ])
-            ->where(function ($query) use ($search, $payed, $unpayed, $accepted, $inProgress, $refused) {
+            ->where(function ($query) use ($search, $payed, $unpayed, $accepted, $inProgress, $refused, $congressId) {
                 if ($search != "" && !$payed && !$unpayed && !$accepted && !$inProgress && !$refused) {
                     $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                    $query->orWhereHas('country', function ($q) use ($search) {
+                        $q->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+                    });
+                    $query->orWhereHas('payments', function ($q) use ($search, $congressId) {
+                        $q->where ('congress_id', '=', $congressId)
+                        ->whereRaw('(price) like (?)',  ["%{$search}%"]);
+                    });
                 }
             });
 
