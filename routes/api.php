@@ -340,6 +340,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 });
 //Admin API
 Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], function () {
+    Route::get('migrate-users-data', 'UserController@migrateUsersData');
     Route::group(['prefix' => 'rfid'], function () {
         Route::post('user/{userId}/update', 'AdminController@updateUserRfid');
         Route::post('user/attestations', 'AdminController@getAttestationByUserRfid');
