@@ -500,6 +500,7 @@ class CongressServices
         $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
+        $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
         $configCongress->update();
 
         return $configCongress;

@@ -1047,7 +1047,7 @@ class UserServices
         $user = new User();
         $user->email = $request->email;
 
-        if ($request->has('password')) {
+        if ($request->has('password') && $request->input('password') != "") {
             $password = $request->input('password');
         } else {
             $password = Str::random(8);
