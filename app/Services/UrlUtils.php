@@ -166,4 +166,19 @@ class UrlUtils
     {
         return "https://" . env('ELASTIC_USER') . ":" . env('ELASTIC_PASSWORD') . '@elastic.tracking.master.vayetek.com';
     }
+
+    public static function getFilesUrl()
+    {
+        if (App::environment() == 'test') {
+            return "http://localhost:8888";
+        }
+        if (App::environment() == 'prod') {
+            return "http://primary.api.eventizer.io";
+        }
+        if (App::environment() == 'dev') {
+            return "http://dev.primary.api.eventizer.io";
+        }
+
+        return "http://primary.api.eventizer.io";
+    }
 }
