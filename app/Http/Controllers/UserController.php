@@ -1825,14 +1825,14 @@ class UserController extends Controller
         return response()->json(['message' => 'deleted successfully'], 200);
     }
 
-    public function migrateUsersData()
+    public function migrateUsersData($congressId)
     {
-        $users = $this->userServices->getUsersWithResources();
+        $users = $this->userServices->getUsersWithResources($congressId);
         foreach ($users as $user) {
-            $user->img_base64 = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $user->profile_img->path);
             $user->update();
         }
-        return response()->json(['$users' => $users ]);
+        return response()->json(['$users' => $users]);
     }
 
 

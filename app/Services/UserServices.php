@@ -1032,7 +1032,7 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
-        if ($resource != null) 
+        if ($resource != null)
             $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
         $user->verification_code = Str::random(40);
         $user->save();
@@ -1060,9 +1060,9 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
-        if ($resource != null) 
+        if ($resource != null)
             $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
-       
+
         $user->update();
         return $user;
     }
@@ -1604,11 +1604,15 @@ class UserServices
         $white_list->delete();
     }
 
-    public function getUsersWithResources()
+    public function getUsersWithResources($congressId)
     {
-        return User::where('resource_id', '!=', null)
-        ->with('profile_img')
-        ->get();
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->whereNotNull('resource_id')
+            ->whereNull('img_base64')
+            ->with('profile_img')
+            ->get();
     }
 
 }

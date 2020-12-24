@@ -226,13 +226,9 @@ class Utils
     }
 
     public static function getBase64Img(string $path)
-    { 
-          $file = @file_get_contents($path);
-          if($file===false)
-          {
-            abort(403, "Cannot access '$path' to read contents.");
-          }
-        return base64_encode($file);
+    {
+        $file = @file_get_contents($path);
+        return $file ? base64_encode($file) : null;
     }
 
     function base64_to_jpeg($base64_string, $output_file)
