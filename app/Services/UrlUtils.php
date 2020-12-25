@@ -173,12 +173,12 @@ class UrlUtils
             return "http://localhost:8888";
         }
         if (App::environment() == 'prod') {
-            return "http://primary.api.eventizer.io";
+            return "https://primary.api.eventizer.io";
         }
         if (App::environment() == 'dev') {
-            return "http://dev.primary.api.eventizer.io";
+            return "https://dev.primary.api.eventizer.io";
         }
 
-        return "http://primary.api.eventizer.io";
+        return "https://primary.api.eventizer.io";
     }
 }
