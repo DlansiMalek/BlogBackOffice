@@ -20,10 +20,10 @@ class UrlUtils
             return "http://localhost:3000";
         }
         if (App::environment() == 'prod') {
-            return "http://vayevoting-backend-master:3000";
+            return "https://ws.vayetek.com";
         }
         if (App::environment() == 'dev') {
-            return "http://vayevoting-backend-master:3000";
+            return "https://ws.vayetek.com";
         }
         return "https://ws.vayetek.com";
         //return "http://localhost:3000";
@@ -68,10 +68,10 @@ class UrlUtils
             return "http://localhost:8080";
         }
         if (App::environment() == 'prod') {
-            return "http://payment-api-master:8080";
+            return "https://paiement-api.vayetek.com";
         }
         if (App::environment() == 'dev') {
-            return "http://payment-api-master:8080";
+            return "https://paiement-api.vayetek.com";
         }
         return "https://paiement-api.vayetek.com";
     }
@@ -82,10 +82,10 @@ class UrlUtils
             return "https://congress-file-generater.vayetek.com";
         }
         if (App::environment() == 'prod') {
-            return "http://eventizer-file-generator-master:8000";
+            return "https://congress-file-generater.vayetek.com";
         }
         if (App::environment() == 'dev') {
-            return "http://eventizer-file-generator-master:8000";
+            return "https://congress-file-generater.vayetek.com";
         }
         return "https://congress-file-generater.vayetek.com";
     }
