@@ -942,7 +942,7 @@ class CongressServices
                     $res,
                     array(
                         "stand" => $stand->name,
-                        "path" => UrlUtils::getBaseUrl() . '/resource/' . $doc->path,
+                        "path" => UrlUtils::getFilesUrl() . '/resource/' . $doc->path,
                         "filename" => substr($doc->path, strpos($doc->path, ')') + 1),
                         "version" => $doc->pivot->version
                     )
