@@ -122,7 +122,7 @@ class StandServices
                     $res,
                     array(
                         "stand" => $stand->name,
-                        "path" => UrlUtils::getFilesUrl() . '/resource/' . $doc->path,
+                        "path" => UrlUtils::getFilesUrl() . '/api/resource/' . $doc->path,
                         "filename" => $doc->path,
                         "version" => $doc->pivot->version
                     )
