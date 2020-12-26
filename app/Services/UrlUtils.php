@@ -176,9 +176,9 @@ class UrlUtils
             return "https://primary.api.eventizer.io";
         }
         if (App::environment() == 'dev') {
-            return "https://dev.primary.api.eventizer.io";
+            return "https://dev.api.eventizer.io";
         }
 
-        return "https://primary.api.eventizer.io";
+        return "http://localhost:8888";
     }
 }
