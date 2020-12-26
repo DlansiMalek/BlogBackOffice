@@ -28,6 +28,7 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use DateTime;
@@ -923,21 +924,26 @@ class CongressController extends Controller
             return response()->json(['response' => 'congress not found'], 404);
         }
 
-        $users = $this->userServices->getUsersWithRelations($congressId,
-            ['accesses' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-            }, 'user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            }, 'organization' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            }, 'organization.stands' => function ($query) use ($congressId) {
-                $query->where('Stand.congress_id', '=', $congressId);
-            }, 'speaker_access' => function ($query) use ($congressId) {
-                $query->where('Access.congress_id', '=', $congressId);
-            }, 'chair_access' => function ($query) use ($congressId) {
-                $query->where('Access.congress_id', '=', $congressId);
-            }, 'profile_img'], null);
+        if (Cache::has('users')) {
+            $users = Cache::get('users');
+        } else {
+            $users = $users = $this->userServices->getUsersWithRelations($congressId,
+                ['accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }, 'organization' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }, 'organization.stands' => function ($query) use ($congressId) {
+                    $query->where('Stand.congress_id', '=', $congressId);
+                }, 'speaker_access' => function ($query) use ($congressId) {
+                    $query->where('Access.congress_id', '=', $congressId);
+                }, 'chair_access' => function ($query) use ($congressId) {
+                    $query->where('Access.congress_id', '=', $congressId);
+                }, 'profile_img'], null);
 
+            Cache::put('users', $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
 
         $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
