@@ -552,9 +552,10 @@ class UserController extends Controller
         }
         //check if date limit
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email'))){
-            $user = $this->userServices->saveUser($request);
-    }
+        $resource = $request->has('resource_id') ? $resource = $this->resourcesServices->getResourceByResourceId($request->input('resource_id')) : null;
+
+        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
+            $user = $this->userServices->saveUser($request, $resource);
         else
             $user = $this->userServices->editUser($request, $user);
 
@@ -1544,8 +1545,8 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
-
-        $user = $this->userServices->editUser($request, $user);
+        $resource = $request->has('resource_id') ? $resource = $this->resourcesServices->getResourceByResourceId($request->input('resource_id')) : null;
+        $user = $this->userServices->editUser($request, $user, $resource);
         if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('update_profile')) {
             return response()->json(['response' => 'mail type admin not found'], 400);
         }
@@ -1817,5 +1818,16 @@ class UserController extends Controller
         $this->userServices->deleteWhiteList($white_list);
         return response()->json(['message' => 'deleted successfully'], 200);
     }
+
+    public function migrateUsersData($congressId)
+    {
+        $users = $this->userServices->getUsersWithResources($congressId);
+        foreach ($users as $user) {
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $user->profile_img->path);
+            $user->update();
+        }
+        return response()->json(['$users' => $users]);
+    }
+
 
 }

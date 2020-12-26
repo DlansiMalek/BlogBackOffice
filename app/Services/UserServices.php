@@ -646,8 +646,8 @@ class UserServices
                 )
             );
 
-            if ($user->profile_img) {
-                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+            if ($user->img_base64) {
+                $res[sizeof($res) - 1]["profile_img"] = $user->img_base64;
             }
         }
 
@@ -1014,7 +1014,7 @@ class UserServices
         return $user;
     }
 
-    public function saveUser(Request $request)
+    public function saveUser(Request $request, $resource = null)
     {
         $user = new User();
         $user->email = $request->email;
@@ -1034,6 +1034,8 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
+        if ($resource != null)
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1044,7 +1046,7 @@ class UserServices
         return $user;
     }
 
-    public function editUser(Request $request, $user)
+    public function editUser(Request $request, $user, $resource = null)
     {
         $user->email = $request->email;
 
@@ -1060,6 +1062,8 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
+        if ($resource != null)
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
 
         $user->update();
         return $user;
@@ -1601,4 +1605,16 @@ class UserServices
     {
         $white_list->delete();
     }
+
+    public function getUsersWithResources($congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->whereNotNull('resource_id')
+            ->whereNull('img_base64')
+            ->with('profile_img')
+            ->get();
+    }
+
 }
