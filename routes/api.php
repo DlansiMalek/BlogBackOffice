@@ -80,7 +80,6 @@ Route::group(['prefix' => 'resource/{path}'], function () {
 
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
-    Route::post('/upload-resource/stand', 'FileController@uploadResourceStand');
 });
 
 //Mobile API
@@ -142,7 +141,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::post('changeStatus', 'UserController@changeUserStatus');
             Route::delete('delete', 'UserController@delete');
-            Route::post('upload-payement', 'UserController@uploadPayement');
+            Route::post('update-payment', 'UserController@updateUserPayment');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
@@ -199,9 +198,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('statsStand', 'CongressController@getStatsStandByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
         Route::get('config', 'CongressController@getCongressConfigById');
-        Route::post('/upload-logo', 'FileController@uploadLogo');
-        Route::post('/upload-banner', 'FileController@uploadBanner');
-        Route::post('/upload-cv/{userId}', 'FileController@uploadCV');
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
@@ -337,6 +333,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
         ->middleware('assign.guard:users');
     Route::get('me/events', 'CongressController@getUserCongress')
         ->middleware('assign.guard:users');
+    Route::post('/update-path-cv/{userId}', 'UserController@updateUserPathCV');
+
 });
 //Admin API
 Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], function () {

@@ -890,20 +890,11 @@ class UserServices
             ->get();
     }
 
-    public function uploadPayement($userPayment, Request $request)
+    public function updateUserPayment($userPayment, $path)
     {
-        ini_set('post_max_size', '15M');
-        ini_set('upload_max_filesize', '15M');
-
-        $file = $request->file('file_data');
-        $chemin = config('media.payement-user-recu');
-        $path = $file->store($chemin);
-
         $userPayment->path = $path;
         $userPayment->isPaid = 2;
-
         $userPayment->update();
-
         return $userPayment;
     }
 

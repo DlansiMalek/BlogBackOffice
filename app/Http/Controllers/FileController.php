@@ -87,42 +87,10 @@ class FileController extends Controller
         return response()->json(['response' => 'user cv deleted', 'media' => $path], 201);
     }
 
-    public function uploadLogo(Request $request)
-    {
-        $file = $request->file('logo-file');
-        if (!Utils::verifyImg($file->getClientOriginalExtension())) {
-            return response()->json(['response' => 'file must be of type image'], 400);
-        }
-
-        $chemin = config('media.congress-logo');
-
-        $path = $file->store($chemin);
-
-        return response()->json(['path' => $path]);
-    }
-
-    public function uploadBanner(Request $request)
-    {
-        $file = $request->file('banner-file');
-
-        if (!Utils::verifyImg($file->getClientOriginalExtension())) {
-            return response()->json(['response' => 'file must be of type image'], 400);
-        }
-
-        $chemin = config('media.congress-banner');
-
-        $path = $file->store($chemin);
-
-        return response()->json(['path' => $path]);
-    }
-
     public function uploadResource(Request $request)
     {
         $file = $request->file('files'); 
-        $path_parts = pathinfo($file->getClientOriginalName());
-        $ACCESS_LEVEL = 'public';
-        $FILE_NAME = now()->timestamp . '_' . uniqid() . '.' . $path_parts['extension'];
-        Storage::disk('digitalocean')->putFile($FILE_NAME, request()->file, $ACCESS_LEVEL);
+        $FILE_NAME = Storage::disk('digitalocean')->putFile('', $file, 'public');
         $resource = $this->resourceServices->saveResource($FILE_NAME, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
@@ -145,16 +113,6 @@ class FileController extends Controller
         return response()->json(['resource_id' => $resource->resource_id]);
     }
 
-    public function uploadResourceStand(Request $request)
-    {       
-        $file = $request->file('files'); 
-        $chemin = config('media.resource');
-        $resource = $this->resourceServices->saveResource($file->getClientOriginalName(), $file->getSize());
-        $resource->path = '('.$resource->resource_id.')'.$resource->path ;
-        $resource->update();
-        $path = $file->storeAs($chemin,$resource->path);  
-        return response()->json(['resource' => $resource]);
-    }
     public function deleteLogoCongress($path)
     {
 

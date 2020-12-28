@@ -1290,14 +1290,13 @@ class UserController extends Controller
         return response()->json(['message' => 'email sended success']);
     }
 
-    public
-    function uploadPayement($userId, $congressId, Request $request)
+    public function updateUserPayment($userId, $congressId, Request $request)
     {
         if (!$paymentUser = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $paymentUser = $this->userServices->uploadPayement($paymentUser, $request);
+        $paymentUser = $this->userServices->updateUserPayment($paymentUser, $request->input('path'));
 
         $user = $this->userServices->getUserById($userId);
 
@@ -1821,6 +1820,16 @@ class UserController extends Controller
         }
         $this->userServices->deleteWhiteList($white_list);
         return response()->json(['message' => 'deleted successfully'], 200);
+    }
+
+    public function updateUserPathCV($userId, Request $request)
+    {
+        if (!$user = $this->userServices->getUserById($userId))
+        return response()->json(['response' => 'User not found'], 400);
+        $path = $request->input('path');
+        if (!$user = $this->userServices->updateUserPathCV($path, $user))
+            return response()->json(['response' => 'Path not found'], 400);
+        return response()->json(['path' => $path]); 
     }
 
 }
