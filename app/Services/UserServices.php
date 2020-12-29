@@ -1425,17 +1425,6 @@ class UserServices
         return AttestationRequest::where("user_id", '=', $user_id)->get()->toArray();
     }
 
-    public function uploadProfilePic($file, $user)
-    {
-        $timestamp = microtime(true) * 10000;
-        $path = $file->storeAs($this->path . $timestamp, $file->getClientOriginalName());
-
-        $user->profile_pic = $path;
-        $user->save();
-
-        return $user;
-    }
-
     public function retrieveUserFromToken()
     {
         try {

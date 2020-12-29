@@ -979,5 +979,21 @@ class CongressController extends Controller
         return response()->json(['message' => 'current participant number set success'], 200);
     }
 
+    public function affectAbstractBookPathToCongress(Request $request , $congressId)
+    {
+        $savedPath = $request->input('path');
+        $congress = $this->congressServices->getById($congressId);
+        $congress->path_abstract_book = $savedPath;
+        $congress->update();
+         return response()->json(['path' => $savedPath]); 
+    }
+
+    public function affectLogoToCongress(Request $request, $congressId) {
+        $path = $request->input('path');
+        $config_congress = $this->congressServices->getCongressConfigById($congressId);
+        $config_congress->logo = $path;
+        $config_congress->update();
+        return response()->json(['message' => 'success']); 
+    }
 
 }

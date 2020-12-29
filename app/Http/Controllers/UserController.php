@@ -1452,21 +1452,6 @@ class UserController extends Controller
     }
 
     public
-    function uploadProfilePic(Request $request, $user_id)
-    {
-        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
-        return $this->userServices->uploadProfilePic($request->file('file_data'), $user);
-    }
-
-    public
-    function getProfilePic($user_id)
-    {
-        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
-        if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
-        return Storage::download($user->profile_pic);
-    }
-
-    public
     function forgetPassword(Request $request)
     {
         if (!$request->has(['email']))

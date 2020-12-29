@@ -43,19 +43,6 @@ class FileController extends Controller
         return response()->json(['path' => $path]); 
     }
 
-    public function uploadAbstractBook(Request $request , $congressId)
-    {
-        
-        $file = $request->file("abstract-book-file");
-        $chemin = config('media.user-abstract-book');
-        $path = $file->store($chemin);
-        $savedPath = str_replace('user-abstract-book/', '', $path);
-        $congress = $this->congressServices->getById($congressId);
-        $congress->path_abstract_book = $savedPath;
-        $congress->update();
-         return response()->json(['path' => $savedPath]); 
-    }
-
     public function downloadBook($path)
     {
         if (!$path)
