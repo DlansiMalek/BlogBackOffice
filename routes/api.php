@@ -53,22 +53,9 @@ Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
     Route::delete('/{id}/user/{userId}/delete', 'CustomSMSController@deleteUserSms');
 });
 /* Files API */
-Route::group(['prefix' => 'congress-logo/{path}'], function () {
-    Route::post('delete', 'FileController@deleteLogoCongress');
-});
-
-Route::group(['prefix' => 'congress-banner/{path}'], function () {
-    Route::post('delete', 'FileController@deleteBannerCongress');
-});
-
-
-Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
-    Route::post('delete', 'FileController@deleteUserCV');
-});
-
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
-    Route::post('/upload-resource/{path}/delete', 'FileController@deleteResouce');
+    Route::post('/delete-resource/{path}', 'FileController@deleteResouce');
 });
 
 //Mobile API
@@ -324,6 +311,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     Route::get('me/events', 'CongressController@getUserCongress')
         ->middleware('assign.guard:users');
     Route::post('/update-path-cv/{userId}', 'UserController@updateUserPathCV');
+    Route::get('/delete-user-cv/{user_id}', 'UserController@deleteUserCV');
 
 });
 //Admin API

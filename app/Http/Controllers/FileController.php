@@ -27,34 +27,7 @@ class FileController extends Controller
         $this->resourceServices = $resourceServices;
         $this->congressServices = $congressServices;
     }
-
-    public function uploadCV(Request $request, $congressId, $userId)
-    {
-
-        if (!$user = $this->userServices->getUserById($userId))
-            return response()->json(['response' => 'User not found'], 400);
-
-        $file = $request->file("cv-file");
-        $chemin = config('media.user-cv');
-        $path = $file->store($chemin);
-        if (!$user = $this->userServices->updateUserPathCV($path, $user))
-            return response()->json(['response' => 'Path not found'], 400);
-
-        return response()->json(['path' => $path]); 
-    }
-
-    public function deleteUserCV($path, $userId)
-    {
-        if (!$user = $this->userServices->getUserById($userId))
-            return response()->json(['response' => 'user not found'], 400);
-
-        $chemin = config('media.user-cv');
-        $path = $chemin . '/' . $path;
-        Storage::delete($path);
-        $this->userServices->makeUserPathCvNull($user);
-        return response()->json(['response' => 'user cv deleted', 'media' => $path], 201);
-    }
-
+    
     public function uploadResource(Request $request)
     {
         $file = $request->file('files'); 
@@ -71,25 +44,5 @@ class FileController extends Controller
         Storage::disk('digitalocean')->delete($path);
 
         return response()->json(['resource_id' => $resource->resource_id]);
-    }
-
-    public function deleteLogoCongress($path)
-    {
-
-        $chemin = config('media.congress-logo');
-        $path = $chemin . '/' . $path;
-        Storage::delete($path);
-
-        return response()->json(['response' => 'congress logo deleted', 'media' => $path], 201);
-    }
-
-    public function deleteBannerCongress($path)
-    {
-
-        $chemin = config('media.congress-banner');
-        $path = $chemin . '/' . $path;
-        Storage::delete($path);
-
-        return response()->json(['response' => 'congress banner deleted', 'media' => $path], 201);
     }
 }

@@ -1801,11 +1801,20 @@ class UserController extends Controller
     public function updateUserPathCV($userId, Request $request)
     {
         if (!$user = $this->userServices->getUserById($userId))
-        return response()->json(['response' => 'User not found'], 400);
+        return response()->json(['response' => 'User not found'], 404);
         $path = $request->input('path');
         if (!$user = $this->userServices->updateUserPathCV($path, $user))
-            return response()->json(['response' => 'Path not found'], 400);
+            return response()->json(['response' => 'Path not found'], 404);
         return response()->json(['path' => $path]); 
+    }
+
+    public function deleteUserCV($userId)
+    {
+        if (!$user = $this->userServices->getUserById($userId))
+            return response()->json(['response' => 'user not found'], 404);
+        $this->userServices->makeUserPathCvNull($user);
+        return response()->json(['response' => 'user cv deleted'], 200);
+
     }
 
 }
