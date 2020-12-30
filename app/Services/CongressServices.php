@@ -119,8 +119,10 @@ class CongressServices
         ])->orderBy('start_date', 'desc')
             ->offset($offset)->limit($perPage)
             ->where('private', '=', 0)
-            ->where('name', 'LIKE', '%' . $search . '%')
-            ->orWhere('description', 'LIKE', '%' . $search . '%')
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%');
+                $query->orWhere('description', 'LIKE', '%' . $search . '%');
+            })
             ->get();
 
         if ($startDate) {
