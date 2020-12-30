@@ -16,9 +16,5 @@ class ResourcesController extends Controller
         $this->resourcesServices = $resourcesServices;
     }
 
-    public function uploadResource(Request $request)
-    {
-        return $this->resourcesServices->uploadResource($request->file('file_data')); 
-    }
 
 }

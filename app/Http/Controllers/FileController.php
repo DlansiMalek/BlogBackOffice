@@ -43,25 +43,6 @@ class FileController extends Controller
         return response()->json(['path' => $path]); 
     }
 
-    public function downloadBook($path)
-    {
-        if (!$path)
-            return response()->json(['response' => 'No Book Found'], 400);
-
-        $chemin = config('media.user-abstract-book');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
-
-    public function getUserCV($path)
-    {
-        if (!$path)
-            return response()->json(['response' => 'No CV Found'], 400);
-
-        $chemin = config('media.user-cv');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
     public function deleteUserCV($path, $userId)
     {
         if (!$user = $this->userServices->getUserById($userId))
@@ -82,20 +63,12 @@ class FileController extends Controller
         return response()->json(['resource' => $resource]);
     }
 
-    public function getResouce($path)
-    {
-        $chemin = config('media.resource');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
     public function deleteResouce($path)
     {
         if (!$resource = $this->resourceServices->getResourceByPath($path))
             return response()->json(['response' => 'No resource found'], 400);
         $resource->delete();
-        $chemin = config('media.resource');
-        $path = $chemin . '/' . $path;
-        Storage::delete($path);
+        Storage::disk('digitalocean')->delete($path);
 
         return response()->json(['resource_id' => $resource->resource_id]);
     }
@@ -110,12 +83,6 @@ class FileController extends Controller
         return response()->json(['response' => 'congress logo deleted', 'media' => $path], 201);
     }
 
-    public function getLogoCongress($path)
-    {
-        $chemin = config('media.congress-logo');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
     public function deleteBannerCongress($path)
     {
 
@@ -124,18 +91,5 @@ class FileController extends Controller
         Storage::delete($path);
 
         return response()->json(['response' => 'congress banner deleted', 'media' => $path], 201);
-    }
-
-    public function getBannerCongress($path)
-    {
-        $chemin = config('media.congress-banner');
-        return response()->download(storage_path('app/' . $chemin . "/" . $path));
-    }
-
-    public function getResouceSubmission($path, Request $request)
-    {
-        $ext = $request->query('ext');
-        $chemin = config('media.resource');
-        return response()->download(storage_path('app/' . $chemin. "/" . $path  . $ext ));
     }
 }

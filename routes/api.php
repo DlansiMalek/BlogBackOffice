@@ -41,9 +41,6 @@ Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
 
-Route::group(['prefix' => 'user-abstract-book/{path}'], function () {
-    Route::get('/downloadAbstractBook', 'FileController@downloadBook');
-});
 //SMS API
 
 Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
@@ -57,29 +54,21 @@ Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
 });
 /* Files API */
 Route::group(['prefix' => 'congress-logo/{path}'], function () {
-    Route::get('', 'FileController@getLogoCongress');
     Route::post('delete', 'FileController@deleteLogoCongress');
 });
 
 Route::group(['prefix' => 'congress-banner/{path}'], function () {
-    Route::get('', 'FileController@getBannerCongress');
     Route::post('delete', 'FileController@deleteBannerCongress');
 });
 
 
 Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
-    Route::get('', 'FileController@getUserCV');
     Route::post('delete', 'FileController@deleteUserCV');
 });
 
-Route::group(['prefix' => 'resource/{path}'], function () {
-    Route::get('', 'FileController@getResouce');
-    Route::post('delete', 'FileController@deleteResouce');
-});
-// Route::get('resource/get/{path}', 'FileController@getResouceSubmission');
-
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
+    Route::post('/upload-resource/{path}/delete', 'FileController@deleteResouce');
 });
 
 //Mobile API
@@ -295,7 +284,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     });
 
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
-    Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
 
     Route::post('/register', 'UserController@registerUser');
 
@@ -510,9 +498,6 @@ Route::group(["prefix" => "voting-users"], function () {
 });
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
 Route::get('encrypt/{password}', 'SharedController@encrypt');
-Route::group(['prefix' => 'resource'], function () {
-    Route::post('', 'ResourcesController@uploadResource')->middleware('admin');
-});
 
 Route::group(['prefix' => 'access'], function () {
     Route::get('', 'AccessController@getAllAccess');

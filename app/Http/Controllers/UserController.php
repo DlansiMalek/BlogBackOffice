@@ -1543,17 +1543,8 @@ class UserController extends Controller
             $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
             $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
         }
-
+        $user = $this->userServices->getUserById($user->user_id);
         return response()->json($user, 200);
-    }
-
-    public
-    function getResourceByResourceId($resourceId)
-    {
-        $chemin = config('media.resource');
-        $resource = $this->resourcesServices->getResourceByResourceId($resourceId);
-
-        return response()->download(storage_path('app/' . $chemin . "/" . $resource->path));
     }
 
     private

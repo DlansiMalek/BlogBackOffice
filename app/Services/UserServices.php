@@ -1194,7 +1194,8 @@ class UserServices
             'speaker_access',
             'chair_access',
             'country',
-            'likes'
+            'likes',
+            'profile_img'
         ])
             ->where('user_id', '=', $userId)
             ->first();
