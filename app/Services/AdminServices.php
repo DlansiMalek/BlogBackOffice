@@ -499,6 +499,8 @@ class AdminServices
         $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
+        $template = str_replace('{{$user-&gt;gender}}', '{{$user->gender}}', $template);
+
 
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink]);
     }

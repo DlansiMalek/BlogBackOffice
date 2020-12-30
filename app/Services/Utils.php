@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+
 class Utils
 {
 
@@ -226,7 +227,8 @@ class Utils
 
     public static function getBase64Img(string $path)
     {
-        return base64_encode(file_get_contents($path));
+        $file = @file_get_contents($path);
+        return $file ? base64_encode($file) : null;
     }
 
     function base64_to_jpeg($base64_string, $output_file)

@@ -546,16 +546,16 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         $privilegeId = $request->input('privilege_id');
-        if ($privilegeId == 3 && !$request->has('price')) {
-            return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
-        }
+        
         if ($request->has('avatar_id') && $privilegeId != 7) {
             $request->merge(['avatar_id' => null]);
         }
         //check if date limit
         // Get User per mail
+        $resource = $request->has('resource_id') ? $resource = $this->resourcesServices->getResourceByResourceId($request->input('resource_id')) : null;
+
         if (!$user = $this->userServices->getUserByEmail($request->input('email')))
-            $user = $this->userServices->saveUser($request);
+            $user = $this->userServices->saveUser($request, $resource);
         else
             $user = $this->userServices->editUser($request, $user);
 
@@ -569,16 +569,12 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
-        $packIds = $request->input('packIds', 0);
-        if (sizeof($congress->packs) > 0 && sizeof($packIds) === 0) {
-            return response()->json('you should select at least one pack', 400);
-        }
 
         // Affect User to Congress
         $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
-        $packId = $request->input('packIds', 0);
-        $accessesIds = $request->input('accessIds', []);
+        $packId = $request->input('packIds', []);
+        $accessesIds = $request->has('accessIds') ? $request->input('accessIds', []) : $request->input('accessesId', []);
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
         return response()->json(['response' => 'Inscrit avec succès'], 200);
     }
@@ -1533,8 +1529,8 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
-
-        $user = $this->userServices->editUser($request, $user);
+        $resource = $request->has('resource_id') ? $resource = $this->resourcesServices->getResourceByResourceId($request->input('resource_id')) : null;
+        $user = $this->userServices->editUser($request, $user, $resource);
         if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('update_profile')) {
             return response()->json(['response' => 'mail type admin not found'], 400);
         }
@@ -1816,5 +1812,17 @@ class UserController extends Controller
         return response()->json(['response' => 'user cv deleted'], 200);
 
     }
+
+    public function migrateUsersData($congressId)
+    {
+        $users = $this->userServices->getUsersWithResources($congressId);
+        foreach ($users as $user) {
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $user->profile_img->path);
+            $user->update();
+        }
+        return response()->json(['$users' => $users]);
+    }
+
+
 
 }

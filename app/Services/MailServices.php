@@ -334,6 +334,7 @@ class MailServices
                 'content-type' => 'application/json',
                 'api-key' => env('API_KEY_SEND_BLUE')
             ],
+            'http_errors' => false
         ]);
         $httpBody = \GuzzleHttp\json_encode($message);
         $res = $this->client->post('', [
