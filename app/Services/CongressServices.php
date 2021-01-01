@@ -118,8 +118,11 @@ class CongressServices
             },
         ])->orderBy('start_date', 'desc')
             ->offset($offset)->limit($perPage)
-            ->where('name', 'LIKE', '%' . $search . '%')
-            ->orWhere('description', 'LIKE', '%' . $search . '%')
+            ->where('private', '=', 0)
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%');
+                $query->orWhere('description', 'LIKE', '%' . $search . '%');
+            })
             ->get();
 
         if ($startDate) {
@@ -432,6 +435,7 @@ class CongressServices
         $congress->price = $congressRequest->input('price') && $congressRequest->input('congress_type_id') === '1' ? $congressRequest->input('price') : 0;
         $congress->description = $congressRequest->input('description');
         $congress->congress_type_id = $congressRequest->input('congress_type_id');
+        $congress->private = $congressRequest->input('private');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -617,6 +621,7 @@ class CongressServices
         $congress->price = $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0;
         $congress->congress_type_id = $request->input('congress_type_id');
         $congress->description = $request->input('description');
+        $congress->private = $request->input('private');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
