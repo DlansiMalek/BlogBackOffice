@@ -96,6 +96,12 @@ class ResourcesServices
         return $resourceSubmission;
     }
 
+
+    public function getResourceByResourceId($resourceId)
+    {
+        return Resource::where('resource_id', '=', $resourceId)->first();
+    }
+
     public function addRessourcesExternal($submission, $item)
     {
         $file = new Filesystem();
