@@ -890,20 +890,11 @@ class UserServices
             ->get();
     }
 
-    public function uploadPayement($userPayment, Request $request)
+    public function updateUserPayment($userPayment, $path)
     {
-        ini_set('post_max_size', '15M');
-        ini_set('upload_max_filesize', '15M');
-
-        $file = $request->file('file_data');
-        $chemin = config('media.payement-user-recu');
-        $path = $file->store($chemin);
-
         $userPayment->path = $path;
         $userPayment->isPaid = 2;
-
         $userPayment->update();
-
         return $userPayment;
     }
 
@@ -1207,7 +1198,8 @@ class UserServices
             'speaker_access',
             'chair_access',
             'country',
-            'likes'
+            'likes',
+            'profile_img'
         ])
             ->where('user_id', '=', $userId)
             ->first();
@@ -1436,17 +1428,6 @@ class UserServices
     public function getAttestationRequestsByUserId($user_id)
     {
         return AttestationRequest::where("user_id", '=', $user_id)->get()->toArray();
-    }
-
-    public function uploadProfilePic($file, $user)
-    {
-        $timestamp = microtime(true) * 10000;
-        $path = $file->storeAs($this->path . $timestamp, $file->getClientOriginalName());
-
-        $user->profile_pic = $path;
-        $user->save();
-
-        return $user;
     }
 
     public function retrieveUserFromToken()

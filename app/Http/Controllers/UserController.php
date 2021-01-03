@@ -1286,14 +1286,13 @@ class UserController extends Controller
         return response()->json(['message' => 'email sended success']);
     }
 
-    public
-    function uploadPayement($userId, $congressId, Request $request)
+    public function updateUserPayment($userId, $congressId, Request $request)
     {
         if (!$paymentUser = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $paymentUser = $this->userServices->uploadPayement($paymentUser, $request);
+        $paymentUser = $this->userServices->updateUserPayment($paymentUser, $request->input('path'));
 
         $user = $this->userServices->getUserById($userId);
 
@@ -1449,21 +1448,6 @@ class UserController extends Controller
     }
 
     public
-    function uploadProfilePic(Request $request, $user_id)
-    {
-        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
-        return $this->userServices->uploadProfilePic($request->file('file_data'), $user);
-    }
-
-    public
-    function getProfilePic($user_id)
-    {
-        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
-        if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
-        return Storage::download($user->profile_pic);
-    }
-
-    public
     function forgetPassword(Request $request)
     {
         if (!$request->has(['email']))
@@ -1555,17 +1539,8 @@ class UserController extends Controller
             $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
             $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
         }
-
+        $user = $this->userServices->getUserById($user->user_id);
         return response()->json($user, 200);
-    }
-
-    public
-    function getResourceByResourceId($resourceId)
-    {
-        $chemin = config('media.resource');
-        $resource = $this->resourcesServices->getResourceByResourceId($resourceId);
-
-        return response()->download(storage_path('app/' . $chemin . "/" . $resource->path));
     }
 
     private
@@ -1819,6 +1794,25 @@ class UserController extends Controller
         return response()->json(['message' => 'deleted successfully'], 200);
     }
 
+    public function updateUserPathCV($userId, Request $request)
+    {
+        if (!$user = $this->userServices->getUserById($userId))
+        return response()->json(['response' => 'User not found'], 404);
+        $path = $request->input('path');
+        if (!$user = $this->userServices->updateUserPathCV($path, $user))
+            return response()->json(['response' => 'Path not found'], 404);
+        return response()->json(['path' => $path]); 
+    }
+
+    public function deleteUserCV($userId)
+    {
+        if (!$user = $this->userServices->getUserById($userId))
+            return response()->json(['response' => 'user not found'], 404);
+        $this->userServices->makeUserPathCvNull($user);
+        return response()->json(['response' => 'user cv deleted'], 200);
+
+    }
+
     public function migrateUsersData($congressId)
     {
         $users = $this->userServices->getUsersWithResources($congressId);
@@ -1828,6 +1822,7 @@ class UserController extends Controller
         }
         return response()->json(['$users' => $users]);
     }
+
 
 
 }
