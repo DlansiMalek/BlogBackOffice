@@ -558,7 +558,7 @@ class SubmissionServices
                         );
                     }, json_decode($submission->authors, true)),
                     "resources" => array_map(function ($object) {
-                        return UrlUtils::getBaseUrl() . '/resource/' . $object['path'];
+                        return UrlUtils::getFilesUrl() . '/resource/' . $object['path'];
                     }, json_decode($submission->resources, true))
                 )
             );

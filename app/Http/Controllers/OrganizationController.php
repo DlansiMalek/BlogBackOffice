@@ -112,27 +112,28 @@ class OrganizationController extends Controller
 
     function editOrganization (Request $request, $organization_id) {
         $oldOrg = $this->organizationServices->getOrganizationById($organization_id);
-     
-      $this->organizationServices->editOrganization(
+        $admin = $this->adminServices->getAdminById($request->input("admin")["admin_id"]);
+        $admin->email = $request->input("email");
+        $admin->name = $request->input("name");
+        $admin->mobile = $request->input("mobile");
+        $this->adminServices->editPersonnel($admin);
+        $this->organizationServices->editOrganization(
          $oldOrg,
-         $request->input("name"),
-         $request->input("mobile"),
-         $request->input("description")
+         $request
       );
       return response()->json('organization updated',200);
  }
 
 
-   function deleteOrganization($congress_id , $organization_id)
-      {  
-          if (!$organization = $this->organizationServices->getOrganizationById($organization_id)) {
-          return response()->json('no organization found' ,404);
+   function deleteOrganization($congress_id, $organization_id)
+   {  
+       if (!$organization = $this->organizationServices->getOrganizationById($organization_id))
+            return response()->json('no organization found' ,404);
+        $congressOrganization = $this->organizationServices->getCongressOrganization($congress_id, $organization_id);
+        $this->organizationServices->deleteCongressOrganization($congressOrganization);
+        $this->organizationServices->deleteOrganization($organization);
+        return response()->json(['response' => 'organization deleted'],200);
       }
-        $organization->delete();
-         return response()->json(['response' => 'organization deleted'],200);
-      }
-
-
 
     public function getCongressOrganizations($congress_id)
     {
@@ -142,6 +143,16 @@ class OrganizationController extends Controller
         $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id);
 
         return response()->json($organizations);
+    }
+
+    public function getOrganizmeByCongress(Request $request,$congressId) {
+        $isLogoPosition = $request->query('logo');
+        if (!$this->congressServices->getCongressById($congressId)) {
+            return response()->json('no congress found',404);
+        }
+        return  $this->organizationServices->getOrganizmeByCongressId($congressId,$isLogoPosition);
+
+
     }
 
     public function getCongress($admin_id)
@@ -155,9 +166,9 @@ class OrganizationController extends Controller
         return $this->organizationServices->getOrganizationByAdminId($admin_id);
     }
 
-    public function getOrganizationById($admin_id)
+    public function getOrganizationById($organization_id)
     {
-        return $this->organizationServices->getOrganizationById($admin_id);
+        return $this->organizationServices->getOrganizationById($organization_id);
     }
 
     public function acceptAllParticipants($organization_id)

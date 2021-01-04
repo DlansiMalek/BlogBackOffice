@@ -9,7 +9,6 @@ use App\Models\Badge;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
 use App\Models\User;
-use App\Models\UserMail;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -28,9 +27,8 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use DateTime;
 
 class CongressController extends Controller
 {
@@ -922,22 +920,28 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
+        $cacheKey = 'congress-' . $congressId . '-users';
 
-        $users = $this->userServices->getUsersWithRelations($congressId,
-            ['accesses' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-            }, 'user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            }, 'organization' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            }, 'organization.stands' => function ($query) use ($congressId) {
-                $query->where('Stand.congress_id', '=', $congressId);
-            }, 'speaker_access' => function ($query) use ($congressId) {
-                $query->where('Access.congress_id', '=', $congressId);
-            }, 'chair_access' => function ($query) use ($congressId) {
-                $query->where('Access.congress_id', '=', $congressId);
-            }, 'profile_img'], null);
+        if (Cache::has($cacheKey)) {
+            $users = Cache::get($cacheKey);
+        } else {
+            $users = $users = $this->userServices->getUsersWithRelations($congressId,
+                ['accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }, 'organization' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }, 'organization.stands' => function ($query) use ($congressId) {
+                    $query->where('Stand.congress_id', '=', $congressId);
+                }, 'speaker_access' => function ($query) use ($congressId) {
+                    $query->where('Access.congress_id', '=', $congressId);
+                }, 'chair_access' => function ($query) use ($congressId) {
+                    $query->where('Access.congress_id', '=', $congressId);
+                }, 'profile_img'], null);
 
+            Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
 
         $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
@@ -979,5 +983,21 @@ class CongressController extends Controller
         return response()->json(['message' => 'current participant number set success'], 200);
     }
 
+    public function affectAbstractBookPathToCongress(Request $request , $congressId)
+    {
+        $savedPath = $request->input('path');
+        $congress = $this->congressServices->getById($congressId);
+        $congress->path_abstract_book = $savedPath;
+        $congress->update();
+         return response()->json(['path' => $savedPath]); 
+    }
+
+    public function affectLogoToCongress(Request $request, $congressId) {
+        $path = $request->input('path');
+        $config_congress = $this->congressServices->getCongressConfigById($congressId);
+        $config_congress->logo = $path;
+        $config_congress->update();
+        return response()->json(['message' => 'success']); 
+    }
 
 }

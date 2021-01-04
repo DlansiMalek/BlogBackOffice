@@ -29,30 +29,53 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id)
     {
-        return Organization::with(['CongressOrganization'])->find($organization_id);
+        return Organization::with(['CongressOrganization', 'resource', 'admin' => function ($query) {
+            $query->select('admin_id','email');
+        }])->find($organization_id);
     }
 
     public function addOrganization(Request $request, $admin_id)
     {
         $organization = new Organization();
         $organization->name = $request->input("name");
-        $organization->description = $request->input("description");
+        $organization->description = $request->has("description")? $request->input('description') : null;
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
-
+        $organization->resource_id = $request->input("resource_id");
+        $organization->is_sponsor = $request->input("is_sponsor");
+        $organization->logo_position = $request->input("logo_position");
         $organization->save();
         return $organization;
     }
 
-    public function editOrganization($oldOrg,$name,$mobile,$description) {
+    public function editOrganization($oldOrg, $request) {
        
-        $oldOrg->name =  $name;
-        $oldOrg->mobile = $mobile;
-        $oldOrg->description = $description;
+        $oldOrg->name =  $request->input("name");
+        $oldOrg->description = $request->has("description")? $request->input('description') : null;
+        $oldOrg->mobile = $request->input("mobile");
+        $oldOrg->resource_id = $request->input("resource_id");
+        $oldOrg->is_sponsor = $request->input("is_sponsor");
+        $oldOrg->logo_position = $request->input("logo_position");
         $oldOrg->update();
         return $oldOrg ;
     }
 
+    public function deleteOrganization($organization)
+    {
+        return $organization->delete();
+    }
+
+    public function deleteCongressOrganization($congressOrganization)
+    {
+        return $congressOrganization->delete();
+    }
+
+    public function getCongressOrganization($congress_id, $organization_id)
+    {
+        return CongressOrganization::where('congress_id', '=', $congress_id)
+        ->where('organization_id', '=', $organization_id)
+        ->first();
+    }
 
     public function getOrganizationByAdminId($admin_id)
     {
@@ -110,4 +133,13 @@ class OrganizationServices
     }
 
 
+   public function getOrganizmeByCongressId($congressId,$isLogoPosition) {      
+       return Organization::whereHas('congressOrganization',function($query) use($congressId) {
+           $query->where('congress_id','=',$congressId);
+       })->when($isLogoPosition,function($query) {
+            return $query->where('logo_position','!=',NULL);
+       })
+       ->with('resource')
+       ->get();
+   }
 }
