@@ -42,7 +42,7 @@ class Admin extends Authenticatable implements JWTSubject
     public function submissionEvaluation(){
 
         return $this->hasMany('App\Models\SubmissionEvaluation','admin_id','admin_id');
-    } 
+    }
 
     function themeAdmin()
     {
@@ -58,16 +58,24 @@ class Admin extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany('App\Models\Submission', 'Submission_Evaluation', 'admin_id', 'submission_id');
     }
+    public function evaluations()
+    {
+        return $this->belongsToMany('App\Models\User',  'Evaluation_Inscription', 'admin_id', 'user_id');
+    }
 
-    
     public function payments()
     {
         return $this->hasMany('App\Models\Payment', 'admin_id', 'admin_id');
     }
 
-    public function AdminPayments()
+    public function adminPayment()
     {
         return $this->hasMany('App\Models\PaymentAdmin', 'admin_id', 'admin_id');
+    }
+
+    public function offres()
+    {
+        return $this->hasMany('App\Models\Offre', 'admin_id', 'admin_id');
     }
 
     public function getJWTIdentifier()

@@ -9,11 +9,11 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-composer.lock
 ./public/vendor/l5-swagger
 ./resources/views/vendor/l5-swagger
 ./storage/api-docs
 .env
 .env.dev
 .env.prod
+.env.testing
 _git2_a09040

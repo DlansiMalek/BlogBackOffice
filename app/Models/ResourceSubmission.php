@@ -12,5 +12,9 @@ class ResourceSubmission extends Model
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['resource_id', 'submission_id'];
 
- 
+    public function resource()
+    {
+        return $this->belongsTo(Resource::class, 'resource_id', 'resource_id');
+    }
+
 }

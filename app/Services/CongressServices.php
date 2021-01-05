@@ -4,21 +4,30 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AdminCongress;
+use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
-use App\Models\CongressTheme;
+use App\Models\ConfigSelection;
+use App\Models\ConfigSubmission;
 use App\Models\Congress;
+use App\Models\CongressTheme;
+use App\Models\ItemEvaluation;
+use App\Models\ItemNote;
 use App\Models\Location;
 use App\Models\Mail;
 use App\Models\MailType;
-use App\Models\Organization;
-use App\Models\Pack;
+use App\Models\Offre;
 use App\Models\Payment;
-use App\Models\ConfigSubmission;
+use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\Stand;
+use DateTime;
+use Exception;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use JWTAuth;
 use PDF;
+use function foo\func;
 
 
 /**
@@ -26,7 +35,6 @@ use PDF;
  */
 class CongressServices
 {
-
 
     public function __construct(OrganizationServices $organizationServices, GeoServices $geoServices)
     {
@@ -36,7 +44,12 @@ class CongressServices
 
     public function getById($congressId)
     {
-        return Congress::find($congressId);
+        return Congress::where('congress_id', '=', $congressId)
+            ->with(['config_selection', 'evaluation_inscription', 'users' => function ($query) {
+                $query->select('User.user_id');
+            }])
+            ->first();
+
     }
 
     public function getAll()
@@ -44,31 +57,98 @@ class CongressServices
         return Congress::all();
     }
 
+    public function getMinCongressData()
+    {
+        return Congress::select('congress_id', 'name')->get();
+    }
+
     public function getConfigSubmission($congress_id)
     {
         return ConfigSubmission::where('congress_id', '=', $congress_id)->first();
     }
 
+    public function addItemsEvaluation($itemsEvaluation, $congress_id)
+    {
 
-    public function getCongressPagination($offset, $perPage, $search)
+        foreach ($itemsEvaluation as $itemEvaluation) {
+
+            $item = new ItemEvaluation();
+            $item->label = $itemEvaluation['label'];
+            $item->ponderation = $itemEvaluation['ponderation'];
+            $item->congress_id = $congress_id;
+            $item->save();
+
+        }
+    }
+
+    public function addItemsNote($itemsNote, $evaluation_inscription_id)
+    {
+
+        foreach ($itemsNote as $itemNote) {
+            $item = new ItemNote();
+            $item->note = $itemNote['note'];
+            $item->comment = $itemNote['comment'];
+            $item->item_evaluation_id = $itemNote['item_evaluation_id'];
+            $item->evaluation_inscription_id = $evaluation_inscription_id;
+            $item->save();
+        }
+    }
+
+    public function getItemsEvaluation($congress_id)
+    {
+        return ItemEvaluation::where('congress_id', '=', $congress_id)
+            ->with(['itemNote'])
+            ->get();
+    }
+
+    public function getConfigSelection($congress_id)
+    {
+        return configSelection::where('congress_id', '=', $congress_id)->first();
+    }
+
+    public function getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status)
     {
 
         $all_congresses = Congress::with([
-            "config:congress_id,logo,banner,program_link,status,free",
+            "config:congress_id,logo,banner,program_link,status,free,currency_code",
             "theme:label,description",
-            "location.city:city_id,name"
+            "location.city:city_id,name",
+            'admin_congresses' => function ($query) {
+                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
+            },
         ])->orderBy('start_date', 'desc')
             ->offset($offset)->limit($perPage)
-            ->where('name', 'LIKE', '%' . $search . '%')
-            ->orWhere('description', 'LIKE', '%' . $search . '%')
+            ->where('private', '=', 0)
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%');
+                $query->orWhere('description', 'LIKE', '%' . $search . '%');
+            })
             ->get();
+
+        if ($startDate) {
+            $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
+        }
+        if ($endDate) {
+            $all_congresses = $all_congresses->where('end_date', '<=', $endDate)->values();
+        }
+        $todayDate = date("Y-m-d");
+        if ($status == "0") {
+            $all_congresses = $all_congresses->where('end_date', '<=', $todayDate)->values();
+        }
+        if ($status == "1") {
+            $all_congresses = $all_congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate)->values();
+        }
+        if ($status == "2") {
+            $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
+        }
+
         $congress_renderer = $all_congresses->map(function ($congress) {
             return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date",
+                ->only(["congress_id", "name", "start_date", "admin_congresses",
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-        return $congress_renderer;
+        return response()->json($congress_renderer);
     }
 
     public function getMinimalCongress()
@@ -92,6 +172,7 @@ class CongressServices
         ])
             ->get();
     }
+
     public function getMinimalCongressById($congressId)
     {
 
@@ -101,12 +182,13 @@ class CongressServices
             "form_inputs.type",
             "form_inputs.values",
             "config",
+            "config_selection",
             "badges" => function ($query) use ($congressId) {
                 $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
             },
             "packs",
-            "accesss.packs" => function ($query) use ($congressId){
-                $query->where('congress_id','=',$congressId);                
+            "accesss.packs" => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
             },
             "accesss" => function ($query) use ($congressId) {
                 $query->where('show_in_register', '=', 1);
@@ -126,7 +208,11 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'users.responses.form_input',
+                'users.accesses' => function ($query) use ($id_Congress) {
+                    $query->where('congress_id', '=', $id_Congress);
+                },
                 'config',
+                'config_selection',
                 "badges",
                 "attestation",
                 "packs.accesses",
@@ -156,6 +242,154 @@ class CongressServices
             ->first();
         return $congress;
     }
+
+    public function getCongressDetailsById($congressId)
+    {
+        $congress = Congress::withCount('users')
+            ->with([
+                'config',
+                'config_selection',
+                "packs.accesses",
+                'ConfigSubmission' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'location.city.country',
+                'accesss.speakers',
+                'accesss.chairs',
+                'accesss.sub_accesses',
+                'accesss.topic',
+                'accesss.type'
+            ])
+            ->where("congress_id", "=", $congressId)
+            ->first();
+        return $congress;
+    }
+
+    public function getTimePassedInCongressAccessAndStand($users, $congress, $access, $stands)
+    {
+        $congress['totalTimePassed'] = 0;
+        foreach ($users as $user) {
+            $user['timePassedCongress'] = 0;
+            $usertimePassedPerStand = [];
+            $usertimePassedPerAcc = [];
+            $timeCongess1 = null;
+            $timeCongess2 = null;
+            $timeAccess1 = null;
+            $timeAccess2 = null;
+            $timeStand1 = null;
+            $timeStand2 = null;
+            foreach ($user->tracking as $key => $tracking) {
+
+                if ($tracking->action_id == 1) {
+                    $timeCongess1 = new DateTime($tracking->date);
+                }
+                if ($tracking->action_id == 2) {
+                    $timeCongess2 = new DateTime($tracking->date);
+                    if ($timeCongess2 && $timeCongess1) {
+                        $interval = $timeCongess2->diff($timeCongess1);
+                        $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                        $user['timePassedCongress'] += $interval;
+                        $timeCongess2 = null;
+                        $timeCongess1 = null;
+                    }
+
+                }
+                if ($tracking->action_id == 3)
+                    $timeAccess1 = new DateTime($tracking->date);
+                if ($tracking->access_id && !isset($usertimePassedPerAcc[$tracking->access_id]))
+                    $usertimePassedPerAcc[$tracking->access_id] = ['access_id' => $tracking->access_id, 'timePassed' => 0];
+                if ($tracking->stand_id && !isset($usertimePassedPerStand[$tracking->stand_id]))
+                    $usertimePassedPerStand[$tracking->stand_id] = ['stand_id' => $tracking->stand_id, 'timePassed' => 0];
+
+
+                if ($tracking->action_id == 4) {
+                    if ($tracking->access_id) {
+                        $timeAccess2 = new DateTime($tracking->date);
+                        if ($timeAccess2 && $timeAccess1) {
+                            $interval = $timeAccess2->diff($timeAccess1);
+                            $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                            $usertimePassedPerAcc[$tracking->access_id]['timePassed'] += $interval;
+                            $usertimePassedPerAcc[$tracking->access_id]['access_id'] = $tracking->access_id;
+                            $timeAccess2 = null;
+                            $timeAccess1 = null;
+                        }
+
+                    }
+                    if ($tracking->stand_id) {
+
+                        $timeStand2 = new DateTime($tracking->date);
+                        if ($timeStand1 && $timeStand2) {
+
+                            $interval = $timeStand2->diff($timeStand1);
+                            $interval = ($interval->s + ($interval->i * 60) + ($interval->h * 3600));
+                            $usertimePassedPerStand[$tracking->stand_id]['timePassed'] += $interval;
+                            $usertimePassedPerStand[$tracking->stand_id]['stand_id'] = $tracking->stand_id;
+
+                            $timeStand2 = null;
+                            $timeStand1 = null;
+
+                        }
+
+                    }
+                }
+            }
+            $user['timePassedPerStand'] = $usertimePassedPerStand;
+
+            $user['timePassedPerAccess'] = $usertimePassedPerAcc;
+            $congress['totalTimePassed'] += $user['timePassedCongress'];
+        }
+
+        foreach ($users as $user) {
+            foreach ($user['timePassedPerAccess'] as $key => $timeAcc) {
+
+                $left = 0;
+                $right = sizeof($access) - 1;
+                $index = -1;
+                while ($left <= $right) {
+                    $midpoint = (int)floor(($left + $right) / 2);
+
+                    if ($access[$midpoint]['access_id'] < $timeAcc['access_id']) {
+                        $left = $midpoint + 1;
+                    } elseif ($access[$midpoint]['access_id'] > $timeAcc['access_id']) {
+                        $right = $midpoint - 1;
+                    } else {
+                        if (isset($access[$midpoint]['timePassed'])) {
+                            $access[$midpoint]['timePassed'] += $timeAcc['timePassed'];
+                        } else {
+                            $access[$midpoint]['timePassed'] = $timeAcc['timePassed'];
+                        }
+                        break;
+                    }
+                }
+            }
+            foreach ($user['timePassedPerStand'] as $key => $timeStand) {
+
+                $left = 0;
+                $right = sizeof($stands) - 1;
+                $index = -1;
+                while ($left <= $right) {
+                    $midpoint = (int)floor(($left + $right) / 2);
+
+                    if ($stands[$midpoint]['stand_id'] < $timeStand['stand_id']) {
+                        $left = $midpoint + 1;
+                    } elseif ($stands[$midpoint]['stand_id'] > $timeStand['stand_id']) {
+                        $right = $midpoint - 1;
+                    } else {
+                        if (isset($stands[$midpoint]['timePassed'])) {
+                            $stands[$midpoint]['timePassed'] += $timeStand['timePassed'];
+                        } else {
+                            $stands[$midpoint]['timePassed'] = $timeStand['timePassed'];
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        return [$access, $stands, $congress['totalTimePassed']];
+    }
+
 
     public function getDemoCongress($name)
     {
@@ -191,7 +425,8 @@ class CongressServices
         }
     }
 
-    public function addCongress($congressRequest, $configRequest, $adminId)
+
+    public function addCongress($congressRequest, $configRequest, $adminId, $configSelectionRequest)
     {
         $congress = new Congress();
         $congress->name = $congressRequest->input('name');
@@ -200,6 +435,7 @@ class CongressServices
         $congress->price = $congressRequest->input('price') && $congressRequest->input('congress_type_id') === '1' ? $congressRequest->input('price') : 0;
         $congress->description = $congressRequest->input('description');
         $congress->congress_type_id = $congressRequest->input('congress_type_id');
+        $congress->private = $congressRequest->input('private');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -207,9 +443,23 @@ class CongressServices
         $config->free = $configRequest['free'] ? $configRequest['free'] : 0;
         $config->access_system = $configRequest['access_system'] ? $configRequest['access_system'] : 'Workshop';
         $config->is_submission_enabled = $configRequest['is_submission_enabled'] ? 1 : 0;
+        $config->status = $configRequest['status'];
         $config->currency_code = $configRequest['currency_code'];
         $config->save();
 
+        if (
+            $congressRequest->input('congress_type_id') == 2 ||
+            ($congressRequest->input('congress_type_id') == 1 && $congressRequest->input('withSelection'))) {
+
+            $config_selection = new ConfigSelection();
+            $config_selection->congress_id = $congress->congress_id;
+            $config_selection->num_evaluators = $configSelectionRequest['num_evaluators'];
+            $config_selection->selection_type = $configSelectionRequest['selection_type'];
+            $config_selection->start_date = $configSelectionRequest['start_date'];
+            $config_selection->end_date = $configSelectionRequest['end_date'];
+            $config_selection->save();
+
+        }
         $admin_congress = new AdminCongress();
         $admin_congress->admin_id = $adminId;
         $admin_congress->congress_id = $congress->congress_id;
@@ -219,11 +469,8 @@ class CongressServices
     }
 
 
-    public function editConfigCongress($configCongress, $configCongressRequest, $congressId)
+    public function editConfigCongress($configCongress, $configCongressRequest, $congressId, $token)
     {
-
-        //$config_congress = ConfigCongress::where("congress_id", '=', $congressId)->first();
-
         if (!$configCongress) {
             $configCongress = new ConfigCongress();
         }
@@ -233,6 +480,7 @@ class CongressServices
         $configCongress->free = $configCongressRequest['free'];
         $configCongress->has_payment = $configCongressRequest['has_payment'];
         $configCongress->is_online = $configCongressRequest['is_online'];
+        $configCongress->token_admin = $token;
         $configCongress->program_link = $configCongressRequest['program_link'];
         $configCongress->voting_token = $configCongressRequest['voting_token'];
         $configCongress->prise_charge_option = $configCongressRequest['prise_charge_option'];
@@ -247,21 +495,62 @@ class CongressServices
         $configCongress->is_notif_sms_confirm = $configCongressRequest['is_notif_sms_confirm'];
         $configCongress->mobile_committee = $configCongressRequest['mobile_committee'];
         $configCongress->mobile_technical = $configCongressRequest['mobile_technical'];
-        $configCongress->currency_code = $configCongressRequest['currency_code'] ;
+        $configCongress->currency_code = $configCongressRequest['currency_code'];
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
         $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
+        $configCongress->register_disabled = $configCongressRequest['register_disabled'];
+        $configCongress->application = $configCongressRequest['application'];
+        $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
+        $configCongress->url_streaming = $configCongressRequest['url_streaming'];
+        $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
+        $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
         $configCongress->update();
-        //$this->editCongressLocation($eventLocation, $congressId);
 
         return $configCongress;
     }
-    public function addCongressSubmission($configSubmission,$submissionData,$congressId )
+
+    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId)
+    {
+        foreach ($privilegeIds as $privilegeId) {
+            $this->addAllowedOnlineAccess($privilegeId, $congressId);
+        }
+    }
+
+    public function addAllowedOnlineAccess($privilege_id, $congress_id)
+    {
+        $newAllowedOnlineAccess = new AllowedOnlineAccess();
+        $newAllowedOnlineAccess->privilege_id = $privilege_id;
+        $newAllowedOnlineAccess->congress_id = $congress_id;
+        $newAllowedOnlineAccess->save();
+    }
+
+    public function getAllAllowedOnlineAccess($congress_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->get();
+    }
+
+    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->where('privilege_id', '=', $privilege_id)
+            ->first();
+    }
+
+    public function deleteAllAllowedAccessByCongressId($congress_id)
+    {
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+            ->delete();
+    }
+
+    public function addCongressSubmission($configSubmission, $submissionData, $congressId)
     {
         // add congress submission
 
-        if(!$configSubmission) {
-            $configSubmission = new ConfigSubmission();}
+        if (!$configSubmission) {
+            $configSubmission = new ConfigSubmission();
+        }
         $configSubmission->congress_id = $congressId;
         $configSubmission->max_words = $submissionData['max_words'];
         $configSubmission->num_evaluators = $submissionData['num_evaluators'];
@@ -271,22 +560,21 @@ class CongressServices
         return $configSubmission;
 
     }
-    public function addSubmissionThemeCongress($theme_ids,$congressId )
+
+    public function addSubmissionThemeCongress($theme_ids, $congressId)
     {
-        $CongressThemes= array();
-        CongressTheme::where("congress_id","=",$congressId)->delete();
-        foreach ($theme_ids as $theme_id){
+        $CongressThemes = array();
+        CongressTheme::where("congress_id", "=", $congressId)->delete();
+        foreach ($theme_ids as $theme_id) {
 
             $CongressTheme = new CongressTheme();
-            $CongressTheme->congress_id= $congressId;
-            $CongressTheme->theme_id= (int) $theme_id;
+            $CongressTheme->congress_id = $congressId;
+            $CongressTheme->theme_id = (int)$theme_id;
             $CongressTheme->save();
             array_push($CongressThemes, $CongressTheme);
         }
         return $CongressThemes;
     }
-
-
 
 
     public function editCongressLocation($configLocation, $configLocationData, $cityId, $congressId)
@@ -325,7 +613,7 @@ class CongressServices
         return $congress;
     }
 
-    public function editCongress($congress, $config, $request)
+    public function editCongress($congress, $config, $config_selection, $request)
     {
         $congress->name = $request->input('name');
         $congress->start_date = $request->input('start_date');
@@ -333,13 +621,23 @@ class CongressServices
         $congress->price = $request->input('price') && $request->input('congress_type_id') === '1' ? $request->input('price') : 0;
         $congress->congress_type_id = $request->input('congress_type_id');
         $congress->description = $request->input('description');
+        $congress->private = $request->input('private');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
         $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
-        $config->has_payment = $request->input('config')['has_payment'] ? 1 : 0;
-        $config->prise_charge_option = $request->input('config')['prise_charge_option'] ? 1 : 0;
+        $config->status = $request->input('config')['status'];
         $config->update();
+
+        if (isset($request->input('config_selection')['num_evaluators']))
+            $config_selection->num_evaluators = $request->input('config_selection')['num_evaluators'];
+        $config_selection->selection_type = $request->input('config_selection')['selection_type'];
+        if (isset($request->input('config_selection')['start_date']))
+            $config_selection->start_date = $request->input('config_selection')['start_date'];
+        if (isset($request->input('config_selection')['end_date']))
+            $config_selection->end_date = $request->input('config_selection')['end_date'];
+        $config_selection->congress_id = $congress->congress_id;
+        $config_selection->update();
 
         return $this->getCongressById($congress->congress_id);
     }
@@ -351,47 +649,10 @@ class CongressServices
             ->get();
     }
 
-    public function getLabsByCongress($congressId)
-    {
-        return Organization::with(['users' => function ($q) use ($congressId) {
-            $q->where('User.congress_id', '=', $congressId);
-        }])->whereHas('users', function ($q) use ($congressId) {
-            $q->where('User.congress_id', '=', $congressId);
-        })->get();
-    }
-
-    public function getOrganizationInvoiceByCongress($labId, $congress)
-    {
-        $lab = $this->organizationServices->getOrganizationById($labId);
-        $totalPrice = 0;
-        $packs = Pack::whereCongressId($congress->congress_id)->with(['participants' => function ($q) use ($labId) {
-            $q->where('User.organization_id', '=', $labId);
-        }])->get();
-        foreach ($packs as $pack) {
-            $packPrice = $pack->price;
-            $pack->price = 0;
-            foreach ($pack->participants as $participant) {
-                $pack->price += $packPrice;
-            }
-            $totalPrice += $pack->price;
-        }
-        $today = date('d-m-Y');
-        $data = [
-            'packs' => $packs,
-            'congress' => $congress,
-            'today' => $today,
-            'lab' => $lab,
-            'totalPrice' => $totalPrice,
-            'displayTaxes' => false
-        ];
-        $pdf = PDF::loadView('pdf.invoice.invoice', $data);
-        return $pdf->download($lab->name . '_facture_' . $today . '.pdf');
-    }
-
     public function getBadgeByPrivilegeId($congress, $privilege_id)
     {
         for ($i = 0; $i < sizeof($congress->badges); $i++) {
-            if ($congress->badges[$i]->privilege_id == $privilege_id && $congress->badges[$i]->enable ==1 ) {
+            if ($congress->badges[$i]->privilege_id == $privilege_id && $congress->badges[$i]->enable == 1) {
                 return $array = [
                     "badge_id_generator" => $congress->badges[$i]->badge_id_generator,
                     "badge_param" => $congress->badges[$i]->badge_param,
@@ -423,9 +684,9 @@ class CongressServices
         return Mail::find($id);
     }
 
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null)
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
+                        $submissionTitle = null, $communication_type = null, $submissions = [])
     {
-
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "<ul>";
@@ -434,7 +695,7 @@ class CongressServices
                     $accessLink = "";
                     if ($congress && $access->is_online == 1) {
                         $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congress->congress_id . '/access/' . $access->access_id;
-                        $accessLink = '<a href="'.$accessLink.'" target="_blank"> Lien </a>';
+                        $accessLink = '<a href="' . $accessLink . '" target="_blank"> Lien </a>';
                     }
                     $accesses = $accesses
                         . "<li>" . $access->name
@@ -444,10 +705,21 @@ class CongressServices
                         . \App\Services\Utils::getTimeFromDateTime($access->start_date)
                         . " à "
                         . \App\Services\Utils::getTimeFromDateTime($access->end_date)
-                        . " </span>".$accessLink."</li>";
+                        . " </span>" . $accessLink . "</li>";
                 }
             }
             $accesses = $accesses . "</ul>";
+        }
+
+        $submissionsParms = "";
+        if (sizeof($submissions) > 0) {
+            $submissionsParms = "<ul>";
+            foreach ($submissions as $submission) {
+                $type = $submission->communicationType ? $submission->communicationType->label : " ";
+                $submissionsParms = $submissionsParms
+                    . "<li>" . $submission->code . ": " . $submission->title . " ( " . $type . " ) " . "</li>";
+            }
+            $submissionsParms = $submissionsParms . "</ul>";
         }
 
         if ($congress != null) {
@@ -459,8 +731,6 @@ class CongressServices
 
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
-        $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
-        $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
         $template = str_replace('{{$participant-&gt;last_name}}', '{{$participant->last_name}}', $template);
         $template = str_replace('{{$participant-&gt;gender}}', '{{$participant->gender}}', $template);
@@ -479,19 +749,27 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
+        $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
+        $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;
+        $template = str_replace('{{$submissionParams}}', $submissionsParms, $template);
+        $template = str_replace('{{$buttons}}', '
+                                                  <a href="{{$linkAccept}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
+                                                  <a href="{{$linkRefuse}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
+
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse]);
+
     }
 
-    public
-    function getMailType($name)
+    public function getMailType($name, $type = 'event')
     {
-        return MailType::where("name", "=", $name)->first();
+        return MailType::where("name", "=", $name)
+            ->where('type', '=', $type)
+            ->first();
     }
 
-    public
-    function getMail($congressId, $mail_type_id)
+    public function getMail($congressId, $mail_type_id)
     {
         return Mail::where("congress_id", '=', $congressId)->where('mail_type_id', '=', $mail_type_id)->first();
     }
@@ -501,22 +779,23 @@ class CongressServices
         return Mail::where('mail_type_id', '=', $mail_type_id)->first();
     }
 
-    public
-    function getMailById($id)
+    public function getMailById($id)
     {
         return Mail::find($id);
     }
 
-    public
-    function getAccesssByCongressId($congress_id)
+    public function getAccesssByCongressId($congress_id, $name = null)
     {
-        return Access::with(['participants', 'attestation'])
+        return Access::with(['votes'])->where(function ($query) use ($name) {
+            if ($name) {
+                $query->where('name', '=', $name);
+            }
+        })
             ->where('congress_id', '=', $congress_id)
             ->get();
     }
 
-    public
-    function getAllCongresses()
+    public function getAllCongresses()
     {
         $day = date('Y-m-d', time() + (60 * 60));
         return Congress::with([
@@ -532,14 +811,12 @@ class CongressServices
             ->get();
     }
 
-    public
-    function getCongressConfig($congress_id)
+    public function getCongressConfig($congress_id)
     {
         return ConfigCongress::where('congress_id', '=', $congress_id)->first();
     }
 
-    public
-    function getParticipantsCount($congress_id, $privilegeId, $isPresent)
+    public function getParticipantsCount($congress_id, $privilegeId, $isPresent)
     {
         //participant (privilege= 3)
         return UserCongress::where('congress_id', '=', $congress_id)
@@ -557,8 +834,7 @@ class CongressServices
             ->count();
     }
 
-    public
-    function getConfigLocationByCongressId($congressId)
+    public function getConfigLocationByCongressId($congressId)
     {
         return Location::where("congress_id", '=', $congressId)
             ->first();
@@ -593,6 +869,154 @@ class CongressServices
     {
         return AdminCongress::where('congress_id', '=', $congress_id)
             ->where('admin_id', '=', $admin->admin_id)->first();
+    }
+
+    public function getUserCongress($offset, $perPage, $search, $startDate, $endDate, $status, $user)
+    {
+        $congresses = Congress::withCount([
+            'submissions' => function ($query) use ($user) {
+                $query->whereHas('user', function ($q) use ($user) {
+                    $q->where('user_id', '=', $user->user_id);
+                });
+            },
+            'accesss' => function ($query) use ($user) {
+                $query->whereHas('user_accesss', function ($q) use ($user) {
+                    $q->where('user_id', '=', $user->user_id)->where('isPresent', '=', 1);
+                });
+            },
+        ])->with('configSubmission:config_submission_id,congress_id', "config:congress_id,logo,banner,currency_code,program_link,status,free", "location", "location.city", "location.city.country")
+            ->whereHas('user_congresses', function ($q) use ($user) {
+                $q->where('user_id', '=', $user->user_id);
+            })->orderBy('start_date', 'desc');
+        if ($startDate) {
+            $congresses = $congresses->where('start_date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $congresses = $congresses->where('end_date', '<=', $endDate);
+        }
+        $todayDate = date("Y-m-d");
+        if ($status == "0") {
+            $congresses = $congresses->where('end_date', '<=', $todayDate);
+        }
+        if ($status == "1") {
+            $congresses = $congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate);;
+        }
+        if ($status == "2") {
+            $congresses = $congresses->where('start_date', '>', $todayDate);
+        }
+        $congresses_filter = $congresses->where('name', 'LIKE', '%' . $search . '%')
+            ->orWhere('description', 'LIKE', '%' . $search . '%')
+            ->offset($offset)->limit($perPage)
+            ->get();
+        return $congresses_filter;
+
+    }
+
+    public function confirmPresence($congress_id, $user_id, $will_be_present)
+    {
+        $userCongress = UserCongress::where('user_id', '=', $user_id)
+            ->where('congress_id', '=', $congress_id)
+            ->first();
+        $userCongress->will_be_present = $will_be_present;
+        $userCongress->update();
+        return $userCongress;
+    }
+
+    public function getStands($congress_id, $name = null)
+    {
+        return Stand::where(function ($query) use ($name) {
+            if ($name) {
+                $query->where('name', '=', $name);
+            }
+        })
+            ->with(['docs'])
+            ->where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function getStandById($stand_id)
+    {
+        return Stand::where('congress_id', '=', $stand_id)->get();
+    }
+
+    public function getDocsByStands($stands)
+    {
+        $res = array();
+
+        foreach ($stands as $stand) {
+            foreach ($stand->docs as $doc) {
+                array_push(
+                    $res,
+                    array(
+                        "stand" => $stand->name,
+                        "path" => UrlUtils::getFilesUrl() . '/api/resource/' . $doc->path,
+                        "filename" => substr($doc->path, strpos($doc->path, ')') + 1),
+                        "version" => $doc->pivot->version
+                    )
+                );
+            }
+        }
+        return $res;
+    }
+
+    public function getUrlsByStandsAndAccess($stands, $accesses)
+    {
+        $res = array();
+
+        foreach ($stands as $stand) {
+            array_push(
+                $res,
+                array(
+                    "channel_name" => $stand->name,
+                    "url" => $stand->url_streaming
+                )
+            );
+        }
+
+        foreach ($accesses as $access) {
+            array_push(
+                $res,
+                array(
+                    "channel_name" => $access->name,
+                    "url" => $access->url_streaming
+                )
+            );
+        }
+        return $res;
+    }
+
+    public function modifyAllStatusStand($congressId, $status)
+    {
+        return Stand::where('congress_id', '=', $congressId)
+            ->update(['status' => $status]);
+    }
+
+    public function getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId)
+    {
+        return Tracking::with(['user', 'access', 'stand', 'action', 'user.responses.values', 'user_call'])
+            ->whereHas('user', function ($query) use ($search) {
+                $query->orwhereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+            })
+            ->where(function ($query) use ($actionId, $accessId, $standId) {
+                if ($actionId != -1) {
+                    $query->where('action_id', '=', $actionId);
+                }
+                if ($accessId != -1) {
+                    $query->where('access_id', '=', $accessId);
+                }
+                if ($standId != -1) {
+                    $query->where('stand_id', '=', $standId);
+                }
+            })
+            ->where('congress_id', '=', $congressId)
+            ->paginate($perPage);
+    }
+
+    public function setCurrentParticipants($congressId, $nbParticipants)
+    {
+        return ConfigCongress::where('congress_id', '=', $congressId)
+            ->update(['nb_current_participants' => $nbParticipants]);
     }
 
 }
