@@ -17,7 +17,7 @@ stages:
 # Build stage
 build:
   stage: build
-  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:2.0.8
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
   only:
     - master
     - develop
@@ -30,7 +30,7 @@ build:
 
 build-feat:
   stage: build-manual
-  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:2.0.8
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
   when: manual
   script:
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
