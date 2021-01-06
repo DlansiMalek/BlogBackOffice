@@ -9,6 +9,7 @@ use App\Models\Badge;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
 use App\Models\User;
+use App\Models\UserCongress;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -26,6 +27,7 @@ use App\Services\StandServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\TrackingServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -48,6 +50,7 @@ class CongressController extends Controller
     protected $notificationService;
     protected $roomServices;
     protected $standServices;
+    protected $trackingServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -62,7 +65,8 @@ class CongressController extends Controller
                          RoomServices $roomServices,
                          NotificationServices $notificationService,
                          ResourcesServices $resourceService,
-                         PaymentServices $paymentServices)
+                         PaymentServices $paymentServices,
+                         TrackingServices $trackingServices)
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -79,6 +83,7 @@ class CongressController extends Controller
         $this->mailServices = $mailServices;
         $this->paymentServices = $paymentServices;
         $this->standServices = $standServices;
+        $this->trackingServices = $trackingServices;
     }
 
 
@@ -950,17 +955,11 @@ class CongressController extends Controller
 
     public function getListTrackingByCongress($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getById($congressId)) {
-            return response()->json(['response' => 'congress not found'], 404);
-        }
+      //  if (!$congress = $this->congressServices->getById($congressId)) {
+        //    return response()->json(['response' => 'congress not found'], 404);
+      //  }
 
-        $perPage = $request->query('perPage', 10);
-        $search = $request->query('search', '');
-        $accessId = $request->query('access_id', -1);
-        $standId = $request->query('stand_id', -1);
-        $actionId = $request->query('action_id', -1);
-
-        return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
+        return response()->json($this->trackingServices->getTrackings($congressId, $request));
 
     }
 
