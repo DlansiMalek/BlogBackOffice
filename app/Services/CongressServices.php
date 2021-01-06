@@ -504,6 +504,7 @@ class CongressServices
         $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
+        $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
         $configCongress->update();
 
         return $configCongress;
@@ -947,7 +948,7 @@ class CongressServices
                     $res,
                     array(
                         "stand" => $stand->name,
-                        "path" => UrlUtils::getFilesUrl() . '/api/resource/' . $doc->path,
+                        "path" => UrlUtils::getFilesUrl() . $doc->path,
                         "filename" => substr($doc->path, strpos($doc->path, ')') + 1),
                         "version" => $doc->pivot->version
                     )

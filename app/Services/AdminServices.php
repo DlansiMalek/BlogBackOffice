@@ -62,6 +62,18 @@ class AdminServices
             ->first();
     }
 
+    public function getAdminWithCurrentCongressFirst($admin_id, $congress_id)
+    {
+        return Admin::where("admin_id", "=", $admin_id)
+            ->with(['admin_congresses' => function ($query) use ($congress_id) {
+                $query->orderByRaw("FIELD(congress_id,$congress_id) DESC")
+                    ->orderBy('congress_id', 'asc');
+            },
+                'admin_congresses.congress.config' ,
+                'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'])
+            ->first();
+    }
+
     public function getAdminByMail($admin_mail)
     {
         return Admin::where("email", "=", $admin_mail)
@@ -487,6 +499,8 @@ class AdminServices
         $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
+        $template = str_replace('{{$user-&gt;gender}}', '{{$user->gender}}', $template);
+
 
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink]);
     }
@@ -530,6 +544,11 @@ class AdminServices
         $adminPayment->price += $value;
         $adminPayment->update();
         return $adminPayment;
+    }
+
+    public function getAdminOfCongress($congress_id) {
+        return AdminCongress::where('congress_id', '=', $congress_id)
+        ->where('privilege_id', '=', 1)->first();
     }
 
 }

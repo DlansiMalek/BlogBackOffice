@@ -43,9 +43,6 @@ Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
 
-Route::group(['prefix' => 'user-abstract-book/{path}'], function () {
-    Route::get('/downloadAbstractBook', 'FileController@downloadBook');
-});
 //SMS API
 
 Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
@@ -58,31 +55,9 @@ Route::group(['prefix' => 'manage-sms/custom-sms'], function () {
     Route::delete('/{id}/user/{userId}/delete', 'CustomSMSController@deleteUserSms');
 });
 /* Files API */
-Route::group(['prefix' => 'congress-logo/{path}'], function () {
-    Route::get('', 'FileController@getLogoCongress');
-    Route::post('delete', 'FileController@deleteLogoCongress');
-});
-
-Route::group(['prefix' => 'congress-banner/{path}'], function () {
-    Route::get('', 'FileController@getBannerCongress');
-    Route::post('delete', 'FileController@deleteBannerCongress');
-});
-
-
-Route::group(['prefix' => 'user-cv/{path}/{userId}'], function () {
-    Route::get('', 'FileController@getUserCV');
-    Route::post('delete', 'FileController@deleteUserCV');
-});
-
-Route::group(['prefix' => 'resource/{path}'], function () {
-    Route::get('', 'FileController@getResouce');
-    Route::post('delete', 'FileController@deleteResouce');
-});
-// Route::get('resource/get/{path}', 'FileController@getResouceSubmission');
-
 Route::group(['prefix' => 'files'], function () {
     Route::post('/upload-resource', 'FileController@uploadResource');
-    Route::post('/upload-resource/stand', 'FileController@uploadResourceStand');
+    Route::post('/delete-resource/{path}', 'FileController@deleteResouce');
 });
 
 //Mobile API
@@ -144,7 +119,7 @@ Route::group(['prefix' => 'users'], function () {
         Route::group(['prefix' => 'congress/{congressId}'], function () {
             Route::post('changeStatus', 'UserController@changeUserStatus');
             Route::delete('delete', 'UserController@delete');
-            Route::post('upload-payement', 'UserController@uploadPayement');
+            Route::post('update-payment', 'UserController@updateUserPayment');
             Route::get('sondage', 'UserController@redirectToLinkFormSondage');
             Route::get('validate/{validation_code}', 'UserController@validateUserAccount');
             Route::get('', 'UserController@getUserByCongressIdAndUserId');
@@ -183,7 +158,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('{congress_id}', 'RegistrationFormController@getForm');
         Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
     });
-    Route::post('upload-mail-image', 'CongressController@uploadMailImage');
+    Route::post('upload-mail-image', 'MailController@uploadMailImage');
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
@@ -201,9 +176,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('statsStand', 'CongressController@getStatsStandByCongressId');
         Route::get('statsChart', 'CongressController@getStatsChartByCongressId');
         Route::get('config', 'CongressController@getCongressConfigById');
-        Route::post('/upload-logo', 'FileController@uploadLogo');
-        Route::post('/upload-banner', 'FileController@uploadBanner');
-        Route::post('/upload-cv/{userId}', 'FileController@uploadCV');
         Route::get('/logo', 'CongressController@getLogo');
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
@@ -218,6 +190,9 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
 
         Route::post('program-link', 'CongressController@setProgramLink');
+        Route::post('/abstractBook', 'CongressController@affectAbstractBookPathToCongress');
+        Route::post('/congress-logo', 'CongressController@affectLogoToCongress');
+
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
         Route::group(['prefix' => 'stand'], function () {
@@ -265,7 +240,6 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::put('{submissionId}/finalDecisionOnSubmission', 'SubmissionController@finalDecisionOnSubmission');
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
-    Route::post('{congressId}/uploadAbstractBook', 'FileController@uploadAbstractBook');
     Route::post('{congressId}/upload-submissions', 'SubmissionController@uploadSubmissions');
 });
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
@@ -299,7 +273,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     });
 
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
-    Route::get('get-resource-id/{resourceId}', 'UserController@getResourceByResourceId');
 
     Route::post('/register', 'UserController@registerUser');
 
@@ -339,6 +312,9 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
         ->middleware('assign.guard:users');
     Route::get('me/events', 'CongressController@getUserCongress')
         ->middleware('assign.guard:users');
+    Route::post('/update-path-cv/{userId}', 'UserController@updateUserPathCV');
+    Route::get('/delete-user-cv/{user_id}', 'UserController@deleteUserCV');
+
 });
 //Admin API
 Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], function () {
@@ -356,6 +332,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
     Route::put('makePresence/{userId}', 'AdminController@makeUserPresent');
     Route::group(['prefix' => 'me'], function () {
         Route::get('', 'AdminController@getAuhenticatedAdmin');
+        Route::get('/congress/{congress_id}', 'AdminController@getAdminWithCurrentCongressFirst');
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
@@ -399,6 +376,11 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
         });
     });
 
+    Route::group(['prefix' => 'menus'], function () {
+        Route::post('add/{congress_id}/{privilege_id}', 'OffreController@addPrivilegeMenuChildren');
+        Route::get('{congress_id}/{privilege_id}', 'OffreController@getMenusByPrivilegeByCongress');
+        Route::post('edit/{congress_id}/{privilege_id}', 'OffreController@editPrivilegeMenuChildren');
+    });
 
 });
 //Access API
@@ -427,6 +409,13 @@ Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
     Route::put('edit/{offre_id}', 'OffreController@editOffre');
 });
 
+Route::group(['prefix' => 'menu', 'middleware' => 'marketing'], function () {
+    Route::get('list','OffreController@getAllMenu' );
+    Route::group(['prefix' => 'menu-children'], function() {
+        Route::get('list', 'OffreController@getAllMenuChildren');
+    });
+
+});
 
 //Pack API
 Route::group(['prefix' => 'pack'], function () {
@@ -500,9 +489,6 @@ Route::group(["prefix" => "voting-users"], function () {
 });
 Route::post("switch-qr/{userId}", "UserController@changeQrCode")->middleware('organisateur');
 Route::get('encrypt/{password}', 'SharedController@encrypt');
-Route::group(['prefix' => 'resource'], function () {
-    Route::post('', 'ResourcesController@uploadResource')->middleware('admin');
-});
 
 Route::group(['prefix' => 'access'], function () {
     Route::get('', 'AccessController@getAllAccess');
@@ -549,3 +535,5 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
     });
 });
+
+Route::get('congress/{congressId}/organismes','OrganizationController@getOrganizmeByCongress');

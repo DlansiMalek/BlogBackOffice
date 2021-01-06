@@ -90,14 +90,20 @@ class PrivilegeServices
     public function getPrivilegesByCongress($congress_id)
     {
         $privilegeBase = Privilege::where('priv_reference', '=', null)
-            ->with(['privilegeConfig' => function ($query) use ($congress_id) {
+            ->with(['privilege_menu_children' => function ($query) use ($congress_id) {
                 $query->where('congress_id', '=', $congress_id);
-            }])->get()->toArray();
+            },
+                'privilegeConfig' => function ($query) use ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id);
+                }])->get()->toArray();
 
         $otherPrivileges = Privilege::where('priv_reference', '!=', null)
             ->whereHas('privilegeConfig', function ($query) use ($congress_id) {
                 $query->where('congress_id', '=', $congress_id);
-            })->with(['privilegeConfig', 'privilege'])
+            })->with(['privilege_menu_children' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            }
+                , 'privilegeConfig', 'privilege'])
             ->get()->toArray();
         $result = array_merge($privilegeBase, $otherPrivileges);
         return $result;
