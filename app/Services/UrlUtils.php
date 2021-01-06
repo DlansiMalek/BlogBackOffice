@@ -170,15 +170,15 @@ class UrlUtils
     public static function getFilesUrl()
     {
         if (App::environment() == 'test') {
-            return "http://localhost:8888";
+            return "https://eventizer-dev.fra1.digitaloceanspaces.com/";
         }
         if (App::environment() == 'prod') {
-            return "https://primary.api.eventizer.io";
+            return "https://eventizer.fra1.digitaloceanspaces.com/";
         }
         if (App::environment() == 'dev') {
-            return "https://dev.api.eventizer.io";
+            return "https://eventizer-dev.fra1.digitaloceanspaces.com/";
         }
 
-        return "http://localhost:8888";
+        return "https://eventizer-dev.fra1.digitaloceanspaces.com/";
     }
 }

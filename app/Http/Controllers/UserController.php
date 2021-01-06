@@ -546,7 +546,7 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         $privilegeId = $request->input('privilege_id');
-        
+
         if ($request->has('avatar_id') && $privilegeId != 7) {
             $request->merge(['avatar_id' => null]);
         }
@@ -1797,11 +1797,11 @@ class UserController extends Controller
     public function updateUserPathCV($userId, Request $request)
     {
         if (!$user = $this->userServices->getUserById($userId))
-        return response()->json(['response' => 'User not found'], 404);
+            return response()->json(['response' => 'User not found'], 404);
         $path = $request->input('path');
         if (!$user = $this->userServices->updateUserPathCV($path, $user))
             return response()->json(['response' => 'Path not found'], 404);
-        return response()->json(['path' => $path]); 
+        return response()->json(['path' => $path]);
     }
 
     public function deleteUserCV($userId)
@@ -1817,12 +1817,11 @@ class UserController extends Controller
     {
         $users = $this->userServices->getUsersWithResources($congressId);
         foreach ($users as $user) {
-            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $user->profile_img->path);
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
             $user->update();
         }
         return response()->json(['$users' => $users]);
     }
-
 
 
 }
