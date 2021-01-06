@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class DeleteColumnProfilePicFromTableUser extends Migration
+class DeleteColumnProfilePic extends Migration
 {
     /**
      * Run the migrations.
@@ -16,6 +16,7 @@ class DeleteColumnProfilePicFromTableUser extends Migration
         Schema::table('User', function (Blueprint $table) {
             $table->dropColumn('profile_pic');
         });
+
     }
 
     /**
