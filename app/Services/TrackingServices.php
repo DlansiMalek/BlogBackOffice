@@ -151,9 +151,9 @@ class TrackingServices
     public function getTrackings($congress_id, $request) 
     {
         $env = env('APP_ENV');
-        Log::info(json_encode($request->all(), true));
-        $res = $this->client->get('/eventizer-tracking-tracks-prod-' . $congress_id . '/_search' , [
-            'query' =>[$request->all()]
+        Log::info($request->all());
+        $res = $this->client->get('/eventizer-tracking-tracks-' .$env . '-'. $congress_id . '/_search' , [
+            'query' => $request->all()
         ]);
 
         return json_decode($res->getBody(), true);
