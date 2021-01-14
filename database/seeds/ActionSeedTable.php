@@ -61,5 +61,15 @@ class ActionSeedTable extends Seeder
             'key' => 'GAMEPLAYED',
             'value' => 'Game Played'
         ]);
+
+        DB::table('Action')->insert([
+            'key' => 'ENTRY_LEAVE',
+            'value' => 'Entrée et sortie'
+        ]);
+
+        DB::table('Action')->insert([
+            'key' => 'LOGIN_LOGOUT',
+            'value' => 'Login et logout'
+        ]);
     }
 }

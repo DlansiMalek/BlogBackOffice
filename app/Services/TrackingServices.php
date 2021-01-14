@@ -9,7 +9,6 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property \GuzzleHttp\Client client
@@ -151,9 +150,8 @@ class TrackingServices
     public function getTrackings($congress_id, $request) 
     {
         $env = env('APP_ENV');
-        Log::info($request->all());
-        $res = $this->client->get('/eventizer-tracking-tracks-' .$env . '-'. $congress_id . '/_search' , [
-            'query' => $request->all()
+        $res = $this->client->post('/eventizer-tracking-tracks-' . $env . '-'. $congress_id . '/_search' , [
+            'body' => json_encode( $request->all())
         ]);
 
         return json_decode($res->getBody(), true);
