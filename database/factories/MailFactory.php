@@ -2,6 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
+namespace Database\Factories;
 use App\Models\Mail;
 use Faker\Generator as Faker;
 
