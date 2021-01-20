@@ -110,8 +110,6 @@ class StandServices
             ->where('congress_id', '=', $congress_id)->get();
     }
 
-    
-
     public function getDocsByStands($stands)
     {
         $res = array();

@@ -20,6 +20,7 @@ use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\StandServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class UserController extends Controller
     protected $resourcesServices;
     protected $trackingServices;
     protected $offreServices;
+    protected $standServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -60,7 +62,8 @@ class UserController extends Controller
                          MailServices $mailServices,
                          ResourcesServices $resourcesServices,
                          TrackingServices $trackingServices,
-                         OffreServices $offreServices)
+                         OffreServices $offreServices, 
+                         StandServices $standServices,)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -78,6 +81,7 @@ class UserController extends Controller
         $this->resourcesServices = $resourcesServices;
         $this->trackingServices = $trackingServices;
         $this->offreServices = $offreServices;
+        $this->standServices = $standServices;
     }
 
     public function getLoggedUser()
@@ -1728,7 +1732,7 @@ class UserController extends Controller
         $standId = null;
         $accessId = null;
         if ($request->input('type') == 'STAND') {
-            $stands = $this->congressServices->getStands($congressId, $request->input('channel_name'));
+            $stands = $this->standServices->getStands($congressId, $request->input('channel_name'));
             if (sizeof($stands) == 0) {
                 return response()->json(['response' => 'stand not found'], 404);
             }
