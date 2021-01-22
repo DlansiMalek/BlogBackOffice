@@ -63,7 +63,7 @@ class UserController extends Controller
                          ResourcesServices $resourcesServices,
                          TrackingServices $trackingServices,
                          OffreServices $offreServices, 
-                         StandServices $standServices,)
+                         StandServices $standServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
