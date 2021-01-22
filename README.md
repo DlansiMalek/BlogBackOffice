@@ -1,6 +1,6 @@
 # Eventizer Backend
 
-Version actuelle de laravel est 6.
+Version actuelle de laravel est 8.
 
 ## Init
 
@@ -22,20 +22,20 @@ Version actuelle de laravel est 6.
 
 ### Lancement
 
-`./vendor/bin/phpunit` (à prévoir de modifier cette commande avec `Laravel 7`)
+`php artisan test`
 
 ### Comment ca marche ?
 
 Tous les scénarios de tests sont décrit dans le dossier `/tests`
 
-Tous les tests hérite du classe `TestCase.php` qui contient les initialisations nécaissaire pour chaque scénario.
+Tous les tests héritent du classe `TestCase.php` qui contient les initialisations nécaissaires pour chaque scénario.
 
 #### Créer un nouveau test
 
 **1. Création du fonction:**
 * Si le domaine d'application déja créer on ajoute une nouvelle fonction dans l'un des fichiers dans `Features`
 
-* Sinon créer une nouvelle fichier avec le nommage `DomaineTest.php`. example `UserTest.php`
+* Sinon créer un nouveau fichier avec le nommage `DomaineTest.php`. example `UserTest.php`
 
 **2. Création du dataSet**
 

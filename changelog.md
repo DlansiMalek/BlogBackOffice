@@ -16,3 +16,5 @@ Inclut tous les fonctionnalités du milestone 3.0.13
 2. [FileSystem] Intégrer un CDN pour la gestion des fichiers: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/18)
 
 3. Upgrade Laravel 7: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/9)
+
+4. Upgrade Laravel 8: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/24)
