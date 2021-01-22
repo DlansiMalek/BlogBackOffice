@@ -199,6 +199,7 @@ class CongressTest extends TestCase
             'end_date' => $this->faker->date(),
             'price' => $this->faker->randomFloat(2, 0, 5000),
             'congress_type_id' => strval($this->faker->numberBetween(1, 3)),
+            'private' =>$this->faker->numberBetween(0, 1),
 
             'description' => $this->faker->paragraph,
             'config' => [
