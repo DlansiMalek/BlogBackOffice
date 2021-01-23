@@ -111,11 +111,12 @@ class MailController extends Controller
     }
     public function uploadMailImage(Request $request)
     {
-        $file = $request->file('image');
-        $chemin = config('media.mail-images');
-        $path = $file->store('mail-images' . $chemin);
+        // Todo fixing
+     //   $file = $request->file('image');
+     //   $chemin = config('media.mail-images');
+     //   $path = $file->store('mail-images' . $chemin);
 //        return $path."+++".substr($path,12);
-        return response()->json(['link' => $this->baseUrl . "congress/file/" . substr($path, 12)]);
+        return response()->json(['message' => 'success'], 200);
     }
 
     public function deleteMail($congressId , $mail_id)

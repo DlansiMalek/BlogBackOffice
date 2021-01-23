@@ -4,33 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Services\CommunicationTypeService;
 use App\Services\SharedServices;
+use App\Services\CongressServices;
 use App\Services\UserServices;
+use App\Services\PrivilegeServices;
+use App\Models\Privilege;
+use App\Models\Congress;
+use Illuminate\Http\Request;
 
 class SharedController extends Controller
 {
 
     protected $sharedServices;
     protected $userServices;
+    protected $congressServices;
+    protected $privilegeServices;
     protected $communicationTypeService;
 
     function __construct(SharedServices $sharedServices,
                          UserServices $userServices,
-                         CommunicationTypeService $communicationTypeService)
+                         PrivilegeServices $privilegeServices,
+                         CommunicationTypeService $communicationTypeService,
+                         CongressServices $congressServices)
     {
         $this->sharedServices = $sharedServices;
         $this->userServices = $userServices;
+        $this->congressServices = $congressServices;
+        $this->privilegeServices = $privilegeServices;
         $this->communicationTypeService = $communicationTypeService;
     }
 
+
+
     public function getAllPrivileges()
     {
-        return response()->json($this->sharedServices->getAllPrivileges());
+        return response()->json($this->sharedServices->getAllPrivileges()); 
     }
 
-    public function getPrivilegesWithBadges()
-    {
-        return response()->json($this->sharedServices->getPrivilegesWithBadges());
-    }
 
     public function getAllCommunicationTypes()
     {

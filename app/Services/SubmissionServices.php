@@ -9,11 +9,12 @@ use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionServices
 {
 
-    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id)
+    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id, $extId = null, $status = null, $eligible = null)
     {
         $submission = new Submission();
         $submission->title = $title;
@@ -23,6 +24,14 @@ class SubmissionServices
         $submission->congress_id = $congress_id;
         $submission->theme_id = $theme_id;
         $submission->user_id = $user_id;
+        if ($status !== null) {
+            $submission->status = $status;
+        }
+        if ($eligible !== null) {
+            $submission->eligible = $eligible;
+        }
+        $submission->extId = $extId;
+
         $submission->save();
         return $submission;
     }
@@ -292,10 +301,17 @@ class SubmissionServices
             ->get();
     }
 
+    public function getAllSubmissionByCongress($congressId)
+    {
+        return Submission::with(['resources', 'authors.service', 'authors.etablissment'])
+            ->where('congress_id', '=', $congressId)
+            ->get();
+    }
+
     public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
     {
         $allSubmission = Submission::with([
-            'resources', 'authors'
+            'resources', 'authors.service', 'authors.etablissment'
         ])->when($search !== "null" && $search !== "" && $search !== null,
             function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%');
@@ -462,5 +478,92 @@ class SubmissionServices
         return Submission::with($relations)
             ->where('submission_id', '=', $submissionId)->first();
     }
+
+    public function getCommunicationTypeByKey($key)
+    {
+        return CommunicationType::where('abrv', '=', $key)
+            ->first();
+    }
+
+    public function getSubmissionExternal($congressId, $extId)
+    {
+        return Submission::where('extId', '=', $extId)
+            ->where('congress_id', '=', $congressId)
+            ->first();
+    }
+
+    public function addSubmissionExternal($congressId, $data, $user)
+    {
+
+        $communicationType = $this->getCommunicationTypeById($data['communication_type']);
+        $communicationTypeId = $communicationType ? $communicationType : 1;
+        $submissionTitle = isset($data['submission_title']) ? $data['submission_title'] : '-';
+        $submissionType = isset($data['submission_type']) ? $data['submission_type'] : '-';
+        $submissionDescription = isset($data['description']) ? $data['description'] : '-';
+        $themeId = 1;
+        $userId = $user->user_id;
+
+        $submission = $this->getSubmissionExternal($congressId, $data['submission_extId']);
+
+        if ($submission) {
+            return $this->editSubmission($submission, $submissionTitle, $submissionType, 1, $communicationTypeId, $submissionDescription, $themeId, null);
+        } else {
+            return $this->addSubmission($submissionTitle, $submissionType, $communicationTypeId, $submissionDescription, $congressId, $themeId, $userId, $data['submission_extId'], 1, 1);
+        }
+    }
+
+    public function getAllResourcesBySubmission($submission_id)
+    {
+        return ResourceSubmission::with('resource')
+            ->where('submission_id', '=', $submission_id)
+            ->get();
+    }
+
+    public function deleteAllResourcesBySubmission($submission_id)
+    {
+        $resources = $this->getAllResourcesBySubmission($submission_id);
+        foreach ($resources as $item) {
+            $resource = $item->resource;
+            Storage::delete('/resource/' . $resource->path);
+            $item->delete();
+            $resource->delete();
+        }
+    }
+
+    public function mappingPeacksourceData($data)
+    {
+        $res = array();
+
+        foreach ($data as $submission) {
+            array_push($res,
+                array(
+                    "title" => $submission->title,
+                    "description" => $submission->description,
+                    "user" => array(
+                        "user_id" => $submission->user->user_id,
+                        "first_name" => $submission->user->first_name,
+                        "last_name" => $submission->user->last_name,
+                        "email" => $submission->user->email
+                    ),
+                    "authors" => array_map(function ($object) {
+                        return array(
+                            "first_name" => $object['first_name'],
+                            "last_name" => $object['last_name'],
+                            "email" => $object['email'],
+                            "rank" => $object['rank'],
+                            "service" => isset($object['service']['label']) ? $object['service']['label'] : '-',
+                            "etablissement" => isset($object['etablissment']['label']) ? $object['etablissment']['label'] : '-'
+                        );
+                    }, json_decode($submission->authors, true)),
+                    "resources" => array_map(function ($object) {
+                        return UrlUtils::getFilesUrl() . $object['path'];
+                    }, json_decode($submission->resources, true))
+                )
+            );
+        }
+
+        return $res;
+    }
+
 
 }

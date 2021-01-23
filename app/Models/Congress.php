@@ -113,10 +113,17 @@ class Congress extends Model
     function itemEvaluation() {
         return $this->hasMany('App\Models\ItemEvaluation', 'congress_id', 'congress_id');
     }
+    public function privilegeConfig ()
+    {
+        return $this->hasMany('App\Models\PrivilegeConfig', 'congress_id', 'congress_id');
+    }
     function tracking () {
         return $this->hasMany(Tracking::class,'congress_id','congress_id');
     }
     function stand() {
         return $this->hasMany(Stand::class,'congress_id','congress_id');
+    }
+    function white_list() {
+        return $this->hasMany(WhiteList::class,'congress_id','congress_id');
     }
 }

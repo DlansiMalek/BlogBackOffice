@@ -41,9 +41,10 @@ class TrackingServices
             $user->user_congresses[0]->update();
         }
 
-        $object['env'] = env('APP_ENV');
+        $env = env('APP_ENV');
+        $object['env'] = $env;
 
-        $res = $this->client->post('/eventizer-tracking-users/_doc', [
+        $res = $this->client->post('/eventizer-tracking-users-' . $env . '-' . $congressId . '/_doc', [
             'body' => json_encode($object, true)
         ]);
 
@@ -105,29 +106,29 @@ class TrackingServices
             'env' => env('APP_ENV'),
             'congress_id' => strval($tracking['congress_id'])
         );
+
         if ($actionName) {
             $obj = array(
                 'action' => $actionName,
                 'date_entry' => $dateEntry,
                 'date_leave' => $dateLeave,
-                'duration' => strval((Utils::diffMinutes($dateEntry, $dateLeave) * 60000)),
-                'type' => $tracking['type'] ? $tracking['type'] : ""
+                'duration' => strval((Utils::diffMinutes($dateEntry, $dateLeave) * 60000))
             );
-
-            if ($tracking['type'] == 'ACCESS') {
-                $obj['channel_name'] = $tracking['access']['name'];
-            }
-
-            if ($tracking['type'] == 'STAND') {
-                $obj['channel_name'] = $tracking['stand']['name'];
-            }
-
-
         } else {
             $obj = array(
                 'action' => $tracking['action']['key'],
                 'date' => $tracking['date']
             );
+        }
+
+        if ($tracking['type'] == 'ACCESS') {
+            $obj['channel_name'] = $tracking['access']['name'];
+            $obj['type'] = $tracking['type'];
+        }
+
+        if ($tracking['type'] == 'STAND') {
+            $obj['channel_name'] = $tracking['stand']['name'];
+            $obj['type'] = $tracking['type'];
         }
 
         $form_params = array_merge($form_params, $obj);

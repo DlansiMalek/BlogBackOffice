@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+
 class Utils
 {
 
@@ -216,6 +217,18 @@ class Utils
         }
 
         return $res;
+    }
+
+    public static function isValidSendMail($congress, $user)
+    {
+        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
+    }
+
+    public static function getBase64Img(string $path)
+    {
+        $file = @file_get_contents($path);
+        return $file ? base64_encode($file) : null;
     }
 
     function base64_to_jpeg($base64_string, $output_file)

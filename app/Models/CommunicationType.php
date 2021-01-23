@@ -9,7 +9,7 @@ class CommunicationType extends Model
     public $timestamps = true;
     protected $table = 'Communication_Type';
     protected $primaryKey = 'communication_type_id';
-    protected $fillable = ['label'];
+    protected $fillable = ['label', 'abrv'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 }

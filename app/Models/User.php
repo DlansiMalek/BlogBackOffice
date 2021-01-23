@@ -11,7 +11,7 @@ class User extends Authenticatable implements JWTSubject
     use Notifiable;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'code', 'email_verified', 'verification_code', 'rfid', 'profile_pic', 'country_id'];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'code', 'email_verified', 'verification_code', 'rfid', 'country_id'];
     public $timestamps = true;
 
     protected $hidden = ["password", "passwordDecrypt"];
@@ -21,13 +21,15 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(UserMail::class, "user_id", "user_id");
     }
+
     function submissions()
     {
         return $this->hasMany(Submission::class, "user_id", "user_id");
     }
 
-    function inscription_evaluation() {
-        return $this->hasMany(Evaluation_Inscription::class, 'user_id','user_id');
+    function inscription_evaluation()
+    {
+        return $this->hasMany(Evaluation_Inscription::class, 'user_id', 'user_id');
     }
 
     function accesses()
@@ -35,13 +37,15 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany('App\Models\Access', 'User_Access', 'user_id', 'access_id')
             ->withPivot('isPresent');
     }
+
     function packs()
     {
         return $this->belongsToMany('App\Models\Pack', 'User_Pack', 'user_id', 'pack_id');
     }
+
     function user_access()
     {
-        return $this->hasMany('App\Models\UserAccess','user_id','user_id');
+        return $this->hasMany('App\Models\UserAccess', 'user_id', 'user_id');
     }
 
     //Speaker Access
@@ -76,9 +80,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\UserCongress', 'user_id', 'user_id');
     }
 
-    function user_packs() {
+    function user_packs()
+    {
         return $this->hasMany('App\Models\UserPack', 'user_id', 'user_id');
     }
+
     function custom_sms()
     {
         return $this->belongsToMany('App\Models\CustomSMS', 'User_Sms', 'user_id', 'custom_sms_id');
@@ -109,6 +115,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\FeedbackResponse', 'user_id', 'user_id');
     }
 
+    function profile_img()
+    {
+        return $this->hasOne(Resource::class, 'resource_id', 'resource_id');
+    }
+
     function likes()
     {
         return $this->hasMany('App\Models\Like', 'user_id', 'user_id');
@@ -125,7 +136,8 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function tracking(){
-        return $this->hasMany(Tracking::class,'user_id','user_id');
+    public function tracking()
+    {
+        return $this->hasMany(Tracking::class, 'user_id', 'user_id');
     }
 }

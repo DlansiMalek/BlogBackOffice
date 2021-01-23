@@ -84,18 +84,20 @@ class PaymentController extends Controller
                     $userCongress->privilege_id);
                 $badgeIdGenerator = $badge['badge_id_generator'];
                 $fileAttached = false;
+                $fileName = "badge.png";
                 if ($badgeIdGenerator != null) {
                     $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                         $user,
                         $user->qr_code,
                         $userCongress->privilege_id);
+
                 }
 
 
                 if ($mailtype = $this->congressServices->getMailType('paiement')) {
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, false,
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment), $user, $congress, $mail->object, false,
                             $userMail);
                     }
                 }
@@ -103,7 +105,7 @@ class PaymentController extends Controller
                     $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                        $this->userServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayment, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                     }
 
                     $this->smsServices->sendSms($congress->congress_id, $user, $congress);
