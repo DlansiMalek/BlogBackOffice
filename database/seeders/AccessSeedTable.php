@@ -14,7 +14,7 @@ class AccessSeedTable extends Seeder
     public function run()
     {
         DB::table('Access')->insert([
-            'name' => 'Access Test',
+            'name' => 'Access Test 1',
             'price' => 40,
             'duration' => 90,
             'max_places' => 120,
@@ -24,7 +24,120 @@ class AccessSeedTable extends Seeder
             'show_in_register' => 1,
             'congress_id' => 1,
             'topic_id' => 1,
-            'access_type_id' => 2
+            'access_type_id' => 1,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 2',
+            'price' => 0,
+            'duration' => 90,
+            'max_places' => 120,
+            'room' => 'Room 2 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 0,
+            'congress_id' => 1,
+            'topic_id' => 1,
+            'access_type_id' => 2,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 3',
+            'price' => 0,
+            'duration' => 60,
+            'max_places' => 50,
+            'room' => 'Room 3 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 1,
+            'congress_id' => 1,
+            'topic_id' => 2,
+            'access_type_id' => 3,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 4',
+            'price' => 40,
+            'duration' => 90,
+            'max_places' => 120,
+            'room' => 'Room 4 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 0,
+            'congress_id' => 2,
+            'topic_id' => 1,
+            'access_type_id' => 1,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 5',
+            'price' => 0,
+            'duration' => 90,
+            'max_places' => 120,
+            'room' => 'Room 5 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 1,
+            'congress_id' => 2,
+            'topic_id' => 2,
+            'access_type_id' => 2,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 6',
+            'price' => 0,
+            'duration' => 60,
+            'max_places' => 50,
+            'room' => 'Room 6 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 0,
+            'congress_id' => 2,
+            'topic_id' => 2,
+            'access_type_id' => 3,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 7',
+            'price' => 40,
+            'duration' => 90,
+            'max_places' => 120,
+            'room' => 'Room 7 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 0,
+            'congress_id' => 3,
+            'topic_id' => 1,
+            'access_type_id' => 1,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 8',
+            'price' => 0,
+            'duration' => 90,
+            'max_places' => 120,
+            'room' => 'Room 8 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 1,
+            'congress_id' => 3,
+            'topic_id' => 1,
+            'access_type_id' => 2,
+            'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'name' => 'Access Test 9',
+            'price' => 0,
+            'duration' => 60,
+            'max_places' => 50,
+            'room' => 'Room 9 Arena',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'show_in_register' => 0,
+            'congress_id' => 3,
+            'topic_id' => 2,
+            'access_type_id' => 3,
+            'description' => 'test description'
         ]);
     }
 }

@@ -21,4 +21,6 @@ Inclut tous les fonctionnalités du milestone 3.0.13
 
 Inclut tous les fonctionnalités du milestone 3.0.14
 
-4. Upgrade Laravel 8: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/24)
+1. Upgrade Laravel 8: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/24)
+
+2. Revoir tous les seeders dans la plateforme: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/11)

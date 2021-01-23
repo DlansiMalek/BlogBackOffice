@@ -17,5 +17,13 @@ class CongressThemeTableSeeder extends Seeder
             'congress_id' => 1,
             'theme_id' => 1
         ]);
+        DB::table('Congress_Theme')->insert([
+            'congress_id' => 2,
+            'theme_id' => 2
+        ]);
+        DB::table('Congress_Theme')->insert([
+            'congress_id' => 3,
+            'theme_id' => 3
+        ]);
     }
 }

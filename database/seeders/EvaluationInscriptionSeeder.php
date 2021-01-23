@@ -16,7 +16,21 @@ class EvaluationInscriptionSeeder extends Seeder
             'admin_id' => 1,
             'user_id' => 1,
             'congress_id' => 1,
-            'note' => 10,
+            'note' => 7,
+            'commentaire' => 'faible'
+        ]);
+        DB::table('Evaluation_Inscription')->insert([
+            'admin_id' => 2,
+            'user_id' => 2,
+            'congress_id' => 2,
+            'note' => 16,
+            'commentaire' => 'bien'
+        ]);
+        DB::table('Evaluation_Inscription')->insert([
+            'admin_id' => 3,
+            'user_id' => 3,
+            'congress_id' => 3,
+            'note' => 13,
             'commentaire' => 'bien'
         ]);
     }

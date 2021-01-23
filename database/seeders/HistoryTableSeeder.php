@@ -18,19 +18,25 @@ class HistoryTableSeeder extends Seeder
             'status' => 0,
             'nbr_events' => 0,
             'pack_admin_id' => 1,
-            'admin_id' => 1 // il faut d'abord créer un admin avec cet ID
+            'admin_id' => 3,
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d")
         ]);
         DB::table('History_Pack')->insert([
             'status' => 0,
             'nbr_events' => 3,
             'pack_admin_id' => 2,
-            'admin_id' => 1 // il faut d'abord créer un admin avec cet ID
+            'admin_id' => 3,
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d")
         ]);
         DB::table('History_Pack')->insert([
             'status' => 1,
             'nbr_events' => 0,
-            'pack_admin_id' => 1,
-            'admin_id' => 1 // il faut d'abord créer un admin avec cet ID
+            'pack_admin_id' => 3,
+            'admin_id' => 3,
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d")
         ]);
     }
 }
