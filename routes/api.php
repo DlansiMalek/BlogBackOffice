@@ -215,6 +215,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
 
         Route::get('mail/types', 'MailController@getAllMailTypes');
         Route::post('mail/type/{mailTypeId}', 'MailController@saveMail');
+        Route::delete('mail/delete/{mail_id}', 'MailController@deleteMail');
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
         Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
