@@ -9,7 +9,7 @@ class Submission extends Model
     protected $table = 'Submission';
     protected $primaryKey = 'submission_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
-    protected $fillable = ['title', 'type', 'prez_type', 'description', 'global_note', 'status','upload_file_code'];
+    protected $fillable = ['title', 'type', 'prez_type', 'communication_type_id', 'description', 'global_note', 'status', 'eligible', 'upload_file_code'];
 
 
     public function user()
@@ -17,8 +17,9 @@ class Submission extends Model
         return $this->belongsTo('App\Models\User', 'user_id');
     }
 
-    public function communicationType() {
-        return $this->belongsTo('App\Models\CommunicationType','communication_type_id');
+    public function communicationType()
+    {
+        return $this->belongsTo('App\Models\CommunicationType', 'communication_type_id');
     }
 
     public function theme()

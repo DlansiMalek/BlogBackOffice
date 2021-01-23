@@ -20,12 +20,13 @@ class UrlUtils
             return "http://localhost:3000";
         }
         if (App::environment() == 'prod') {
-            return "http://vayevoting-backend-master:3000";
+            return "https://ws.vayetek.com";
         }
         if (App::environment() == 'dev') {
-            return "http://vayevoting-backend-master:3000";
+            return "https://ws.vayetek.com";
         }
         return "https://ws.vayetek.com";
+        //return "http://localhost:3000";
     }
 
     public static function getMeetEventizerUrl()
@@ -67,10 +68,10 @@ class UrlUtils
             return "http://localhost:8080";
         }
         if (App::environment() == 'prod') {
-            return "http://payment-api-master:8080";
+            return "https://paiement-api.vayetek.com";
         }
         if (App::environment() == 'dev') {
-            return "http://payment-api-master:8080";
+            return "https://paiement-api.vayetek.com";
         }
         return "https://paiement-api.vayetek.com";
     }
@@ -81,10 +82,10 @@ class UrlUtils
             return "https://congress-file-generater.vayetek.com";
         }
         if (App::environment() == 'prod') {
-            return "http://eventizer-file-generator-master:8000";
+            return "https://congress-file-generater.vayetek.com";
         }
         if (App::environment() == 'dev') {
-            return "http://eventizer-file-generator-master:8000";
+            return "https://congress-file-generater.vayetek.com";
         }
         return "https://congress-file-generater.vayetek.com";
     }
@@ -148,5 +149,36 @@ class UrlUtils
         }
 
         return "https://discovery.recordings.meet.eventizer.io";
+    }
+
+
+    public static function getUrlSendPulse()
+    {
+        return "https://api.sendpulse.com";
+    }
+
+    public static function getUrlSendInBlue()
+    {
+        return "https://api.sendinblue.com/v3/smtp/email";
+    }
+
+    public static function getElasticBaseUrl()
+    {
+        return "https://" . env('ELASTIC_USER') . ":" . env('ELASTIC_PASSWORD') . '@elastic.tracking.master.vayetek.com';
+    }
+
+    public static function getFilesUrl()
+    {
+        if (App::environment() == 'test') {
+            return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
+        }
+        if (App::environment() == 'prod') {
+            return "https://eventizer.fra1.cdn.digitaloceanspaces.com/";
+        }
+        if (App::environment() == 'dev') {
+            return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
+        }
+
+        return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
     }
 }

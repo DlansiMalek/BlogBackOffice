@@ -17,4 +17,9 @@ class UserPack extends Model
     {
         return $this->belongsTo('App\Models\User', 'user_id', 'user_id');
     }
+
+    public function pack()
+    {
+        return $this->belongsTo('App\Models\Pack', 'pack_id', 'pack_id');
+    }
 }

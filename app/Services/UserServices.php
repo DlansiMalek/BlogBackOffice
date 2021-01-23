@@ -10,21 +10,29 @@ use App\Models\Evaluation_Inscription;
 use App\Models\FormInputResponse;
 use App\Models\Payment;
 use App\Models\ResponseValue;
+use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\UserMail;
 use App\Models\UserPack;
+use App\Models\WhiteList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PDF;
+use function foo\func;
 
 class UserServices
 {
 
     private $path = 'profile-pic/';
+
+    public function __construct()
+    {
+        ini_set('max_execution_time', 300);
+    }
 
     public function getAllUsers()
     {
@@ -46,6 +54,29 @@ class UserServices
         $user->path_cv = null;
         $user->update();
         return $user;
+    }
+
+    public function saveUserWithFbOrGoogle($user)
+    {
+        $name_array = explode(" ", $user->name);
+        $first_name = $name_array[0];
+        //make sure we get all the rest of his name
+        $last_name = '';
+        for ($i = 1; $i < count($name_array); $i++) {
+            $last_name = $last_name . " " . $name_array[$i];
+        }
+        $last_name = substr($last_name, 1); //Remove first space
+
+        $newUser = new User();
+        $newUser->email = $user->email;
+        $newUser->email_verified = 1;
+        $newUser->first_name = $first_name;
+        $newUser->last_name = $last_name;
+        $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
+        $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->save();
+
+        return $newUser;
     }
 
     public function editerUser(Request $request, $newUser)
@@ -128,18 +159,6 @@ class UserServices
         return $this->getUserById($newUser->user_id);
     }
 
-    public function sendConfirmationMail($user, $congress_name)
-    {
-        $link = "https://congress-api.vayetek.com/api/users/" . $user->user_id . "/validate/" . $user->verification_code;
-        $email = $user->email;
-        Mail::send('verificationMail', [
-            'congress_name' => $congress_name, 'last_name' => $user->last_name,
-            'first_name' => $user->first_name, 'link' => $link
-        ], function ($message) use ($email) {
-            $message->to($email)->subject('Validation du compte');
-        });
-    }
-
     public function getParticipatorById($user_id)
     {
         $user = User::with([
@@ -164,17 +183,6 @@ class UserServices
         $updateUser->update();
         return $updateUser;
     }
-
-    public function impressionBadge($user)
-    {
-
-        $data = [
-            "name" => $user->first_name . " " . $user->last_name
-        ];
-        $pdf = PDF::loadView('pdf.badge', $data);
-        return $pdf->save(public_path() . "/badge/invitation.pdf");
-    }
-
 
     public function sendCredentialsOrganizerMail(Admin $admin)
     {
@@ -295,7 +303,7 @@ class UserServices
     public function affectAccessIds($user_id, $accessIds)
     {
         foreach ($accessIds as $item) {
-            $this->affectAccessById($user_id, $item);
+            $this->affectAccessById($user_id, $item->access_id);
         }
     }
 
@@ -345,11 +353,17 @@ class UserServices
 
     public function getUserIdAndByCongressId($userId, $congressId, $showInRegister = null)
     {
-        return User::with(["accesses" => function ($query) use ($congressId, $showInRegister) {
-            $query->where('congress_id', '=', $congressId);
-            if ($showInRegister)
-                $query->where('show_in_register', '=', $showInRegister);
-        }])
+        return User::with([
+            "responses.values"
+            , 'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }
+            , 'user_congresses.privilege'
+            , "accesses" => function ($query) use ($congressId, $showInRegister) {
+                $query->where('congress_id', '=', $congressId);
+                if ($showInRegister)
+                    $query->where('show_in_register', '=', $showInRegister);
+            }])
             ->where("user_id", "=", $userId)
             ->first();
     }
@@ -391,9 +405,9 @@ class UserServices
     //         }
     //     })->get();
     // }
-    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null,$admin_id = null)
+    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null, $admin_id = null)
     {
-        
+
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
             if ($privilegeIds != null) {
@@ -412,13 +426,13 @@ class UserServices
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
             },
-            'inscription_evaluation' => function($query) use ($congressId,$admin_id) {
-                if ($admin_id) {
-                    $query->where('admin_id','=',$admin_id)->where('congress_id','=',$congressId);
-                } else {
-                    $query->where('congress_id','=',$congressId);
+                'inscription_evaluation' => function ($query) use ($congressId, $admin_id) {
+                    if ($admin_id) {
+                        $query->where('admin_id', '=', $admin_id)->where('congress_id', '=', $congressId);
+                    } else {
+                        $query->where('congress_id', '=', $congressId);
+                    }
                 }
-            }
             ])
             ->where(function ($query) use ($search) {
                 if ($search != "") {
@@ -426,10 +440,10 @@ class UserServices
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
                 }
-            }) ;
+            });
 
         if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-                || $tri == 'mobile' || $tri = 'country_id')) {
+                || $tri == 'mobile')) {
             $users = $users->orderBy($tri, $order);
         }
         if ($order && ($tri == 'type' || $tri == 'date')) {
@@ -453,18 +467,21 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getAllUsersByCongress($congressId, $privilegeId)
+
+    public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId, $isTracked) {
             $query->where('congress_id', '=', $congressId);
-            if ($privilegeId)
+            if ($privilegeId != null)
                 $query->where('privilege_id', '=', $privilegeId);
+            if ($isTracked === 0 || $isTracked === 1)
+                $query->where('is_tracked', '=', $isTracked);
         })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.values', 'country'])
+            }, 'responses.values', 'user_congresses.privilege', 'country'])
             ->with(['accesses'])
             ->get();
         return $users;
@@ -562,12 +579,23 @@ class UserServices
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent) {
             $query->where('congress_id', '=', $congressId);
-            if ($isPresent != null)
+            if ($isPresent !== null)
                 $query->where('isPresent', '=', $isPresent);
         })
             ->with($relations)
             ->get();
     }
+
+    public function getUsersSubmissionWithRelations($congressId, $relations)
+    {
+        return User::whereHas('submissions', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('status', '=', 1);
+        })
+            ->with($relations)
+            ->get();
+    }
+
 
     public function getUserByEmailAndCode($email, $code)
     {
@@ -588,6 +616,91 @@ class UserServices
             ->whereRaw('lower(email) like (?)', ["{$email}"])
             ->where('code', '=', $code)
             ->first();
+    }
+
+    public function deleteUserPacks($userId, $congressId)
+    {
+        return UserPack::where('user_id', '=', $userId)
+            ->whereHas('pack', function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            })
+            ->delete();
+    }
+
+    public function mappingPeacksourceData($congress, $users)
+    {
+        $res = array();
+
+        foreach ($users as $user) {
+            $channelName = Utils::getChannelNameByUser($user);
+            array_push($res,
+                array(
+                    "user_id" => $user->user_id,
+                    "gender" => $user->gender,
+                    "name" => $user->last_name . ' ' . $user->first_name,
+                    "is_valid" => $this->checkValidUser($congress, $user),
+                    "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
+                    "channel_name" => $channelName,
+                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
+                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
+                )
+            );
+
+            if ($user->profile_img) {
+                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
+            }
+        }
+
+        return $res;
+    }
+
+    public function addTracking($congressId, $actionId, $userId, $accessId, $standId, $type, $comment, $userCalledId, $date = null)
+    {
+        $tracking = new Tracking();
+
+        $tracking->congress_id = $congressId;
+        $tracking->action_id = $actionId;
+        $tracking->user_id = $userId;
+        $tracking->access_id = $accessId;
+        $tracking->stand_id = $standId;
+        $tracking->type = $type;
+        $tracking->comment = $comment;
+        $tracking->user_call_id = $userCalledId;
+        $tracking->date = $date ? $date : date('Y-m-d H:i:s');
+
+        $tracking->save();
+
+        return $tracking;
+    }
+
+    public function closeTracking($congressId, $userId)
+    {
+        $tracking = $this->getLastTracking($congressId, $userId);
+
+        if ($tracking) {
+            if ($tracking->action_id === 3)
+                $this->addTracking($congressId, 4, $userId, $tracking->access_id, $tracking->stand_id, $tracking->type, 'FOCED CLOSE', null, $tracking->date);
+            if ($tracking->action_id !== 2)
+                $this->addTracking($congressId, 2, $userId, null, null, null, 'FOCED CLOSE', null, $tracking->date);
+        }
+    }
+
+    public function addPrincipalUserAuthorExternal($data)
+    {
+        $email = $data['author_email'];
+        $firstName = isset($data['author_first_name']) ? $data['author_first_name'] : 'Participant';
+        $lastName = isset($data['author_last_name']) ? $data['author_last_name'] : 'Eventizer';
+        $gender = isset($data['author_gender']) ? $data['author_gender'] : 1;
+        $mobile = isset($data['author_mobile']) ? $data['author_mobile'] : '77777777';
+
+        $countryId = "TUN";
+
+        return $this->createOrUpdateUser($email, $firstName, $lastName, $gender, $mobile, $countryId);
+    }
+
+    public function isUserModerator($userCongress)
+    {
+        return $userCongress->privilege_id == 5 || $userCongress->privilege_id == 8;
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -637,7 +750,7 @@ class UserServices
 
     public function getUserByVerificationCodeAndId($code, $user_id)
     {
-        $conditions = ['verification_code' => $code, 'user_id' => $user_id, 'email_verified' => 0];
+        $conditions = ['verification_code' => $code, 'user_id' => $user_id];
         return User::where($conditions)->first();
     }
 
@@ -653,13 +766,6 @@ class UserServices
             $user->voting_token = $admin->voting_token;
         }
         return $users;
-    }
-
-    public function getUsersByCongressWithAccess($congressId)
-    {
-        return User::with(['accesss'])
-            ->where('congress_id', '=', $congressId)
-            ->get();
     }
 
     public function getUsersEmailNotSendedByCongress($congressId)
@@ -763,14 +869,6 @@ class UserServices
         }
     }
 
-    public function getUsersByCongressByPrivileges($congressId, $privileges)
-    {
-        return User::whereIn('privilege_id', $privileges)
-            ->where("congress_id", "=", $congressId)
-            ->with(['accesss.attestations', 'organization', 'privilege'])
-            ->get();
-    }
-
     public function saveUsersFromExcel($congress_id, $users)
     {
         foreach ($users as $user) {
@@ -785,75 +883,6 @@ class UserServices
             ->get();
     }
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null)
-    {
-        //TODO detect email sended user
-        $email = $toSendEmail ? $toSendEmail : $user->email;
-        $pathToFile = storage_path() . "/app/badge.png";
-
-        if ($congress != null && $congress->username_mail)
-            config(['mail.from.name', $congress->username_mail]);
-
-        try {
-            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-                if ($congress != null && $congress->config && $congress->config->replyto_mail) {
-                    $message->replyTo($congress->config->replyto_mail);
-                }
-
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
-                $message->subject($objectMail);
-                $message->setBody($view, 'text/html');
-                if ($fileAttached)
-                    $message->attach($pathToFile);
-                $message->to($email)->subject($objectMail);
-            });
-        } catch (\Exception $exception) {
-            if ($userMail) {
-                $userMail->status = -1;
-                $userMail->update();
-            }
-            Storage::delete('/app/badge.png');
-            return 1;
-        }
-        if ($userMail) {
-            $userMail->status = 1;
-            $userMail->update();
-        }
-        Storage::delete('/app/badge.png');
-        return 1;
-    }
-
-
-    public function sendMailAttesationToUser($user, $congress, $userMail, $object, $view)
-    {
-        $email = $user->email;
-
-        $pathToFile = storage_path() . "/app/attestations.zip";
-
-        try {
-            Mail::send([], [], function ($message) use ($view, $object, $email, $congress, $pathToFile) {
-                $fromMailName = $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-
-                if ($congress->config && $congress->config->replyto_mail) {
-                    $message->replyTo($congress->config->replyto_mail);
-                }
-
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), $fromMailName);
-                $message->subject($object);
-                $message->setBody($view, 'text/html');
-                $message->attach($pathToFile);
-                $message->to($email)->subject($object);
-            });
-            $userMail->status = 1;
-        } catch (\Exception $exception) {
-            Storage::delete('app/badge.png');
-            $userMail->status = -1;
-        }
-        $userMail->update();
-        return $user;
-    }
-
     public function getUsersEmailAttestationNotSendedByCongress($congressId)
     {
         return User::where('congress_id', '=', $congressId)
@@ -861,20 +890,11 @@ class UserServices
             ->get();
     }
 
-    public function uploadPayement($userPayment, Request $request)
+    public function updateUserPayment($userPayment, $path)
     {
-        ini_set('post_max_size', '15M');
-        ini_set('upload_max_filesize', '15M');
-
-        $file = $request->file('file_data');
-        $chemin = config('media.payement-user-recu');
-        $path = $file->store($chemin);
-
         $userPayment->path = $path;
         $userPayment->isPaid = 2;
-
         $userPayment->update();
-
         return $userPayment;
     }
 
@@ -882,13 +902,6 @@ class UserServices
     {
         return User::where('ref_payment', '=', $ref)
             ->first();
-    }
-
-    public function getUsersByContry($congressId, $countryId)
-    {
-        return User::where('congress_id', '=', $congressId)
-            ->where('country_id', '=', $countryId)
-            ->get();
     }
 
     public function saveUserResponses($responses, $userId)
@@ -953,13 +966,6 @@ class UserServices
         return count($users) > 0;
     }
 
-    public function getUsersByParticipantTypeId($congressId, $participantTypeId)
-    {
-        return User::where('privilege_id', '=', $participantTypeId)
-            ->where('congress_id', '=', $congressId)
-            ->get();
-    }
-
     public function affectAllAccess($user_id, $accesss)
     {
         foreach ($accesss as $access) {
@@ -999,18 +1005,16 @@ class UserServices
         return $user;
     }
 
-    public function saveUser(Request $request)
+    public function saveUser(Request $request, $resource = null)
     {
         $user = new User();
         $user->email = $request->email;
 
-        $password = '';
-        if ($request->has('password')) {
+        if ($request->has('password') && $request->input('password') != "") {
             $password = $request->input('password');
-        }
-        /*else {
+        } else {
             $password = Str::random(8);
-        }*/
+        }
 
         if ($request->has('first_name')) $user->first_name = $request->input('first_name');
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
@@ -1019,6 +1023,8 @@ class UserServices
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
+        if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
+        if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1029,7 +1035,7 @@ class UserServices
         return $user;
     }
 
-    public function editUser(Request $request, $user)
+    public function editUser(Request $request, $user, $resource = null)
     {
         $user->email = $request->email;
 
@@ -1043,6 +1049,8 @@ class UserServices
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
         if ($request->has('country_id')) $user->country_id = $request->country_id;
+        if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
+        if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
 
         $user->update();
         return $user;
@@ -1051,11 +1059,33 @@ class UserServices
     public function getUserCongress($congress_id, $user_id)
     {
         return UserCongress::where('user_id', '=', $user_id)
-        ->where('congress_id', '=', $congress_id)
-        ->with(['congress','congress.config_selection' => function ($query) {
-            $query->select(['congress_id','selection_type']);
-        },'user'])
-        ->first();
+            ->where('congress_id', '=', $congress_id)
+            ->with(['congress', 'congress.config_selection' => function ($query) {
+                $query->select(['congress_id', 'selection_type']);
+            }, 'user'])
+            ->first();
+    }
+
+    public function getUsersTracking($congress_id, $actionsId = null, $privilegeId = null)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congress_id, $privilegeId) {
+            $query->where('congress_id', '=', $congress_id);
+            if ($privilegeId != null) {
+                $query->where('privilege_id', '=', $privilegeId);
+            }
+        })->with(['tracking' => function ($query) use ($congress_id, $actionsId) {
+            $query->where('congress_id', '=', $congress_id);
+            if (sizeof($actionsId) > 0)
+                $query->whereIn('action_id', $actionsId);
+            $query->orderBy('date');
+        }, 'tracking.access', 'tracking.stand'])
+            ->get();
+    }
+
+    public function getUsersCongressByCongressId($congress_id)
+    {
+        return UserCongress::where('congress_id', '=', $congress_id)
+            ->get();
     }
 
     public function getUserCongressByUserId($userId)
@@ -1080,15 +1110,17 @@ class UserServices
         return $user_congress;
     }
 
-    public function affectNoteToUser($evaluation,$note,$commentaire) {
+    public function affectNoteToUser($evaluation, $note, $commentaire)
+    {
         $evaluation->note = $note;
         $evaluation->commentaire = $commentaire;
         $evaluation->update();
         return $evaluation;
     }
 
-    public function changeUserStatus($user_congress , $status){
-        $user_congress->isSelected = $status ;
+    public function changeUserStatus($user_congress, $status)
+    {
+        $user_congress->isSelected = $status;
         $user_congress->update();
         return $user_congress;
     }
@@ -1135,33 +1167,22 @@ class UserServices
             ->where('user_id', '=', $userId)
             ->first();
     }
-  
 
-    public function checkUserRights($user, $accessId = null)
+    public function getEvaluationInscriptionByUserIdAndAdminId($user_id, $congress_id, $admin_id)
     {
-        if ($user && sizeof($user->user_congresses) > 0 && (!$accessId || sizeof($user->accesses) > 0)) {
-            if ($user->user_congresses[0]['privilege_id'] == 3 && (!$accessId || sizeof($user->payments) == 0 || $user->payments[0]['isPaid'] == 1)) {
-                return 2;
-            }
-            if ($user->user_congresses[0]['privilege_id'] == 5 || $user->user_congresses[0]['privilege_id'] == 8) {
-                return 3;
-            }
-        }
-        return -1;
-    }
-
-    public function getEvaluationInscriptionByUserIdAndAdminId($user_id,$congress_id,$admin_id) {
-       $conditionsToMatch = ['user_id'=>$user_id,'congress_id'=>$congress_id,'admin_id' => $admin_id];
+        $conditionsToMatch = ['user_id' => $user_id, 'congress_id' => $congress_id, 'admin_id' => $admin_id];
         return Evaluation_Inscription::where($conditionsToMatch)->first();
     }
-    public function getAllEvaluationInscriptionByUserId($user_id,$congress_id) {
-        return Evaluation_Inscription::where('user_id','=',$user_id)->where('congress_id','=',$congress_id)
-        ->get();
+
+    public function getAllEvaluationInscriptionByUserId($user_id, $congress_id)
+    {
+        return Evaluation_Inscription::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)
+            ->get();
     }
 
     public function getUserById($userId)
     {
-        return  User::with([
+        return User::with([
             'user_congresses.congress.accesss.speakers',
             'user_congresses.congress.accesss.chairs',
             'user_congresses.congress.accesss.sub_accesses',
@@ -1173,15 +1194,18 @@ class UserServices
             'speaker_access',
             'chair_access',
             'country',
-            'likes'
+            'likes',
+            'profile_img'
         ])
             ->where('user_id', '=', $userId)
             ->first();
     }
-    public function getAverageNote($user_id,$congress_id) {
-        return Evaluation_Inscription::where('user_id','=',$user_id)->where('congress_id','=',$congress_id)
-        ->where('note','>',-1)
-        ->average('note');
+
+    public function getAverageNote($user_id, $congress_id)
+    {
+        return Evaluation_Inscription::where('user_id', '=', $user_id)->where('congress_id', '=', $congress_id)
+            ->where('note', '>', -1)
+            ->average('note');
     }
 
     public function getUserCongressLocal($userCongresss, $congressId)
@@ -1402,17 +1426,6 @@ class UserServices
         return AttestationRequest::where("user_id", '=', $user_id)->get()->toArray();
     }
 
-    public function uploadProfilePic($file, $user)
-    {
-        $timestamp = microtime(true) * 10000;
-        $path = $file->storeAs($this->path . $timestamp, $file->getClientOriginalName());
-
-        $user->profile_pic = $path;
-        $user->save();
-
-        return $user;
-    }
-
     public function retrieveUserFromToken()
     {
         try {
@@ -1463,7 +1476,122 @@ class UserServices
         $accepted_user_id_array = UserCongress::select('user_id')->where('congress_id', '=', $congressId)
             ->where('privilege_id', '=', 3);
         //users who got refused with mails refused
-        return User::whereIn('user_id', $accepted_user_id_array)
+        return User::with(['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }])->whereIn('user_id', $accepted_user_id_array)
             ->whereNotIn('email', $emails_array)->get();
     }
+
+    private function getLastTracking($congressId, $userId)
+    {
+        return Tracking::where('user_id', '=', $userId)
+            ->where('congress_id', '=', $congressId)
+            ->latest()->get()->first();
+    }
+
+    private function checkValidUser($congress, $user)
+    {
+
+        if ($congress->congress_type_id === 3) { // Valid if congress is free without selection
+            return true;
+        }
+        // check if isSelected = 1
+        // check if isPaid = 1
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1) {
+            return true;
+        }
+
+        if (sizeof($user->payments) > 0 && $user->payments[0]->isPaid === 1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function createOrUpdateUser($email, $firstName, $lastName, $gender, string $mobile, $countryId)
+    {
+        $user = $this->getUserByEmail($email);
+        if (!$user) {
+            $user = new User();
+        }
+
+        $user->email = $email;
+        $user->first_name = $firstName;
+        $user->last_name = $lastName;
+        $user->gender = $gender;
+        $user->mobile = $mobile;
+        $user->country_id = $countryId;
+
+        if (!$user->password) {
+            $password = Str::random(8);
+            $user->passwordDecrypt = $password;
+            $user->password = bcrypt($password);
+        }
+
+
+        $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
+        return $user;
+    }
+
+    public function getWhiteList($congress_id, $perPage, $search)
+    {
+        $whiteLists = WhiteList::where('congress_id', '=', $congress_id)
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                }
+            });
+        return $whiteLists->paginate($perPage);
+    }
+
+    public function addWhiteList($congress_id, $email, $first_name, $last_name, $mobile)
+    {
+        $whiteList = new WhiteList();
+        $whiteList->congress_id = $congress_id;
+        $whiteList->email = $email;
+        if ($first_name)
+            $whiteList->first_name = $first_name;
+        if ($last_name)
+            $whiteList->last_name = $last_name;
+        if ($mobile)
+            $whiteList->mobile = $mobile;
+        $whiteList->save();
+    }
+
+    public function getWhiteListByEmailAndCongressId($email, $congress_id)
+    {
+        $email = strtolower($email);
+        return WhiteList::where('congress_id', '=', $congress_id)
+            ->whereRaw('lower(email) = (?)', ["{$email}"])
+            ->first();
+    }
+
+    public function getWhiteListById($white_list_id)
+    {
+        return WhiteList::where('white_list_id', '=', $white_list_id)
+            ->first();
+    }
+
+    public function deleteWhiteList($white_list)
+    {
+        $white_list->delete();
+    }
+
+    public function getUsersWithResources($congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->whereNotNull('resource_id')
+            ->whereNull('img_base64')
+            ->with('profile_img')
+            ->get();
+    }
+
 }

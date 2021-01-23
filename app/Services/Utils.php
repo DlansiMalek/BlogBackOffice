@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+
 class Utils
 {
 
@@ -18,15 +19,17 @@ class Utils
     {
         return round(abs(strtotime($enter_time) - strtotime($endCongress)) / 60, 2);
     }
-     
-    public  static function generateSubmissionCode($abrv,$count) {
-        $diff= 4 - strlen($count);
+
+    public static function generateSubmissionCode($abrv, $count)
+    {
+        $diff = 4 - strlen($count);
         $code = '';
-        for ($i=0 ; $i<$diff ; $i++) {
+        for ($i = 0; $i < $diff; $i++) {
             $code = $code . '0';
         }
         return $code = $abrv . $code . $count;
     }
+
     public static function getFullName($first_name, $last_name)
     {
         return ucfirst($first_name) . " " . strtoupper($last_name);
@@ -153,6 +156,81 @@ class Utils
         return $res;
     }
 
+    public static function getRoleNameByPrivilege($privilege_id)
+    {
+        if ($privilege_id === 7) {
+            return 'MANAGER';
+        }
+
+        if ($privilege_id === 3) {
+            return 'PARTICIPANT';
+        }
+
+        if ($privilege_id === 5 || $privilege_id === 8) {
+            return 'MODERATOR';
+        }
+
+        if ($privilege_id === 1) {
+            return 'ADMIN';
+        }
+
+        return 'PARTICIPANT';
+    }
+
+    public static function getChannelNameByUser($user)
+    {
+
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 && sizeof($user->organization) > 0 && sizeof($user->organization[0]->stands) > 0) {
+            return $user->organization[0]->stands[0]->name;
+        }
+
+        if (sizeof($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id === 5 || $user->user_congresses[0]->privilege_id === 8)) {
+            if ($user->user_congresses[0]->privilege_id === 5 && sizeof($user->chair_access) > 0)
+                return $user->chair_access[0]->name;
+            if ($user->user_congresses[0]->privilege_id === 8 && sizeof($user->speaker_access) > 0)
+                return $user->speaker_access[0]->name;
+        }
+        return null;
+    }
+
+    public static function mappingInputResponse($formInputs, $responses)
+    {
+        $responses = json_decode($responses, true);
+        $res = array();
+        foreach ($formInputs as $formInput) {
+            $index = array_search($formInput->form_input_id, array_column($responses, 'form_input_id'));
+            $values = "";
+            if ($index >= 0) {
+                if ($responses[$index]['response']) {
+                    $values = $responses[$index]['response'];
+                } else if ($responses[$index]['values'] && sizeof($responses[$index]['values']) > 0) {
+                    $values = array();
+                    foreach ($responses[$index]['values'] as $value) {
+                        $key = array_search($value['form_input_value_id'], array_column(json_decode($formInput->values), 'form_input_value_id'));
+                        if ($key >= 0 && $formInput->values[$key] && $formInput->values[$key]->value) {
+                            array_push($values, $formInput->values[$key]->value);
+                        }
+                    }
+                }
+            }
+            $res[$formInput->label] = $values;
+        }
+
+        return $res;
+    }
+
+    public static function isValidSendMail($congress, $user)
+    {
+        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
+    }
+
+    public static function getBase64Img(string $path)
+    {
+        $file = @file_get_contents($path);
+        return $file ? base64_encode($file) : null;
+    }
+
     function base64_to_jpeg($base64_string, $output_file)
     {
         $ifp = fopen($output_file, "wb");
@@ -192,7 +270,8 @@ class Utils
         return $result;
     }
 
-    public static function getRoomName($congressId, $accessId){
+    public static function getRoomName($congressId, $accessId)
+    {
         return 'eventizer_room_' . $congressId . $accessId;
     }
 

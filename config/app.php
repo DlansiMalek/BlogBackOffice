@@ -167,6 +167,7 @@ return [
          * Package Service Providers...
          */
         Laravel\Tinker\TinkerServiceProvider::class,
+        Laravel\Socialite\SocialiteServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -176,12 +177,12 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        Barryvdh\Cors\ServiceProvider::class,
         //Barryvdh\DomPDF\ServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
-        'Anam\PhantomMagick\ConverterServiceProvider',
+        Illuminate\View\ViewServiceProvider::class,
+        Madnest\Madzipper\MadzipperServiceProvider::class
     ],
 
     /*
@@ -197,6 +198,7 @@ return [
 
     'aliases' => [
 
+        'Socialite' => Laravel\Socialite\Facades\Socialite::class,
         'App' => Illuminate\Support\Facades\App::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
         'Auth' => Illuminate\Support\Facades\Auth::class,
@@ -234,8 +236,7 @@ return [
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
         'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
-        'Converter' => 'Anam\PhantomMagick\Facades\Converter'
-
+        'Madzipper' => Madnest\Madzipper\Madzipper::class
     ],
 
 ];

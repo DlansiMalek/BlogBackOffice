@@ -2,10 +2,10 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\AdminMiddelware;
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\AssignGuard;
 use App\Http\Middleware\JwtAnyUserMiddleware;
-use App\Http\Middleware\MarketingMiddelware;
+use App\Http\Middleware\MarketingMiddleware;
 use App\Http\Middleware\Organisateur;
 use App\Http\Middleware\Organization;
 use App\Http\Middleware\Super_Admin;
@@ -25,7 +25,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        \Barryvdh\Cors\HandleCors::class,
+        \Fruitcake\Cors\HandleCors::class,
     ];
 
     /**
@@ -42,13 +42,13 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             //\App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \Barryvdh\Cors\HandleCors::class,
+            \Fruitcake\Cors\HandleCors::class,
         ],
 
         'api' => [
-            'throttle:60,1',
+            'throttle:1000,1',
             'bindings',
-            \Barryvdh\Cors\HandleCors::class,
+            \Fruitcake\Cors\HandleCors::class,
         ],
     ];
 
@@ -68,9 +68,9 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'organisateur' => Organisateur::class,
         'super-admin' => Super_Admin::class,
-        'admin' => AdminMiddelware::class,
+        'admin' => AdminMiddleware::class,
         'organization' => Organization::class,
-        'marketing' => MarketingMiddelware::class,
+        'marketing' => MarketingMiddleware::class,
         'assign.guard' => AssignGuard::class
     ];
 }

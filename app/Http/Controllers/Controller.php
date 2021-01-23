@@ -75,3 +75,114 @@ And UA1.user_id = UA2.user_id
 And UA1.access_id = UA2.access_id
 
 */
+
+
+/* Delete duplicate submission with same title:
+
+DELETE `a`
+FROM
+    Submission AS `a`,
+    Submission AS `b`
+WHERE
+    -- IMPORTANT: Ensures one version remains
+    -- Change "ID" to your unique column's name
+    `a`.`submission_id` < `b`.`submission_id`
+
+    -- Any duplicates you want to check for
+    AND `a`.`title` = `b`.`title`
+    AND `a`.`congress_id` = `b`.`congress_id`
+    AND `a`.`user_id` = `b`.`user_id`;
+
+*/
+
+/*UPDATE Submission SET title = REPLACE(title,'Š','S');
+UPDATE Submission SET title = REPLACE(title,'š','s');
+UPDATE Submission SET title = REPLACE(title,'Ð','Dj');
+UPDATE Submission SET title = REPLACE(title,'Ž','Z');
+UPDATE Submission SET title = REPLACE(title,'ž','z');
+UPDATE Submission SET title = REPLACE(title,'À','A');
+UPDATE Submission SET title = REPLACE(title,'Á','A');
+UPDATE Submission SET title = REPLACE(title,'Â','A');
+UPDATE Submission SET title = REPLACE(title,'Ã','A');
+UPDATE Submission SET title = REPLACE(title,'Ä','A');
+UPDATE Submission SET title = REPLACE(title,'Å','A');
+UPDATE Submission SET title = REPLACE(title,'Æ','A');
+UPDATE Submission SET title = REPLACE(title,'Ç','C');
+UPDATE Submission SET title = REPLACE(title,'È','E');
+UPDATE Submission SET title = REPLACE(title,'É','E');
+UPDATE Submission SET title = REPLACE(title,'Ê','E');
+UPDATE Submission SET title = REPLACE(title,'Ë','E');
+UPDATE Submission SET title = REPLACE(title,'Ì','I');
+UPDATE Submission SET title = REPLACE(title,'Í','I');
+UPDATE Submission SET title = REPLACE(title,'Î','I');
+UPDATE Submission SET title = REPLACE(title,'Ï','I');
+UPDATE Submission SET title = REPLACE(title,'Ñ','N');
+UPDATE Submission SET title = REPLACE(title,'Ò','O');
+UPDATE Submission SET title = REPLACE(title,'Ó','O');
+UPDATE Submission SET title = REPLACE(title,'Ô','O');
+UPDATE Submission SET title = REPLACE(title,'Õ','O');
+UPDATE Submission SET title = REPLACE(title,'Ö','O');
+UPDATE Submission SET title = REPLACE(title,'Ø','O');
+UPDATE Submission SET title = REPLACE(title,'Ù','U');
+UPDATE Submission SET title = REPLACE(title,'Ú','U');
+UPDATE Submission SET title = REPLACE(title,'Û','U');
+UPDATE Submission SET title = REPLACE(title,'Ü','U');
+UPDATE Submission SET title = REPLACE(title,'Ý','Y');
+UPDATE Submission SET title = REPLACE(title,'Þ','B');
+UPDATE Submission SET title = REPLACE(title,'ß','Ss');
+UPDATE Submission SET title = REPLACE(title,'à','a');
+UPDATE Submission SET title = REPLACE(title,'á','a');
+UPDATE Submission SET title = REPLACE(title,'â','a');
+UPDATE Submission SET title = REPLACE(title,'ã','a');
+UPDATE Submission SET title = REPLACE(title,'ä','a');
+UPDATE Submission SET title = REPLACE(title,'å','a');
+UPDATE Submission SET title = REPLACE(title,'æ','a');
+UPDATE Submission SET title = REPLACE(title,'ç','c');
+UPDATE Submission SET title = REPLACE(title,'è','e');
+UPDATE Submission SET title = REPLACE(title,'é','e');
+UPDATE Submission SET title = REPLACE(title,'ê','e');
+UPDATE Submission SET title = REPLACE(title,'ë','e');
+UPDATE Submission SET title = REPLACE(title,'ì','i');
+UPDATE Submission SET title = REPLACE(title,'í','i');
+UPDATE Submission SET title = REPLACE(title,'î','i');
+UPDATE Submission SET title = REPLACE(title,'ï','i');
+UPDATE Submission SET title = REPLACE(title,'ð','o');
+UPDATE Submission SET title = REPLACE(title,'ñ','n');
+UPDATE Submission SET title = REPLACE(title,'ò','o');
+UPDATE Submission SET title = REPLACE(title,'ó','o');
+UPDATE Submission SET title = REPLACE(title,'ô','o');
+UPDATE Submission SET title = REPLACE(title,'õ','o');
+UPDATE Submission SET title = REPLACE(title,'ö','o');
+UPDATE Submission SET title = REPLACE(title,'ø','o');
+UPDATE Submission SET title = REPLACE(title,'ù','u');
+UPDATE Submission SET title = REPLACE(title,'ú','u');
+UPDATE Submission SET title = REPLACE(title,'û','u');
+UPDATE Submission SET title = REPLACE(title,'ý','y');
+UPDATE Submission SET title = REPLACE(title,'ý','y');
+UPDATE Submission SET title = REPLACE(title,'þ','b');
+UPDATE Submission SET title = REPLACE(title,'ÿ','y');
+UPDATE Submission SET title = REPLACE(title,'ƒ','f');
+UPDATE Submission SET title = REPLACE(title,'.',' ');
+UPDATE Submission SET title = REPLACE(title,' ','-');
+UPDATE Submission SET title = REPLACE(title,'--','-');
+
+UPDATE Submission SET title = REPLACE(title,'ě','e');
+UPDATE Submission SET title = REPLACE(title,'ž','z');
+UPDATE Submission SET title = REPLACE(title,'š','s');
+UPDATE Submission SET title = REPLACE(title,'č','c');
+UPDATE Submission SET title = REPLACE(title,'ř','r');
+UPDATE Submission SET title = REPLACE(title,'ď','d');
+UPDATE Submission SET title = REPLACE(title,'ť','t');
+UPDATE Submission SET title = REPLACE(title,'ň','n');
+UPDATE Submission SET title = REPLACE(title,'ů','u');
+
+UPDATE Submission SET title = REPLACE(title,'Ě','E');
+UPDATE Submission SET title = REPLACE(title,'Ž','Z');
+UPDATE Submission SET title = REPLACE(title,'Š','S');
+UPDATE Submission SET title = REPLACE(title,'Č','C');
+UPDATE Submission SET title = REPLACE(title,'Ř','R');
+UPDATE Submission SET title = REPLACE(title,'Ď','D');
+UPDATE Submission SET title = REPLACE(title,'Ť','T');
+UPDATE Submission SET title = REPLACE(title,'Ň','N');
+UPDATE Submission SET title = REPLACE(title,'Ů','U');
+*/

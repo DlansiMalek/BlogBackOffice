@@ -17,10 +17,10 @@ class CreateAccessPackTable extends Migration
             $table->increments('access_pack_id');
 
             $table->unsignedInteger('pack_id');
-            $table->foreign('pack_id')->references('pack_id')->on('Pack');
+            $table->foreign('pack_id')->references('pack_id')->on('Pack')->onDelete('cascade');
 
             $table->unsignedInteger('access_id');
-            $table->foreign('access_id')->references('access_id')->on('Access');
+            $table->foreign('access_id')->references('access_id')->on('Access')->onDelete('cascade');
 
             $table->softDeletes();
             $table->timestamps();

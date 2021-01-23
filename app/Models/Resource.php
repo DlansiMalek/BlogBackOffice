@@ -16,5 +16,9 @@ class Resource extends Model
         
             return $this->belongsTo('App\Models\Access', 'access_id', 'access_id');
         }
+
+     public function resource_stand() {
+         return $this->hasMany(ResourceStand::class , 'resource_id','resource_id');
+     }   
  
 }
