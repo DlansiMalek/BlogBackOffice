@@ -647,7 +647,7 @@ class UserServices
             );
 
             if ($user->profile_img) {
-                $res[sizeof($res) - 1]["profile_img"] = UrlUtils::getFilesUrl() . $user->profile_img->path;
+                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
             }
         }
 
