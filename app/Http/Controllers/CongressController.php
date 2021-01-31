@@ -9,6 +9,7 @@ use App\Models\Badge;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
 use App\Models\User;
+use App\Models\UserCongress;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;

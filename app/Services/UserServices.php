@@ -745,6 +745,7 @@ class UserServices
     {
         $email = strtolower($email);
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->with(['user_congresses'])
             ->first();
     }
 
