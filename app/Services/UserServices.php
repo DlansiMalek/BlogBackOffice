@@ -646,8 +646,8 @@ class UserServices
                 )
             );
 
-            if ($user->img_base64) {
-                $res[sizeof($res) - 1]["profile_img"] = $user->img_base64;
+            if ($user->profile_img) {
+                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
             }
         }
 
@@ -745,6 +745,7 @@ class UserServices
     {
         $email = strtolower($email);
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->with(['user_congresses'])
             ->first();
     }
 
@@ -1025,8 +1026,6 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
-        if ($resource != null)
-            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1053,8 +1052,6 @@ class UserServices
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
-        if ($resource != null)
-            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $resource->path);
 
         $user->update();
         return $user;

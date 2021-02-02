@@ -922,66 +922,9 @@ class CongressServices
         return $userCongress;
     }
 
-    public function getStands($congress_id, $name = null)
-    {
-        return Stand::where(function ($query) use ($name) {
-            if ($name) {
-                $query->where('name', '=', $name);
-            }
-        })
-            ->with(['docs'])
-            ->where('congress_id', '=', $congress_id)->get();
-    }
-
     public function getStandById($stand_id)
     {
         return Stand::where('congress_id', '=', $stand_id)->get();
-    }
-
-    public function getDocsByStands($stands)
-    {
-        $res = array();
-
-        foreach ($stands as $stand) {
-            foreach ($stand->docs as $doc) {
-                array_push(
-                    $res,
-                    array(
-                        "stand" => $stand->name,
-                        "path" => UrlUtils::getFilesUrl() . '/api/resource/' . $doc->path,
-                        "filename" => substr($doc->path, strpos($doc->path, ')') + 1),
-                        "version" => $doc->pivot->version
-                    )
-                );
-            }
-        }
-        return $res;
-    }
-
-    public function getUrlsByStandsAndAccess($stands, $accesses)
-    {
-        $res = array();
-
-        foreach ($stands as $stand) {
-            array_push(
-                $res,
-                array(
-                    "channel_name" => $stand->name,
-                    "url" => $stand->url_streaming
-                )
-            );
-        }
-
-        foreach ($accesses as $access) {
-            array_push(
-                $res,
-                array(
-                    "channel_name" => $access->name,
-                    "url" => $access->url_streaming
-                )
-            );
-        }
-        return $res;
     }
 
     public function modifyAllStatusStand($congressId, $status)

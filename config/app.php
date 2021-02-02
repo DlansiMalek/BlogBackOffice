@@ -177,12 +177,11 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        Barryvdh\Cors\ServiceProvider::class,
         //Barryvdh\DomPDF\ServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
-        'Anam\PhantomMagick\ConverterServiceProvider',
+        Illuminate\View\ViewServiceProvider::class,
         Madnest\Madzipper\MadzipperServiceProvider::class
     ],
 
@@ -237,7 +236,6 @@ return [
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
         'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
-        'Converter' => 'Anam\PhantomMagick\Facades\Converter',
         'Madzipper' => Madnest\Madzipper\Madzipper::class
     ],
 
