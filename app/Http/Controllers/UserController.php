@@ -20,6 +20,7 @@ use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\StandServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class UserController extends Controller
     protected $resourcesServices;
     protected $trackingServices;
     protected $offreServices;
+    protected $standServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -60,7 +62,8 @@ class UserController extends Controller
                          MailServices $mailServices,
                          ResourcesServices $resourcesServices,
                          TrackingServices $trackingServices,
-                         OffreServices $offreServices)
+                         OffreServices $offreServices, 
+                         StandServices $standServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -78,6 +81,7 @@ class UserController extends Controller
         $this->resourcesServices = $resourcesServices;
         $this->trackingServices = $trackingServices;
         $this->offreServices = $offreServices;
+        $this->standServices = $standServices;
     }
 
     public function getLoggedUser()
@@ -546,7 +550,7 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         $privilegeId = $request->input('privilege_id');
-        
+
         if ($request->has('avatar_id') && $privilegeId != 7) {
             $request->merge(['avatar_id' => null]);
         }
@@ -1728,7 +1732,7 @@ class UserController extends Controller
         $standId = null;
         $accessId = null;
         if ($request->input('type') == 'STAND') {
-            $stands = $this->congressServices->getStands($congressId, $request->input('channel_name'));
+            $stands = $this->standServices->getStands($congressId, $request->input('channel_name'));
             if (sizeof($stands) == 0) {
                 return response()->json(['response' => 'stand not found'], 404);
             }
@@ -1797,11 +1801,11 @@ class UserController extends Controller
     public function updateUserPathCV($userId, Request $request)
     {
         if (!$user = $this->userServices->getUserById($userId))
-        return response()->json(['response' => 'User not found'], 404);
+            return response()->json(['response' => 'User not found'], 404);
         $path = $request->input('path');
         if (!$user = $this->userServices->updateUserPathCV($path, $user))
             return response()->json(['response' => 'Path not found'], 404);
-        return response()->json(['path' => $path]); 
+        return response()->json(['path' => $path]);
     }
 
     public function deleteUserCV($userId)
@@ -1817,12 +1821,11 @@ class UserController extends Controller
     {
         $users = $this->userServices->getUsersWithResources($congressId);
         foreach ($users as $user) {
-            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . "/api/resource/" . $user->profile_img->path);
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
             $user->update();
         }
         return response()->json(['$users' => $users]);
     }
-
 
 
 }
