@@ -217,6 +217,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('mail/type/{mailTypeId}', 'MailController@saveMail');
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
+        Route::get('sponsors', 'OrganizationController@getSponsorsByCongressId');
         Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
         Route::post('feedback-form', 'FeedbackController@setFeedbackForm')->middleware('admin');
         Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('admin');
@@ -355,6 +356,13 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::get('edit-status/{status}', 'CongressController@editStatus');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
+                
+                Route::group(['prefix' => 'landing-page'], function () {
+                    Route::post('edit-config', 'CongressController@editConfigLandingPage');
+                    Route::get('get-config', 'CongressController@getConfigLandingPage');
+                    Route::post('add-speaker', 'CongressController@addLandingPageSpeaker');
+                    Route::get('get-speakers', 'CongressController@getLandingPageSpeakers');
+                });
             });
             Route::post('add', 'CongressController@addCongress');
         });
@@ -383,6 +391,12 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
     });
 
 });
+
+Route::group(['prefix' => 'landing-page-speakers', "middleware" => ["assign.guard:admins"]], function () {
+    Route::post('edit/{lp_speaker_id}', 'CongressController@editLandingPageSpeaker');
+    Route::delete('delete/{lp_speaker_id}', 'CongressController@deleteLandingPageSpeaker');
+});
+
 //Access API
 Route::group(['prefix' => 'access'], function () {
     Route::get('{accessId}/user/{userId}/verify-privilege', 'AccessController@verifyPrivilegeByAccess');

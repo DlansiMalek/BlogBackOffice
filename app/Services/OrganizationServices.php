@@ -112,4 +112,16 @@ class OrganizationServices
        ->with('resource')
        ->get();
    }
+
+   public function getSponsorsByCongressId($congressId)
+    {
+        return Organization::whereHas('congressOrganization', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId)
+            ->where('is_sponsor', '=', 1);
+        })
+            ->with(['admin', 'resource', 'congressOrganization' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->get();
+    }
 }
