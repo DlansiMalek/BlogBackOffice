@@ -121,7 +121,8 @@ class OrganizationController extends Controller
          $oldOrg,
          $request
       );
-      return response()->json('organization updated',200);
+      $organization = $this->organizationServices->getOrganizationById($organization_id);
+      return response()->json($organization,200);
  }
 
 
