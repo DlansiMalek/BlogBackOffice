@@ -16,8 +16,7 @@ class AddColumnLpSpeakerIdToTableAccess extends Migration
         Schema::table('Access', function (Blueprint $table) {
             $table->unsignedInteger('lp_speaker_id')->nullable()->default(null);
             $table->foreign('lp_speaker_id')->references('lp_speaker_id')
-                ->on('LP_Speaker')
-                ->onDelete('cascade');
+                ->on('LP_Speaker');
         });
     }
 

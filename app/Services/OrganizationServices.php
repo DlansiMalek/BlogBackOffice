@@ -29,7 +29,7 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id)
     {
-        return Organization::with(['congress_organization', 'users'])->find($organization_id);
+        return Organization::with(['congressOrganization', 'resource'])->find($organization_id);
     }
 
     public function addOrganization(Request $request, $admin_id)

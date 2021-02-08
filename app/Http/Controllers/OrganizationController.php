@@ -109,7 +109,7 @@ class OrganizationController extends Controller
             $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization, null), $congress, $mail->object, $admin, $fileAttached);
         }
 
-        return response()->json($organization);
+        return response()->json($this->organizationServices->getOrganizationById($organization->organization_id));
     }
 
     public function getCongressOrganizations($congress_id)

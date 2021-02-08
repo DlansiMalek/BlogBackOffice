@@ -177,7 +177,7 @@ class AccessServices
             [
                 'votes.access',
                 'speakers', 'chairs', 'topic', 'resources', 'type',
-                'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
+                'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->find($access_id);
     }
 

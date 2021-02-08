@@ -113,6 +113,7 @@ class AccessController extends Controller
         }
 
         $this->userServices->affectAccessToUsers($access, $users);
+        $access = $this->accessServices->getAccessById($access->access_id);
 
         return response()->json([$access]);
     }
