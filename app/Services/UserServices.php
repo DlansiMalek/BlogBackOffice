@@ -682,7 +682,7 @@ class UserServices
             );
 
             if ($user->profile_img) {
-                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(storage_path('app/resource') . '/' . $user->profile_img->path);
+                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
             }
         }
 
@@ -780,6 +780,7 @@ class UserServices
     {
         $email = strtolower($email);
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->with(['user_congresses'])
             ->first();
     }
 
@@ -925,20 +926,11 @@ class UserServices
             ->get();
     }
 
-    public function uploadPayement($userPayment, Request $request)
+    public function updateUserPayment($userPayment, $path)
     {
-        ini_set('post_max_size', '15M');
-        ini_set('upload_max_filesize', '15M');
-
-        $file = $request->file('file_data');
-        $chemin = config('media.payement-user-recu');
-        $path = $file->store($chemin);
-
         $userPayment->path = $path;
         $userPayment->isPaid = 2;
-
         $userPayment->update();
-
         return $userPayment;
     }
 
@@ -1049,7 +1041,7 @@ class UserServices
         return $user;
     }
 
-    public function saveUser(Request $request)
+    public function saveUser(Request $request, $resource = null)
     {
         $user = new User();
         $user->email = $request->email;
@@ -1079,7 +1071,7 @@ class UserServices
         return $user;
     }
 
-    public function editUser(Request $request, $user)
+    public function editUser(Request $request, $user, $resource = null)
     {
         $user->email = $request->email;
 
@@ -1238,7 +1230,8 @@ class UserServices
             'speaker_access',
             'chair_access',
             'country',
-            'likes'
+            'likes',
+            'profile_img'
         ])
             ->where('user_id', '=', $userId)
             ->first();
@@ -1469,17 +1462,6 @@ class UserServices
         return AttestationRequest::where("user_id", '=', $user_id)->get()->toArray();
     }
 
-    public function uploadProfilePic($file, $user)
-    {
-        $timestamp = microtime(true) * 10000;
-        $path = $file->storeAs($this->path . $timestamp, $file->getClientOriginalName());
-
-        $user->profile_pic = $path;
-        $user->save();
-
-        return $user;
-    }
-
     public function retrieveUserFromToken()
     {
         try {
@@ -1636,4 +1618,16 @@ class UserServices
     {
         $white_list->delete();
     }
+
+    public function getUsersWithResources($congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->whereNotNull('resource_id')
+            ->whereNull('img_base64')
+            ->with('profile_img')
+            ->get();
+    }
+
 }

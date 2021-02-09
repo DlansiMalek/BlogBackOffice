@@ -97,9 +97,9 @@ class StandController extends Controller
 
         $name = $request->query('name', '');
 
-        $stands = $this->congressServices->getStands($congressId, $name);
+        $stands = $this->standServices->getStands($congressId, $name);
 
-        $docs = $this->congressServices->getDocsByStands($stands);
+        $docs = $this->standServices->getDocsByStands($stands);
 
         return response()->json($docs);
     }

@@ -5,11 +5,9 @@ namespace App\Services;
 use App\Models\AttestationParams;
 use App\Models\AttestationSubmission;
 use App\Models\CommunicationType;
-use App\Models\Resource;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
 use App\Models\SubmissionEvaluation;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -558,7 +556,7 @@ class SubmissionServices
                         );
                     }, json_decode($submission->authors, true)),
                     "resources" => array_map(function ($object) {
-                        return UrlUtils::getBaseUrl() . '/resource/' . $object['path'];
+                        return UrlUtils::getFilesUrl() . $object['path'];
                     }, json_decode($submission->resources, true))
                 )
             );

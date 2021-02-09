@@ -29,7 +29,9 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id)
     {
-        return Organization::with(['congress_organization', 'users'])->find($organization_id);
+        return Organization::with(['CongressOrganization', 'resource', 'admin' => function ($query) {
+            $query->select('admin_id','email');
+        }])->find($organization_id);
     }
 
     public function addOrganization(Request $request, $admin_id)
@@ -46,6 +48,34 @@ class OrganizationServices
         return $organization;
     }
 
+    public function editOrganization($oldOrg, $request) {
+       
+        $oldOrg->name =  $request->input("name");
+        $oldOrg->description = $request->has("description")? $request->input('description') : null;
+        $oldOrg->mobile = $request->input("mobile");
+        $oldOrg->resource_id = $request->input("resource_id");
+        $oldOrg->is_sponsor = $request->input("is_sponsor");
+        $oldOrg->logo_position = $request->input("logo_position");
+        $oldOrg->update();
+        return $oldOrg ;
+    }
+
+    public function deleteOrganization($organization)
+    {
+        return $organization->delete();
+    }
+
+    public function deleteCongressOrganization($congressOrganization)
+    {
+        return $congressOrganization->delete();
+    }
+
+    public function getCongressOrganization($congress_id, $organization_id)
+    {
+        return CongressOrganization::where('congress_id', '=', $congress_id)
+        ->where('organization_id', '=', $organization_id)
+        ->first();
+    }
 
     public function getOrganizationByAdminId($admin_id)
     {

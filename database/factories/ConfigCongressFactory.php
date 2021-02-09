@@ -2,6 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
+namespace Database\Factories;
 use App\Models\ConfigCongress;
 use App\Services\Utils;
 use Faker\Generator as Faker;

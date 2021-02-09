@@ -20,6 +20,7 @@ use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\StandServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class UserController extends Controller
     protected $resourcesServices;
     protected $trackingServices;
     protected $offreServices;
+    protected $standServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -60,7 +62,8 @@ class UserController extends Controller
                          MailServices $mailServices,
                          ResourcesServices $resourcesServices,
                          TrackingServices $trackingServices,
-                         OffreServices $offreServices)
+                         OffreServices $offreServices, 
+                         StandServices $standServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -78,6 +81,7 @@ class UserController extends Controller
         $this->resourcesServices = $resourcesServices;
         $this->trackingServices = $trackingServices;
         $this->offreServices = $offreServices;
+        $this->standServices = $standServices;
     }
 
     public function getLoggedUser()
@@ -546,15 +550,16 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'privilege_id', 'first_name', 'last_name']], 400);
 
         $privilegeId = $request->input('privilege_id');
-        
+
         if ($request->has('avatar_id') && $privilegeId != 7) {
             $request->merge(['avatar_id' => null]);
         }
         //check if date limit
         // Get User per mail
-        if (!$user = $this->userServices->getUserByEmail($request->input('email'))){
-            $user = $this->userServices->saveUser($request);
-    }
+        $resource = $request->has('resource_id') ? $resource = $this->resourcesServices->getResourceByResourceId($request->input('resource_id')) : null;
+
+        if (!$user = $this->userServices->getUserByEmail($request->input('email')))
+            $user = $this->userServices->saveUser($request, $resource);
         else
             $user = $this->userServices->editUser($request, $user);
 
@@ -1285,14 +1290,13 @@ class UserController extends Controller
         return response()->json(['message' => 'email sended success']);
     }
 
-    public
-    function uploadPayement($userId, $congressId, Request $request)
+    public function updateUserPayment($userId, $congressId, Request $request)
     {
         if (!$paymentUser = $this->userServices->getPaymentByUserId($congressId, $userId)) {
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $paymentUser = $this->userServices->uploadPayement($paymentUser, $request);
+        $paymentUser = $this->userServices->updateUserPayment($paymentUser, $request->input('path'));
 
         $user = $this->userServices->getUserById($userId);
 
@@ -1448,21 +1452,6 @@ class UserController extends Controller
     }
 
     public
-    function uploadProfilePic(Request $request, $user_id)
-    {
-        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
-        return $this->userServices->uploadProfilePic($request->file('file_data'), $user);
-    }
-
-    public
-    function getProfilePic($user_id)
-    {
-        if (!$user = $this->userServices->getUserById($user_id)) return response()->json(['response' => 'user not found'], 404);
-        if (!$user->profile_pic) return response()->json(['response' => 'no profile pic'], 400);
-        return Storage::download($user->profile_pic);
-    }
-
-    public
     function forgetPassword(Request $request)
     {
         if (!$request->has(['email']))
@@ -1544,8 +1533,8 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
-
-        $user = $this->userServices->editUser($request, $user);
+        $resource = $request->has('resource_id') ? $resource = $this->resourcesServices->getResourceByResourceId($request->input('resource_id')) : null;
+        $user = $this->userServices->editUser($request, $user, $resource);
         if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('update_profile')) {
             return response()->json(['response' => 'mail type admin not found'], 400);
         }
@@ -1554,17 +1543,8 @@ class UserController extends Controller
             $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
             $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
         }
-
+        $user = $this->userServices->getUserById($user->user_id);
         return response()->json($user, 200);
-    }
-
-    public
-    function getResourceByResourceId($resourceId)
-    {
-        $chemin = config('media.resource');
-        $resource = $this->resourcesServices->getResourceByResourceId($resourceId);
-
-        return response()->download(storage_path('app/' . $chemin . "/" . $resource->path));
     }
 
     private
@@ -1752,7 +1732,7 @@ class UserController extends Controller
         $standId = null;
         $accessId = null;
         if ($request->input('type') == 'STAND') {
-            $stands = $this->congressServices->getStands($congressId, $request->input('channel_name'));
+            $stands = $this->standServices->getStands($congressId, $request->input('channel_name'));
             if (sizeof($stands) == 0) {
                 return response()->json(['response' => 'stand not found'], 404);
             }
@@ -1817,5 +1797,35 @@ class UserController extends Controller
         $this->userServices->deleteWhiteList($white_list);
         return response()->json(['message' => 'deleted successfully'], 200);
     }
+
+    public function updateUserPathCV($userId, Request $request)
+    {
+        if (!$user = $this->userServices->getUserById($userId))
+            return response()->json(['response' => 'User not found'], 404);
+        $path = $request->input('path');
+        if (!$user = $this->userServices->updateUserPathCV($path, $user))
+            return response()->json(['response' => 'Path not found'], 404);
+        return response()->json(['path' => $path]);
+    }
+
+    public function deleteUserCV($userId)
+    {
+        if (!$user = $this->userServices->getUserById($userId))
+            return response()->json(['response' => 'user not found'], 404);
+        $this->userServices->makeUserPathCvNull($user);
+        return response()->json(['response' => 'user cv deleted'], 200);
+
+    }
+
+    public function migrateUsersData($congressId)
+    {
+        $users = $this->userServices->getUsersWithResources($congressId);
+        foreach ($users as $user) {
+            $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
+            $user->update();
+        }
+        return response()->json(['$users' => $users]);
+    }
+
 
 }
