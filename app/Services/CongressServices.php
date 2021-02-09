@@ -1059,4 +1059,27 @@ class CongressServices
         $speaker->delete();
     }
 
+    public function syncronizeLandingPage($congress_id, $congress, $config_congress, $config_landing_page)
+    {
+        $no_config = false;
+        if(!$config_landing_page)
+        {
+            $config_landing_page = new ConfigLP();
+            $no_config = true;
+        }
+
+        $config_landing_page->congress_id = $congress_id;
+        $config_landing_page->header_logo_event = $config_congress->logo;
+        $config_landing_page->home_title = $congress->name;
+        $config_landing_page->home_description = $congress->description;
+        $config_landing_page->home_start_date =  $congress->start_date;
+        $config_landing_page->home_end_date =  $congress->end_date;
+        $config_landing_page->home_banner_event = $config_congress->banner;
+        $config_landing_page->prp_banner_event =  $config_congress->banner;
+
+        $no_config ? $config_landing_page->save() : $config_landing_page->update();
+        
+        return $config_landing_page;
+
+    }
 }

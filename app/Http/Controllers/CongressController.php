@@ -1082,4 +1082,20 @@ class CongressController extends Controller
 
     }
 
+    public function syncronizeLandingPage($congress_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+            return response()->json(["message" => "congress not found"], 404);
+        
+        if (!$config_congress = $this->congressServices->getCongressConfigById($congress_id))
+                return response()->json(["error" => "congress not found"], 404);
+        
+        $config_landing_page = $this->congressServices->syncronizeLandingPage($congress_id, $congress,$config_congress, $this->congressServices->getConfigLandingPageById($congress_id));
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+
 }
