@@ -17,5 +17,10 @@ class Custom_SMSTableSeeder extends Seeder
             'Content'=>'SMS-Content1',
             'created_at'=>date("Y-m-d")
         ]);
+        DB::table('Custom_SMS')->insert([
+            'title'=>'SMS-Title2',
+            'Content'=>'SMS-Content2',
+            'created_at'=>date("Y-m-d")
+        ]);
     }
 }

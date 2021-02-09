@@ -14,7 +14,19 @@ class AccessSpeakerSeedTable extends Seeder
     public function run()
     {
         DB::table('Access_Speaker')->insert([
+            'user_id' => 1,
+            'access_id' => 4
+        ]);
+        DB::table('Access_Speaker')->insert([
+            'user_id' => 2,
+            'access_id' => 3
+        ]);
+        DB::table('Access_Speaker')->insert([
             'user_id' => 3,
+            'access_id' => 2
+        ]);
+        DB::table('Access_Speaker')->insert([
+            'user_id' => 4,
             'access_id' => 1
         ]);
     }

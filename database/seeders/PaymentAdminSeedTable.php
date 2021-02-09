@@ -20,7 +20,7 @@ class PaymentAdminSeedTable extends Seeder
             'authorization' => 'testauth ',
             'price' => 50,
             'path' => '/path/to/file ' ,
-            'pack_admin_id' => 1 ,
+            'offre_id'=> 1,
             'admin_id' => 3
         ]);
         DB::table('Payment_Admin')->insert([
@@ -29,7 +29,7 @@ class PaymentAdminSeedTable extends Seeder
             'authorization' => 'testauth 2',
             'price' => 60,
             'path' => '/path/to/file2 ' ,
-            'pack_admin_id' => 2 ,
+            'offre_id'=> 1,
             'admin_id' => 3
         ]);
     }

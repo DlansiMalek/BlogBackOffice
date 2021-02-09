@@ -18,7 +18,6 @@ class UserCongressSeedTable extends Seeder
             'privilege_id' => 3,
             'congress_id' => 1
         ]);
-
         DB::table('User_Congress')->insert([
             'user_id' => 2,
             'privilege_id' => 5,
@@ -28,6 +27,51 @@ class UserCongressSeedTable extends Seeder
             'user_id' => 3,
             'privilege_id' => 8,
             'congress_id' => 1
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 4,
+            'privilege_id' => 6,
+            'congress_id' => 1
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 1,
+            'privilege_id' => 3,
+            'congress_id' => 2
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 2,
+            'privilege_id' => 5,
+            'congress_id' => 2
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 3,
+            'privilege_id' => 8,
+            'congress_id' => 2
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 4,
+            'privilege_id' => 6,
+            'congress_id' => 2
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 1,
+            'privilege_id' => 3,
+            'congress_id' => 3
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 2,
+            'privilege_id' => 5,
+            'congress_id' => 3
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 3,
+            'privilege_id' => 8,
+            'congress_id' => 3
+        ]);
+        DB::table('User_Congress')->insert([
+            'user_id' => 4,
+            'privilege_id' => 6,
+            'congress_id' => 3
         ]);
     }
 }

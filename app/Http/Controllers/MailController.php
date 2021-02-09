@@ -33,7 +33,6 @@ class MailController extends Controller
         $this->mailService = $mailService;
     }
 
-
     public function getAllMailTypes($congressId,Request $request)
     {
         $type = $request->query('type');
@@ -119,4 +118,14 @@ class MailController extends Controller
 //        return $path."+++".substr($path,12);
         return response()->json(['message' => 'success'], 200);
     }
+
+    public function deleteMail($congressId , $mail_id)
+      {  
+          if (!$mail = $this->mailService->getMailById($mail_id)) {
+          return response()->json('no mail found' ,404);
+      }
+        $mail->delete();
+         return response()->json(['response' => 'mail deleted'],200);
+      }
+    
 }
