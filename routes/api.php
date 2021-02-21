@@ -218,6 +218,10 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::delete('mail/delete/{mail_id}', 'MailController@deleteMail');
         Route::post('organization', 'OrganizationController@addOrganization');
         Route::get('organization', 'OrganizationController@getCongressOrganizations');
+        Route::get('organismes','OrganizationController@getOrganizmeByCongress');
+        Route::delete('delete-organization/{organization_id}', 'OrganizationController@deleteOrganization');
+        
+
         Route::get('feedback-form', 'FeedbackController@getFeedbackForm');
         Route::post('feedback-form', 'FeedbackController@setFeedbackForm')->middleware('admin');
         Route::delete('feedback-form', 'FeedbackController@resetFeedbackForm')->middleware('admin');
@@ -226,7 +230,9 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
 
     });
+
 });
+
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('types', 'SubmissionController@getSubmissionType');
@@ -430,8 +436,10 @@ Route::group(['prefix' => 'pack'], function () {
 
 });
 //Organisation API
-Route::group(['prefix' => 'organization'], function () {
+Route::group(['prefix' => 'organization', "middleware" => ["assign.guard:admins"]], function () {
     Route::get('list', 'OrganizationController@getAll');
+    Route::put('{organization_id}/edit','OrganizationController@editOrganization');
+
 });
 
 //Privilege API
@@ -471,6 +479,7 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/{organizatiolist-paginationn_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
+
 });
 
 
@@ -537,4 +546,3 @@ Route::group(["prefix" => "peaksource"], function () {
     });
 });
 
-Route::get('congress/{congressId}/organismes','OrganizationController@getOrganizmeByCongress');
