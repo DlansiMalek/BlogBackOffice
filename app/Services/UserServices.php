@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PDF;
 use function foo\func;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
 class UserServices
 {
 
@@ -1295,7 +1295,7 @@ class UserServices
 
     private function isExistCongress($user, $congressId)
     {
-        return Congress_User::where("id_User", "=", $user->id_User)
+        return  Congress_User::where("id_User", "=", $user->id_User)
             ->where("id_Congress", "=", $congressId)->first();
     }
 

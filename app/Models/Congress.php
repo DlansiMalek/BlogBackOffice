@@ -126,4 +126,8 @@ class Congress extends Model
     function white_list() {
         return $this->hasMany(WhiteList::class,'congress_id','congress_id');
     }
+    public function requestLandingPages()
+    {
+        return $this->hasMany('App\Models\RequestLandingPage', 'congress_id', 'congress_id');
+    }
 }

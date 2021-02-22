@@ -44,5 +44,16 @@ class MailAdminSeedTable extends Seeder
             'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre paiement: <a href="{{$paymentLink}}">Lien</a></p>',
             'mail_type_admin_id' => 7
         ]);
+        DB::table('Mail_Admin')->insert([
+            'object' => "Acceptation du votre demande Landing Page",
+            'template' => '<p>votre demande de landing page est acceptée avec sucess </p><ul><li>VotreDns: {{$linkBackOffice}}</li></ul><p>Accéedez à votre Landing page via :<a> </a></p>',
+            'mail_type_admin_id' => 8
+        ]);
+        DB::table('Mail_Admin')->insert([
+            'object' => "votre demande Landing Page est Refusé",
+            'template' => '<p>votre demande de landing page est Refusé 
+            , vous pouvez réessayer un autre fois </p>',
+            'mail_type_admin_id' => 9
+        ]);
     }
 }

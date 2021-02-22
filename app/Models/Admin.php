@@ -77,6 +77,10 @@ class Admin extends Authenticatable implements JWTSubject
     {
         return $this->hasMany('App\Models\Offre', 'admin_id', 'admin_id');
     }
+    public function requestLandingPages()
+    {
+        return $this->hasMany('App\Models\RequestLandingPage', 'admin_id', 'admin_id');
+    }
 
     public function getJWTIdentifier()
     {

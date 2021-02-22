@@ -53,6 +53,16 @@ class MailTypeAdminSeedTable extends Seeder
             'name' => 'create_offre',
             'display_name' => 'Création d\'un offre'
         ]);
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 8,
+            'name' => 'Acceptation du votre demande Landing Page',
+            'display_name' => 'Acceptation du votre demande Landing Page'
+        ]);
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 9,
+            'name' => 'votre demande Landing Page est Refusé',
+            'display_name' => 'votre demande Landing Page est Refusé'
+        ]);
 
     }
 }
