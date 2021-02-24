@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AccessChair;
+use App\Models\AccessGame;
 use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
@@ -190,7 +191,7 @@ class AccessServices
 
     public function getAccesssByCongressId($congress_id)
     {
-        return Access::where('congress_id', '=', $congress_id)->select('access_id')->get();
+        return Access::where('congress_id', '=', $congress_id)->select('access_id', 'name', 'status')->get();
     }
 
     public function deleteAccess($access_id)
@@ -530,5 +531,55 @@ class AccessServices
         return Access::whereHas('participants', function ($query) use ($userId) {
             $query->where('User.user_id', '=', $userId);
         })->get();
+    }
+
+    public function getScoresByAccess($access_id)
+    {
+        $accessGame = collect(AccessGame::where('access_id', '=', $access_id)
+                ->orderBy('score','desc')->with(['access' => function ($query) {
+                    $query->select('Access.access_id', 'Access.name');
+                }, 'user' => function ($query) {
+                    $query->select('User.user_id','User.first_name', 'User.last_name');
+                }])->get());
+        $uniqueAccesses = $accessGame->unique('user_id');
+        return $uniqueAccesses->values();
+    }
+
+    public function getScoresByCongress($accesses) 
+    {
+        $list = [];
+        foreach( $accesses as $access) {
+            array_push($list, $this->getScoresByAccess($access->access_id));
+        }
+        $values = collect($list)->collapse();
+        $counted = $values->groupBy('user_id');
+        $res = $counted->map(function ($item) {
+                return [
+                    'access_game_id'=> $item[0]->access_game_id,
+                    'score'=> $item->sum('score'),
+                    'user_id'=> $item[0]->user_id,
+                    'access_id'=> $item[0]->access_id,
+                    'user' => $item[0]->user,
+                    'access' => $item[0]->access
+                ];
+        });
+        return $res->values();
+    }
+
+    public function getGamesAccessesByCongress($congress_id)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+        ->where('access_type_id', '=', 4)
+        ->get();
+    }
+
+    public function saveScoreGame($access_id, $request)
+    {
+        $access_game = new AccessGame();
+        $access_game->access_id = $access_id;
+        $access_game->user_id = $request->input('user_id');
+        $access_game->score = $request->input('score');
+        $access_game->save();
+        return $access_game;
     }
 }
