@@ -543,6 +543,7 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
         Route::get('eposters', 'SubmissionController@getEpostersByCongressPeacksource');
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
+        Route::get('access-stand/get-status', 'StandController@getAllAccessStandByCongressId');
     });
 });
 

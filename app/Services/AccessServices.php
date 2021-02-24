@@ -190,7 +190,7 @@ class AccessServices
 
     public function getAccesssByCongressId($congress_id)
     {
-        return Access::where('congress_id', '=', $congress_id)->select('access_id')->get();
+        return Access::where('congress_id', '=', $congress_id)->select('access_id', 'name', 'status')->get();
     }
 
     public function deleteAccess($access_id)
