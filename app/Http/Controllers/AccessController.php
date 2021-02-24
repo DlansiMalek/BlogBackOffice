@@ -239,6 +239,11 @@ class AccessController extends Controller
         if (!$this->congressServices->getById($congress_id)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
+
+        if(!$request->has(['user_id', 'score'])){
+            return response()->json(['response' => 'bad request (required user_id, score)']);
+        }
+
         if (!$request->has('name')) {
             return response()->json(['response' => 'missing access name'], 400);
         }
@@ -246,7 +251,7 @@ class AccessController extends Controller
         $access = $this->accessServices->getAccessByName($name);
         if (!$access || $access->access_type_id !=4)
         {
-            return response()->json(['response' => 'bad request'], 400);
+            return response()->json(['response' => 'Access not found or not type Game'], 400);
         }
         $accessGame = $this->accessServices->saveScoreGame($access->access_id, $request);
         return response()->json($accessGame, 200);
