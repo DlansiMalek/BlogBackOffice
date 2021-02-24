@@ -26,7 +26,7 @@ class AddColumnStatusToTableAccess extends Migration
     public function down()
     {
         Schema::table('Access', function (Blueprint $table) {
-            //
+            $table->removeColumn('status');
         });
     }
 }
