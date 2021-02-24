@@ -12,6 +12,7 @@ use App\Services\ResourcesServices;
 use App\Services\RoomServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AccessController extends Controller
 {
@@ -211,6 +212,64 @@ class AccessController extends Controller
                 $access->update();
 
         }
+    }
+
+    public function getScoresByCongressId($congress_id, Request $request)
+    {
+        if (!$this->congressServices->getById($congress_id)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+        $access_id = $request->query('access_id');
+        if ($access_id && $access_id != 'null') {
+            $access = $this->accessServices->getAccessById($access_id);
+            if (!$access || $access->access_type_id !=4)
+            {
+            return response()->json(['response' => 'bad request'], 400);
+            }
+            $access_game = $this->accessServices->getScoresByAccess($access_id);
+        } else {
+            $accesses = $this->accessServices->getGamesAccessesByCongress($congress_id);
+            $access_game = $this->accessServices->getScoresByCongress($accesses);
+        }
+        return response()->json($access_game, 200);
+    }
+
+    public function saveScoreGame($congress_id, Request $request)
+    {
+        if (!$this->congressServices->getById($congress_id)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+        if (!$request->has('name')) {
+            return response()->json(['response' => 'missing access name'], 400);
+        }
+        $name = $request->query('name');
+        $access = $this->accessServices->getAccessByName($name);
+        if (!$access || $access->access_type_id !=4)
+        {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        $accessGame = $this->accessServices->saveScoreGame($access->access_id, $request);
+        return response()->json($accessGame, 200);
+    }
+
+    public function getScoresByCongressPeaksource($congress_id, Request $request)
+    {
+        if (!$this->congressServices->getById($congress_id)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+        $name = $request->query('name');
+        if ($name && !is_null($name) && $name !='null') {
+            $access = $this->accessServices->getAccessByName($name);
+            if (!$access || $access->access_type_id !=4)
+            {
+            return response()->json(['response' => 'bad request'], 400);
+            }
+            $access_game = $this->accessServices->getScoresByAccess($access->access_id);
+        } else {
+            $accesses = $this->accessServices->getGamesAccessesByCongress($congress_id);
+            $access_game = $this->accessServices->getScoresByCongress($accesses);
+        }
+        return response()->json($access_game, 200);
     }
 
 }
