@@ -511,6 +511,7 @@ Route::group(['prefix' => 'access'], function () {
     Route::get('congress/{access_id}/main', 'AccessController@getMainByCongressId');
     Route::delete('{access_id}', 'AccessController@deleteAccess');
     Route::put('{access_id}', 'AccessController@editAccess');
+    Route::get('congress/{congress_id}/scores', 'AccessController@getScoresByCongressId');
 });
 
 Route::group(["prefix" => "notification"], function () {
@@ -544,6 +545,9 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::get('users', 'CongressController@getUsersByCongressPeacksource');
         Route::get('eposters', 'SubmissionController@getEpostersByCongressPeacksource');
         Route::get('urls', 'StandController@getAllUrlsByCongressId');
+        Route::get('access-stand/get-status', 'StandController@getAllAccessStandByCongressId');
+        Route::post('save-score-game', 'AccessController@saveScoreGame');
+        Route::get('get-score-game', 'AccessController@getScoresByCongressPeaksource');
     });
 });
 
