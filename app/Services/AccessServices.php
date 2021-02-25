@@ -533,6 +533,17 @@ class AccessServices
         })->get();
     }
 
+    public function editAllAccessesStatus($congress_id, $status)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+            ->update(['status' => $status]);
+    }
+
+    public function editAccessStatus($access_id, $status)
+    {
+        return Access::where('access_id', '=', $access_id)
+        ->update(['status' => $status]);
+    }
     public function getScoresByAccess($access_id)
     {
         $accessGame = collect(AccessGame::where('access_id', '=', $access_id)

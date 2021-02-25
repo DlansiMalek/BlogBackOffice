@@ -136,9 +136,12 @@ class StandController extends Controller
 
         $all = $request->query('all', false);
         $status = $request->query('status', 1);
+        $stand_id = $request->query('standId', null);
 
-        if ($all) {
+        if ($all=='true') {
             $this->standServices->modifyAllStatusStand($congressId, $status);
+        } else {
+            $this->standServices->modifyStatusStand($stand_id, $status);
         }
 
         return response()->json($this->standServices->getStands($congressId));

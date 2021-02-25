@@ -192,6 +192,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('program-link', 'CongressController@setProgramLink');
         Route::post('/abstractBook', 'CongressController@affectAbstractBookPathToCongress');
         Route::post('/congress-logo', 'CongressController@affectLogoToCongress');
+        Route::get('access/change-status', 'AccessController@editAccessStatus');
 
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
