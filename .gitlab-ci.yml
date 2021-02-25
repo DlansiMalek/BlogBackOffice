@@ -1,15 +1,22 @@
 image: docker:stable
+
 services:
   - docker:dind
 
 variables:
   DOCKER_DRIVER: overlay
+  MYSQL_DATABASE: eventizer_v3_testing
+  MYSQL_ROOT_PASSWORD: root
+  DB_HOST: mysql
+  DB_USERNAME: root
+  DB_PASSWORD: root
+  DB_DATABASE: eventizer_v3_testing
 
 stages:
   - build
+  - test
   - package
   - deploy
-  - build-manual
   - package-manual
   - deploy-manual
   - backup
@@ -18,9 +25,6 @@ stages:
 build:
   stage: build
   image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
-  only:
-    - master
-    - develop
   script:
     - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
   artifacts:
@@ -28,16 +32,20 @@ build:
       - vendor/
     expire_in: 2 hours
 
-build-feat:
-  stage: build-manual
+# Test stage
+testing:
+  stage: test
+  services:
+    - mysql:5.7
   image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/composer:master
-  when: manual
+  before_script:
+    - cp $ENV_TESTING .env.testing
   script:
-    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
-  artifacts:
-    paths:
-      - vendor/
-    expire_in: 2 hours
+    - php artisan migrate --env=testing
+    - php artisan db:seed --env=testing
+    - php artisan test
+  after_script:
+    - rm .env.testing
 
 # Package stage
 docker-package:

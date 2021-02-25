@@ -30,6 +30,7 @@
     "nesbot/carbon": "^2.43",
     "niklasravnsborg/laravel-pdf": "4.0.0",
     "phpoffice/phpspreadsheet": "^1.2",
+    "predis/predis": "^1.1",
     "ramsey/uuid": "^4.0",
     "simplesoftwareio/simple-qrcode": "^1.5",
     "tymon/jwt-auth": "^1.0",

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Services\CongressServices;
 use App\Services\StandServices;
 use App\Services\VotingServices;
+use App\Services\AccessServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -15,11 +16,15 @@ class StandController extends Controller
     protected $congressServices;
     protected $votingServices;
 
-    function __construct(StandServices $standServices, CongressServices $congressServices, VotingServices $votingServices)
+    function __construct(StandServices $standServices, 
+                        CongressServices $congressServices,
+                        VotingServices $votingServices,
+                        AccessServices $accessServices)
     {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
+        $this->accessServices = $accessServices;
     }
 
 
@@ -153,5 +158,15 @@ class StandController extends Controller
         }
 
         return response()->json($stands);
+    }
+
+    public function getAllAccessStandByCongressId($congress_id)
+    {
+        if (!$this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $stands = $this->standServices->getAllStandByCongressId($congress_id);
+        $accesses = $this->accessServices->getAccesssByCongressId($congress_id);
+        return response()->json(['stands' => $stands, 'accesses' => $accesses]);
     }
 }
