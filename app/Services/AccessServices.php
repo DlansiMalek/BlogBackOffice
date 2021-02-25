@@ -531,4 +531,16 @@ class AccessServices
             $query->where('User.user_id', '=', $userId);
         })->get();
     }
+
+    public function editAllAccessesStatus($congress_id, $status)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+            ->update(['status' => $status]);
+    }
+
+    public function editAccessStatus($access_id, $status)
+    {
+        return Access::where('access_id', '=', $access_id)
+        ->update(['status' => $status]);
+    }
 }

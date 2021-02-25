@@ -172,4 +172,10 @@ class StandServices
         }
         return false;
     }
+
+    public function modifyStatusStand($stand_id, $status)
+    {
+        return Stand::where('stand_id', '=', $stand_id)
+            ->update(['status' => $status]);
+    }
 }
