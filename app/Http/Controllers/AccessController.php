@@ -214,6 +214,24 @@ class AccessController extends Controller
         }
     }
 
+    public function editAccessStatus($congress_id, Request $request)
+    {
+        if (!$this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        
+        $all = $request->query('all', false);
+        $status = $request->query('status', 1);
+        $access_id = $request->query('accessId', null);
+
+        if ($all=='true') {
+            $this->accessServices->editAllAccessesStatus($congress_id, $status);
+        } else {
+            $this->accessServices->editAccessStatus($access_id, $status);
+        }
+        return response()->json($this->accessServices->getByCongressId($congress_id));
+    }
+    
     public function getScoresByCongressId($congress_id, Request $request)
     {
         if (!$this->congressServices->getById($congress_id)) {
