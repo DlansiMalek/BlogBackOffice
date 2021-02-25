@@ -923,9 +923,9 @@ class CongressController extends Controller
             return response()->json(['response' => 'congress not found'], 404);
         }
         $cacheKey = 'congress-' . $congressId . '-users';
-
+        
         if (Cache::has($cacheKey)) {
-            $users = Cache::get($cacheKey);
+            $results = Cache::get($cacheKey);
         } else {
             $users = $users = $this->userServices->getUsersWithRelations($congressId,
                 ['accesses' => function ($query) use ($congressId) {
@@ -941,11 +941,11 @@ class CongressController extends Controller
                 }, 'chair_access' => function ($query) use ($congressId) {
                     $query->where('Access.congress_id', '=', $congressId);
                 }, 'profile_img'], null);
+            
+            $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
-            Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+            Cache::put($cacheKey, $results, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
-
-        $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
         return response()->json($results);
     }
