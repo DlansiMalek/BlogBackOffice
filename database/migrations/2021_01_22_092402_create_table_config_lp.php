@@ -29,23 +29,23 @@ class CreateTableConfigLp extends Migration
             $table->date('home_start_date')->nullable()->default(null);
             $table->date('home_end_date')->nullable()->default(null);
             $table->string('home_title')->nullable()->default(null);
-            $table->string('home_description')->nullable()->default(null);
+            $table->text('home_description')->nullable()->default(null);
 
             $table->string('prp_banner_event')->nullable()->default(null);
             $table->string('prp_title')->nullable()->default(null);
-            $table->string('prp_description')->nullable()->default(null);
+            $table->text('prp_description')->nullable()->default(null);
 
             $table->string('speaker_title')->nullable()->default(null);
-            $table->string('speaker_description')->nullable()->default(null);
+            $table->text('speaker_description')->nullable()->default(null);
 
             $table->string('sponsor_title')->nullable()->default(null);
-            $table->string('sponsor_description')->nullable()->default(null);
+            $table->text('sponsor_description')->nullable()->default(null);
             
             $table->string('prg_title')->nullable()->default(null);
-            $table->string('prg_description')->nullable()->default(null);
+            $table->text('prg_description')->nullable()->default(null);
              
             $table->string('contact_title')->nullable()->default(null);
-            $table->string('contact_description')->nullable()->default(null);
+            $table->text('contact_description')->nullable()->default(null);
 
             $table->string('event_link_fb')->nullable()->default(null);
             $table->string('event_link_instagram')->nullable()->default(null);

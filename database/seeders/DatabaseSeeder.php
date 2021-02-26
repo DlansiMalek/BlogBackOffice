@@ -99,5 +99,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call(CitySeedTable::class);
         $this->call(LocationSeeder::class);
+
+        $this->call(ConfigLPSeeder::class);
+        $this->call(LPSpeakerSeeder::class);
     }
 }
