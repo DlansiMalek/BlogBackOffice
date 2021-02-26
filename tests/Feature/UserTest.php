@@ -10,9 +10,11 @@ use App\Models\Congress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use App\Models\FormInputType;
+use App\Models\Mail;
 use App\Models\Pack;
 use App\Models\User;
 use App\Models\UserAccess;
+use App\Models\Admin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -114,6 +116,9 @@ class UserTest extends TestCase
             ->create(['congress_id' => $congress->congress_id]);
         $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $mail = factory(Mail::class)->create(['mail_type_id' => 1, 'congress_id' => $congress->congress_id ]);
+        $evaluator = factory(Admin::class)->create();
+        $adminCongress = factory(AdminCongress::class)->create(['congress_id' => $congress->congress_id, 'admin_id' => $evaluator->admin_id, 'privilege_id' => 13]);
         $token = JWTAuth::fromUser($user);
         $this->withHeader('Authorization', 'Bearer ' . $token)
             ->post('api/user/congress/' . $congress->congress_id . '/registerV2',
