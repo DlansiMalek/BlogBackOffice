@@ -81,4 +81,17 @@ class RequestLandingPageController extends Controller
         $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template,  $landingPage->admin, null, null, $linkBackOffice), null, $mailAdmin->object,  $landingPage->admin, null, null);
         return response()->json($landingPage, 200);
     }
+    public function getConfigLandingPage($congress_id)
+    {
+      
+        $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+    public function getLandingPageSpeakers($congress_id)
+    {
+        
+        $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
+        return response()->json($speakers, 200);
+    }
 }

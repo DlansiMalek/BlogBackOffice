@@ -186,7 +186,7 @@ class AccessServices
         return Access::with(['speakers', 'chairs', 'topic', 'resources', 'type',
             'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->whereNull('parent_id')
-            ->where('congress_id', '=', $congress_id)
+            ->where('congress_id', '=', $congress_id)->orderBy('start_date', 'asc')
             ->get();
     }
 

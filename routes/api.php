@@ -570,3 +570,10 @@ Route::group(['prefix' => 'request-landing-page'], function () {
     Route::put('{request_landing_page_id}', 'RequestLandingPageController@upadteStatusLandingPage');
    
 });
+//landingPageFront
+Route::group(['prefix' => '{congressId}/landing-page'], function () { 
+    Route::get('get-config', 'RequestLandingPageController@getConfigLandingPage');
+    Route::get('get-speakers', 'RequestLandingPageController@getLandingPageSpeakers');
+    
+ 
+});
