@@ -1038,8 +1038,8 @@ class CongressController extends Controller
 
     public function addLandingPageSpeaker($congress_id, Request $request)
     {
-        if (!$request->has(['first_name', 'last_name', 'role', 'profile_img']))
-            return response()->json(['message' => 'bad request'], 400);
+        if (!$request->has(['first_name', 'last_name', 'role']))
+            return response()->json(['message' => 'bad request:first_name,last_name and role are required '], 400);
         if (!$this->adminServices->retrieveAdminFromToken())
             return response()->json(['error' => 'admin_not_found'], 404);
         

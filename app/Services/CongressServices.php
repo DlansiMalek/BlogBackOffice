@@ -1019,7 +1019,7 @@ class CongressServices
         $lp_speaker->first_name = $request->input('first_name');
         $lp_speaker->last_name = $request->input('last_name'); 
         $lp_speaker->role = $request->input('role');
-        $lp_speaker->profile_img = $request->input('profile_img');
+        $lp_speaker->profile_img = $request->has('profile_img') ? $request->input('profile_img') : '34ZPKTtsyo9ZLPCQ2d2YidDhVedNwFGNfuJDuL45.jpg';
         $lp_speaker->fb_link = $request->input('fb_link');
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
