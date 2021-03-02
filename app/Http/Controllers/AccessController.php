@@ -288,10 +288,10 @@ class AccessController extends Controller
             {
             return response()->json(['response' => 'bad request'], 400);
             }
-            $access_game = $this->accessServices->getScoresByAccess($access->access_id);
+            $access_game = $this->accessServices->getScoresByAccess($access->access_id, true);
         } else {
             $accesses = $this->accessServices->getGamesAccessesByCongress($congress_id);
-            $access_game = $this->accessServices->getScoresByCongress($accesses);
+            $access_game = $this->accessServices->getScoresByCongress($accesses, true);
         }
         return response()->json($access_game, 200);
     }
