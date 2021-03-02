@@ -280,34 +280,6 @@ class UserTest extends TestCase
         ];
     }
 
-    public function testSaveUserRegistration()
-    {
-        $congress = factory(Congress::class)->create();
-        $congressConfig = factory(ConfigCongress::class)
-            ->create(['congress_id' => $congress->congress_id]);
-        $access = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
-        $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
-        $user = $this->getUserData($pack->pack_id, $access->access_id);
-        $this->post('api/user/congress/' . $congress->congress_id . '/register', $user)
-            ->assertStatus(200);
-    }
-
-    private function getUserData($pack_id, $access_id)
-    {
-        return [
-            'email' => $this->faker->email,
-            'privilege_id' => 3,
-            'first_name' => $this->faker->name,
-            'last_name' => $this->faker->name,
-            'packIds' => [
-                $pack_id
-            ],
-            'accessIds' => [
-                $access_id
-            ]
-        ];
-    }
-
     // TODO Correction
     /*public function testSaveUserInscriptionEventWithQuestionsNotRequired()
     {
