@@ -244,10 +244,10 @@ class AccessController extends Controller
             {
             return response()->json(['response' => 'bad request'], 400);
             }
-            $access_game = $this->accessServices->getScoresByAccess($access_id);
+            $access_game = $this->accessServices->getScoresByAccess($congress_id, $access_id);
         } else {
             $accesses = $this->accessServices->getGamesAccessesByCongress($congress_id);
-            $access_game = $this->accessServices->getScoresByCongress($accesses);
+            $access_game = $this->accessServices->getScoresByCongress($congress_id, $accesses);
         }
         return response()->json($access_game, 200);
     }
@@ -287,10 +287,10 @@ class AccessController extends Controller
             {
             return response()->json(['response' => 'bad request'], 400);
             }
-            $access_game = $this->accessServices->getScoresByAccess($access->access_id, true);
+            $access_game = $this->accessServices->getScoresByAccess($congress_id, $access->access_id, true);
         } else {
             $accesses = $this->accessServices->getGamesAccessesByCongress($congress_id);
-            $access_game = $this->accessServices->getScoresByCongress($accesses, true);
+            $access_game = $this->accessServices->getScoresByCongress($congress_id, $accesses, true);
         }
         return response()->json($access_game, 200);
     }
