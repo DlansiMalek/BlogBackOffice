@@ -10,9 +10,13 @@ use App\Models\Congress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use App\Models\FormInputType;
+use App\Models\Mail;
 use App\Models\Pack;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\UserAccess;
+use App\Models\Admin;
+use App\Models\UserCongress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -39,7 +43,7 @@ class UserTest extends TestCase
 
     public function testGetUsersByCongressPaginationBadRequest()
     {
-        ///api/user/congress/congress_id/list-pagination
+        // /api/user/congress/congress_id/list-pagination
         $congress = factory(Congress::class)->create();
 
         $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination')
@@ -114,6 +118,9 @@ class UserTest extends TestCase
             ->create(['congress_id' => $congress->congress_id]);
         $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $mail = factory(Mail::class)->create(['mail_type_id' => 1, 'congress_id' => $congress->congress_id ]);
+        $evaluator = factory(Admin::class)->create();
+        $adminCongress = factory(AdminCongress::class)->create(['congress_id' => $congress->congress_id, 'admin_id' => $evaluator->admin_id, 'privilege_id' => 13]);
         $token = JWTAuth::fromUser($user);
         $this->withHeader('Authorization', 'Bearer ' . $token)
             ->post('api/user/congress/' . $congress->congress_id . '/registerV2',
@@ -151,6 +158,126 @@ class UserTest extends TestCase
             ->post('api/user/congress/' . $congress->congress_id . '/registerV2',
                 ['accessesId' => [$access2->access_id]])
             ->assertStatus(200);
+    }
+    public function testGetUsersByCongressPaginationSansDoublon()
+    {
+        $congress1 = factory(Congress::class)->create();
+        $adminCongress1 = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
+            'congress_id' => $congress1->congress_id, 'privilege_id' => $this->admin->privilege_id]);
+        $congress2 = factory(Congress::class)->create();
+        $adminCongress2 = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
+            'congress_id' => $congress2->congress_id, 'privilege_id' => $this->admin->privilege_id]);
+        $user = factory(User::class)->create();
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress1->congress_id, 'user_id' => $user->user_id, 'privilege_id' => 3]);
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress2->congress_id, 'user_id' => $user->user_id, 'privilege_id' => 3]);
+        
+        $response = $this->get('api/user/congress/' . $congress1->congress_id . '/list-pagination')
+            ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertCount(1 ,$dataResponse['data']);
+    }
+
+    public function testGetUsersByCongressPaginationWithSearchPayment()
+    {
+        // 1 user has payed and the other one didn't
+        $search = "payé";
+        $congress = factory(Congress::class)->create();
+        $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
+        
+        $user1 = factory(User::class)->create();
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => 3]);
+        $payment1 = factory(Payment::class)->create(['user_id' => $user1->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 1]);
+        
+        $user2 = factory(User::class)->create();
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => 3]);
+        $payment2 = factory(Payment::class)->create(['user_id' => $user2->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 0]);
+
+        $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
+            ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertCount(1 ,$dataResponse['data']);
+    }
+    
+    public function testGetUsersByCongressPaginationWithSearchStatus()
+    {
+        // 2 users are accepted
+        $search = "accepted";
+        $congress = factory(Congress::class)->create();
+        $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
+        
+        $user1 = factory(User::class)->create();
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => 3, 'isSelected' => 1]);
+        
+        $user2 = factory(User::class)->create();
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => 3, 'isSelected' => 1]);
+
+        $user3 = factory(User::class)->create();
+        $userCongress3 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user3->user_id, 'privilege_id' => 3, 'isSelected' => -1]);
+
+        $user4 = factory(User::class)->create();
+        $userCongress4 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user4->user_id, 'privilege_id' => 3, 'isSelected' => 0]);
+
+        $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
+            ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertCount(2 ,$dataResponse['data']);
+    }
+
+    public function testGetUsersByCongressPaginationWithSearchCountry()
+    {
+        // Only one user is from tunisia
+        $search = "Tunisia";
+        $congress = factory(Congress::class)->create();
+        $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
+        
+        $user1 = factory(User::class)->create(['country_id' => 'TUN']);
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => 3]);
+        
+        $user2 = factory(User::class)->create(['country_id' => 'BHS']);
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => 3]);
+
+        $user3 = factory(User::class)->create(['country_id' => 'TUR']);
+        $userCongress3 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user3->user_id, 'privilege_id' => 3]);
+
+        $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
+            ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertCount(1 ,$dataResponse['data']);
+    }
+
+    public function testSaveUserRegistration()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        $access = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
+        $user = $this->getUserData($pack->pack_id, $access->access_id);
+        $this->post('api/user/congress/' . $congress->congress_id . '/register', $user)
+            ->assertStatus(200);
+    }
+
+    private function getUserData($pack_id, $access_id)
+    {
+        return [
+            'email' => $this->faker->email,
+            'privilege_id' => 3,
+            'first_name' => $this->faker->name,
+            'last_name' => $this->faker->name,
+            'packIds' => [
+                $pack_id
+            ],
+            'accessIds' => [
+                $access_id
+            ]
+        ];
     }
 
     public function testSaveUserRegistration()

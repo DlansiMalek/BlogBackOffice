@@ -19,7 +19,7 @@ class AccessTest extends TestCase
      * @return void
      */
 
-    public function testGetAccessById ()
+    public function testGetAccessById()
     {
         $access = factory(Access::class)->create();
         $this->get('api/access/get/' . $access->access_id)
@@ -29,14 +29,14 @@ class AccessTest extends TestCase
     public function testGetByCongressId()
     {
         $access = factory(Access::class)->create();
-        $this->get('api/access/congress/' .$access->congress_id)
+        $this->get('api/access/congress/' . $access->congress_id)
             ->assertStatus(200);
     }
 
     public function testDeleteAccess()
     {
         $access = factory(Access::class)->create();
-        $this->delete('api/access/' .$access->access_id)
+        $this->delete('api/access/' . $access->access_id)
             ->assertStatus(200);
     }
 
@@ -125,6 +125,14 @@ class AccessTest extends TestCase
 
     }*/
 
+    private function getAccessGame($user_id)
+    {
+        return [
+            'user_id' => $user_id,
+            'score' => $this->faker->numberBetween(10, 100)
+        ];
+    }
+
     private function getFakeDataAccess()
     {
         return [
@@ -143,6 +151,4 @@ class AccessTest extends TestCase
             'access_type_id' => $this->faker->numberBetween($min = 1, $max = 3),
         ];
     }
-
-
 }
