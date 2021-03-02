@@ -512,6 +512,7 @@ Route::group(['prefix' => 'access'], function () {
     Route::delete('{access_id}', 'AccessController@deleteAccess');
     Route::put('{access_id}', 'AccessController@editAccess');
     Route::get('congress/{congress_id}/scores', 'AccessController@getScoresByCongressId');
+    Route::delete('reset-score/{access_id}', 'AccessController@resetScore');
 });
 
 Route::group(["prefix" => "notification"], function () {

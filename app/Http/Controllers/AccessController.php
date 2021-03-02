@@ -295,4 +295,15 @@ class AccessController extends Controller
         return response()->json($access_game, 200);
     }
 
+    public function resetScore($access_id)
+    {
+        $access = $this->accessServices->getAccessById($access_id);
+        if (!$access || $access->access_type_id !=4)
+        {
+             return response()->json(['response' => 'bad request'], 400);
+        }
+        $this->accessServices->resetScore($access_id);
+        return response()->json('deleted successfully', 200);
+    }
+
 }
