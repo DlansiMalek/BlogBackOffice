@@ -565,6 +565,7 @@ class AccessServices
     {
         $list = [];
         foreach( $accesses as $access) {
+            print_r($access);
             array_push($list, $this->getScoresByAccess($access->access_id, $exclureInvitee));
         }
         $values = collect($list)->collapse();
@@ -597,5 +598,11 @@ class AccessServices
         $access_game->score = $request->input('score');
         $access_game->save();
         return $access_game;
+    }
+
+    public function resetScore($access_id)
+    {
+        AccessGame::where('access_id', '=', $access_id)
+        ->delete();
     }
 }
