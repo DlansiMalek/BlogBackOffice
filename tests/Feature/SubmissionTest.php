@@ -31,8 +31,8 @@ class SubmissionTest extends TestCase
         ]);
         $author = factory(Author::class)->create([
             'submission_id' => $submission->submission_id,
-            'service_id' => 127,
-            'etablissement_id' => 60,
+            'service_id' => 1,
+            'etablissement_id' => 1,
             'rank' => 1
         ]);
         $resource = factory(Resource::class)->create();

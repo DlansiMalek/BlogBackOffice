@@ -301,7 +301,7 @@ class MailServices
             $content = base64_encode($img);
         }
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
-        $replyTo = $congress != null ? $congress->config->replyto_mail : env('MAIL_USERNAME', 'contact@eventizer.io');
+        $replyTo = $congress != null && $congress->config != null && $congress->config->replyto_mail!= null ? $congress->config->replyto_mail : env('MAIL_USERNAME', 'contact@eventizer.io');
        
         $message = array(
             'sender' => array(
