@@ -565,7 +565,6 @@ class AccessServices
     {
         $list = [];
         foreach( $accesses as $access) {
-            print_r($access);
             array_push($list, $this->getScoresByAccess($access->access_id, $exclureInvitee));
         }
         $values = collect($list)->collapse();
