@@ -598,4 +598,10 @@ class AccessServices
         $access_game->save();
         return $access_game;
     }
+
+    public function resetScore($access_id)
+    {
+        AccessGame::where('access_id', '=', $access_id)
+        ->delete();
+    }
 }

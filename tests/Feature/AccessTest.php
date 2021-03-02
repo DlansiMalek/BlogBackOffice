@@ -9,6 +9,7 @@ use App\Models\Access;
 use App\Models\AccessGame;
 use App\Models\Congress;
 use App\Models\User;
+use App\Models\UserCongress;
 
 class AccessTest extends TestCase
 {
@@ -40,11 +41,12 @@ class AccessTest extends TestCase
     }
 
     // TODO à corriger
-    /*public function testGetScoresByCongressIdWithAccess()
+    public function testGetScoresByCongressIdWithAccess()
     {
         $congress = factory(Congress::class)->create();
         $access = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
         $access_game = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 10]);
         $access_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 50]);
         $response = $this->get('api/access/congress/' . $congress->congress_id . '/scores?access_id=' . $access->access_id)
@@ -55,15 +57,16 @@ class AccessTest extends TestCase
         // verify that we get only the biggest score (50)
         $this->assertCount(1, $dataResponse);
         $this->assertEquals($dataResponse[0]['score'], 50);
-    }*/
+    }
 
-    // TODO à corriger
-    /*public function testGetScoresByCongressId()
+    
+    public function testGetScoresByCongressId()
     {
         $congress = factory(Congress::class)->create();
         $access1 = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $access2 = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
         $access1_game1 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access1->access_id, 'score' => 10]);
         $access1_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access1->access_id, 'score' => 50]);
         $access2_game1 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access2->access_id, 'score' => 20]);
@@ -77,7 +80,7 @@ class AccessTest extends TestCase
         // verify that we get the sum of the biggest scores in each access (150 => 50 from access1 and 100 from access2)
         $this->assertCount(1, $dataResponse);
         $this->assertEquals($dataResponse[0]['score'], 150);
-    }*/
+    }
 
     public function testSaveScoreGame()
     {
@@ -96,11 +99,12 @@ class AccessTest extends TestCase
     }
 
     // TODO à corriger
-    /*public function testGetScoresByCongressPeaksourceByAccessName()
+    public function testGetScoresByCongressPeaksourceByAccessName()
     {
         $congress = factory(Congress::class)->create();
         $access = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
         $access_game = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 10]);
         $access_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 100]);
         $response = $this->get('api/access/congress/' . $congress->congress_id . '/scores?name=' . $access->name)
@@ -111,7 +115,7 @@ class AccessTest extends TestCase
         // verify that we get only the biggest score (100)
         $this->assertCount(1, $dataResponse);
         $this->assertEquals($dataResponse[0]['score'], 100);
-    }*/
+    }
 
     /* public function testEditAccess ()
     {
