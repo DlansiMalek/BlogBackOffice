@@ -1827,5 +1827,49 @@ class UserController extends Controller
         return response()->json(['$users' => $users]);
     }
 
+    public function checkStandRights($congressId, $standId)
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+        $userId = $user->user_id;
+        $congress = $this->congressServices->getCongressById($congressId);
+
+        $user = $this->userServices->getUserByIdWithRelations($userId, [
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+            'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }]);
+
+        if (!Utils::isValidSendMail($congress, $user)) {
+            return response()->json(['response' => 'not authorized'], 401);
+        }
+        $isModerator = $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+        $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
+        $urlStreaming = $congress->config->url_streaming;
+
+        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
+        if (count($allowedOnlineAccess) != 0)
+            $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
+
+        $userToUpdate = $user->user_congresses[0];
+        $roomName = 'eventizer_room_' . $congressId . 's' . $standId;
+        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        $userToUpdate->token_jitsi = $token;
+        $userToUpdate->update();
+
+        return response()->json(
+            [
+                "token" => $token,
+                "is_moderator" => $isModerator,
+                "privilege_id" => $user->user_congresses[0]->privilege_id,
+                "allowed_jitsi" => $isModerator ? true : $isAllowedJitsi,
+                "url_streaming" => $urlStreaming
+            ], 200);
+    }
+
 
 }
