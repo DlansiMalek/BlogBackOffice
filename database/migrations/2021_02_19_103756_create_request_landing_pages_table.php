@@ -13,15 +13,16 @@ class CreateRequestLandingPagesTable extends Migration
      */
     public function up()
     {
-        Schema::create('request_landing_pages', function (Blueprint $table) {
+        Schema::create('Request_Landing_Page', function (Blueprint $table) {
             $table->increments('request_landing_page_id');
             $table->string('dns');
             $table->tinyInteger('status')->default('0');
-            $table->unsignedInteger('congress_id')->nullable()->default(null);
-            $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');;
-            $table->integer('admin_id')->unsigned()->nullable()->default(null);
+            $table->unsignedInteger('congress_id');
+            $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
+            $table->unsignedInteger('admin_id');
             $table->foreign('admin_id')->references('admin_id')
-                ->on('Admin');
+                ->on('Admin')->onDelete('cascade');
+          
             $table->timestamps();
         });
     }
@@ -33,6 +34,10 @@ class CreateRequestLandingPagesTable extends Migration
      */
     public function down()
     {
+        Schema::table('Config_Congress', function (Blueprint $table) {
+            $table->dropForeign('congress_id');
+            $table->dropForeign('admin_id');
+        });
         Schema::dropIfExists('request_landing_pages');
     }
 }

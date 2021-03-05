@@ -563,11 +563,16 @@ Route::group(["prefix" => "peaksource"], function () {
 
 //LandingPage
 Route::group(['prefix' => 'request-landing-page'], function () {
-    Route::post('{congress_id}/add', 'RequestLandingPageController@addRequestLandingPage');
+    Route::group(["middleware" => ['marketing']], function () {    
     Route::get('/list', 'RequestLandingPageController@getLandingPages');
-    Route::get('/LandingPage/{request_landing_page_id}', 'RequestLandingPageController@getOneLandingPage');
-    Route::get('{congress_id}', 'RequestLandingPageController@getLandingPagewithcongress_id');
     Route::put('{request_landing_page_id}', 'RequestLandingPageController@upadteStatusLandingPage');
+    });
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::get('/LandingPage/{request_landing_page_id}', 'RequestLandingPageController@getOneLandingPage');
+        Route::post('{congress_id}/add', 'RequestLandingPageController@addRequestLandingPage');
+        Route::get('{congress_id}', 'RequestLandingPageController@getLandingPagewithCongressId');
+     });  
+   
    
 });
 //landingPageFront

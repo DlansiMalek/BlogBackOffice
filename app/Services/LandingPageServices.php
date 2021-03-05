@@ -25,7 +25,7 @@ class LandingPageServices
         return RequestLandingPage::with(['congress', 'admin'])->get();
     }
 
-    public function getLandingPagewithcongress_id($congress_id)
+    public function getLandingPagewithCongressId($congress_id)
     {
         return RequestLandingPage::where('congress_id', '=', $congress_id)->where('status','!=',-1)->first();
     }

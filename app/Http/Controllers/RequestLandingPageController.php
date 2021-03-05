@@ -38,20 +38,22 @@ class RequestLandingPageController extends Controller
         }
 
         $this->landingPageServices->addRequestLandingPage($request, $congress_id, $admin->admin_id);
+        return response()->json(['message' => 'success'], 200);
     }
     public function getLandingPages()
     {
         $landingPages = $this->landingPageServices->getLandingPages();
         return response()->json($landingPages, 200);
     }
-    public function getLandingPagewithcongress_id($congress_id)
+    public function getLandingPagewithCongressId($congress_id)
     {
-        $landingPage = $this->landingPageServices->getLandingPagewithcongress_id($congress_id);
+        $landingPage = $this->landingPageServices->getLandingPagewithCongressId($congress_id);
         return response()->json($landingPage, 200);
     }
     public function getOneLandingPage($request_landing_page_id)
     {
-        return  $this->landingPageServices->getOneLandingPage($request_landing_page_id);
+        $landingPage = $this->landingPageServices->getOneLandingPage($request_landing_page_id);
+        return response()->json($landingPage, 200);
     }
     public function upadteStatusLandingPage(Request $request, $request_landing_page_id)
     {
@@ -62,13 +64,13 @@ class RequestLandingPageController extends Controller
         $status = $request->input('status');
         $this->landingPageServices->upadteStatusLandingPage($landingPage, $status);
         if ($status == 1) {
-            if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('Acceptation du votre demande Landing Page')) {
+            if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('accept_landing_page_demand')) {
                 return response()->json(['message' => 'Mail type not found'], 400);
             }
             $linkBackOffice = $landingPage->dns;
         } else if ($status == -1) {
             $linkBackOffice = "";
-            if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('votre demande Landing Page est Refusé')) {
+            if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('refuse_landing_page_demand')) {
                 return response()->json(['message' => 'Mail type not found'], 400);
             }
         }

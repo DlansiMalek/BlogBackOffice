@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RequestLandingPage extends Model
 {
-    protected $table = 'request_landing_pages';
+    protected $table = 'Request_Landing_Page';
     protected $primaryKey = 'request_landing_page_id';
     protected $fillable = ['dns', 'status', 'congress_id','admin_id'];
 
