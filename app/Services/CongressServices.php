@@ -25,7 +25,7 @@ use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use PDF;
 use function foo\func;
 
@@ -505,6 +505,7 @@ class CongressServices
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
+        $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
         $configCongress->update();
 
         return $configCongress;

@@ -38,7 +38,9 @@ class CreateConfigCongressTable extends Migration
 
             $table->tinyInteger('status')->default(1);
 
-
+            $table->boolean('is_phone_required')->default(true);
+            
+            
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
