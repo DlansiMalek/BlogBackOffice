@@ -30,3 +30,9 @@ Inclut tous les fonctionnalités du milestone 3.0.14
 Inclut tous les fonctionnalités du milestone 3.0.15
 
 1. [Mail] Configure replyTo pour les mails sendinblue: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/22)
+
+# [3.0.16](https://gitlab.master.ssd.vps.vayetek.com/groups/eventizer/-/boards?scope=all&utf8=%E2%9C%93&milestone_title=Sprint-3.0.16)
+
+Inclut tous les fonctionnalités du milestone 3.0.16
+
+1. [Tests] Ajout des tests de quelques fonctionnalités (Gestion des Jeux, user inscription ...)
