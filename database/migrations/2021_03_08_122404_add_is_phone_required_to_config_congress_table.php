@@ -13,7 +13,7 @@ class AddIsPhoneRequiredToConfigCongressTable extends Migration
      */
     public function up()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
+        Schema::table('Config_Congress', function (Blueprint $table) {
             //
             $table->boolean('is_phone_required')->default(true);
 
@@ -27,7 +27,7 @@ class AddIsPhoneRequiredToConfigCongressTable extends Migration
      */
     public function down()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
+        Schema::table('Config_Congress', function (Blueprint $table) {
             //
             $table->removeColumn("is_phone_required");
 
