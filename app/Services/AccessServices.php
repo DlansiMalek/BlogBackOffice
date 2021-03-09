@@ -544,9 +544,15 @@ class AccessServices
         return Access::where('access_id', '=', $access_id)
         ->update(['status' => $status]);
     }
-    public function getScoresByAccess($access_id)
+    public function getScoresByAccess($congress_id, $access_id, $exclureInvitee = false)
     {
         $accessGame = collect(AccessGame::where('access_id', '=', $access_id)
+                ->whereHas('user.user_congresses', function($query) use ($congress_id, $exclureInvitee) {
+                    if($exclureInvitee){
+                        $query->where('congress_id', '=', $congress_id);
+                        $query->where('privilege_id', '<>', 6);
+                    }
+                })
                 ->orderBy('score','desc')->with(['access' => function ($query) {
                     $query->select('Access.access_id', 'Access.name');
                 }, 'user' => function ($query) {
@@ -556,11 +562,11 @@ class AccessServices
         return $uniqueAccesses->values();
     }
 
-    public function getScoresByCongress($accesses) 
+    public function getScoresByCongress($congressId, $accesses, $exclureInvitee = false) 
     {
         $list = [];
         foreach( $accesses as $access) {
-            array_push($list, $this->getScoresByAccess($access->access_id));
+            array_push($list, $this->getScoresByAccess($congressId, $access->access_id, $exclureInvitee));
         }
         $values = collect($list)->collapse();
         $counted = $values->groupBy('user_id');
@@ -592,5 +598,11 @@ class AccessServices
         $access_game->score = $request->input('score');
         $access_game->save();
         return $access_game;
+    }
+
+    public function resetScore($access_id)
+    {
+        AccessGame::where('access_id', '=', $access_id)
+        ->delete();
     }
 }

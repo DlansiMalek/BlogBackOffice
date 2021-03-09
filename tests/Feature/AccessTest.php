@@ -9,6 +9,7 @@ use App\Models\Access;
 use App\Models\AccessGame;
 use App\Models\Congress;
 use App\Models\User;
+use App\Models\UserCongress;
 
 class AccessTest extends TestCase
 {
@@ -39,11 +40,13 @@ class AccessTest extends TestCase
             ->assertStatus(200);
     }
 
+    // TODO à corriger
     public function testGetScoresByCongressIdWithAccess()
     {
         $congress = factory(Congress::class)->create();
         $access = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
         $access_game = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 10]);
         $access_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 50]);
         $response = $this->get('api/access/congress/' . $congress->congress_id . '/scores?access_id=' . $access->access_id)
@@ -56,12 +59,14 @@ class AccessTest extends TestCase
         $this->assertEquals($dataResponse[0]['score'], 50);
     }
 
+    
     public function testGetScoresByCongressId()
     {
         $congress = factory(Congress::class)->create();
         $access1 = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $access2 = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
         $access1_game1 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access1->access_id, 'score' => 10]);
         $access1_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access1->access_id, 'score' => 50]);
         $access2_game1 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access2->access_id, 'score' => 20]);
@@ -93,11 +98,13 @@ class AccessTest extends TestCase
         $this->assertEquals($access->access_id, $access_game->access_id);
     }
 
+    // TODO à corriger
     public function testGetScoresByCongressPeaksourceByAccessName()
     {
         $congress = factory(Congress::class)->create();
         $access = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
         $access_game = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 10]);
         $access_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 100]);
         $response = $this->get('api/access/congress/' . $congress->congress_id . '/scores?name=' . $access->name)
