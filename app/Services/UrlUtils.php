@@ -170,15 +170,15 @@ class UrlUtils
     public static function getFilesUrl()
     {
         if (App::environment() == 'test') {
-            return "https://eventizer-dev.fra1.digitaloceanspaces.com/";
+            return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
         }
         if (App::environment() == 'prod') {
-            return "https://eventizer.fra1.digitaloceanspaces.com/";
+            return "https://eventizer.fra1.cdn.digitaloceanspaces.com/";
         }
         if (App::environment() == 'dev') {
-            return "https://eventizer-dev.fra1.digitaloceanspaces.com/";
+            return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
         }
 
-        return "https://eventizer-dev.fra1.digitaloceanspaces.com/";
+        return "https://".env('DIGITALOCEAN_SPACES_BUCKET').".fra1.cdn.digitaloceanspaces.com/";
     }
 }
