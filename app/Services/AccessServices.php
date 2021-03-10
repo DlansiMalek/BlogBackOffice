@@ -605,4 +605,19 @@ class AccessServices
         AccessGame::where('access_id', '=', $access_id)
         ->delete();
     }
+
+    public function getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search)
+    {
+        $accesses = Access::with(['type'])
+        ->whereNull('parent_id')
+        ->where('congress_id', '=', $congressId)
+        ->where('is_online', '=', 1)
+        ->where(function ($query) use ($search) {
+            $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+            $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
+            $query->orWhereRaw('(price) like (?)',  ["%{$search}%"]);
+        })->offset($offset)->limit($perPage)
+        ->get();
+        return $accesses;
+    }
 }
