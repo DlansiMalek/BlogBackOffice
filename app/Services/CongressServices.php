@@ -566,12 +566,6 @@ class CongressServices
         return $configSubmission->delete();
     }
 
-    public function getConfigSubmissionByCongressId($congressId)
-    {
-        return ConfigSubmission::where('congress_id', '=', $congressId)
-        ->first();
-    }
-
     public function addSubmissionThemeCongress($theme_ids, $congressId)
     {
         $CongressThemes = array();
