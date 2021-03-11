@@ -62,6 +62,50 @@ class StandTest extends TestCase
         $this->assertEquals($savedStand->docs[0]->pivot->file_name, $dataResponse['docs'][0]['pivot']['file_name']);
     }
 
+    public function testModiyStatusStand()
+    {
+        $congress = factory(Congress::class)->create();
+        $organization1 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $stand1 = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization1->organization_id, 'status' => 1]);
+        $organization2 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $stand2 = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization2->organization_id, 'status' => 1]);
+        $response = $this->put('api/congress/' . $congress->congress_id . '/stand/change-status?all=false&status=0&standId=' . $stand1->stand_id)
+        ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        
+        $savedStand1 = Stand::where('stand_id', '=', $dataResponse[0]['stand_id'])
+                    ->first();
+
+        $savedStand2 = Stand::where('stand_id', '=', $dataResponse[1]['stand_id'])
+                    ->first();
+        // verify that only stand1's status was midified to 0
+        $this->assertEquals($savedStand1->status, 0);
+        $this->assertEquals($savedStand2->status, 1);
+    }
+
+    public function testModiyStatusStandAll()
+    {
+        $congress = factory(Congress::class)->create();
+        $organization1 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $stand1 = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization1->organization_id, 'status' => 1]);
+        $organization2 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $stand2 = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization2->organization_id, 'status' => 1]);
+        $response = $this->put('api/congress/' . $congress->congress_id . '/stand/change-status?all=true&status=0&standId=null')
+        ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        
+        $savedStand1 = Stand::where('stand_id', '=', $dataResponse[0]['stand_id'])
+                    ->with(['docs','organization'])->first();
+
+        $savedStand2 = Stand::where('stand_id', '=', $dataResponse[1]['stand_id'])
+                    ->with(['docs','organization'])->first();
+        // verify that both stand's status were midified to 0
+        $this->assertEquals($savedStand1->status, 0);
+        $this->assertEquals($savedStand2->status, 0);
+    }
+
     private function getFakeStand($congress_id, $organization_id, $resource_id1, $resource_id2)
     {
         return [
