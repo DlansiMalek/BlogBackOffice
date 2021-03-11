@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
+use App\Models\ConfigSubmission;
 use App\Models\Congress;
 use stdClass;
 use Tests\TestCase;
@@ -174,8 +175,6 @@ class CongressTest extends TestCase
             ->assertStatus(200);
     }
 
-
-
     public function testGetMailTypeById ()
     {
         $congress = factory(Congress::class)->create();
@@ -189,6 +188,36 @@ class CongressTest extends TestCase
         $congress = factory(Congress::class)->create();
         $this->get('/api/congress/' . $congress->congress_id .'/organization' )
             ->assertStatus(200);
+    }
+
+    public function testAddConfigSubmission()
+    {
+        $congress = factory(Congress::class)->create();
+        $config = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id, 'is_submission_enabled' => 1]);
+        $config['privileges'] = [3];
+        $submission = $this->getDataSubmission();
+        $request = ['congress' => $config, 'submission' => $submission];
+        $this->post('/api/admin/me/congress/' . $congress->congress_id .'/edit-config', $request )
+            ->assertStatus(200);
+
+        $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
+        $this->assertEquals($configSubmission->max_words, $submission['max_words']);
+        $this->assertEquals($configSubmission->num_evaluators, $submission['num_evaluators']);
+    }
+
+    public function testDeleteConfigSubmission()
+    {
+        $congress = factory(Congress::class)->create();
+        $config = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id, 'is_submission_enabled' => 0]);
+        $config['privileges'] = [3];
+        $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
+        $request = ['congress' => $config, 'submission' => []];
+        $this->post('/api/admin/me/congress/' . $congress->congress_id .'/edit-config', $request )
+            ->assertStatus(200);
+
+        $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
+        // make sure that there isn't any ConfigSubmission
+        $this->assertNull($configSubmission);
     }
 
     private function getFakeDataCongress()
@@ -217,6 +246,16 @@ class CongressTest extends TestCase
                 'start_date'=> $this->faker->date(),
                 'end_date' => $this->faker->date(),
             ],
+        ];
+    }
+
+    private function getDataSubmission()
+    {
+        return [
+            'end_submission_date' => $this->faker->date(),
+            'start_submission_date' => $this->faker->date(),
+            'max_words' => $this->faker->numberBetween(100, 500),
+            'num_evaluators' => $this->faker->numberBetween(1, 5),
         ];
     }
 }
