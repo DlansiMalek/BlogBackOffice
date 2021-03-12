@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Models\Admin;
 use App\Models\Admin_Privilege;
+use App\Models\AdminCongress;
 use App\Models\Congress_Organization;
 use App\Models\CongressOrganization;
 use App\Models\Organization;
@@ -62,7 +63,15 @@ class OrganizationServices
 
     public function deleteOrganization($organization)
     {
+        if ($organization->admin_id) {
+            $this->deleteAdminCongress($organization->admin_id);
+        }
         return $organization->delete();
+    }
+
+    public function deleteAdminCongress($admin_id)
+    {
+        AdminCongress::where('admin_id', '=', $admin_id)->delete();
     }
 
     public function deleteCongressOrganization($congressOrganization)
