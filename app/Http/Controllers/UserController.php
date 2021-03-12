@@ -307,7 +307,7 @@ class UserController extends Controller
             return response()->json('no admin found', 404);
         }
         $perPage = $request->query('perPage', 10);
-        $search = $request->query('search', '');
+        $search = Str::lower($request->query('search', ''));
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
         $admin_id = $admin_congress->privilege_id == 13 ? $admin->admin_id : null;
@@ -710,7 +710,7 @@ class UserController extends Controller
             $urlStreaming = $congress->config->url_streaming;
         } else {
             $access = $this->accessServices->getAccessById($accessId);
-            $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
+            $isAllowedJitsi = $congress->config->max_online_participants && $access->url_streaming ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
             $urlStreaming = $access->url_streaming;
         }
         $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
