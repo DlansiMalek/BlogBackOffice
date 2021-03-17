@@ -27,7 +27,7 @@ use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use PDF;
 use function foo\func;
 
@@ -507,6 +507,7 @@ class CongressServices
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
+        $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
         $configCongress->update();
 
         return $configCongress;
@@ -696,7 +697,7 @@ class CongressServices
                 if ($access->show_in_register == 1 || $access->is_online == 1) {
                     $accessLink = "";
                     if ($congress && $access->is_online == 1) {
-                        $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congress->congress_id . '/access/' . $access->access_id;
+                        $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/room/' . $congress->congress_id . '/access/' . $access->access_id;
                         $accessLink = '<a href="' . $accessLink . '" target="_blank"> Lien </a>';
                     }
                     $accesses = $accesses
@@ -1019,7 +1020,7 @@ class CongressServices
         $lp_speaker->first_name = $request->input('first_name');
         $lp_speaker->last_name = $request->input('last_name'); 
         $lp_speaker->role = $request->input('role');
-        $lp_speaker->profile_img = $request->input('profile_img');
+        $lp_speaker->profile_img = $request->has('profile_img') ? $request->input('profile_img') : '34ZPKTtsyo9ZLPCQ2d2YidDhVedNwFGNfuJDuL45.jpg';
         $lp_speaker->fb_link = $request->input('fb_link');
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');

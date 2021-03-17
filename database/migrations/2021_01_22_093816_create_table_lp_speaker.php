@@ -23,7 +23,7 @@ class CreateTableLpSpeaker extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('role');
-            $table->string('profile_img');
+            $table->string('profile_img')->nullable()->default(null);
             $table->string('fb_link')->nullable()->default(null);
             $table->string('linkedin_link')->nullable()->default(null);
             $table->string('instagram_link')->nullable()->default(null);

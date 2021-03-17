@@ -133,11 +133,11 @@ class CongressController extends Controller
             $data = [
                 'title' => $event,
                 'body' => $event == 'collect' ?
-                    '/congress/room/' . $congressId :
-                    '/congress/room/' . $congressId . '/access/' . $access->access_id,
+                    '/room/' . $congressId :
+                    '/room/' . $congressId . '/access/' . $access->access_id,
                 'link' => $event == 'collect' ?
-                    UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congressId :
-                    UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congressId . '/access/' . $access->access_id
+                    UrlUtils::getBaseUrlFrontOffice() . '/room/' . $congressId :
+                    UrlUtils::getBaseUrlFrontOffice() . '/room/' . $congressId . '/access/' . $access->access_id
             ];
 
             $this->notificationService->sendNotification($data, [$userToken->firebase_key_user], false);
@@ -923,9 +923,9 @@ class CongressController extends Controller
             return response()->json(['response' => 'congress not found'], 404);
         }
         $cacheKey = 'congress-' . $congressId . '-users';
-
+        
         if (Cache::has($cacheKey)) {
-            $users = Cache::get($cacheKey);
+            $results = Cache::get($cacheKey);
         } else {
             $users = $users = $this->userServices->getUsersWithRelations($congressId,
                 ['accesses' => function ($query) use ($congressId) {
@@ -941,11 +941,11 @@ class CongressController extends Controller
                 }, 'chair_access' => function ($query) use ($congressId) {
                     $query->where('Access.congress_id', '=', $congressId);
                 }, 'profile_img'], null);
+            
+            $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
-            Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+            Cache::put($cacheKey, $results, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
-
-        $results = $this->userServices->mappingPeacksourceData($congress, $users);
 
         return response()->json($results);
     }
@@ -1038,8 +1038,8 @@ class CongressController extends Controller
 
     public function addLandingPageSpeaker($congress_id, Request $request)
     {
-        if (!$request->has(['first_name', 'last_name', 'role', 'profile_img']))
-            return response()->json(['message' => 'bad request'], 400);
+        if (!$request->has(['first_name', 'last_name', 'role']))
+            return response()->json(['message' => 'bad request:first_name,last_name and role are required '], 400);
         if (!$this->adminServices->retrieveAdminFromToken())
             return response()->json(['error' => 'admin_not_found'], 404);
         
