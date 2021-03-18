@@ -11,8 +11,10 @@ use App\Services\NotificationServices;
 use App\Services\ResourcesServices;
 use App\Services\RoomServices;
 use App\Services\UserServices;
+use App\Services\Utils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+
 
 class AccessController extends Controller
 {
@@ -304,6 +306,70 @@ class AccessController extends Controller
         }
         $this->accessServices->resetScore($access_id);
         return response()->json('deleted successfully', 200);
+    }
+
+    public function uploadExcelAccess($congress_id, Request $request) 
+    {
+        if (!$this->congressServices->getById($congress_id)) {
+            return response()->json(['response' => 'congress not found'], 404);
+        }
+        if (!$request->has('accessTypeId')) {
+            return response()->json(['response' => 'required access_type_id'], 400);
+        }
+        ini_set('max_execution_time', 500);
+        $access_type_id = $request->input('accessTypeId');
+        $accesses = $request->input("data");
+        $errors = '';
+
+        if (!$oldAccesses = $this->accessServices->getByCongressId($congress_id)) 
+        $oldAccesses = [];
+
+        foreach($oldAccesses as $old) {
+            $found = false;
+            foreach ($accesses as $access) {
+                if ($access['Email']) {
+                $user = $this->userServices->getUserByEmail($access['Email'], $congress_id);
+                if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
+                    $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
+                    $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
+                    $name = Utils::setAccessName($start_date, $end_date, $user->first_name . ' ' . $user->last_name);
+                    if ($old->access_type_id == $access_type_id && $old->name == $name && $old->start_date == $start_date && $old->end_date == $end_date) {
+                        $found = true;
+                        break;
+                    }
+                } 
+            }  
+            }
+            if (!$found && count($old->packs) == 0) {
+                $this->accessServices->deleteAccess($old->access_id);
+            }
+        }
+
+        foreach ($accesses as $access) {
+            $found = false;
+            if ($access['Email']) {
+                $user = $this->userServices->getUserByEmail($access['Email'], $congress_id);
+                if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
+                    $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
+                    $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
+                    $name = Utils::setAccessName($start_date, $end_date, $user->first_name . ' ' . $user->last_name);
+                foreach($oldAccesses as $old) {
+                    if ($old->access_type_id == $access_type_id && $old->name == $name && $old->start_date == $start_date && $old->end_date == $end_date) {
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $newAccess = $this->accessServices->addAccessFromExcel($start_date, $end_date, $access_type_id, $congress_id, $name );
+                    $user->user_congresses[0]->privilege_id == 5 ? $this->accessServices->addChair($newAccess->access_id ,$user->user_id) : $this->accessServices->addSpeaker($newAccess->access_id ,$user->user_id);
+                }
+            } else {
+                $errors = $errors . ' ' . $access['line'];
+            }
+        }
+        }
+        $allAccesses = $this->accessServices->getByCongressId($congress_id);
+        return response()->json(['accesses' => $allAccesses, 'errors' => $errors], 200);
     }
 
 }

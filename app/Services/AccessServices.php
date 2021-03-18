@@ -146,21 +146,31 @@ class AccessServices
     public function addChairs(Access $access, $chairs)
     {
         foreach ($chairs as $chair) {
-            $access_chair = new AccessChair();
-            $access_chair->access_id = $access['access_id'];
-            $access_chair->user_id = $chair;
-            $access_chair->save();
+            $this->addChair($access['access_id'], $chair);
         }
+    }
+
+    public function addChair($access_id, $user_id)
+    {
+        $access_chair = new AccessChair();
+        $access_chair->access_id = $access_id;
+        $access_chair->user_id = $user_id;
+        $access_chair->save();
     }
 
     public function addSpeakers(Access $access, $speakers)
     {
         foreach ($speakers as $speaker) {
-            $access_speaker = new AccessSpeaker();
-            $access_speaker->access_id = $access['access_id'];
-            $access_speaker->user_id = $speaker;
-            $access_speaker->save();
+            $this->addSpeaker($access['access_id'], $speaker);
         }
+    }
+
+    public function addSpeaker($access_id, $user_id)
+    {
+        $access_speaker = new AccessSpeaker();
+        $access_speaker->access_id = $access_id;
+        $access_speaker->user_id = $user_id;
+        $access_speaker->save();
     }
 
     public function addSubAccesses(Access $access, $sub_accesses)
@@ -186,6 +196,7 @@ class AccessServices
             'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
+            ->orderBy('start_date')
             ->get();
     }
 
@@ -604,5 +615,17 @@ class AccessServices
     {
         AccessGame::where('access_id', '=', $access_id)
         ->delete();
+    }
+
+    public function addAccessFromExcel($start_date, $end_date, $access_type_id, $congress_id, $moderator)
+    {
+        $access = new Access();
+        $access->name = $moderator;
+        $access->start_date = $start_date;
+        $access->end_date = $end_date;
+        $access->access_type_id = $access_type_id;
+        $access->congress_id = $congress_id;
+        $access->save();
+        return $access;
     }
 }

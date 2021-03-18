@@ -776,11 +776,15 @@ class UserServices
         return json_decode($res->getBody(), true);
     }
 
-    public function getUserByEmail($email)
+    public function getUserByEmail($email, $congress_id = null)
     {
         $email = strtolower($email);
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
-            ->with(['user_congresses'])
+        ->with(['user_congresses' => function ($query) use ($congress_id) {
+            if ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            }
+        }])
             ->first();
     }
 
@@ -1327,13 +1331,6 @@ class UserServices
         }
     }
 
-
-    private function isExistCongress($user, $congressId)
-    {
-        return Congress_User::where("id_User", "=", $user->id_User)
-            ->where("id_Congress", "=", $congressId)->first();
-    }
-
     private function removeAllPresencePerAccess($accessId, $user_id)
     {
         return AccessPresence::where('user_id', '=', $user_id)
@@ -1629,5 +1626,4 @@ class UserServices
             ->with('profile_img')
             ->get();
     }
-
 }
