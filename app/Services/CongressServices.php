@@ -27,7 +27,7 @@ use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use PDF;
 use function foo\func;
 
@@ -507,6 +507,7 @@ class CongressServices
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
+        $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
         $configCongress->update();
 
         return $configCongress;
@@ -696,7 +697,7 @@ class CongressServices
                 if ($access->show_in_register == 1 || $access->is_online == 1) {
                     $accessLink = "";
                     if ($congress && $access->is_online == 1) {
-                        $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congress->congress_id . '/access/' . $access->access_id;
+                        $accessLink = UrlUtils::getBaseUrlFrontOffice() . '/room/' . $congress->congress_id . '/access/' . $access->access_id;
                         $accessLink = '<a href="' . $accessLink . '" target="_blank"> Lien </a>';
                     }
                     $accesses = $accesses

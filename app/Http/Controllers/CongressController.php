@@ -133,11 +133,11 @@ class CongressController extends Controller
             $data = [
                 'title' => $event,
                 'body' => $event == 'collect' ?
-                    '/congress/room/' . $congressId :
-                    '/congress/room/' . $congressId . '/access/' . $access->access_id,
+                    '/room/' . $congressId :
+                    '/room/' . $congressId . '/access/' . $access->access_id,
                 'link' => $event == 'collect' ?
-                    UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congressId :
-                    UrlUtils::getBaseUrlFrontOffice() . '/congress/room/' . $congressId . '/access/' . $access->access_id
+                    UrlUtils::getBaseUrlFrontOffice() . '/room/' . $congressId :
+                    UrlUtils::getBaseUrlFrontOffice() . '/room/' . $congressId . '/access/' . $access->access_id
             ];
 
             $this->notificationService->sendNotification($data, [$userToken->firebase_key_user], false);
