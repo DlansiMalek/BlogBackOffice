@@ -109,7 +109,9 @@ class StandServices
                 $query->where('status', '=', $status);
             }
         })
-            ->with(['docs','organization'])
+            ->with(['docs','organization' => function ($query) {
+                $query->with('resource');
+            }])
             ->where('congress_id', '=', $congress_id)->get();
     }
 

@@ -1848,12 +1848,6 @@ class UserController extends Controller
             return response()->json(['response' => 'not authorized'], 401);
         }
         $isModerator = $this->userServices->isUserModeratorStand($user->user_congresses[0]);
-        $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
-        $urlStreaming = $congress->config->url_streaming;
-
-        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
-        if (count($allowedOnlineAccess) != 0)
-            $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
 
         $userToUpdate = $user->user_congresses[0];
         $roomName = 'eventizer_room_' . $congressId . 's' . $standId;
@@ -1866,8 +1860,8 @@ class UserController extends Controller
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => $isModerator ? true : $isAllowedJitsi,
-                "url_streaming" => $urlStreaming
+                "allowed_jitsi" =>  true,
+                "url_streaming" => null
             ], 200);
     }
 
