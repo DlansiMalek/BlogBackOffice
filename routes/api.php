@@ -158,7 +158,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('{congress_id}', 'RegistrationFormController@getForm');
         Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
     });
-    Route::post('upload-mail-image', 'MailController@uploadMailImage');
     Route::get('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers')->middleware("admin");
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
@@ -318,6 +317,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
         ->middleware('assign.guard:users');
+    Route::post('access/presence/{userId}', 'AdminController@makeUserPresentAccess');    
     Route::get('me/events', 'CongressController@getUserCongress')
         ->middleware('assign.guard:users');
     Route::post('/update-path-cv/{userId}', 'UserController@updateUserPathCV');
