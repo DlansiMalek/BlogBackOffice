@@ -40,7 +40,6 @@ class CongressTest extends TestCase
 
         $this->post('api/admin/me/congress/add', $data)
             ->assertStatus(400);
-
     }
 
     /**
@@ -171,14 +170,14 @@ class CongressTest extends TestCase
     public function testGetMinimalCongressById()
     {
         $congress = factory(Congress::class)->create();
-        $this->get('api/congress/' . $congress->congress_id .'/min')
+        $this->get('api/congress/' . $congress->congress_id . '/min')
             ->assertStatus(200);
     }
 
-    public function testGetMailTypeById ()
+    public function testGetMailTypeById()
     {
         $congress = factory(Congress::class)->create();
-        $this->get('/api/congress/mail/types/' . $congress->congress_id  )
+        $this->get('/api/congress/mail/types/' . $congress->congress_id)
             ->assertStatus(200);
     }
 
@@ -186,18 +185,37 @@ class CongressTest extends TestCase
     {
         //  api/congress/1/organization
         $congress = factory(Congress::class)->create();
-        $this->get('/api/congress/' . $congress->congress_id .'/organization' )
+        $this->get('/api/congress/' . $congress->congress_id . '/organization')
             ->assertStatus(200);
     }
 
     public function testAddConfigSubmission()
     {
         $congress = factory(Congress::class)->create();
-        $config = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id, 'is_submission_enabled' => 1]);
+        // in case of error in this test check if there is an input in ConfigCongress that can't be null and add it here
+        $config = factory(ConfigCongress::class)->create([
+            'congress_id' => $congress->congress_id,
+            'is_submission_enabled' => 1,
+            'program_link' => 'https://eventizer.io',
+            'has_payment' => $this->faker->numberBetween(0, 1),
+            'is_online' => $this->faker->numberBetween(0, 1),
+            'is_code_shown' => $this->faker->numberBetween(0, 1),
+            'is_notif_register_mail' => $this->faker->numberBetween(0, 1),
+            'register_disabled' => $this->faker->numberBetween(0, 1),
+            'is_notif_sms_confirm' => $this->faker->numberBetween(0, 1),
+            'is_submission_enabled' => $this->faker->numberBetween(0, 1),
+            'application' => $this->faker->numberBetween(0, 1),
+            'nb_current_participants' => $this->faker->numberBetween(0, 1),
+            'max_online_participants' => $this->faker->numberBetween(0, 1),
+            'is_upload_user_img' => $this->faker->numberBetween(0, 1),
+            'is_sponsor_logo' => $this->faker->numberBetween(0, 1),
+            'is_phone_required' => $this->faker->numberBetween(0, 1),
+            'mobile_technical' => $this->faker->phoneNumber
+        ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
         $request = ['congress' => $config, 'submission' => $submission];
-        $this->post('/api/admin/me/congress/' . $congress->congress_id .'/edit-config', $request )
+        $this->post('/api/admin/me/congress/' . $congress->congress_id . '/edit-config', $request)
             ->assertStatus(200);
 
         $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
@@ -208,11 +226,30 @@ class CongressTest extends TestCase
     public function testDeleteConfigSubmission()
     {
         $congress = factory(Congress::class)->create();
-        $config = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id, 'is_submission_enabled' => 0]);
+        // in case of error in this test check if there is an input in ConfigCongress that can't be null and add it here
+        $config = factory(ConfigCongress::class)->create([
+            'congress_id' => $congress->congress_id,
+            'is_submission_enabled' => 0,
+            'program_link' => 'https://eventizer.io',
+            'has_payment' => $this->faker->numberBetween(0, 1),
+            'is_online' => $this->faker->numberBetween(0, 1),
+            'is_code_shown' => $this->faker->numberBetween(0, 1),
+            'is_notif_register_mail' => $this->faker->numberBetween(0, 1),
+            'register_disabled' => $this->faker->numberBetween(0, 1),
+            'is_notif_sms_confirm' => $this->faker->numberBetween(0, 1),
+            'is_submission_enabled' => $this->faker->numberBetween(0, 1),
+            'application' => $this->faker->numberBetween(0, 1),
+            'nb_current_participants' => $this->faker->numberBetween(0, 1),
+            'max_online_participants' => $this->faker->numberBetween(0, 1),
+            'is_upload_user_img' => $this->faker->numberBetween(0, 1),
+            'is_sponsor_logo' => $this->faker->numberBetween(0, 1),
+            'is_phone_required' => $this->faker->numberBetween(0, 1),
+            'mobile_technical' => $this->faker->phoneNumber
+        ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
         $request = ['congress' => $config, 'submission' => []];
-        $this->post('/api/admin/me/congress/' . $congress->congress_id .'/edit-config', $request )
+        $this->post('/api/admin/me/congress/' . $congress->congress_id . '/edit-config', $request)
             ->assertStatus(200);
 
         $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
@@ -228,14 +265,14 @@ class CongressTest extends TestCase
             'end_date' => $this->faker->date(),
             'price' => $this->faker->randomFloat(2, 0, 5000),
             'congress_type_id' => strval($this->faker->numberBetween(1, 3)),
-            'private' =>$this->faker->numberBetween(0, 1),
+            'private' => $this->faker->numberBetween(0, 1),
 
             'description' => $this->faker->paragraph,
             'config' => [
                 'free' => $this->faker->numberBetween(0, 100),
                 'access_system' => 'Workshop',
                 'prise_charge_option' => $this->faker->numberBetween(0, 1),
-                'is_online'=>$this->faker->numberBetween(0,1),
+                'is_online' => $this->faker->numberBetween(0, 1),
                 'status' => 1,
                 'is_submission_enabled' => $this->faker->numberBetween(0, 1),
                 'currency_code' => 'TND',
@@ -243,7 +280,7 @@ class CongressTest extends TestCase
             'config_selection' => [
                 'num_evaluators' => $this->faker->numberBetween(1, 20),
                 'selection_type' =>  $this->faker->numberBetween(0, 2),
-                'start_date'=> $this->faker->date(),
+                'start_date' => $this->faker->date(),
                 'end_date' => $this->faker->date(),
             ],
         ];

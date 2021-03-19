@@ -968,4 +968,9 @@ class CongressServices
             ->update(['nb_current_participants' => $nbParticipants]);
     }
 
+    public function deleteAllThemes($congressId) 
+    {
+        CongressTheme::where("congress_id", "=", $congressId)->delete();
+    }
+
 }
