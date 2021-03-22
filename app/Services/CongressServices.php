@@ -6,6 +6,7 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
+use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
 use App\Models\Congress;
@@ -13,6 +14,7 @@ use App\Models\CongressTheme;
 use App\Models\ItemEvaluation;
 use App\Models\ItemNote;
 use App\Models\Location;
+use App\Models\LPSpeaker;
 use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\Offre;
@@ -963,4 +965,122 @@ class CongressServices
             ->update(['nb_current_participants' => $nbParticipants]);
     }
 
+    public function getConfigLandingPageById($congress_id)
+    {
+        return ConfigLP::where('congress_id', '=', $congress_id)
+                ->first();
+    }
+
+    public function editConfigLandingPage($config_landing_page, $request, $congress_id)
+    {
+        $no_config = false;
+        if(!$config_landing_page)
+        {
+            $config_landing_page = new ConfigLP();
+            $no_config = true;
+        }
+
+        $config_landing_page->congress_id = $congress_id;
+        $config_landing_page->header_logo_event = $request->has("header_logo_event") ? $request->input('header_logo_event') : null;
+        $config_landing_page->is_inscription = $request->has("is_inscription") ? $request->input('is_inscription') : null;
+        $config_landing_page->register_link = $request->has("register_link") ? $request->input('register_link') : null;
+        $config_landing_page->home_title = $request->has("home_title") ? $request->input('home_title') : null;
+        $config_landing_page->home_description = $request->has("home_description") ? $request->input('home_description') : null;
+        $config_landing_page->home_start_date = $request->has("home_start_date") ? $request->input('home_start_date') : null;
+        $config_landing_page->home_end_date = $request->has("home_end_date") ? $request->input('home_end_date') : null;
+        $config_landing_page->home_banner_event = $request->has("home_banner_event") ? $request->input('home_banner_event') : null;
+        $config_landing_page->prp_banner_event = $request->has("prp_banner_event") ? $request->input('prp_banner_event') : null;
+        $config_landing_page->prp_title = $request->has("prp_title") ? $request->input('prp_title') : null;
+        $config_landing_page->prp_description = $request->has("prp_description") ? $request->input('prp_description') : null;
+        $config_landing_page->speaker_title = $request->has("speaker_title") ? $request->input('speaker_title') : null;
+        $config_landing_page->speaker_description = $request->has("speaker_description") ? $request->input('speaker_description') : null;
+        $config_landing_page->sponsor_description = $request->has("sponsor_description") ? $request->input('sponsor_description') : null;
+        $config_landing_page->sponsor_title = $request->has("sponsor_title") ? $request->input('sponsor_title') : null;
+        $config_landing_page->prg_title = $request->has("prg_title") ? $request->input('prg_title') : null;
+        $config_landing_page->prg_description = $request->has("prg_description") ? $request->input('prg_description') : null;
+        $config_landing_page->contact_title = $request->has("contact_title") ? $request->input('contact_title') : null;
+        $config_landing_page->contact_description = $request->has("contact_description") ? $request->input('contact_description') : null;        
+        $config_landing_page->event_link_fb = $request->has("event_link_fb") ? $request->input('event_link_fb') : null;
+        $config_landing_page->event_link_instagram = $request->has("event_link_instagram") ? $request->input('event_link_instagram') : null;
+        $config_landing_page->event_link_linkedin = $request->has("event_link_linkedin") ? $request->input('event_link_linkedin') : null;
+        $config_landing_page->event_link_twitter = $request->has("event_link_twitter") ? $request->input('event_link_twitter') : null;
+        $config_landing_page->theme_color = $request->has("theme_color") ? $request->input('theme_color') : null;
+        $config_landing_page->theme_mode = $request->has("theme_mode") ? $request->input('theme_mode') : null;
+        
+
+        $no_config ? $config_landing_page->save() : $config_landing_page->update();
+        
+        return $config_landing_page;
+    }
+
+    public function addLandingPageSpeaker($congress_id, $request)
+    {
+        $lp_speaker = new LPSpeaker();
+        $lp_speaker->congress_id = $congress_id;
+        $lp_speaker->first_name = $request->input('first_name');
+        $lp_speaker->last_name = $request->input('last_name'); 
+        $lp_speaker->role = $request->input('role');
+        $lp_speaker->profile_img = $request->has('profile_img') ? $request->input('profile_img') : '34ZPKTtsyo9ZLPCQ2d2YidDhVedNwFGNfuJDuL45.jpg';
+        $lp_speaker->fb_link = $request->input('fb_link');
+        $lp_speaker->linkedin_link = $request->input('linkedin_link');
+        $lp_speaker->instagram_link = $request->input('instagram_link');
+        $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->save();
+        return $lp_speaker;
+    }
+
+    public function getLandingPageSpeakers($congress_id)
+    {
+        return LPSpeaker::where('congress_id', '=', $congress_id)
+                        ->get();
+    }
+
+    public function getLandingPageSpeakerById($lp_speaker_id)
+    {
+        return LPSpeaker::where('lp_speaker_id', '=', $lp_speaker_id)
+                        ->first();
+    }
+
+    public function editLandingPageSpeaker($lp_speaker, $request)
+    {
+        $lp_speaker->first_name = $request->input('first_name');
+        $lp_speaker->last_name = $request->input('last_name'); 
+        $lp_speaker->role = $request->input('role');
+        $lp_speaker->profile_img = $request->input('profile_img');
+        $lp_speaker->fb_link = $request->input('fb_link');
+        $lp_speaker->linkedin_link = $request->input('linkedin_link');
+        $lp_speaker->instagram_link = $request->input('instagram_link');
+        $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->update();
+        return $lp_speaker;
+    }
+
+    public function deleteLandingPageSpeaker($speaker)
+    {
+        $speaker->delete();
+    }
+
+    public function syncronizeLandingPage($congress_id, $congress, $config_congress, $config_landing_page)
+    {
+        $no_config = false;
+        if(!$config_landing_page)
+        {
+            $config_landing_page = new ConfigLP();
+            $no_config = true;
+        }
+
+        $config_landing_page->congress_id = $congress_id;
+        $config_landing_page->header_logo_event = $config_congress->logo;
+        $config_landing_page->home_title = $congress->name;
+        $config_landing_page->home_description = $congress->description;
+        $config_landing_page->home_start_date =  $congress->start_date;
+        $config_landing_page->home_end_date =  $congress->end_date;
+        $config_landing_page->home_banner_event = $config_congress->banner;
+        $config_landing_page->prp_banner_event =  $config_congress->banner;
+
+        $no_config ? $config_landing_page->save() : $config_landing_page->update();
+        
+        return $config_landing_page;
+
+    }
 }

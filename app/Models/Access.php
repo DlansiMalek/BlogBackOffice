@@ -99,5 +99,9 @@ class Access extends Model
         return $this->hasMany(Tracking::class, 'access_id', 'access_id');
     }
 
+    public function speaker()
+    {
+        return $this->hasOne('App\Models\LPSpeaker', 'lp_speaker_id', 'lp_speaker_id');
+    }
 
 }
