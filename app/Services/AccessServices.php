@@ -49,6 +49,7 @@ class AccessServices
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
+        if ($request->has('banner')) $access->banner = $request->input("banner");
 
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
@@ -80,7 +81,7 @@ class AccessServices
         if ($request->has('show_in_program')) $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
         if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
-
+        if ($request->has('banner')) $access->banner = $request->input('banner');
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
 
