@@ -1630,4 +1630,20 @@ class UserServices
             ->get();
     }
 
+    public function addUserFromExcel($userData)
+    {
+        $password  = Str::random(8);
+        $user = new User();
+
+        $user->email = $userData['email'];
+        $user->first_name = $userData['first_name'];
+        $user->last_name = $userData['last_name'];
+        $user->mobile = $userData['mobile'];
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
+        $user->email_verified = 1;
+        $user->save();
+        return $user;
+    }
+
 }
