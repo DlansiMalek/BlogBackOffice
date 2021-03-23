@@ -1097,5 +1097,18 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
+    public function getConfigLandingPageToFrontOffice($congress_id)
+    {
+    
+        $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+    public function getLandingPageSpeakersToFrontOffice($congress_id)
+    {
+        
+        $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
+        return response()->json($speakers, 200);
+    }
 
 }

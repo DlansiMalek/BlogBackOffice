@@ -565,5 +565,11 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::post('save-score-game', 'AccessController@saveScoreGame');
         Route::get('get-score-game', 'AccessController@getScoresByCongressPeaksource');
     });
+    
+  
+}); 
+Route::group(['prefix' => '{congress_id}/landing-page'], function () {
+    Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
+    Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
 
