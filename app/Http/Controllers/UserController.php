@@ -21,6 +21,7 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use App\Services\StandServices;
+use App\Services\RegistrationFormServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\ContactServices;
 use App\Models\Mail;
+use App\Models\FormInputResponse;
 
 class UserController extends Controller
 {
@@ -48,6 +50,7 @@ class UserController extends Controller
     protected $trackingServices;
     protected $offreServices;
     protected $standServices;
+    protected $registrationFormServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -64,7 +67,8 @@ class UserController extends Controller
                          ResourcesServices $resourcesServices,
                          TrackingServices $trackingServices,
                          OffreServices $offreServices, 
-                         StandServices $standServices)
+                         StandServices $standServices,
+                         RegistrationFormServices $registrationFormServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -83,6 +87,7 @@ class UserController extends Controller
         $this->trackingServices = $trackingServices;
         $this->offreServices = $offreServices;
         $this->standServices = $standServices;
+        $this->registrationFormServices = $registrationFormServices;
     }
 
     public function getLoggedUser()
@@ -1036,9 +1041,58 @@ class UserController extends Controller
                     if ($congress->congress_type_id == 1) {
                         $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     }
+
                 }
 
 
+            }
+        }
+
+        $formInputs = $this->registrationFormServices->getForm($congressId);
+        
+        foreach ($users as $user) {
+            // delete old responses
+            $user_by_mail = $this->userServices->getUserByEmail($user['email']);
+            $this->userServices->deleteFormInputUser($user_by_mail->user_id, $congressId);
+            // add new responses
+            foreach ($formInputs as $input) {
+                $arrayKeys = array_keys($user);
+                foreach ($arrayKeys as $key) {
+                    if ($input->key == $key) {                        
+                        $reponse = new FormInputResponse();
+                        $reponse->user_id = $user_by_mail->user_id;
+                        $reponse->form_input_id = $input->form_input_id;
+
+                        if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8 || $input->form_input_type_id == 7 || $input->form_input_type_id == 9) {
+                            $formInputValues = $this->userServices->getFormInputValues($input->form_input_id);
+                            if ( $input->form_input_type_id == 6 || $input->form_input_type_id == 8) {
+                                $reponse->response = '';
+                                $reponse->save();
+                                $user_responses = explode(";", $user[$key]);
+                                foreach ($user_responses as $res) {
+                                    foreach($formInputValues as $value) {
+                                        if ($value->value == $res) {
+                                            $this->userServices->addResponseValue($reponse->form_input_response_id, $value->form_input_value_id);
+                                        }
+                                    }  
+                                }
+                            } else {
+                                $reponse->response = '';
+                                $reponse->save();
+                                foreach($formInputValues as $value) {
+                                    if ($value->value == $user[$key]) {
+                                        $this->userServices->addResponseValue($reponse->form_input_response_id, $value->form_input_value_id);
+                                        break;
+                                    }
+                                }                                
+                            }
+                        } else {
+                            $reponse->response = $user[$key] == '-' ? null : $user[$key] ;
+                            $reponse->save();
+                        }
+                        
+                    }
+                }
             }
         }
 
