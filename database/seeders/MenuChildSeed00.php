@@ -17,15 +17,18 @@ class MenuChildSeed00 extends Seeder
             'menu_children_id' => 36,
             'key' => 'ManageWhiteList',
             'url' => '/manage-participant/white-list',
-            'menu_id' => 1
+            'menu_id' => 1,
+            'index' => 6
         ]);
 
         DB::table('Menu_Children')->insert([
             'menu_children_id' => 37,
             'key' => 'Tableaudebord',
             'url' => '/manage-mail/stats-mail',
-            'menu_id' => 7
+            'menu_id' => 7,
+            'index' => 3
         ]);
+        
 
     }
 }

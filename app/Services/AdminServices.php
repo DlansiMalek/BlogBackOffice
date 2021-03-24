@@ -301,11 +301,11 @@ class AdminServices
         return $newPassword;
     }
 
-    public function addPersonnel($admin, $password)
+    public function addPersonnel($admin, $password, $email=null)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
-        $personnel->email = $admin["email"];
+        $personnel->email = $email ? $email : $admin["email"];
         $personnel->mobile = $admin["mobile"];
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);

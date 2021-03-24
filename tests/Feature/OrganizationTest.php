@@ -86,7 +86,7 @@ class OrganizationTest extends TestCase
     private function getFakeOrganization($resource_id, $admin_id = null)
     {
         return [
-            'name' => $this->faker->word,
+            'name' => $this->faker->sentence,
             'email' => $this->faker->email,
             'description' => $this->faker->sentence,
             'mobile' => $this->faker->phoneNumber,

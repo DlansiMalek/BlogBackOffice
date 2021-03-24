@@ -114,8 +114,9 @@ class AccessController extends Controller
         }
 
         $this->userServices->affectAccessToUsers($access, $users);
+        $access = $this->accessServices->getAccessById($access->access_id);
 
-        return response()->json(['message' => 'add access success']);
+        return response()->json($access);
     }
 
     public function getAccessById($access_id)
