@@ -1079,8 +1079,9 @@ class UserController extends Controller
                             } else {
                                 $reponse->response = '';
                                 $reponse->save();
+                                $user_responses = explode(";", $user[$key]);
                                 foreach($formInputValues as $value) {
-                                    if ($value->value == $user[$key]) {
+                                    if ($value->value == $user_responses[0]) {
                                         $this->userServices->addResponseValue($reponse->form_input_response_id, $value->form_input_value_id);
                                         break;
                                     }
