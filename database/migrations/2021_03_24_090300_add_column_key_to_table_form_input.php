@@ -14,7 +14,10 @@ class AddColumnKeyToTableFormInput extends Migration
     public function up()
     {
         Schema::table('Form_Input', function (Blueprint $table) {
-            $table->string('key')->after('label');
+            $table->string('key')
+                ->nullable()
+                ->default(null)
+                ->after('label');
         });
     }
 
