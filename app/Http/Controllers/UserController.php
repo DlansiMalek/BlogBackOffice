@@ -941,12 +941,6 @@ class UserController extends Controller
                  // Create user if it doesn't exist
                  if (!$this->userServices->getUserByEmail($userData['email'])) {
                     $user = $this->userServices->addUserFromExcel($userData);
-                    $mail = new Mail();
-                    $mail->template = "";
-                    $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
-                    $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $user->email;
-                    $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $user->passwordDecrypt;
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false);
                 }
                 // Get User per mail
                 if ($user_by_mail = $this->userServices->getUserByEmail($userData['email'])) {
