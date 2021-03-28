@@ -568,7 +568,7 @@ Route::group(["prefix" => "peaksource"], function () {
     
   
 }); 
-Route::group(['prefix' => '{congress_id}/landing-page'], function () {
+Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
