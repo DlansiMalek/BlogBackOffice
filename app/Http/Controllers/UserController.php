@@ -996,14 +996,6 @@ class UserController extends Controller
                             }
 
                         }
-                        // send mail confirmation
-                        if ($mailtype = $this->congressServices->getMailType('confirmation')) {
-                            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
-                            if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, null, $userMail);
-                            }
-                        }
                         //delete the access if no longer exists on the excel sheet
                         // we loop in the old access aray
                         for ($j = 0; $j < sizeof($old_access_array); $j++) {
@@ -1028,14 +1020,15 @@ class UserController extends Controller
                             $this->userServices->deleteAccessById($user->user_id, $old_access_array[$k]->access_id);
                         }
                     }
-
-                    if ($congress->congress_type_id == 2) {
-                        $this->userServices->changeUserStatus($user_congress, 1);
+                    
+                    if ($refused) {
+                        if ($congress->congress_type_id == 2) {
+                            $this->userServices->changeUserStatus($user_congress, 1);
+                        }
+                        if ($congress->congress_type_id == 1) {
+                            $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
+                        }
                     }
-                    if ($congress->congress_type_id == 1) {
-                        $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
-                    }
-
                 }
 
 
@@ -1101,20 +1094,6 @@ class UserController extends Controller
                 }
                 if ($congress->congress_type_id == 1 && sizeof($refused_participant->payments) > 0 && $refused_participant->payments[0]->isPaid != 1) {
                     $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
-                }
-                //envoi de mail de refus
-                if ($mailtype = $this->congressServices->getMailType('refus')) {
-                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $refused_participant->user_id);
-                        $this->mailServices->sendMail(
-                            $this->congressServices->renderMail($mail->template, $congress, $refused_participant, null, null, null),
-                            $refused_participant,
-                            $congress,
-                            $mail->object,
-                            null,
-                            $userMail
-                        );
-                    }
                 }
             }
         }
