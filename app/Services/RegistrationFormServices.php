@@ -47,6 +47,7 @@ class RegistrationFormServices
             $input->congress_id = $congressId;
             $input->label = $new["label"];
             $input->required = $new["required"];
+            $input->key = $new["key"] ? $new["key"] : substr($new["label"], 180);
             $input->save();
             if ($new["type"]["name"] == "checklist" || $new["type"]["name"] == "multiselect" || $new["type"]["name"] == "select" || $new["type"]["name"] == "radio") {
                 $oldValues = FormInputValue::where('form_input_id', '=', $input->form_input_id)->get();

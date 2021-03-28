@@ -21,12 +21,15 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use App\Services\StandServices;
+use App\Services\RegistrationFormServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Services\ContactServices;
+use App\Models\Mail;
+use App\Models\FormInputResponse;
 
 class UserController extends Controller
 {
@@ -47,6 +50,7 @@ class UserController extends Controller
     protected $trackingServices;
     protected $offreServices;
     protected $standServices;
+    protected $registrationFormServices;
 
     function __construct(UserServices $userServices, CongressServices $congressServices,
                          AdminServices $adminServices,
@@ -63,7 +67,8 @@ class UserController extends Controller
                          ResourcesServices $resourcesServices,
                          TrackingServices $trackingServices,
                          OffreServices $offreServices, 
-                         StandServices $standServices)
+                         StandServices $standServices,
+                         RegistrationFormServices $registrationFormServices)
     {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -82,6 +87,7 @@ class UserController extends Controller
         $this->trackingServices = $trackingServices;
         $this->offreServices = $offreServices;
         $this->standServices = $standServices;
+        $this->registrationFormServices = $registrationFormServices;
     }
 
     public function getLoggedUser()
@@ -706,7 +712,7 @@ class UserController extends Controller
         $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
 
         if (!$accessId) {
-            $isAllowedJitsi = $congress->config->max_online_participants ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
+            $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
             $urlStreaming = $congress->config->url_streaming;
         } else {
             $access = $this->accessServices->getAccessById($accessId);
@@ -714,7 +720,7 @@ class UserController extends Controller
             $urlStreaming = $access->url_streaming;
         }
         $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
-        if (count($allowedOnlineAccess) != 0)
+        if (count($allowedOnlineAccess) != 0 && $urlStreaming)
             $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
@@ -932,6 +938,10 @@ class UserController extends Controller
                 $request->merge(['privilege_id' => $privilegeId,
                     'email' => $userData['email']
                 ]);
+                 // Create user if it doesn't exist
+                 if (!$this->userServices->getUserByEmail($userData['email'])) {
+                    $user = $this->userServices->addUserFromExcel($userData);
+                }
                 // Get User per mail
                 if ($user_by_mail = $this->userServices->getUserByEmail($userData['email'])) {
                     $user_id = $user_by_mail->user_id;
@@ -1025,9 +1035,59 @@ class UserController extends Controller
                     if ($congress->congress_type_id == 1) {
                         $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                     }
+
                 }
 
 
+            }
+        }
+
+        $formInputs = $this->registrationFormServices->getForm($congressId);
+        
+        foreach ($users as $user) {
+            // delete old responses
+            $user_by_mail = $this->userServices->getUserByEmail($user['email']);
+            $this->userServices->deleteFormInputUser($user_by_mail->user_id, $congressId);
+            // add new responses
+            foreach ($formInputs as $input) {
+                $arrayKeys = array_keys($user);
+                foreach ($arrayKeys as $key) {
+                    if ($input->key == $key) {                        
+                        $reponse = new FormInputResponse();
+                        $reponse->user_id = $user_by_mail->user_id;
+                        $reponse->form_input_id = $input->form_input_id;
+
+                        if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8 || $input->form_input_type_id == 7 || $input->form_input_type_id == 9) {
+                            $formInputValues = $this->userServices->getFormInputValues($input->form_input_id);
+                            if ( $input->form_input_type_id == 6 || $input->form_input_type_id == 8) {
+                                $reponse->response = '';
+                                $reponse->save();
+                                $user_responses = explode(";", $user[$key]);
+                                foreach ($user_responses as $res) {
+                                    foreach($formInputValues as $value) {
+                                        if ($value->value == $res) {
+                                            $this->userServices->addResponseValue($reponse->form_input_response_id, $value->form_input_value_id);
+                                        }
+                                    }  
+                                }
+                            } else {
+                                $reponse->response = '';
+                                $reponse->save();
+                                $user_responses = explode(";", $user[$key]);
+                                foreach($formInputValues as $value) {
+                                    if ($value->value == $user_responses[0]) {
+                                        $this->userServices->addResponseValue($reponse->form_input_response_id, $value->form_input_value_id);
+                                        break;
+                                    }
+                                }                                
+                            }
+                        } else {
+                            $reponse->response = $user[$key] == '-' ? null : $user[$key] ;
+                            $reponse->save();
+                        }
+                        
+                    }
+                }
             }
         }
 
