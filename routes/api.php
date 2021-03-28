@@ -187,6 +187,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('attestation-submission/delete', 'SubmissionController@deleteAttestationByCongress')->middleware("admin");
         Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
+        Route::get('/{standId}/checkStandRights', 'UserController@checkStandRights')->middleware('assign.guard:users');
 
         Route::post('program-link', 'CongressController@setProgramLink');
         Route::post('/abstractBook', 'CongressController@affectAbstractBookPathToCongress');
@@ -311,6 +312,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
                 Route::post('', 'UserController@addWhiteList');
                 Route::delete('{white_list_id}', 'UserController@deleteWhiteList');
             });
+            Route::get('stands', 'StandController@getStandsByCongress');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
 
@@ -565,5 +567,11 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::post('save-score-game', 'AccessController@saveScoreGame');
         Route::get('get-score-game', 'AccessController@getScoresByCongressPeaksource');
     });
+    
+  
+}); 
+Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
+    Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
+    Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
 
