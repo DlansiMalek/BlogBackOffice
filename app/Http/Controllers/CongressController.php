@@ -7,6 +7,7 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
 use App\Models\ConfigCongress;
+use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\User;
 use App\Models\UserCongress;
@@ -999,6 +1000,115 @@ class CongressController extends Controller
         $config_congress->logo = $path;
         $config_congress->update();
         return response()->json(['message' => 'success']); 
+    }
+
+    public function getConfigLandingPage($congress_id)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+
+        $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+
+    public function editConfigLandingPage($congress_id, Request $request)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+
+        $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
+        $config_landing_page = $this->congressServices->editConfigLandingPage($config_landing_page, $request, $congress_id);
+
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        // Config Location
+        $eventLocation = $request->input("eventLocation");
+
+        if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
+
+            $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);
+
+            $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congress_id);
+        }
+
+        return response()->json(['config_landing_page' => $config_landing_page,  'configLocation' => $configLocation], 200);
+    }
+
+    public function addLandingPageSpeaker($congress_id, Request $request)
+    {
+        if (!$request->has(['first_name', 'last_name', 'role']))
+            return response()->json(['message' => 'bad request:first_name,last_name and role are required '], 400);
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+        
+            $lp_speaker = $this->congressServices->addLandingPageSpeaker($congress_id, $request);
+
+            return response()->json($lp_speaker, 200);
+    }
+
+    public function getLandingPageSpeakers($congress_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+        
+        $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
+        return response()->json($speakers, 200);
+    }
+
+    public function editLandingPageSpeaker($lp_speaker_id, Request $request)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        if (!$speaker = $this->congressServices->getLandingPageSpeakerById($lp_speaker_id))
+            return response()->json(['error' => 'Speaker not found'], 404);
+
+        $speaker = $this->congressServices->editLandingPageSpeaker($speaker, $request);
+        return response()->json($speaker, 200);
+    }
+
+    public function deleteLandingPageSpeaker($lp_speaker_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        if (!$speaker = $this->congressServices->getLandingPageSpeakerById($lp_speaker_id))
+            return response()->json(['error' => 'Speaker not found'], 404);
+
+        $this->congressServices->deleteLandingPageSpeaker($speaker);
+        return response()->json(['Deleted succesfully'], 200);
+
+    }
+
+    public function syncronizeLandingPage($congress_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+            return response()->json(["message" => "congress not found"], 404);
+        
+        if (!$config_congress = $this->congressServices->getCongressConfigById($congress_id))
+                return response()->json(["error" => "congress not found"], 404);
+        
+        $config_landing_page = $this->congressServices->syncronizeLandingPage($congress_id, $congress,$config_congress, $this->congressServices->getConfigLandingPageById($congress_id));
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+    public function getConfigLandingPageToFrontOffice($congress_id)
+    {
+    
+        $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+    public function getLandingPageSpeakersToFrontOffice($congress_id)
+    {
+        
+        $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
+        return response()->json($speakers, 200);
     }
 
 }

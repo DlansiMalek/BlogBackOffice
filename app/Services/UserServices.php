@@ -1662,4 +1662,9 @@ class UserServices
                         ->get();
     }
 
+    public function isUserModeratorStand($userCongress)
+    {
+        return $userCongress->privilege_id == 7;
+    }
+
 }
