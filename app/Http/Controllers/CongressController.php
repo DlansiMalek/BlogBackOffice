@@ -662,7 +662,7 @@ class CongressController extends Controller
         return $this->congressServices->getAllCongresses();
     }
 
-    public function sendCustomMailToAllUsers($mail_id)
+    public function sendCustomMailToAllUsers($mail_id, Request $request)
     {
 
         if (!$mail = $this->congressServices->getEmailById($mail_id))
@@ -670,6 +670,7 @@ class CongressController extends Controller
         $congressId = $mail->congress_id;
         $mailId = $mail->mail_id;
         $congress = $this->congressServices->getCongressById($mail->congress_id);
+        $privilege_ids = $request->input('privilege_ids');
 
         $users = $this->userServices->getUsersWithRelations($congressId,
             [

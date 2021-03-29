@@ -610,12 +610,14 @@ class UserServices
             ->get();
     }
 
-    public function getUsersWithRelations($congressId, $relations, $isPresent)
+    public function getUsersWithRelations($congressId, $relations, $isPresent, $privilege_ids = null)
     {
-        return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent) {
+        return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent, $privilege_ids) {
             $query->where('congress_id', '=', $congressId);
             if ($isPresent !== null)
                 $query->where('isPresent', '=', $isPresent);
+            if (count($privilege_ids) > 0 )
+                $query->whereIn('privilege_id', $privilege_ids);
         })
             ->with($relations)
             ->get();
