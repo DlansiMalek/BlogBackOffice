@@ -17,6 +17,7 @@ use App\Models\UserCongress;
 use App\Models\UserMail;
 use App\Models\UserPack;
 use App\Models\WhiteList;
+use App\Models\FormInputValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -1640,12 +1641,32 @@ class UserServices
         $user->email = $userData['email'];
         $user->first_name = $userData['first_name'];
         $user->last_name = $userData['last_name'];
-        $user->mobile = $userData['mobile'];
+        if(array_key_exists("mobile", $userData))
+            $user->mobile = $userData['mobile'];
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
         return $user;
+    }
+
+    public function addResponseValue($form_input_response_id, $form_input_value_id)
+    {
+        $repVal = new ResponseValue();
+        $repVal->form_input_response_id = $form_input_response_id;
+        $repVal->form_input_value_id = $form_input_value_id;
+        $repVal->save();
+    }
+
+    public function getFormInputValues($form_input_id)
+    {
+        return FormInputValue::where('form_input_id', '=', $form_input_id)
+                        ->get();
+    }
+
+    public function isUserModeratorStand($userCongress)
+    {
+        return $userCongress->privilege_id == 7;
     }
 
 }
