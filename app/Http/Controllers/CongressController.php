@@ -687,7 +687,7 @@ class CongressController extends Controller
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId);
                 }
-            ], null);
+            ], null, $privilege_ids);
 
 
         foreach ($users as $user) {
