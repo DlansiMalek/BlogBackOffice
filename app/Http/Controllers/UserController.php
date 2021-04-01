@@ -1387,13 +1387,13 @@ class UserController extends Controller
     }
 
     public
-    function sendCustomMail($user_id, $mail_id)
+    function sendCustomMail($user_id, $mail_id, $congress_id)
     {
         if (!$user = $this->userServices->getParticipatorById($user_id))
             return response()->json(['response' => 'user not found'], 404);
         if (!$mail = $this->congressServices->getEmailById($mail_id))
             return response()->json(['response' => 'mail not found'], 404);
-        $congress = $this->congressServices->getCongressById($user->congress_id);
+        $congress = $this->congressServices->getCongressById($congress_id);
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
