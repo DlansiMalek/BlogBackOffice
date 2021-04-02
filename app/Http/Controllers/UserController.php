@@ -1493,6 +1493,7 @@ class UserController extends Controller
     public
     function forgetPassword(Request $request)
     {
+
         if (!$request->has(['email']))
             return response()->json(['response' => 'bad request', 'required fields' => ['email']], 400);
 
@@ -1507,10 +1508,20 @@ class UserController extends Controller
         if (!$mail = $this->mailServices->getMailAdmin($mailAdminType->mail_type_admin_id)) {
             return response()->json(['response' => 'bad request'], 400);
         }
+   
         $user->verification_code = Str::random(40);
         $user->update();
+        if ($request->id!==null)
+        {
+        $congressid=$request->id;
+        $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/'.$congressid.'/' .$user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
 
-        $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+        }
+        else
+        {
+       $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/'.$user->user_id. '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+ 
+        }
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
 
