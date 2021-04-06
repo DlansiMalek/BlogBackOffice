@@ -524,7 +524,7 @@ class SubmissionServices
         $resources = $this->getAllResourcesBySubmission($submission_id);
         foreach ($resources as $item) {
             $resource = $item->resource;
-            Storage::delete('/resource/' . $resource->path);
+            Storage::disk('digitalocean')->delete($resource->path);
             $item->delete();
             $resource->delete();
         }

@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\Access;
 use App\Models\Resource;
 use App\Models\ResourceSubmission;
-use App\SpeakerAccess;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\File;
 
 class ResourcesServices
 {
@@ -111,11 +111,8 @@ class ResourcesServices
             if($fileName !== '') {
                 $oldPath = storage_path('app/submissions') . '/' . $fileName;
                 if ($file->exists($oldPath)) {
-                    Log::info($oldPath);
-                    $resource = $this->saveResource($fileName, 0);
-                    $resource->path = '(' . $resource->resource_id . ')' . $resource->path;
-                    $file->move($oldPath, storage_path('app/resource') . '/' . $resource->path);
-                    $resource->update();
+                    $FILE_NAME = Storage::disk('digitalocean')->putFile('', new File($oldPath), 'public');
+                    $resource = $this->saveResource($FILE_NAME, 0);
                     $this->addResourceSubmission($resource->resource_id, $submission->submission_id);
                 }
             }

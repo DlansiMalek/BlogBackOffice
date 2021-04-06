@@ -936,6 +936,7 @@ class UserController extends Controller
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
         $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
         $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
+
         foreach ($users as $userData) {
             if ($userData['email']) {
 
@@ -1033,8 +1034,20 @@ class UserController extends Controller
                             $this->paymentServices->changeIsPaidStatus($user->user_id, $congressId, 1);
                         }
                     }
+                    
+                    if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+                        $evaluations = $this->adminServices->getEvaluationInscription($congressId, $user->user_id);
+                        if (count($evaluations) == 0) {
+                            $evalutors = $this->adminServices->getEvaluatorsByCongress($congressId, 13, 'evaluations');
+                            $this->adminServices->affectEvaluatorsToUser(
+                                $evalutors,
+                                $congress->config_selection->num_evaluators,
+                                $congressId,
+                                $user->user_id
+                            );
+                        }
+                    }
                 }
-
             }
         }
 
