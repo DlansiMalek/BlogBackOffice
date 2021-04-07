@@ -128,7 +128,7 @@ Route::group(['prefix' => 'users'], function () {
             Route::get('send-sondage', 'UserController@sendSondage');
         });
         Route::put('change-paiement', 'UserController@changePaiement');
-        Route::get('send-mail/{mail_id}', 'UserController@sendCustomMail');
+        Route::get('send-mail/{mail_id}/{congress_id}', 'UserController@sendCustomMail');
 
     });
 
