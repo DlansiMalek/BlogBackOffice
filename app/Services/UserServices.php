@@ -397,7 +397,7 @@ class UserServices
             if ($privilegeId != null) {
                 $query->where('privilege_id', '=', $privilegeId);
             }
-        })->get();
+        })->with(['profile_img', 'user_congresses'])->get();
     }
     // public function getUsersCongress($congress_id,$privilegeIds = null){
     //     return User::whereHas('user_congresses', function ($query) use ($congress_id,$privilegeIds) {
@@ -1686,6 +1686,11 @@ class UserServices
             $query->where('congress_id', '=', $congressId)
                     ->where('key', '=', $key);
         })->where("user_id", '=', $userId)->delete();
+    }
+
+    public function isUserOrganizer($userCongress)
+    {
+        return $userCongress->privilege_id == 2;
     }
 
 }
