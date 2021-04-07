@@ -1111,6 +1111,21 @@ class UserController extends Controller
                 if ($congress->congress_type_id == 1 && sizeof($refused_participant->payments) > 0 && $refused_participant->payments[0]->isPaid != 1) {
                     $this->paymentServices->changeIsPaidStatus($refused_participant->user_id, $congressId, -1);
                 }
+
+                //envoi de mail de refus
+                if ($mailtype = $this->congressServices->getMailType('refus')) {
+                    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $refused_participant->user_id);
+                        $this->mailServices->sendMail(
+                            $this->congressServices->renderMail($mail->template, $congress, $refused_participant, null, null, null),
+                            $refused_participant,
+                            $congress,
+                            $mail->object,
+                            null,
+                            $userMail
+                        );
+                    }
+                }
             }
         }
 
