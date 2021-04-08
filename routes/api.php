@@ -530,7 +530,7 @@ Route::group(['prefix' => 'access'], function () {
     Route::put('{access_id}', 'AccessController@editAccess');
     Route::get('congress/{congress_id}/scores', 'AccessController@getScoresByCongressId');
     Route::delete('reset-score/{access_id}', 'AccessController@resetScore');
-    Route::get('congress/{congress_id}/user/{user_id}', 'AccessController@getUserAccessesByCongressId');
+    Route::get('congress/{congress_id}/user', 'AccessController@getUserAccessesByCongressId')->middleware('assign.guard:users');
 });
 
 Route::group(["prefix" => "notification"], function () {
