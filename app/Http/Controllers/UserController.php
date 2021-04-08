@@ -711,10 +711,11 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        if (!Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
+        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        if (!$isModerator && !Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
-        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        
 
         if (!$accessId) {
             $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
