@@ -350,8 +350,17 @@ class CongressController extends Controller
         $startDate = $request->query('startDate', '');
         $endDate = $request->query('endDate', '');
         $status = $request->query('status', '');
-//        return response()->json(["response" => $request->all()],200);
-        return $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+
+        $cacheKey = "eventspagination-" . $offset . $perPage . $search . $startDate . $endDate . $status;
+
+        if (Cache::has($cacheKey)) {
+            $events = Cache::get($cacheKey);
+        } else {
+            $events = $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+            Cache::put($cacheKey, $events, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
+
+        return $events;
     }
 
     public function getMinimalCongress()
@@ -387,10 +396,18 @@ class CongressController extends Controller
 
     public function getCongressDetailsById($congress_id)
     {
-        ini_set('memory_limit', '-1');
-        if (!$congress = $this->congressServices->getCongressDetailsById($congress_id)) {
-            return response()->json(["error" => "congress not found"], 404);
+        $cacheKey = 'congress-' . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->congressServices->getCongressDetailsById($congress_id);
+            if (!$congress) {
+                return response()->json(["error" => "congress not found"], 404);
+            }
+            Cache::put($cacheKey, $congress, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
+
         return response()->json($congress);
     }
 
