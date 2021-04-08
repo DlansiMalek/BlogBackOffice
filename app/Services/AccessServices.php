@@ -608,4 +608,15 @@ class AccessServices
         AccessGame::where('access_id', '=', $access_id)
         ->delete();
     }
+
+    public function getUserAccessesByCongressId($congress_id, $user_id)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+        ->where('is_online', '=', 1)
+        ->with(['type'])
+        ->whereHas('user_accesss' , function ($query) use ($user_id) {
+            $query->where('user_id', '=', $user_id);
+        })
+        ->get();
+    }
 }
