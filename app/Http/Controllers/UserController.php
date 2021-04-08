@@ -968,7 +968,9 @@ class UserController extends Controller
                             $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
                         }
                         $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
-                        $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
+                        if ($congress->congress_type_id == 1) { // If event type payed affect payment user
+                            $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
+                        }
                     } else {
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->update();
