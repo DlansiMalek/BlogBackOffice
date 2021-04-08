@@ -307,4 +307,13 @@ class AccessController extends Controller
         return response()->json('deleted successfully', 200);
     }
 
+    public function getUserAccessesByCongressId($congress_id, $user_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $accesses = $this->accessServices->getUserAccessesByCongressId($congress_id, $user_id);
+        return response()->json($accesses);
+    }
+
 }
