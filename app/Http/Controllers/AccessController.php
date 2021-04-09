@@ -13,6 +13,7 @@ use App\Services\RoomServices;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AccessController extends Controller
 {
@@ -305,6 +306,15 @@ class AccessController extends Controller
         }
         $this->accessServices->resetScore($access_id);
         return response()->json('deleted successfully', 200);
+    }
+
+    public function getOnlineAccessesByCongressIdPginantion($congressId, Request $request)
+    {
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = Str::lower($request->query('search', ''));
+        $accesses = $this->accessServices->getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search);
+        return response()->json($accesses, 200);
     }
 
 }
