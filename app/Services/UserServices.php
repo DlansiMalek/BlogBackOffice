@@ -17,6 +17,7 @@ use App\Models\UserCongress;
 use App\Models\UserMail;
 use App\Models\UserPack;
 use App\Models\WhiteList;
+use App\Models\FormInputValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -610,12 +611,14 @@ class UserServices
             ->get();
     }
 
-    public function getUsersWithRelations($congressId, $relations, $isPresent)
+    public function getUsersWithRelations($congressId, $relations, $isPresent, $privilege_ids = [])
     {
-        return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent) {
+        return User::whereHas('user_congresses', function ($query) use ($congressId, $isPresent, $privilege_ids) {
             $query->where('congress_id', '=', $congressId);
             if ($isPresent !== null)
                 $query->where('isPresent', '=', $isPresent);
+            if (count($privilege_ids) > 0 )
+                $query->whereIn('privilege_id', $privilege_ids);
         })
             ->with($relations)
             ->get();
@@ -681,8 +684,8 @@ class UserServices
                 )
             );
 
-            if ($user->profile_img) {
-                $res[sizeof($res) - 1]["profile_img"] = Utils::getBase64Img(UrlUtils::getFilesUrl() . $user->profile_img->path);
+            if ($user->img_base64) {
+                $res[sizeof($res) - 1]["profile_img"] = $user->img_base64;
             }
         }
 
@@ -1060,7 +1063,11 @@ class UserServices
         $user->password = bcrypt($password);
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
-        if ($request->has('resource_id')) $user->resource_id = $request->input('resource_id');
+        if ($request->has('resource_id')) { 
+            $user->resource_id = $request->input('resource_id');
+            if($resource)
+                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);
+        }
         $user->verification_code = Str::random(40);
         $user->save();
         if (!$user->qr_code) {
@@ -1628,6 +1635,42 @@ class UserServices
             ->whereNull('img_base64')
             ->with('profile_img')
             ->get();
+    }
+
+    public function addUserFromExcel($userData)
+    {
+        $password  = Str::random(8);
+        $user = new User();
+
+        $user->email = $userData['email'];
+        $user->first_name = $userData['first_name'];
+        $user->last_name = $userData['last_name'];
+        if(array_key_exists("mobile", $userData))
+            $user->mobile = $userData['mobile'];
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
+        $user->email_verified = 1;
+        $user->save();
+        return $user;
+    }
+
+    public function addResponseValue($form_input_response_id, $form_input_value_id)
+    {
+        $repVal = new ResponseValue();
+        $repVal->form_input_response_id = $form_input_response_id;
+        $repVal->form_input_value_id = $form_input_value_id;
+        $repVal->save();
+    }
+
+    public function getFormInputValues($form_input_id)
+    {
+        return FormInputValue::where('form_input_id', '=', $form_input_id)
+                        ->get();
+    }
+
+    public function isUserModeratorStand($userCongress)
+    {
+        return $userCongress->privilege_id == 7;
     }
 
 }
