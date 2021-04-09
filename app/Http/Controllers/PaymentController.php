@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Payment;
 use App\Services\CongressServices;
 use App\Services\MailServices;
 use App\Services\PaymentServices;
@@ -135,4 +136,32 @@ class PaymentController extends Controller
 
         return "";
     }
+
+
+    public function getPaymentsPagination(Request $request)
+    {
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['message' => 'user not found']);
+        }
+        $user_id = $user->user_id;
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = $request->query('search', '');
+        $status = $request->query('status');
+        $method = $request->query('method');
+        $min = $request->query('min',null);
+        $max = $request->query('max',null);
+        return $this->paymentServices->getPaymentPagination($user_id, $offset, $perPage, $search, $status, $method, $min, $max);
+    }
+    public function getPaymentByID(Request $request, $paymentID){
+        return $this->paymentServices->getPaymentByID($request, $paymentID);
+    }
+    public function getPaymentByUserAndCongressID(Request $request, $congressID, $userID){
+        return $this->paymentServices->getPaymentByUserAndCongressID($request, $congressID, $userID);
+    }
+
+
+
+
+
 }

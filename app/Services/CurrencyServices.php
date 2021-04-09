@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Currency;
+use GuzzleHttp\Client;
 
 class CurrencyServices
 {
@@ -14,7 +15,7 @@ class CurrencyServices
 
     public function getConvertCurrency($convertFrom, $convertTo)
     {
-        $client = new \GuzzleHttp\Client();
+        $client = new Client();
         $res = $client->request('GET',
             UrlUtils::getBaseCurrencyRates() . "/convert?q=" . $convertFrom . '_' . $convertTo . "&compact=ultra&apiKey=" . env('API_CURRENCY_KEY', ''));
 
