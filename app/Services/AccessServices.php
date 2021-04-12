@@ -625,6 +625,7 @@ class AccessServices
         $access->end_date = $end_date;
         $access->access_type_id = $access_type_id;
         $access->congress_id = $congress_id;
+        $access->is_online = 1;
         $access->save();
         return $access;
     }
