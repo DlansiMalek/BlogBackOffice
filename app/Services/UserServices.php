@@ -1273,6 +1273,7 @@ class UserServices
     public function getPaymentById($paymentId)
     {
         return Payment::where('payment_id', '=', $paymentId)
+            ->with(['congress'])
             ->first();
     }
 

@@ -1409,38 +1409,6 @@ class UserController extends Controller
 
         return $price;
     }
-    function setRefPayment($userId, Request $request)
-    {
-        $reference = $request->input('reference');
-        $congressId = $request->input('congressId');
-
-        if (!$userPayment = $this->userServices->getPaymentByUserId($congressId, $userId)) {
-            return response()->json(['error' => 'user not found']);
-        }
-
-        $userPayment->reference = $reference;
-        $userPayment->update();
-
-        $user = $userPayment->user;
-
-        if ($user->email && $user->mobile && $user->first_name && $user->last_name) {
-            $client = new Client();
-            $res = $client->request('POST', UrlUtils::getUrlPaiement() . '/api/payment/user/set-refpayement', [
-                'json' => [
-                    'user' => [
-                        'email' => $user->email,
-                        'mobile' => $user->mobile,
-                        'name' => $user->first_name . " " . $user->last_name
-                    ],
-                    'price' => $userPayment->price,
-                    'reference' => $userPayment->reference,
-                    'url' => UrlUtils::getBaseImgUrl()
-                ]
-            ]);
-        }
-
-        return response()->json(["reference" => $userPayment->reference]);
-    }
     
     public function sendCustomMail($user_id, $mail_id, $congress_id)
     {

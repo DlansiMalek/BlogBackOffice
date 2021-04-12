@@ -327,13 +327,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     Route::get('/delete-user-cv/{user_id}', 'UserController@deleteUserCV');
 
 });
-Route::group(['prefix' => 'user/participator'], function () {
-
-    Route::group(['prefix' => '{id_Participator}'], function () {
-        Route::post('set-refpayement', 'UserController@setRefPayment');
-
-    });
-});
 //Admin API
 Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], function () {
     Route::get('migrate-users-data', 'UserController@migrateUsersData');

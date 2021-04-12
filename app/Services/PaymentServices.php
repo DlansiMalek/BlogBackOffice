@@ -16,12 +16,6 @@ use Illuminate\Support\Facades\Storage;
 
 class PaymentServices
 {
-    public function getPaymentByID($request, $paymentID){
-        $payment = Payment::where('payment_id','=',$paymentID)
-            ->join('Congress','Congress.congress_id','=','Payment.congress_id')
-            ->first();
-        return $payment;
-    }
 
     public function getPaymentByUserAndCongressID($request, $congressID, $userID){
         $payment = Payment::where([
