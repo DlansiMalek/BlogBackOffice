@@ -316,10 +316,6 @@ class AccessController extends Controller
         $date = $request->query('date', '');
         $startTime = $request->query('startTime', '');
         $endTime = $request->query('endTime', '');
-        print_r($search);
-        print_r($date);
-        print_r($startTime);
-        print_r($endTime);
         $accesses = $this->accessServices->getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime);
         return response()->json($accesses, 200);
     }

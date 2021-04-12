@@ -615,21 +615,22 @@ class AccessServices
         ->whereNull('parent_id')
         ->where('congress_id', '=', $congressId)
         ->where('is_online', '=', 1)
-        ->where(function ($query) use ($search, $date, $startTime, $endTime) {
-            if ($search != '') {
-                print_r('searching');
+        ->where(function ($query) use ($search) {
+            if ($search !== '') {
                 $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
                 $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
                 $query->orWhereRaw('(price) like (?)',  ["%{$search}%"]);
             }
-            if ($date != "")
-                $query->whereDate('start_date', '=', date($date));
-            if ($startTime != "")
+        })->where(function ($query) use ($date, $startTime, $endTime) {
+            if ($date != '')
+                $query->whereDate('start_date', date($date));
+            if ($startTime != '')
                 $query->whereTime('start_date', '=', $startTime);
-            if ($endTime != "")
+            if ($endTime != '')
                 $query->whereTime('end_date', '=', $endTime);
             
-        })->offset($offset)->limit($perPage)
+        })
+        ->offset($offset)->limit($perPage)
         ->get();
         return $accesses;
     }
