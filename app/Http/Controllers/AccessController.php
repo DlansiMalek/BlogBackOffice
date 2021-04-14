@@ -116,8 +116,9 @@ class AccessController extends Controller
         }
 
         $this->userServices->affectAccessToUsers($access, $users);
+        $access = $this->accessServices->getAccessById($access->access_id);
 
-        return response()->json(['message' => 'add access success']);
+        return response()->json($access);
     }
 
     public function getAccessById($access_id)
@@ -366,10 +367,22 @@ class AccessController extends Controller
             } else {
                 $errors = $errors . ' ' . $access['line'];
             }
-        }
+          }
         }
         $allAccesses = $this->accessServices->getByCongressId($congress_id);
         return response()->json(['accesses' => $allAccesses, 'errors' => $errors], 200);
+    }
+    public function getUserAccessesByCongressId($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+        $accesses = $this->accessServices->getUserAccessesByCongressId($congress_id, $user->user_id);
+        return response()->json($accesses);
     }
 
 }

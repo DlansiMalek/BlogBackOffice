@@ -301,11 +301,11 @@ class AdminServices
         return $newPassword;
     }
 
-    public function addPersonnel($admin, $password)
+    public function addPersonnel($admin, $password, $email=null)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
-        $personnel->email = $admin["email"];
+        $personnel->email = $email ? $email : $admin["email"];
         $personnel->mobile = $admin["mobile"];
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
@@ -549,6 +549,12 @@ class AdminServices
     public function getAdminOfCongress($congress_id) {
         return AdminCongress::where('congress_id', '=', $congress_id)
         ->where('privilege_id', '=', 1)->first();
+    }
+
+    public function getEvaluationInscription($congress_id, $user_id)
+    {
+        return Evaluation_Inscription::where('congress_id', '=', $congress_id)
+        ->where('user_id', '=', $user_id)->get();
     }
 
 }

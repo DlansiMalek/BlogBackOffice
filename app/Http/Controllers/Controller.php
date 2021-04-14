@@ -186,3 +186,17 @@ UPDATE Submission SET title = REPLACE(title,'Ť','T');
 UPDATE Submission SET title = REPLACE(title,'Ň','N');
 UPDATE Submission SET title = REPLACE(title,'Ů','U');
 */
+
+
+/*
+Affectation de tous les evaluations inscriptions 
+
+INSERT IGNORE INTO Evaluation_Inscription (`admin_id`, `congress_id`, `user_id`)
+SELECT Admin_Congress.admin_id,  352,  User.user_id
+FROM User
+INNER JOIN `User_Congress` ON `User_Congress`.`user_id` = `User`.`user_id` AND `User_Congress`.`congress_id` = 352
+INNER JOIN `Admin_Congress` ON `Admin_Congress`.`congress_id` = 352 AND `Admin_Congress`.`privilege_id` = 13
+LEFT JOIN `Evaluation_Inscription` ON `Evaluation_Inscription`.`user_id` = `User`.`user_id` AND `Admin_Congress`.`admin_id` = `Evaluation_Inscription`.`admin_id`
+WHERE Evaluation_Inscription.evaluation_inscription_id IS NULL
+
+*/
