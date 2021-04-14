@@ -159,9 +159,9 @@ class PaymentController extends Controller
         return $this->userServices->getPaymentByID($paymentID);
     }
 
-    public function getPaymentByUserAndCongressID(Request $request, $congressID, $userID)
+    public function getPaymentByUserAndCongressID($congressID, $userID)
     {
-        return $this->paymentServices->getPaymentByUserAndCongressID($request, $congressID, $userID);
+        return $this->paymentServices->getPaymentByUserAndCongressID($congressID, $userID);
     }
 
 

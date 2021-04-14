@@ -17,14 +17,13 @@ use Illuminate\Support\Facades\Storage;
 class PaymentServices
 {
 
-    public function getPaymentByUserAndCongressID($request, $congressID, $userID){
-        $payment = Payment::where([
+    public function getPaymentByUserAndCongressID($congressID, $userID){
+        return Payment::where([
             ['Payment.user_id','=', $userID],
             ['Payment.congress_id', '=', $congressID]
         ])
             ->with(['congress'])
             ->first();
-        return $payment;
     }
     public function affectPaymentToUser($user_id, $congress_id, $price, $free)
     {
@@ -67,8 +66,7 @@ class PaymentServices
             ['free', '=', '0'],
             ['Payment.price','>', '0'],
         ])
-            ->join('Congress','Congress.congress_id','=','Payment.congress_id')
-            ->select('Congress.name','Payment.*')
+            ->with(['congress'])
             ->orderBy('Payment.price', 'desc')
             ->offset($offset)->limit($perPage)
             ->whereIn('Payment.congress_id', $congresses_id)
@@ -82,14 +80,9 @@ class PaymentServices
             ->when($method !== 'null', function ($query) use ($method) {
                 $query->where('payment_type_id', '=', $method);
             })->get();
-       $payment_renderer = $all_payments->map(function ($payment)  {
-            return collect($payment->toArray())
-                ->only(["payment_id", "isPaid", "reference",
-                    "authorisation", "price", "free", "congress_id", "user_id", "payment_type_id","name","updated_at"])->all();
-        });
 
 
-        return $payment_renderer;
+        return $all_payments;
 }
     public function changeIsPaidStatus($user_id,$congress_id,$status)
     {
