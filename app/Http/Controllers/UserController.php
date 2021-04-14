@@ -711,10 +711,11 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        if (!Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
+        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        if (!$isModerator && !Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
-        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        
 
         if (!$accessId) {
             $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
@@ -740,7 +741,7 @@ class UserController extends Controller
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => $isModerator ? true : $isAllowedJitsi,
+                "allowed_jitsi" => $isAllowedJitsi,
                 "url_streaming" => $urlStreaming,
             ], 200);
 
@@ -968,7 +969,9 @@ class UserController extends Controller
                             $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
                         }
                         $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
-                        $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
+                        if ($congress->congress_type_id == 1) { // If event type payed affect payment user
+                            $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
+                        }
                     } else {
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->update();

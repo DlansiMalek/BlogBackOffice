@@ -609,6 +609,16 @@ class AccessServices
         ->delete();
     }
 
+    public function getUserAccessesByCongressId($congress_id, $user_id)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+        ->where('is_online', '=', 1)
+        ->with(['type'])
+        ->whereHas('user_accesss' , function ($query) use ($user_id) {
+            $query->where('user_id', '=', $user_id);
+        })
+        ->get();
+    }
     public function getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime)
     {
         $accesses = Access::with(['type','speakers','speaker'])

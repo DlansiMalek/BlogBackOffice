@@ -308,6 +308,18 @@ class AccessController extends Controller
         return response()->json('deleted successfully', 200);
     }
 
+    public function getUserAccessesByCongressId($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+        $accesses = $this->accessServices->getUserAccessesByCongressId($congress_id, $user->user_id);
+        return response()->json($accesses);
+    }
     public function getOnlineAccessesByCongressIdPginantion($congressId, Request $request)
     {
         $offset = $request->query('offset', 0);
