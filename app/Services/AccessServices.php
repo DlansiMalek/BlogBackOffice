@@ -47,7 +47,9 @@ class AccessServices
         if ($request->has('topic_id')) $access->topic_id = $request->input("topic_id");
         if ($request->has('seuil')) $access->seuil = $request->input('seuil');
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
+        if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
+        if ($request->has('banner')) $access->banner = $request->input("banner");
 
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
@@ -78,7 +80,8 @@ class AccessServices
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
         if ($request->has('show_in_program')) $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
         if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
-
+        if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
+        if ($request->has('banner')) $access->banner = $request->input('banner');
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
 
@@ -186,14 +189,14 @@ class AccessServices
             [
                 'votes.access',
                 'speakers', 'chairs', 'topic', 'resources', 'type',
-                'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
+                'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->find($access_id);
     }
 
     public function getByCongressId($congress_id)
     {
         return Access::with(['speakers', 'chairs', 'topic', 'resources', 'type',
-            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type'])
+            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->orderBy('start_date')
@@ -628,5 +631,15 @@ class AccessServices
         $access->is_online = 1;
         $access->save();
         return $access;
+    }
+    public function getUserAccessesByCongressId($congress_id, $user_id)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+        ->where('is_online', '=', 1)
+        ->with(['type'])
+        ->whereHas('user_accesss' , function ($query) use ($user_id) {
+            $query->where('user_id', '=', $user_id);
+        })
+        ->get();
     }
 }
