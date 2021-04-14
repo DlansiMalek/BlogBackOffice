@@ -611,7 +611,7 @@ class AccessServices
 
     public function getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime)
     {
-        $accesses = Access::with(['type'])
+        $accesses = Access::with(['type','speakers','speaker'])
         ->whereNull('parent_id')
         ->where('congress_id', '=', $congressId)
         ->where('is_online', '=', 1)
