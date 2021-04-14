@@ -322,33 +322,12 @@ class AccessController extends Controller
         $errors = '';
 
         if (!$oldAccesses = $this->accessServices->getByCongressId($congress_id)) 
-        $oldAccesses = [];
-
-        foreach($oldAccesses as $old) {
-            $found = false;
-            foreach ($accesses as $access) {
-                if ($access['Email']) {
-                $user = $this->userServices->getUserByEmail($access['Email'], $congress_id);
-                if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
-                    $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
-                    $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
-                    $name = Utils::setAccessName($start_date, $end_date, $user->first_name . ' ' . $user->last_name);
-                    if ($old->access_type_id == $access_type_id && $old->name == $name && $old->start_date == $start_date && $old->end_date == $end_date) {
-                        $found = true;
-                        break;
-                    }
-                } 
-            }  
-            }
-            if (!$found && count($old->packs) == 0) {
-                $this->accessServices->deleteAccess($old->access_id);
-            }
-        }
+            $oldAccesses = [];
 
         foreach ($accesses as $access) {
             $found = false;
-            if ($access['Email']) {
-                $user = $this->userServices->getUserByEmail($access['Email'], $congress_id);
+            if ($access['email']) {
+                $user = $this->userServices->getUserByEmail($access['email'], $congress_id);
                 if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
                     $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
                     $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
