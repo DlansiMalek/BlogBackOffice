@@ -632,7 +632,7 @@ class AccessServices
         $access->save();
         return $access;
     }
-
+    
     public function getUserAccessesByCongressId($congress_id, $user_id)
     {
         return Access::where('congress_id', '=', $congress_id)
