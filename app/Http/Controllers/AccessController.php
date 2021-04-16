@@ -369,7 +369,7 @@ class AccessController extends Controller
             } else {
                 $errors = $errors . ' ' . $access['line'];
             }
-        }
+          }
         }
         $allAccesses = $this->accessServices->getByCongressId($congress_id);
         return response()->json(['accesses' => $allAccesses, 'errors' => $errors], 200);

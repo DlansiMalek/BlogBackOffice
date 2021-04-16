@@ -634,6 +634,7 @@ class AccessServices
         return $access;
     }
 
+    
     public function getUserAccessesByCongressId($congress_id, $user_id)
     {
         return Access::where('congress_id', '=', $congress_id)
@@ -645,14 +646,4 @@ class AccessServices
         ->get();
     }
 
-    public function getAllAccessByOrganizerId($userId)
-    {
-        return Access::whereHas('speakers', function ($query) use ($userId) {
-            $query->where('User.user_id', '=', $userId);
-        })
-        ->orWhereHas('chairs', function ($query) use ($userId) {
-            $query->where('User.user_id', '=', $userId);
-        })
-        ->get();
-    }
 }
