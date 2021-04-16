@@ -285,9 +285,9 @@ class Utils
 
     public static function setAccessName($start_date, $end_date, $user_name)
     {
-        $sd = new DateTime($start_date);
-        $ed = new DateTime($end_date); 
-        return 'seance ' . $user_name . ' ' . $sd->format('h:i:s A') . ' ' . $ed->format('h:i:s A');          
+        $sd = substr($start_date, 11, 5);
+        $ed = substr($end_date, 11, 5); 
+        return 'seance ' . $user_name . ' ' . $sd . ' - ' . $ed;          
     }
 
 

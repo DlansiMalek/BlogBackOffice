@@ -325,6 +325,29 @@ class AccessController extends Controller
         if (!$oldAccesses = $this->accessServices->getByCongressId($congress_id)) 
             $oldAccesses = [];
 
+
+        foreach($oldAccesses as $old) 
+        {
+            $found = false;
+            foreach ($accesses as $access) {
+                if ($access['email']) {
+                    $user = $this->userServices->getUserByEmail($access['email'], $congress_id);
+                    if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
+                        $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
+                        $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
+                        $name = Utils::setAccessName($start_date, $end_date, $user->first_name . ' ' . $user->last_name);
+                        if ($old->access_type_id == $access_type_id && $old->name == $name && $old->start_date == $start_date && $old->end_date == $end_date ) {
+                            $found = true;
+                            break;
+                        }
+                    } 
+                }  
+            }
+            if (!$found && ( count($old->speakers) > 0  || count($old->chairs) > 0 ) && count($old->packs) == 0) {
+                $this->accessServices->deleteAccess($old->access_id);
+            }
+        }
+
         foreach ($accesses as $access) {
             $found = false;
             if ($access['email']) {

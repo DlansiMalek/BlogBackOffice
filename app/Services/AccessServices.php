@@ -629,9 +629,11 @@ class AccessServices
         $access->access_type_id = $access_type_id;
         $access->congress_id = $congress_id;
         $access->is_online = 1;
+        $access->show_in_register = 1;
         $access->save();
         return $access;
     }
+
     public function getUserAccessesByCongressId($congress_id, $user_id)
     {
         return Access::where('congress_id', '=', $congress_id)
@@ -639,6 +641,17 @@ class AccessServices
         ->with(['type'])
         ->whereHas('user_accesss' , function ($query) use ($user_id) {
             $query->where('user_id', '=', $user_id);
+        })
+        ->get();
+    }
+
+    public function getAllAccessByOrganizerId($userId)
+    {
+        return Access::whereHas('speakers', function ($query) use ($userId) {
+            $query->where('User.user_id', '=', $userId);
+        })
+        ->orWhereHas('chairs', function ($query) use ($userId) {
+            $query->where('User.user_id', '=', $userId);
         })
         ->get();
     }
