@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use DateTime;
 
 
 class Utils
@@ -280,6 +281,13 @@ class Utils
         similar_text($string1, $string2, $perc);
         $result = $perc < $percent ?  false :  true;
         return $result;
+    }
+
+    public static function setAccessName($start_date, $end_date, $user_name)
+    {
+        $sd = substr($start_date, 11, 5);
+        $ed = substr($end_date, 11, 5); 
+        return 'seance ' . $user_name . ' ' . $sd . ' - ' . $ed;          
     }
 
 
