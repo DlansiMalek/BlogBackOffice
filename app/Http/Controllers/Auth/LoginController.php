@@ -153,8 +153,10 @@ class LoginController extends Controller
     {
 
         $id = $request->id;
-        Session::put('id', $id);
+        $idCongress = $request->idCongress;
 
+        Session::put('id', $id);
+        Session::put('idCongress', $idCongress);
         return Socialite::driver('google')->with(["prompt" => "select_account"])->redirect();
 
     }
@@ -168,6 +170,8 @@ class LoginController extends Controller
     public function handleGoogleProviderCallback()
     {
         $id = Session::get('id', url('/'));
+        $idCongress = Session::get('idCongress', url('/'));
+        Session::forget('idCongress');
         Session::forget('id');
         try {
             $user = Socialite::with('google')->user();
@@ -184,6 +188,10 @@ class LoginController extends Controller
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
         $token = auth()->login($existingUser, true);
+        if ($idCongress !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
+
+        }
         if ($id !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 
@@ -199,7 +207,9 @@ class LoginController extends Controller
     public function redirectToFacebookProvider(Request $request)
     {
         $id = $request->id;
+        $idCongress = $request->idCongress;
         Session::put('id', $id);
+        Session::put('idCongress', $idCongress);
         return Socialite::driver('facebook')->redirect();
     }
 
@@ -211,6 +221,8 @@ class LoginController extends Controller
     public function handleFacebookProviderCallback()
     {
         $id = Session::get('id', url('/'));
+        $idCongress = Session::get('idCongress', url('/'));
+        Session::forget('idCongress');
         Session::forget('id');
         try {
             $user = Socialite::with('facebook')->user();
@@ -227,7 +239,10 @@ class LoginController extends Controller
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
         $token = auth()->login($existingUser, true);
+        if ($idCongress !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 
+        }
         if ($id !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 

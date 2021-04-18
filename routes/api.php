@@ -530,7 +530,10 @@ Route::group(['prefix' => 'access'], function () {
     Route::put('{access_id}', 'AccessController@editAccess');
     Route::get('congress/{congress_id}/scores', 'AccessController@getScoresByCongressId');
     Route::delete('reset-score/{access_id}', 'AccessController@resetScore');
+    Route::post('{congress_id}/uploadExcel', 'AccessController@uploadExcelAccess');
     Route::get('congress/{congress_id}/user', 'AccessController@getUserAccessesByCongressId')->middleware('assign.guard:users');
+    Route::get('paginantion/congress/{congress_id}', 'AccessController@getOnlineAccessesByCongressIdPginantion');
+
 });
 
 Route::group(["prefix" => "notification"], function () {
