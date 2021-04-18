@@ -14,6 +14,7 @@ use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 
 class AccessController extends Controller
@@ -386,6 +387,17 @@ class AccessController extends Controller
         }
         $accesses = $this->accessServices->getUserAccessesByCongressId($congress_id, $user->user_id);
         return response()->json($accesses);
+    }
+    public function getOnlineAccessesByCongressIdPginantion($congressId, Request $request)
+    {
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search', '');
+        $date = $request->query('date', '');
+        $startTime = $request->query('startTime', '');
+        $endTime = $request->query('endTime', '');
+        $accesses = $this->accessServices->getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime);
+        return response()->json($accesses, 200);
     }
 
 }
