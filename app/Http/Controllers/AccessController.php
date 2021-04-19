@@ -388,7 +388,7 @@ class AccessController extends Controller
         $accesses = $this->accessServices->getUserAccessesByCongressId($congress_id, $user->user_id);
         return response()->json($accesses);
     }
-    public function getOnlineAccessesByCongressIdPginantion($congressId, Request $request)
+    public function getAccessesByCongressIdPginantion($congressId, Request $request)
     {
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 10);
@@ -396,7 +396,8 @@ class AccessController extends Controller
         $date = $request->query('date', '');
         $startTime = $request->query('startTime', '');
         $endTime = $request->query('endTime', '');
-        $accesses = $this->accessServices->getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime);
+        $isOnline = $request->query('isOnline', '');
+        $accesses = $this->accessServices->getAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime, $isOnline);
         return response()->json($accesses, 200);
     }
 
