@@ -508,6 +508,7 @@ class CongressServices
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
         $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
+        $configCongress->nb_max_access = $configCongressRequest['nb_max_access'];
         $configCongress->update();
 
         return $configCongress;
