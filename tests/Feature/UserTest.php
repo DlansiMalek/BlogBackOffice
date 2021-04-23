@@ -17,6 +17,9 @@ use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\Admin;
 use App\Models\UserCongress;
+use App\Models\CongressOrganization;
+use App\Models\FormInputValue;
+use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -264,6 +267,145 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function testSaveUsersFromExcel()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        $data = $this->getExcelData();
+        $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
+            ->assertStatus(200);
+    
+    }
+
+    public function testSaveUsersFromExcelWithOrganization()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        $organization = factory(Organization::class)->create();
+        $congress_organization = factory(CongressOrganization::class)->create([
+            'congress_id' => $congress->congress_id,
+            'organization_id' => $organization->organization_id]);
+        $data = $this->getExcelData($organization->oraganization_id);
+        $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
+            ->assertStatus(200);
+    
+    }
+
+    public function testSaveUsersFromExcelWithAccesses()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $accessesIds = [$access1->access_id, $access2->access_id];
+        $data = $this->getExcelData(null, $accessesIds);
+        $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
+            ->assertStatus(200);
+    
+    }
+
+    public function testSaveUsersFromExcelWithOrganizationAndAccesses()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        $organization = factory(Organization::class)->create();
+        $congress_organization = factory(CongressOrganization::class)->create([
+            'congress_id' => $congress->congress_id,
+            'organization_id' => $organization->organization_id]);
+        $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $accessesIds = [$access1->access_id, $access2->access_id];
+        $data = $this->getExcelData($organization->oraganization_id, $accessesIds);
+        $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
+            ->assertStatus(200);
+    
+    }
+
+    public function testSaveUsersFromExcelWithFormInputs()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        // create input
+        $input = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'form_input_type_id' => 1]);
+        // create checkList
+        $checkList = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'form_input_type_id' => 6]);
+        // create checkList responses
+        $value1 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        $value2 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        $value3 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        $value4 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        // create select
+        $select = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'form_input_type_id' => 7]);
+        // create select responses
+        $valueSelect1 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
+        $valueSelect2 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
+        $valueSelect3 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
+        
+        $organization = factory(Organization::class)->create();
+        $congress_organization = factory(CongressOrganization::class)->create([
+            'congress_id' => $congress->congress_id,
+            'organization_id' => $organization->organization_id]);
+        $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
+        $accessesIds = [$access1->access_id, $access2->access_id];
+        $data = $this->getExcelData($organization->oraganization_id, $accessesIds);
+        // add first user responses
+        $data['data'][0][$input->key] = $this->faker->word;
+        $data['data'][0][$checkList->key] = $value1->value . ';' .$value2->value;
+        $data['data'][0][$select->key] = $valueSelect1->value;
+        
+        // add second user responses
+        $data['data'][1][$input->key] = $this->faker->word;
+        $data['data'][1][$checkList->key] = $value3->value . ';' .$value4->value;
+        $data['data'][1][$select->key] = $valueSelect3->value;
+        
+        $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
+            ->assertStatus(200);
+    
+    }
+
+    public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
+    {
+        $congress = factory(Congress::class)->create();
+        $congressConfig = factory(ConfigCongress::class)
+            ->create(['congress_id' => $congress->congress_id]);
+        // create input
+        $input = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'form_input_type_id' => 1]);
+        // create checkList
+        $checkList = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'form_input_type_id' => 6]);
+        // create checkList responses
+        $value1 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        $value2 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        $value3 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        $value4 = factory(FormInputValue::class)->create(['form_input_id' => $checkList->form_input_id]);
+        // create select
+        $select = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'form_input_type_id' => 7]);
+        // create select responses
+        $valueSelect1 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
+        $valueSelect2 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
+        $valueSelect3 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
+        
+        $data = $this->getExcelData();
+        // add first user responses
+        $data['data'][0][$input->key] = $this->faker->word;
+        $data['data'][0][$checkList->key] = $value1->value . ';' .$value2->value;
+        $data['data'][0][$select->key] = $valueSelect1->value;
+        
+        // add second user responses
+        $data['data'][1][$input->key] = $this->faker->word;
+        $data['data'][1][$checkList->key] = $value3->value . ';' .$value4->value;
+        $data['data'][1][$select->key] = $valueSelect3->value;
+        
+        $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
+            ->assertStatus(200);
+    
+    }
+
     private function getUserData($pack_id, $access_id)
     {
         return [
@@ -278,6 +420,31 @@ class UserTest extends TestCase
                 $access_id
             ]
         ];
+    }
+
+    private function getExcelData($organizationId = null, $accessesIds = [])
+    {
+        return [
+            "privilegeId" => 3,
+            "organisationId" => $organizationId,
+            "data" => [
+                [
+                    "email" => $this->faker->email,
+                    "accessIdTable" => $accessesIds,
+                    'first_name' => $this->faker->firstName,
+                    'last_name' => $this->faker->lastName
+                ],
+                [
+                    "email" => $this->faker->email,
+                    "accessIdTable" => $accessesIds,
+                    'first_name' => $this->faker->firstName,
+                    'last_name' => $this->faker->lastName
+                ]                    
+                
+            ]
+        ];
+            
+        
     }
 
     // TODO Correction
