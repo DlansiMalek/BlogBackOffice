@@ -1669,5 +1669,13 @@ class UserServices
     {
         return $userCongress->privilege_id == 7;
     }
+    
+    public function deleteFormInputUserByKey($userId, $congressId, $key)
+    {
+        return FormInputResponse::whereHas('form_input', function ($query) use ($congressId, $key) {
+            $query->where('congress_id', '=', $congressId)
+                    ->where('key', '=', $key);
+        })->where("user_id", '=', $userId)->delete();
+    }
 
 }
