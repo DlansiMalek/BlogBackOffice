@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
-use App\Models\ConfigSubmission;
+use App\Models\ConfigLP;
 use App\Models\Congress;
+use App\Models\LPSpeaker;
 use stdClass;
 use Tests\TestCase;
 use App\Services\Utils;
+use DateTime;
 
 class CongressTest extends TestCase
 {
@@ -189,72 +191,137 @@ class CongressTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function testAddConfigSubmission()
+    public function testGetConfigLandingPage()
     {
         $congress = factory(Congress::class)->create();
-        // in case of error in this test check if there is an input in ConfigCongress that can't be null and add it here
-        $config = factory(ConfigCongress::class)->create([
-            'congress_id' => $congress->congress_id,
-            'is_submission_enabled' => 1,
-            'program_link' => 'https://eventizer.io',
-            'has_payment' => $this->faker->numberBetween(0, 1),
-            'is_online' => $this->faker->numberBetween(0, 1),
-            'is_code_shown' => $this->faker->numberBetween(0, 1),
-            'is_notif_register_mail' => $this->faker->numberBetween(0, 1),
-            'register_disabled' => $this->faker->numberBetween(0, 1),
-            'is_notif_sms_confirm' => $this->faker->numberBetween(0, 1),
-            'is_submission_enabled' => $this->faker->numberBetween(0, 1),
-            'application' => $this->faker->numberBetween(0, 1),
-            'nb_current_participants' => $this->faker->numberBetween(0, 1),
-            'max_online_participants' => $this->faker->numberBetween(0, 1),
-            'is_upload_user_img' => $this->faker->numberBetween(0, 1),
-            'is_sponsor_logo' => $this->faker->numberBetween(0, 1),
-            'is_phone_required' => $this->faker->numberBetween(0, 1),
-            'mobile_technical' => $this->faker->phoneNumber
-        ]);
-        $config['privileges'] = [3];
-        $submission = $this->getDataSubmission();
-        $request = ['congress' => $config, 'submission' => $submission];
-        $this->post('/api/admin/me/congress/' . $congress->congress_id . '/edit-config', $request)
+        $configLP = factory(ConfigLP::class)->create(['congress_id' => $congress->congress_id]);
+        $this->get('/api/admin/me/congress/' . $congress->congress_id . '/landing-page/get-config')
             ->assertStatus(200);
-
-        $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
-        $this->assertEquals($configSubmission->max_words, $submission['max_words']);
-        $this->assertEquals($configSubmission->num_evaluators, $submission['num_evaluators']);
     }
 
-    public function testDeleteConfigSubmission()
+    public function testEditConfigLandingPage()
     {
         $congress = factory(Congress::class)->create();
-        // in case of error in this test check if there is an input in ConfigCongress that can't be null and add it here
-        $config = factory(ConfigCongress::class)->create([
-            'congress_id' => $congress->congress_id,
-            'is_submission_enabled' => 0,
-            'program_link' => 'https://eventizer.io',
-            'has_payment' => $this->faker->numberBetween(0, 1),
-            'is_online' => $this->faker->numberBetween(0, 1),
-            'is_code_shown' => $this->faker->numberBetween(0, 1),
-            'is_notif_register_mail' => $this->faker->numberBetween(0, 1),
-            'register_disabled' => $this->faker->numberBetween(0, 1),
-            'is_notif_sms_confirm' => $this->faker->numberBetween(0, 1),
-            'is_submission_enabled' => $this->faker->numberBetween(0, 1),
-            'application' => $this->faker->numberBetween(0, 1),
-            'nb_current_participants' => $this->faker->numberBetween(0, 1),
-            'max_online_participants' => $this->faker->numberBetween(0, 1),
-            'is_upload_user_img' => $this->faker->numberBetween(0, 1),
-            'is_sponsor_logo' => $this->faker->numberBetween(0, 1),
-            'is_phone_required' => $this->faker->numberBetween(0, 1),
-            'mobile_technical' => $this->faker->phoneNumber
-        ]);
-        $config['privileges'] = [3];
-        $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
-        $request = ['congress' => $config, 'submission' => []];
-        $this->post('/api/admin/me/congress/' . $congress->congress_id . '/edit-config', $request)
+        $data = $this->getConfigLP();
+        $response = $this->post('/api/admin/me/congress/' . $congress->congress_id . '/landing-page/edit-config', $data)
             ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
 
-        $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
-        // make sure that there isn't any ConfigSubmission
-        $this->assertNull($configSubmission);
+        $configLP = ConfigLP::where('congress_id', '=', $dataResponse['config_landing_page']['congress_id'])
+            ->first();
+
+        $this->assertEquals($congress->congress_id, $dataResponse['config_landing_page']['congress_id']);
+        $this->assertEquals($data['header_logo_event'], $configLP->header_logo_event);
+        $this->assertEquals($data['is_inscription'], $configLP->is_inscription);
+        $this->assertEquals($data['home_banner_event'], $configLP->home_banner_event);
+        $this->assertEquals($data['home_title'], $configLP->home_title);
+        $this->assertEquals($data['home_description'], $configLP->home_description);
+        $this->assertEquals($data['prp_banner_event'], $configLP->prp_banner_event);
+        $this->assertEquals($data['prp_title'], $configLP->prp_title);
+        $this->assertEquals($data['prp_description'], $configLP->prp_description);
+        $this->assertEquals($data['speaker_title'], $configLP->speaker_title);
+        $this->assertEquals($data['speaker_description'], $configLP->speaker_description);
+        $this->assertEquals($data['sponsor_title'], $configLP->sponsor_title);
+        $this->assertEquals($data['sponsor_description'], $configLP->sponsor_description);
+        $this->assertEquals($data['prg_title'], $configLP->prg_title);
+        $this->assertEquals($data['prg_description'], $configLP->prg_description);
+        $this->assertEquals($data['contact_title'], $configLP->contact_title);
+        $this->assertEquals($data['contact_description'], $configLP->contact_description);
+        $this->assertEquals($data['event_link_fb'], $configLP->event_link_fb);
+        $this->assertEquals($data['event_link_instagram'], $configLP->event_link_instagram);
+        $this->assertEquals($data['event_link_linkedin'], $configLP->event_link_linkedin);
+        $this->assertEquals($data['event_link_twitter'], $configLP->event_link_twitter);
+    }
+
+    public function testAddLandingPageSpeaker()
+    {
+        $congress = factory(Congress::class)->create();
+        $data = $this->getLPSpeaker();
+        $response = $this->post('/api/admin/me/congress/' . $congress->congress_id . '/landing-page/add-speaker', $data)
+            ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+
+        $lPSpeaker = LPSpeaker::where('congress_id', '=', $dataResponse['congress_id'])
+            ->first();
+
+        $this->assertEquals($congress->congress_id, $dataResponse['congress_id']);
+        $this->assertEquals($data['first_name'], $lPSpeaker->first_name);
+        $this->assertEquals($data['last_name'], $lPSpeaker->last_name);
+        $this->assertEquals($data['role'], $lPSpeaker->role);
+        $this->assertEquals($data['profile_img'], $lPSpeaker->profile_img);
+        $this->assertEquals($data['fb_link'], $lPSpeaker->fb_link);
+        $this->assertEquals($data['linkedin_link'], $lPSpeaker->linkedin_link);
+        $this->assertEquals($data['instagram_link'], $lPSpeaker->instagram_link);
+        $this->assertEquals($data['twitter_link'], $lPSpeaker->twitter_link);
+    }
+
+    public function testGetLandingPageSpeakers()
+    {
+        $congress = factory(Congress::class)->create();
+        $lPSpeaker = factory(LPSpeaker::class)->create(['congress_id' => $congress->congress_id]);
+        $this->get('/api/admin/me/congress/' . $congress->congress_id . '/landing-page/get-speakers')
+            ->assertStatus(200);
+    }
+
+    public function testEditLandingPageSpeaker()
+    {
+        $congress = factory(Congress::class)->create();
+        $oldLPSpeaker = factory(LPSpeaker::class)->create(['congress_id' => $congress->congress_id]);
+        $data = $this->getLPSpeaker();
+
+        $response = $this->post('/api/landing-page-speakers/edit/' . $oldLPSpeaker->lp_speaker_id, $data)
+            ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+
+        $lPSpeaker = LPSpeaker::where('congress_id', '=', $dataResponse['congress_id'])
+            ->first();
+
+        $this->assertEquals($congress->congress_id, $dataResponse['congress_id']);
+        $this->assertEquals($data['first_name'], $lPSpeaker->first_name);
+        $this->assertEquals($data['last_name'], $lPSpeaker->last_name);
+        $this->assertEquals($data['role'], $lPSpeaker->role);
+        $this->assertEquals($data['profile_img'], $lPSpeaker->profile_img);
+        $this->assertEquals($data['fb_link'], $lPSpeaker->fb_link);
+        $this->assertEquals($data['linkedin_link'], $lPSpeaker->linkedin_link);
+        $this->assertEquals($data['instagram_link'], $lPSpeaker->instagram_link);
+        $this->assertEquals($data['twitter_link'], $lPSpeaker->twitter_link);
+    }
+
+    public function testDeleteLandingPageSpeaker()
+    {
+        $congress = factory(Congress::class)->create();
+        $lPSpeaker = factory(LPSpeaker::class)->create(['congress_id' => $congress->congress_id]);
+        $this->delete('/api/landing-page-speakers/delete/' . $lPSpeaker->lp_speaker_id)
+            ->assertStatus(200);
+    }
+
+    public function testSyncronizeLandingPage1()
+    {
+        $congress = factory(Congress::class)->create();
+        $configCongress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
+        $this->get('/api/admin/me/congress/' . $congress->congress_id . '/landing-page/syncronize')
+            ->assertStatus(200);
+    }
+
+
+    public function testSyncronizeLandingPage2()
+    {
+        $congress = factory(Congress::class)->create();
+        $config_congress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
+        $configLP = factory(ConfigLP::class)->create(['congress_id' => $congress->congress_id]);
+        $response = $this->get('/api/admin/me/congress/' . $congress->congress_id . '/landing-page/syncronize')
+            ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+
+        $configLP = ConfigLP::where('congress_id', '=', $dataResponse['config_landing_page']['congress_id'])
+            ->first();
+
+        $this->assertEquals($congress->congress_id, $dataResponse['config_landing_page']['congress_id']);
+        $this->assertEquals($config_congress->logo, $configLP->header_logo_event);
+        $this->assertEquals($congress->name, $configLP->home_title);
+        $this->assertEquals($congress->description, $configLP->home_description);
+        $this->assertEquals($config_congress->banner, $configLP->home_banner_event);
+        $this->assertEquals($config_congress->banner, $configLP->prp_banner_event);
     }
 
     private function getFakeDataCongress()
@@ -286,13 +353,45 @@ class CongressTest extends TestCase
         ];
     }
 
-    private function getDataSubmission()
+    private function getConfigLP()
     {
         return [
-            'end_submission_date' => $this->faker->date(),
-            'start_submission_date' => $this->faker->date(),
-            'max_words' => $this->faker->numberBetween(100, 500),
-            'num_evaluators' => $this->faker->numberBetween(1, 5),
+            'header_logo_event' => Utils::generateCode(0, 15) . ".png",
+            'is_inscription' => $this->faker->numberBetween(0, 1),
+            'home_banner_event' => Utils::generateCode(0, 15) . ".png",
+            'home_start_date' => $this->faker->dateTime(),
+            'home_end_date' => $this->faker->dateTime(),
+            'home_title' => $this->faker->sentence,
+            'home_description' => $this->faker->paragraph,
+            'prp_banner_event' => Utils::generateCode(0, 15) . ".png",
+            'prp_title' => $this->faker->sentence,
+            'prp_description' => $this->faker->paragraph,
+            'speaker_title' => $this->faker->sentence,
+            'speaker_description' => $this->faker->paragraph,
+            'sponsor_title' => $this->faker->sentence,
+            'sponsor_description' => $this->faker->paragraph,
+            'prg_title' => $this->faker->sentence,
+            'prg_description' => $this->faker->paragraph,
+            'contact_title' => $this->faker->sentence,
+            'contact_description' => $this->faker->paragraph,
+            'event_link_fb' => $this->faker->url,
+            'event_link_instagram' => $this->faker->url,
+            'event_link_linkedin' => $this->faker->url,
+            'event_link_twitter' => $this->faker->url
+        ];
+    }
+
+    private function getLPSpeaker()
+    {
+        return [
+            'first_name' => $this->faker->firstName,
+            'last_name' => $this->faker->lastName,
+            'role' => $this->faker->word,
+            'profile_img' => Utils::generateCode(0, 15) . ".png",
+            'fb_link' => $this->faker->url,
+            'linkedin_link' => $this->faker->url,
+            'instagram_link' => $this->faker->url,
+            'twitter_link' => $this->faker->url,
         ];
     }
 }

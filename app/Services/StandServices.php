@@ -99,14 +99,19 @@ class StandServices
         $oldStand->update();
         return $oldStand ;
     }
-    public function getStands($congress_id, $name = null)
+    public function getStands($congress_id, $name = null, $status = null)
     {
-        return Stand::where(function ($query) use ($name) {
+        return Stand::where(function ($query) use ($name, $status) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
+            if ($status) {
+                $query->where('status', '=', $status);
+            }
         })
-            ->with(['docs','organization'])
+            ->with(['docs','organization' => function ($query) {
+                $query->with('resource');
+            }])
             ->where('congress_id', '=', $congress_id)->get();
     }
 
