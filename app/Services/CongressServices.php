@@ -564,6 +564,11 @@ class CongressServices
 
     }
 
+    public function deleteConfigsubmission($configSubmission)
+    {
+        return $configSubmission->delete();
+    }
+
     public function addSubmissionThemeCongress($theme_ids, $congressId)
     {
         $CongressThemes = array();
@@ -752,6 +757,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;mobile}}', '{{$participant->mobile}}', $template);
         $template = str_replace('{{$participant-&gt;email}}', '{{$participant->email}}', $template);
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
+        $template = str_replace('{{$participant-&gt;password}}', '{{$participant->passwordDecrypt}}', $template);
         $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
         $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;
         $template = str_replace('{{$submissionParams}}', $submissionsParms, $template);
@@ -963,6 +969,11 @@ class CongressServices
     {
         return ConfigCongress::where('congress_id', '=', $congressId)
             ->update(['nb_current_participants' => $nbParticipants]);
+    }
+
+    public function deleteAllThemes($congressId) 
+    {
+        CongressTheme::where("congress_id", "=", $congressId)->delete();
     }
 
     public function getConfigLandingPageById($congress_id)
