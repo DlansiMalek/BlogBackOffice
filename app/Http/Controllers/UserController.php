@@ -1057,14 +1057,14 @@ class UserController extends Controller
         $formInputs = $this->registrationFormServices->getForm($congressId);
 
         foreach ($users as $user) {
-            // delete old responses
-            $user_by_mail = $this->userServices->getUserByEmail($user['email']);
-            $this->userServices->deleteFormInputUser($user_by_mail->user_id, $congressId);
-            // add new responses
             foreach ($formInputs as $input) {
                 $arrayKeys = array_keys($user);
                 foreach ($arrayKeys as $key) {
                     if ($input->key == $key) {
+                        // delete old response
+                        $user_by_mail = $this->userServices->getUserByEmail($user['email']);
+                        $this->userServices->deleteFormInputUserByKey($user_by_mail->user_id, $congressId, $key);
+                        // add new response
                         $reponse = new FormInputResponse();
                         $reponse->user_id = $user_by_mail->user_id;
                         $reponse->form_input_id = $input->form_input_id;
