@@ -565,6 +565,11 @@ class CongressServices
 
     }
 
+    public function deleteConfigsubmission($configSubmission)
+    {
+        return $configSubmission->delete();
+    }
+
     public function addSubmissionThemeCongress($theme_ids, $congressId)
     {
         $CongressThemes = array();
@@ -965,6 +970,11 @@ class CongressServices
     {
         return ConfigCongress::where('congress_id', '=', $congressId)
             ->update(['nb_current_participants' => $nbParticipants]);
+    }
+
+    public function deleteAllThemes($congressId) 
+    {
+        CongressTheme::where("congress_id", "=", $congressId)->delete();
     }
 
     public function getConfigLandingPageById($congress_id)

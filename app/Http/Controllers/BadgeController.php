@@ -34,7 +34,7 @@ class BadgeController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
-        if (!$privilege = $this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
+        if (!$privilege = $this->privilegeServices->getPrivilegeById($request->input('privilegeId'))) {
             return response(['error' => "invalid privilege"], 404);
         }
         try {
@@ -68,7 +68,7 @@ class BadgeController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
-        if (!$privilege = $this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
+        if (!$privilege = $this->privilegeServices->getPrivilegeById($request->input('privilegeId'))) {
             return response(['error' => "invalid privilege"], 404);
         }
         if ($badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $request->input('privilegeId'), $badgeIdGenerator)) {
@@ -163,7 +163,7 @@ class BadgeController extends Controller
     {
         $badgeIdGenerator = $request->input('badgeIdGenerator');
         $privilegeId = $request->input('privilegeId');
-        if (!$privilege = $this->privilegeServices->checkValidPrivilege($request->input('privilegeId'))) {
+        if (!$privilege = $this->privilegeServices->getPrivilegeById($request->input('privilegeId'))) {
             return response(['error' => $privilegeId], 404);
         }
         if (!$badge = $this->badgeServices->getBadgeByCongressAndPrivilegeBadgeAndIdGenerator($congressId, $privilegeId, $badgeIdGenerator)) {
