@@ -397,7 +397,6 @@ class AccessController extends Controller
         $date = $request->query('date', '');
         $startTime = $request->query('startTime', '');
         $endTime = $request->query('endTime', '');
-        Log:info($endTime);
         $myAccesses = $request->query('myAccesses', 0);
         if ($myAccesses == 1) {
             $user = $this->userServices->retrieveUserFromToken();
