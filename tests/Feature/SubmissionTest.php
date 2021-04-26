@@ -68,7 +68,8 @@ class SubmissionTest extends TestCase
             'is_upload_user_img' => $this->faker->numberBetween(0, 1),
             'is_sponsor_logo' => $this->faker->numberBetween(0, 1),
             'is_phone_required' => $this->faker->numberBetween(0, 1),
-            'mobile_technical' => $this->faker->phoneNumber
+            'mobile_technical' => $this->faker->phoneNumber,
+            'nb_max_access' => $this->faker->numberBetween(-1, 10),
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -102,7 +103,8 @@ class SubmissionTest extends TestCase
             'is_upload_user_img' => $this->faker->numberBetween(0, 1),
             'is_sponsor_logo' => $this->faker->numberBetween(0, 1),
             'is_phone_required' => $this->faker->numberBetween(0, 1),
-            'mobile_technical' => $this->faker->phoneNumber
+            'mobile_technical' => $this->faker->phoneNumber,
+            'nb_max_access' => $this->faker->numberBetween(-1, 10),
         ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
