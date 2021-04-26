@@ -532,7 +532,7 @@ Route::group(['prefix' => 'access'], function () {
     Route::delete('reset-score/{access_id}', 'AccessController@resetScore');
     Route::post('{congress_id}/uploadExcel', 'AccessController@uploadExcelAccess');
     Route::get('congress/{congress_id}/user', 'AccessController@getUserAccessesByCongressId')->middleware('assign.guard:users');
-    Route::get('paginantion/congress/{congress_id}', 'AccessController@getAccessesByCongressIdPginantion');
+    Route::get('paginantion/congress/{congress_id}', 'AccessController@getAccessesByCongressIdPginantion')->middleware('assign.guard:users');;
 
 });
 
