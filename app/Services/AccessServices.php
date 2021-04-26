@@ -646,7 +646,7 @@ class AccessServices
         ->get();
     }
     
-    public function getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime)
+    public function getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime, $myAccesses, $user_id)
     {
         $accesses = Access::with(['type','speakers','speaker'])
         ->whereNull('parent_id')
@@ -659,13 +659,20 @@ class AccessServices
                 $query->orWhereRaw('(price) like (?)',  ["%{$search}%"]);
             }
         })->where(function ($query) use ($date, $startTime, $endTime) {
-            if ($date != '')
+            if ($date != '' && $date != 'null')
                 $query->whereDate('start_date', date($date));
-            if ($startTime != '')
+            if ($startTime != '' && $startTime != 'null')
                 $query->whereTime('start_date', '=', $startTime);
-            if ($endTime != '')
+            if ($endTime != '' && $endTime != 'null')
                 $query->whereTime('end_date', '=', $endTime);
             
+        })
+        ->where(function ($query) use ($user_id, $myAccesses) {
+            if ($myAccesses == 1) {
+                $query->whereHas('user_accesss' , function ($q) use ($user_id) {
+                    $q->where('user_id', '=', $user_id);
+                });
+            }            
         })
         ->offset($offset)->limit($perPage)
         ->get();
