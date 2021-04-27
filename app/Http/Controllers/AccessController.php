@@ -388,15 +388,26 @@ class AccessController extends Controller
         $accesses = $this->accessServices->getUserAccessesByCongressId($congress_id, $user->user_id);
         return response()->json($accesses);
     }
-    public function getOnlineAccessesByCongressIdPginantion($congressId, Request $request)
+    public function getAccessesByCongressIdPginantion($congressId, Request $request)
     {
+                
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 10);
         $search = $request->query('search', '');
         $date = $request->query('date', '');
         $startTime = $request->query('startTime', '');
         $endTime = $request->query('endTime', '');
-        $accesses = $this->accessServices->getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime);
+        $isOnline = $request->query('isOnline', '');
+        $myAccesses = $request->query('myAccesses', 0);
+        if ($myAccesses == 1) {
+            $user = $this->userServices->retrieveUserFromToken();
+            if (!$user) {
+                return response()->json(['response' => 'No user found'], 401);
+            }
+        $accesses = $this->accessServices->getAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime, $isOnline,$myAccesses, $user->user_id);
+        } else {
+        $accesses = $this->accessServices->getAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime, $isOnline, $myAccesses, null);
+        }
         return response()->json($accesses, 200);
     }
 
