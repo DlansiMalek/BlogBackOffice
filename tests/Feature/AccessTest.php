@@ -117,25 +117,24 @@ class AccessTest extends TestCase
     }
 
     // TODO à corriger
-    /*public function testEditAccessStatus()
+    public function testEditAccessStatus()
     {
         $congress = factory(Congress::class)->create();
         $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id, 'status' => 1]);
         $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id, 'status' => 1]);
-        $response = $this->get('api/congress/' . $congress->congress_id . '/access/change-status?all=false&status=0&accessId=' . $access1->access_id)
+     
+        $this->get('api/congress/' . $congress->congress_id . '/access/change-status?all=false&status=0&accessId=' . $access1->access_id)
         ->assertStatus(200);
-
-        $dataResponse = json_decode($response->getContent(), true);
         
-        $savedAccess1 = Access::where('access_id', '=', $dataResponse[0]['access_id'])
+        $savedAccess1 = Access::where('access_id', '=', $access1->access_id)
                     ->first();
 
-        $savedAccess2 = Access::where('access_id', '=', $dataResponse[1]['access_id'])
+        $savedAccess2 = Access::where('access_id', '=', $access2->access_id)
                     ->first();
         // verify that only access1's status was midified to 0
         $this->assertEquals($savedAccess1->status, 0);
         $this->assertEquals($savedAccess2->status, 1);
-    }*/
+    }
 
     public function testEditAllAccessStatus()
     {
