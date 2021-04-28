@@ -37,8 +37,8 @@ class RequestLandingPageController extends Controller
             return response()->json(['message' => 'congress not found'], 404);
         }
 
-        $this->landingPageServices->addRequestLandingPage($request, $congress_id, $admin->admin_id);
-        return response()->json(['message' => 'success'], 200);
+        $landingPage=$this->landingPageServices->addRequestLandingPage($request, $congress_id, $admin->admin_id);
+        return response()->json($landingPage, 200);
     }
     public function getLandingPages()
     {
