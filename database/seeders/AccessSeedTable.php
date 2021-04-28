@@ -14,6 +14,7 @@ class AccessSeedTable extends Seeder
     public function run()
     {
         DB::table('Access')->insert([
+            'access_id' => 1,
             'name' => 'Access Test 1',
             'price' => 40,
             'duration' => 90,
@@ -28,6 +29,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 2,
             'name' => 'Access Test 2',
             'price' => 0,
             'duration' => 90,
@@ -42,6 +44,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 3,
             'name' => 'Access Test 3',
             'price' => 0,
             'duration' => 60,
@@ -56,6 +59,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 4,
             'name' => 'Access Test 4',
             'price' => 40,
             'duration' => 90,
@@ -70,6 +74,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 5,
             'name' => 'Access Test 5',
             'price' => 0,
             'duration' => 90,
@@ -84,6 +89,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 6,
             'name' => 'Access Test 6',
             'price' => 0,
             'duration' => 60,
@@ -98,6 +104,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 7,
             'name' => 'Access Test 7',
             'price' => 40,
             'duration' => 90,
@@ -112,6 +119,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 8,
             'name' => 'Access Test 8',
             'price' => 0,
             'duration' => 90,
@@ -126,6 +134,7 @@ class AccessSeedTable extends Seeder
             'description' => 'test description'
         ]);
         DB::table('Access')->insert([
+            'access_id' => 9,
             'name' => 'Access Test 9',
             'price' => 0,
             'duration' => 60,
@@ -138,6 +147,14 @@ class AccessSeedTable extends Seeder
             'topic_id' => 2,
             'access_type_id' => 3,
             'description' => 'test description'
+        ]);
+        DB::table('Access')->insert([
+            'access_id' => 10,
+            'name' => 'Access Test Jeux',
+            'start_date' => date("Y-m-d"),
+            'end_date' => date("Y-m-d"),
+            'congress_id' => 3,
+            'access_type_id' => 4
         ]);
     }
 }

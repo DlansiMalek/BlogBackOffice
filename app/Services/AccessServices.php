@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Models\Access;
 use App\Models\AccessChair;
+use App\Models\AccessGame;
 use App\Models\AccessSpeaker;
 use App\Models\AccessType;
 use App\Models\Topic;
@@ -48,6 +49,7 @@ class AccessServices
         if ($request->has('max_places')) $access->max_places = $request->input('max_places');
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
+        if ($request->has('banner')) $access->banner = $request->input("banner");
 
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
@@ -79,7 +81,7 @@ class AccessServices
         if ($request->has('show_in_program')) $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
         if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
-
+        if ($request->has('banner')) $access->banner = $request->input('banner');
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
 
@@ -147,21 +149,31 @@ class AccessServices
     public function addChairs(Access $access, $chairs)
     {
         foreach ($chairs as $chair) {
-            $access_chair = new AccessChair();
-            $access_chair->access_id = $access['access_id'];
-            $access_chair->user_id = $chair;
-            $access_chair->save();
+            $this->addChair($access['access_id'], $chair);
         }
+    }
+
+    public function addChair($access_id, $user_id)
+    {
+        $access_chair = new AccessChair();
+        $access_chair->access_id = $access_id;
+        $access_chair->user_id = $user_id;
+        $access_chair->save();
     }
 
     public function addSpeakers(Access $access, $speakers)
     {
         foreach ($speakers as $speaker) {
-            $access_speaker = new AccessSpeaker();
-            $access_speaker->access_id = $access['access_id'];
-            $access_speaker->user_id = $speaker;
-            $access_speaker->save();
+            $this->addSpeaker($access['access_id'], $speaker);
         }
+    }
+
+    public function addSpeaker($access_id, $user_id)
+    {
+        $access_speaker = new AccessSpeaker();
+        $access_speaker->access_id = $access_id;
+        $access_speaker->user_id = $user_id;
+        $access_speaker->save();
     }
 
     public function addSubAccesses(Access $access, $sub_accesses)
@@ -186,13 +198,14 @@ class AccessServices
         return Access::with(['speakers', 'chairs', 'topic', 'resources', 'type',
             'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->whereNull('parent_id')
-            ->where('congress_id', '=', $congress_id)->orderBy('start_date', 'asc')
+            ->where('congress_id', '=', $congress_id)
+            ->orderBy('start_date')
             ->get();
     }
 
     public function getAccesssByCongressId($congress_id)
     {
-        return Access::where('congress_id', '=', $congress_id)->select('access_id')->get();
+        return Access::where('congress_id', '=', $congress_id)->select('access_id', 'name', 'status')->get();
     }
 
     public function deleteAccess($access_id)
@@ -532,5 +545,138 @@ class AccessServices
         return Access::whereHas('participants', function ($query) use ($userId) {
             $query->where('User.user_id', '=', $userId);
         })->get();
+    }
+
+    public function editAllAccessesStatus($congress_id, $status)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+            ->update(['status' => $status]);
+    }
+
+    public function editAccessStatus($access_id, $status)
+    {
+        return Access::where('access_id', '=', $access_id)
+        ->update(['status' => $status]);
+    }
+    public function getScoresByAccess($congress_id, $access_id, $exclureInvitee = false)
+    {
+        $accessGame = collect(AccessGame::where('access_id', '=', $access_id)
+                ->whereHas('user.user_congresses', function($query) use ($congress_id, $exclureInvitee) {
+                    if($exclureInvitee){
+                        $query->where('congress_id', '=', $congress_id);
+                        $query->where('privilege_id', '<>', 6);
+                    }
+                })
+                ->orderBy('score','desc')->with(['access' => function ($query) {
+                    $query->select('Access.access_id', 'Access.name');
+                }, 'user' => function ($query) {
+                    $query->select('User.user_id','User.first_name', 'User.last_name');
+                }])->get());
+        $uniqueAccesses = $accessGame->unique('user_id');
+        return $uniqueAccesses->values();
+    }
+
+    public function getScoresByCongress($congressId, $accesses, $exclureInvitee = false) 
+    {
+        $list = [];
+        foreach( $accesses as $access) {
+            array_push($list, $this->getScoresByAccess($congressId, $access->access_id, $exclureInvitee));
+        }
+        $values = collect($list)->collapse();
+        $counted = $values->groupBy('user_id');
+        $res = $counted->map(function ($item) {
+                return [
+                    'access_game_id'=> $item[0]->access_game_id,
+                    'score'=> $item->sum('score'),
+                    'user_id'=> $item[0]->user_id,
+                    'access_id'=> $item[0]->access_id,
+                    'user' => $item[0]->user,
+                    'access' => $item[0]->access
+                ];
+        });
+        return $res->values();
+    }
+
+    public function getGamesAccessesByCongress($congress_id)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+        ->where('access_type_id', '=', 4)
+        ->get();
+    }
+
+    public function saveScoreGame($access_id, $request)
+    {
+        $access_game = new AccessGame();
+        $access_game->access_id = $access_id;
+        $access_game->user_id = $request->input('user_id');
+        $access_game->score = $request->input('score');
+        $access_game->save();
+        return $access_game;
+    }
+
+    public function resetScore($access_id)
+    {
+        AccessGame::where('access_id', '=', $access_id)
+        ->delete();
+    }
+
+    public function addAccessFromExcel($start_date, $end_date, $access_type_id, $congress_id, $moderator)
+    {
+        $access = new Access();
+        $access->name = $moderator;
+        $access->start_date = $start_date;
+        $access->end_date = $end_date;
+        $access->access_type_id = $access_type_id;
+        $access->congress_id = $congress_id;
+        $access->is_online = 1;
+        $access->show_in_register = 1;
+        $access->save();
+        return $access;
+    }
+
+    
+    public function getUserAccessesByCongressId($congress_id, $user_id)
+    {
+        return Access::where('congress_id', '=', $congress_id)
+        ->where('is_online', '=', 1)
+        ->with(['type'])
+        ->whereHas('user_accesss' , function ($query) use ($user_id) {
+            $query->where('user_id', '=', $user_id);
+        })
+        ->get();
+    }
+    
+    public function getAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime, $isOnline, $myAccesses, $user_id)
+    {
+        $accesses = Access::with(['type','speakers','speaker'])
+        ->whereNull('parent_id')
+        ->where('congress_id', '=', $congressId)
+        ->where(function ($query) use ($search) {
+            if ($search !== '') {
+                $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
+                $query->orWhereRaw('(price) like (?)',  ["%{$search}%"]);
+            }
+        })->where(function ($query) use ($date, $startTime, $endTime) {
+            if ($date != '' && $date != 'null')
+                $query->whereDate('start_date', date($date));
+            if ($startTime != '' && $startTime != 'null')
+                $query->whereTime('start_date', '>=', $startTime);
+            if ($endTime != '' && $endTime != 'null')
+                $query->whereTime('end_date', '<=', $endTime);
+            
+        })
+        ->where(function ($query) use ($isOnline, $user_id, $myAccesses) {
+            if ($isOnline != '')
+                $query->where('is_online', '=', $isOnline);
+            if ($myAccesses == 1) {
+                $query->whereHas('user_accesss' , function ($q) use ($user_id) {
+                    $q->where('user_id', '=', $user_id);
+            });
+            } 
+        })
+        ->offset($offset)->limit($perPage)
+        ->get();
+        return $accesses;
     }
 }

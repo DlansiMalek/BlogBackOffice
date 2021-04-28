@@ -38,7 +38,8 @@ class CreateConfigCongressTable extends Migration
 
             $table->tinyInteger('status')->default(1);
 
-
+            
+            
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')
                 ->onDelete('cascade');

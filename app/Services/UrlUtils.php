@@ -179,6 +179,6 @@ class UrlUtils
             return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
         }
 
-        return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
+        return "https://".env('DIGITALOCEAN_SPACES_BUCKET').".fra1.cdn.digitaloceanspaces.com/";
     }
 }

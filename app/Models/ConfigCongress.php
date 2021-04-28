@@ -29,6 +29,7 @@ class ConfigCongress extends Model
         'access_system',
         'congress_id',
         'status',
+        'is_phone_required',
         'is_online',
         'is_code_shown',
         'is_notif_register_mail',
@@ -38,7 +39,8 @@ class ConfigCongress extends Model
         'lydia_token',
         'lydia_api',
         'is_submission_enabled',
-        'application'
+        'application',
+        'nb_max_access'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
