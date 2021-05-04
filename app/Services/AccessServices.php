@@ -646,12 +646,11 @@ class AccessServices
         ->get();
     }
     
-    public function getOnlineAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime)
+    public function getAccessesByCongressIdPginantion($congressId, $offset, $perPage, $search, $date, $startTime, $endTime, $isOnline, $myAccesses, $user_id)
     {
         $accesses = Access::with(['type','speakers','speaker'])
         ->whereNull('parent_id')
         ->where('congress_id', '=', $congressId)
-        ->where('is_online', '=', 1)
         ->where(function ($query) use ($search) {
             if ($search !== '') {
                 $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
@@ -659,13 +658,22 @@ class AccessServices
                 $query->orWhereRaw('(price) like (?)',  ["%{$search}%"]);
             }
         })->where(function ($query) use ($date, $startTime, $endTime) {
-            if ($date != '')
+            if ($date != '' && $date != 'null')
                 $query->whereDate('start_date', date($date));
-            if ($startTime != '')
-                $query->whereTime('start_date', '=', $startTime);
-            if ($endTime != '')
-                $query->whereTime('end_date', '=', $endTime);
+            if ($startTime != '' && $startTime != 'null')
+                $query->whereTime('start_date', '>=', $startTime);
+            if ($endTime != '' && $endTime != 'null')
+                $query->whereTime('end_date', '<=', $endTime);
             
+        })
+        ->where(function ($query) use ($isOnline, $user_id, $myAccesses) {
+            if ($isOnline != '')
+                $query->where('is_online', '=', $isOnline);
+            if ($myAccesses == 1) {
+                $query->whereHas('user_accesss' , function ($q) use ($user_id) {
+                    $q->where('user_id', '=', $user_id);
+            });
+            } 
         })
         ->offset($offset)->limit($perPage)
         ->get();
