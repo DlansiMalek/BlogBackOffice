@@ -579,7 +579,6 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
 Route::group(['prefix' => 'menu'], function () {
-    Route::post('addMenu', 'MenuController@addMenu');
-    Route::put('updateMenu/{idMenu}', 'MenuController@editMenu');
     Route::get('all', 'MenuController@getMenus');
+    Route::post('/add', 'MenuController@setMenus');
 });

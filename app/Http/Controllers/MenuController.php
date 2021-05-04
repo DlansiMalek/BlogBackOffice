@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\MenuServices;
 use App\Services\AdminServices;
-
+use App\Services\MenuServices;
+use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
@@ -15,36 +14,14 @@ class MenuController extends Controller
         AdminServices $adminServices
     ) {
         $this->menuServices = $menuServices;
-        $this->adminServices = $adminServices;
-    }
-
-
-    public function addMenu(Request $request)
-    {
-        if (!$request->has(['key', 'icon'])) {
-            return response()->json(['response' => 'invalid request',
-                'required fields' => ['key', 'icon']], 400);
-        }
-
-      /*  if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
-            return response()->json(['response' => 'admin not found'], 404);
-        }*/
-
-        $menu = $this->menuServices->addMenu($request);
-        return response()->json($menu);
-    }
-    public function editMenu(Request $request, $menuId)
-    {
-        if (!$menu = $this->menuServices->getById($menuId))
-            return response()->json(['message' => 'access not found'], 404);
-
-            $menu = $this->menuServices->editMenu($menu, $request);
-            
-            return $this->menuServices->getById($menu->menu_id);
-
     }
     public function getMenus()
     {
+        return $this->menuServices->getAllMenus();
+    }
+    public function setMenus(Request $request)
+    {
+        $this->menuServices->setMenus($request);
         return $this->menuServices->getAllMenus();
     }
 }
