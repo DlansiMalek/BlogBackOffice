@@ -413,9 +413,10 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congress->congress_id;
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice, $linkPrincipalRoom ), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
         } else if ($status == -1) {
@@ -872,9 +873,10 @@ class UserController extends Controller
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congress->congress_id;
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice,$linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
             $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
@@ -1725,9 +1727,10 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress_id;
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,$linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSmsToUsers($user, null, $congress_id, $congress);
@@ -1740,8 +1743,9 @@ class UserController extends Controller
 
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                    $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress_id;
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                   $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,  $link, null, $userPayment ,null,null,$linkPrincipalRoom), $user, $congress, $mail->object, false, $userMail);
                 }
             }
         }
