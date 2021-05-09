@@ -21,6 +21,7 @@ use App\Models\FormInputValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PDF;
 use function foo\func;
@@ -414,16 +415,25 @@ class UserServices
             $accepted = Utils::isSimilar($search, "accepted", 60);
             $inProgress = Utils::isSimilar($search, "in progress", 60);
             $refused = Utils::isSimilar($search, "refused", 60);
-        } else {
+        } else { 
+          
             $payed = $unpayed = $accepted = $inProgress = $refused = null;
         }
-
+    
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
             if ($privilegeIds != null) {
                 $query->whereIn('privilege_id', $privilegeIds);
             }
         })
+            ->where(function($query) use($admin_id, $congressId) {
+              if($admin_id){
+                $query->whereHas('inscription_evaluation' , function ($query) use ($congressId, $admin_id) {
+                      $query->where('admin_id', '=', $admin_id)
+                            ->where('congress_id', '=', $congressId);
+                });
+              }
+            })
             ->with(['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
@@ -1668,6 +1678,14 @@ class UserServices
     public function isUserModeratorStand($userCongress)
     {
         return $userCongress->privilege_id == 7;
+    }
+    
+    public function deleteFormInputUserByKey($userId, $congressId, $key)
+    {
+        return FormInputResponse::whereHas('form_input', function ($query) use ($congressId, $key) {
+            $query->where('congress_id', '=', $congressId)
+                    ->where('key', '=', $key);
+        })->where("user_id", '=', $userId)->delete();
     }
 
 }

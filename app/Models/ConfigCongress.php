@@ -39,7 +39,8 @@ class ConfigCongress extends Model
         'lydia_token',
         'lydia_api',
         'is_submission_enabled',
-        'application'
+        'application',
+        'nb_max_access'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
