@@ -20,5 +20,7 @@ class Resource extends Model
      public function resource_stand() {
          return $this->hasMany(ResourceStand::class , 'resource_id','resource_id');
      }   
- 
+	  public function resource_product() {
+         return $this->hasMany(ResourceProduct::class , 'resource_id','resource_id');
+     }
 }

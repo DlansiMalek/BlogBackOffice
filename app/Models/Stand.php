@@ -11,7 +11,7 @@ class Stand extends Model
     public $timestamps = true;
     protected $table = 'Stand';
     protected $primaryKey = 'stand_id';
-    protected $fillable = ['name', 'congress_id', 'organization_id', 'url_streaming'];
+    protected $fillable = ['name', 'congress_id', 'organization_id', 'url_streaming', 'booth_size', 'website_link', 'fb_link', 'insta_link', 'twitter_link', 'linkedin_link', 'priority', 'primary_color', 'secondary_color',];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     function docs()

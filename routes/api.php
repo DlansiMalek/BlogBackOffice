@@ -204,7 +204,12 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::put('/edit/{standId}', 'StandController@editStands');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
-            Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
+			Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
+            Route::delete('/deletestandproduct/{stand_product_id}', 'StandProductController@deleteStandproduct');
+            Route::get('{stand_id}/products', 'StandProductController@getStandproducts');
+            Route::post('/addproduct', 'StandProductController@addStandProduct');
+			Route::put('/edit/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
+		   
         });
 
 

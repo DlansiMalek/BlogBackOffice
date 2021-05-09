@@ -18,6 +18,7 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class OrganizationServices
 {
@@ -42,8 +43,8 @@ class OrganizationServices
         $organization->description = $request->has("description")? $request->input('description') : null;
         $organization->mobile = $request->input("mobile");
         $organization->admin_id = $admin_id;
-        $organization->resource_id = $request->input("resource_id");
-        $organization->is_sponsor = $request->input("is_sponsor");
+        // $organization->resource_id = $request->input("resource_id");
+        // $organization->is_sponsor = $request->input("is_sponsor");
         $organization->logo_position = $request->input("logo_position");
         $organization->save();
         return $organization;
@@ -105,11 +106,14 @@ class OrganizationServices
             ->first();
     }
 
-    public function affectOrganizationToCongress($congress_id, $organization_id)
-    {
+    public function affectOrganizationToCongress($congress_id, $organization_id, $is_sponsor, $banner, $resource_id)
+    { 
         $congress_organization = new CongressOrganization();
         $congress_organization->congress_id = $congress_id;
         $congress_organization->organization_id = $organization_id;
+        $congress_organization->resource_id = $resource_id;
+        $congress_organization->is_sponsor = $is_sponsor;
+        $congress_organization->banner = $banner;
         $congress_organization->save();
 
         return $congress_organization;
@@ -154,13 +158,20 @@ class OrganizationServices
 
    public function getSponsorsByCongressId($congressId)
     {
-        return Organization::whereHas('congressOrganization', function ($query) use ($congressId) {
-            $query->where('congress_id', '=', $congressId)
-            ->where('is_sponsor', '=', 1);
-        })
-            ->with(['admin', 'resource', 'congressOrganization' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            }])
+        // return Organization::whereHas('congressOrganization', function ($query) use ($congressId) {
+            // $query->where('congress_id', '=', $congressId)
+            // ->where('is_sponsor', '=', 1);
+        // })
+            // ->with(['admin', 'resource', 'congressOrganization' => function ($query) use ($congressId) {
+                // $query->where('congress_id', '=', $congressId);
+            // }])
+            // ->get();
+			 $sponsors = DB::table('organization')
+            ->join('congress_organization', 'organization.organization_id', '=', 'congress_organization.organization_id')
+            ->where('congress_organization.congress_id', '=',  $congressId )
+            ->where('congress_organization.is_sponsor', '=',  1 )
+			->select('organization.*')
             ->get();
+		return $sponsors;
     }
 }

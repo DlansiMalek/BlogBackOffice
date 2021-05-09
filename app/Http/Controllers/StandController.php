@@ -41,7 +41,16 @@ class StandController extends Controller
         $stand = $this->standServices->addStand(
             $request->input('name'),
             $request->input('organization_id'),
-            $request->input('congress_id')
+            $request->input('congress_id'),
+            $request->input('booth_size'),
+            $request->input('website_link'),
+            $request->input('fb_link'),
+            $request->input('insta_link'),
+            $request->input('twitter_link'),
+            $request->input('linkedin_link'),
+            $request->input('priority'),
+            $request->input('primary_color'),
+            $request->input('secondary_color')
  
          );
          $resources = $request->input('docs');
