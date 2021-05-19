@@ -36,13 +36,14 @@ class OrganizationServices
         }])->find($organization_id);
     }
 
-    public function addOrganization(Request $request, $admin_id)
+    public function addOrganization(Request $request)
     {
         $organization = new Organization();
         $organization->name = $request->input("name");
         $organization->description = $request->has("description")? $request->input('description') : null;
         $organization->mobile = $request->input("mobile");
-        $organization->admin_id = $admin_id;
+        $organization->email = $request->input("email");
+        // $organization->admin_id = $admin_id;
         // $organization->resource_id = $request->input("resource_id");
         // $organization->is_sponsor = $request->input("is_sponsor");
         $organization->logo_position = $request->input("logo_position");
@@ -106,7 +107,7 @@ class OrganizationServices
             ->first();
     }
 
-    public function affectOrganizationToCongress($congress_id, $organization_id, $is_sponsor, $banner, $resource_id)
+    public function affectOrganizationToCongress($congress_id, $organization_id, $is_sponsor, $banner, $resource_id, $admin_id)
     { 
         $congress_organization = new CongressOrganization();
         $congress_organization->congress_id = $congress_id;
@@ -114,6 +115,7 @@ class OrganizationServices
         $congress_organization->resource_id = $resource_id;
         $congress_organization->is_sponsor = $is_sponsor;
         $congress_organization->banner = $banner;
+        $congress_organization->admin_id = $admin_id;
         $congress_organization->save();
 
         return $congress_organization;

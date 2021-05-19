@@ -50,7 +50,8 @@ class StandController extends Controller
             $request->input('linkedin_link'),
             $request->input('priority'),
             $request->input('primary_color'),
-            $request->input('secondary_color')
+            $request->input('secondary_color'),
+            $request->input('with_products')
  
          );
          $resources = $request->input('docs');
@@ -97,7 +98,17 @@ class StandController extends Controller
             $request->input('name'),
             $request->input('congress_id'),
             $request->input('organization_id'),
-            $request->input('url_streaming')
+            $request->input('url_streaming'),
+            $request->input('booth_size'),
+            $request->input('website_link'),
+            $request->input('fb_link'),
+            $request->input('insta_link'),
+            $request->input('twitter_link'),
+            $request->input('linkedin_link'),
+            $request->input('priority'),
+            $request->input('primary_color'),
+            $request->input('secondary_color'),
+            $request->input('with_products')
          );
           $this->standServices->saveResourceStand($request->input('docs'),$stand->stand_id);
         return response()->json($stand, 200);

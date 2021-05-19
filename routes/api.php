@@ -352,6 +352,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
+            Route::get('list/organismadmins', 'AdminController@getListOrganismAdmins');
             Route::put('{congress_id}/edit/{admin_id}', 'AdminController@editPersonels');
             Route::get('{congress_id}/byId/{admin_id}', 'AdminController@getPersonelByIdAndCongressId');
             Route::post('{congress_id}/add', 'AdminController@addPersonnel');

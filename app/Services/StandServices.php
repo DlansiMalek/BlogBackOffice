@@ -12,7 +12,7 @@ class StandServices
 {
 
 
-    public function addStand($name,$organization_id,$congress_id,$booth_size,$website_link,$fb_link,$insta_link,$twitter_link,$linkedin_link,$priority,$primary_color,$secondary_color) {
+    public function addStand($name,$organization_id,$congress_id,$booth_size,$website_link,$fb_link,$insta_link,$twitter_link,$linkedin_link,$priority,$primary_color,$secondary_color,$with_products) {
         $stand = new Stand();
         $stand->name = $name;
         $stand->organization_id = $organization_id;
@@ -26,6 +26,7 @@ class StandServices
         $stand->priority = $priority;
         $stand->primary_color = $primary_color;
         $stand->secondary_color = $secondary_color;
+        $stand->with_products = $with_products ;
         $stand->save();
         return $stand;
     }
@@ -99,7 +100,7 @@ class StandServices
 
     }
 
-    public function editStand($oldStand,$name,$organization_id,$congress_id,$booth_size,$website_link,$fb_link,$insta_link,$twitter_link,$linkedin_link,$priority,$primary_color,$secondary_color) {
+    public function editStand($oldStand,$name,$organization_id,$congress_id,$url_streaming,$booth_size,$website_link,$fb_link,$insta_link,$twitter_link,$linkedin_link,$priority,$primary_color,$secondary_color) {
        
         $oldStand->name= $name;
         $oldStand->congress_id = $congress_id;

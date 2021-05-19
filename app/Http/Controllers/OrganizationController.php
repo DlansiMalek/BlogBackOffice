@@ -58,31 +58,33 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
-        $email = $request->has("email") ? $request->input("email") : $request->input("name") . '@eventizer.io';
+        // $email = $request->has("email") ? $request->input("email") : $request->input("name") . '@eventizer.io';
 
         $password  = Str::random(8);
-        $admin = $this->adminServices->getAdminByMail($email);
-        if (!$admin) {
-            $admin = $this->adminServices->addPersonnel($request, $password, $email);
-        } else {
-            if ($this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id)) {
-                return response()->json(['error' => 'admin alerady has a privilege in this congress'], 500);
-            }
-        }
+		$admin_id =$request->input("admin_id");
+        $admin = $this->adminServices->getAdminById($admin_id);
+        // $admin = $this->adminServices->getAdminByMail($email);
+        // if (!$admin) {
+            // $admin = $this->adminServices->addPersonnel($request, $password, $email);
+        // } else {
+            // if ($this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id)) {
+                // return response()->json(['error' => 'admin alerady has a privilege in this congress'], 500);
+            // }
+        // }
 
         $organization = $this->organizationServices->getOrganizationByName($request->input("name"));
         if (!$organization) {
-            $organization = $this->organizationServices->addOrganization($request, $admin->admin_id);
+            $organization = $this->organizationServices->addOrganization($request);
         } else {
             if ($this->organizationServices->getOrganizationByCongressIdAndOrgId($congress_id, $organization->organization_id)) {
                 return response()->json(["message" => "organization already exists in this congress"], 401);
             }
-            $organization->admin_id = $admin->admin_id;
-            $organization->update();
+            // $organization->admin_id = $admin->admin_id;
+            // $organization->update();
         }
 
         // PrivilegeID = 7 : Organisme
-        $this->adminServices->addAdminCongress($admin->admin_id, $congress_id, $privilegeId);
+        $this->adminServices->addAdminCongress($admin_id, $congress_id, $privilegeId);
 
 
         $this->organizationServices->affectOrganizationToCongress(
@@ -90,7 +92,8 @@ class OrganizationController extends Controller
 		$organization->organization_id,
 		$request->input('is_sponsor'),
 		$request->input('banner'),
-		$request->input('resource_id')
+		$request->input('resource_id'),
+		$request->input("admin_id")
 		);
 
         if ($mailtype = $this->congressServices->getMailType('organization')) {
