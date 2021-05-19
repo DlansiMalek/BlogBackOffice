@@ -27,6 +27,7 @@ use App\Services\Utils;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Exception;
 
 class UserController extends Controller
 {
@@ -569,6 +570,11 @@ class UserController extends Controller
             $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
         } else {
             $user = $this->userServices->editUser($request, $user);
+            try {
+                $this->userServices->getUserFirebase($user->email);
+            } catch (Exception $e) {
+                $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
+            }
         }
 
         // Check if User already registed to congress

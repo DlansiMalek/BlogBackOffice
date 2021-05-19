@@ -9,11 +9,15 @@ use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
+use Error;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Contracts\Providers\Auth;
+use Illuminate\Support\Facades\Log;
+
 
 class LoginController extends Controller
 {
@@ -81,13 +85,18 @@ class LoginController extends Controller
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
+        try {
+            $this->userServices->getUserFirebase($request->input("email"));
+        } catch (Exception $e) {
+            $this->userServices->addUserFirebase($request->input("email"), $request->input("password"));
+        }
 
         // TODO Je le déscative pour l'instant (à valider la tache d'envoi de mail)
         /*if ($user->email_verified == 0) {
         return response()->json(['error' => 'email not verified'], 405);
         }*/
 
-        return response()->json(['user' => $user, 'token' => $token], 200);
+        return response()->json(['user' => $user, 'token' => $token ], 200);
     }
 
     public function forgetPassword(Request $request)
