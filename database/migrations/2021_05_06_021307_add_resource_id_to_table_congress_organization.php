@@ -13,7 +13,7 @@ class AddResourceIdToTableCongressOrganization extends Migration
      */
     public function up()
     {
-        Schema::table('congress_organization', function (Blueprint $table) {
+        Schema::table('Congress_Organization', function (Blueprint $table) {
           $table->unsignedInteger("resource_id")->nullable()->default(null);
             $table->foreign("resource_id")->references('resource_id')->on('Resource')
                 ->onDelete('cascade');
@@ -29,8 +29,9 @@ class AddResourceIdToTableCongressOrganization extends Migration
      */
     public function down()
     {
-        Schema::table('congress_organization', function (Blueprint $table) {
-            //
+        Schema::table('Congress_Organization', function (Blueprint $table) {
+              $table->removeColumn("is_sponsor");
+			   $table->dropForeign(['resource_id']);
         });
     }
 }

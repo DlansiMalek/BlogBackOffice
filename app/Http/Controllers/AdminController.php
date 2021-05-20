@@ -420,6 +420,8 @@ class AdminController extends Controller
 
             $admin = $this->adminServices->addPersonnel($admin, $password);
             $admin_id = $admin->admin_id;
+			if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+            $user = $this->userServices->registerUser($request); }
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress

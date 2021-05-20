@@ -13,7 +13,7 @@ class CreateTableStandProduct extends Migration
      */
     public function up()
     {
-        Schema::create('stand_product', function (Blueprint $table) {
+        Schema::create('Stand_Product', function (Blueprint $table) {
             $table->increments("stand_product_id");
 			$table->unsignedInteger('stand_id');
             $table->foreign("stand_id")
@@ -35,6 +35,13 @@ class CreateTableStandProduct extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stand_product');
+		Schema::table('Stand_Product', function (Blueprint $table) {
+			$table->removeColumn("name");
+			$table->removeColumn("description");
+			$table->removeColumn("main_img");
+			$table->removeColumn("brochure_file");
+			$table->dropForeign(['stand_id']);
+        });
+        Schema::dropIfExists('Stand_Product');
     }
 }

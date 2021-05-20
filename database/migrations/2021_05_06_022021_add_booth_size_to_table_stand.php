@@ -13,7 +13,7 @@ class AddBoothSizeToTableStand extends Migration
      */
     public function up()
     {
-        Schema::table('stand', function (Blueprint $table) {
+        Schema::table('Stand', function (Blueprint $table) {
            $table->string('booth_size')->nullable()->default(null);
 		   $table->string('website_link')->nullable()->default(null);
            $table->string('fb_link')->nullable()->default(null);
@@ -34,8 +34,16 @@ class AddBoothSizeToTableStand extends Migration
      */
     public function down()
     {
-        Schema::table('stand', function (Blueprint $table) {
-            //
+        Schema::table('Stand', function (Blueprint $table) {
+            $table->removeColumn("booth_size");
+            $table->removeColumn("website_link");
+            $table->removeColumn("fb_link");
+            $table->removeColumn("insta_link");
+            $table->removeColumn("twitter_link");
+            $table->removeColumn("linkedin_link");
+            $table->removeColumn("priority");
+            $table->removeColumn("primary_color");
+            $table->removeColumn("secondary_color");
         });
     }
 }

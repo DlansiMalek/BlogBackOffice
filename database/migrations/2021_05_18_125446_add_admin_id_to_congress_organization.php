@@ -13,7 +13,7 @@ class AddAdminIdToCongressOrganization extends Migration
      */
     public function up()
     {
-        Schema::table('congress_organization', function (Blueprint $table) {
+        Schema::table('Congress_Organization', function (Blueprint $table) {
           $table->unsignedInteger("admin_id")->nullable()->default(null);
             $table->foreign("admin_id")->references('admin_id')->on('admin')
                 ->onDelete('cascade');
@@ -27,8 +27,8 @@ class AddAdminIdToCongressOrganization extends Migration
      */
     public function down()
     {
-        Schema::table('congress_organization', function (Blueprint $table) {
-            //
+        Schema::table('Congress_Organization', function (Blueprint $table) {
+             $table->dropForeign(['admin_id']);
         });
     }
 }

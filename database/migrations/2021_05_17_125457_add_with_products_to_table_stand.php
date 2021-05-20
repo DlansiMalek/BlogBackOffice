@@ -13,7 +13,7 @@ class AddWithProductsToTableStand extends Migration
      */
     public function up()
     {
-       Schema::table('stand', function (Blueprint $table) {
+       Schema::table('Stand', function (Blueprint $table) {
            $table->boolean('with_products')->nullable()->default(null);           
         });
     }
@@ -25,8 +25,8 @@ class AddWithProductsToTableStand extends Migration
      */
     public function down()
     {
-        Schema::table('stand', function (Blueprint $table) {
-            //
+        Schema::table('Stand', function (Blueprint $table) {
+           table->removeColumn("with_products");
         });
     }
 }

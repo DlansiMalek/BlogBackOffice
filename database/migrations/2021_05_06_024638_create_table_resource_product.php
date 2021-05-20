@@ -13,7 +13,7 @@ class CreateTableResourceProduct extends Migration
      */
     public function up()
     {
-        Schema::create('resource_product', function (Blueprint $table) {
+        Schema::create('Resource_Product', function (Blueprint $table) {
            $table->increments("resource_product_id");
 			
 		   $table->string("file_name")
@@ -39,6 +39,11 @@ class CreateTableResourceProduct extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('resource_product');
+         Schema::table('Resource_Product', function (Blueprint $table) {
+            $table->dropForeign(['stand_product_id']);
+            $table->dropForeign(['resource_id']);
+            table->removeColumn("file_name");
+        });
+		Schema::dropIfExists('Resource_Product');
     }
 }
