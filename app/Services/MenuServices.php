@@ -16,6 +16,56 @@ class MenuServices
         }])->orderBy('index')->get();
 
     }
+    public function getMenuChildrenByMenu($menuId)
+    {
+        return MenuChildren::where('menu_id', '=', $menuId)->get();
+    }
+
+    public function addMenuChildren($valueRequest, $menuChildren = null, $idMenu)
+    {
+
+        if (!$menuChildren) {
+            $menuChildren = new MenuChildren();
+            $menuExist = false;
+        } else {
+            $menuExist = true;
+        }
+
+        $menuChildren->menu_children_id = $valueRequest['menu_children_id'];
+        $menuChildren->key = $valueRequest["key"];
+        $menuChildren->icon = $valueRequest["icon"];
+        $menuChildren->url = $valueRequest["url"];
+        $menuChildren->menu_id = $idMenu;
+        $menuChildren->index = $valueRequest["index"];
+
+        if (!$menuExist) {
+            $menuChildren->save();
+        } else {
+            $menuChildren->update();
+        }
+
+    }
+    public function addMenu($new, $menu = null)
+    {
+
+        if (!$menu) {$menu = new Menu();
+            $menuExist = false;
+        } else {
+            $menuExist = true;
+        }
+
+        $menu->menu_id = $new["menu_id"];
+        $menu->key = $new["key"];
+        $menu->url = $new["url"];
+        $menu->icon = $new["icon"];
+        $menu->index = $new["index"];
+
+        if (!$menuExist) {
+            $menu->save();
+        } else {
+             $menu->update();
+            }
+    }
     public function setMenus($newMenu)
     {
         $oldMenu = $this->getAllMenus();
@@ -41,18 +91,8 @@ class MenuServices
                     break;
                 }
             }
-            if (!$menu) {
-                $menu = new Menu();
-            }
-
-            $menu->menu_id = $new["menu_id"];
-            $menu->key = $new["key"];
-            $menu->icon = $new["icon"];
-            $menu->index = $new["index"];
-
-            $menu->save();
-
-            $oldChildrens = MenuChildren::where('menu_id', '=', $menu->menu_id)->get();
+            $this->addMenu($new, $menu);
+            $oldChildrens = $this->getMenuChildrenByMenu($menu->menu_id);
             foreach ($oldChildrens as $oldChildren) {
                 $exists = false;
                 foreach ($new["menu_children"] as $newChildren) {
@@ -74,22 +114,8 @@ class MenuServices
                         break;
                     }
                 }
-                if (!$menuChildren) {
-                    $menuChildren = new MenuChildren();
-                }
-
-                $menuChildren->menu_children_id = $valueRequest['menu_children_id'];
-                $menuChildren->key = $valueRequest["key"];
-                $menuChildren->icon = $valueRequest["icon"];
-                $menuChildren->url = $valueRequest["url"];
-                $menuChildren->menu_id = $menu->menu_id;
-                $menuChildren->index = $valueRequest["index"];
-
-                if ($menuChildren->menu_children_id) {
-                    $menuChildren->update();
-                } else {
-                    $menuChildren->save();
-                }
+            
+        $this->addMenuChildren($valueRequest, $menuChildren ,$menu->menu_id);
 
             }
 
