@@ -675,8 +675,8 @@ class AccessServices
             });
             } 
         })
-        ->offset($offset)->limit($perPage)
-        ->get();
+        ->offset($offset)->paginate($perPage);
+        
         return $accesses;
     }
 }
