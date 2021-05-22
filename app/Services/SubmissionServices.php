@@ -165,8 +165,13 @@ class SubmissionServices
                     if ($search != "") {
                         $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
                         $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('submission_id like (?)', ["%{$search}%"]);
+                        $query->orWhereHas('user', function ($q) use ($search) {
+                            $q->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+                        });
+
                     }
-                });
+            });
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
                     || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
                     || $tri == 'theme_id' || $tri == 'congress_id')) {
@@ -194,8 +199,13 @@ class SubmissionServices
                     if ($search != "") {
                         $query->whereRaw('lower(title) like (?)', ["%{$search}%"]);
                         $query->orWhereRaw('lower(description) like (?)', ["%{$search}%"]);
+                        $query->orWhereRaw('submission_id like (?)', ["%{$search}%"]);
+                        $query->orWhereHas('user', function ($q) use ($search) {
+                            $q->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+                        });
                     }
                 });
+              
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
                     || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
                     || $tri == 'theme_id' || $tri == 'congress_id')) {
