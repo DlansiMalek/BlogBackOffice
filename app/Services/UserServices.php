@@ -1693,4 +1693,21 @@ class UserServices
         return $userCongress->privilege_id == 2;
     }
 
+    public function getUser3DByEmail($email) {
+        $email = strtolower($email);
+        $user = User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->with([
+            'profile_img',
+            'user_congresses.congress.config' => function ($query) {
+                $query->select('config_congress_id','congress_id','logo','banner','url_streaming');
+            },
+            'user_congresses.congress'=> function ($query) {
+                $query->select('congress_id','name','start_date','end_date','description');
+            }
+            ])
+            ->select('user_id','first_name','last_name','gender','mobile','email','resource_id')
+            ->first();
+
+        return $user;
+    }
 }

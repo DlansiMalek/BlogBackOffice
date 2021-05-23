@@ -573,11 +573,15 @@ Route::group(["prefix" => "peaksource"], function () {
         Route::post('save-score-game', 'AccessController@saveScoreGame');
         Route::get('get-score-game', 'AccessController@getScoresByCongressPeaksource');
     });
-    
-  
 }); 
 Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
 
+// 3D API
+Route::group(["prefix" => "3D"], function () {
+    Route::group(['middleware' => ['assign.guard:users']], function () {
+        Route::post('login', 'Auth\LoginController@login3DUser');
+    });
+}); 
