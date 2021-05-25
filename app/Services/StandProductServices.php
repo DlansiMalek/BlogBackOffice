@@ -52,7 +52,7 @@ class StandProductServices
     {
 
         $oldResources = ResourceProduct::where('stand_product_id', '=', $stand_product_id)
-            ->with(['resource'])
+            ->with(['docs'])
             ->get();
 
         if (sizeof($oldResources) > 0) {

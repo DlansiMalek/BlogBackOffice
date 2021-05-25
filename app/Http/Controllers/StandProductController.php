@@ -27,14 +27,10 @@ class StandProductController extends Controller
             $request->input('description'),
             $request->input('main_img'),
             $request->input('brochure_file'),
-        );
-
-        //$resources = $request->input('docs');
-        //only for testing :  because there is no gui  and resource created 
-        $docs = array("resource_id" => 1, "pivot" => "37", "file_name" => "43");
-        $resources = $docs;
-        $this->standProductServices->saveResourceStandProduct($resources, $standproduct->stand_product_id);
-        return response()->json('Standproduct added', 200);
+        ); 
+			$resources = $request->input('docs');
+			$this->standProductServices->saveResourceStandProduct($resources, $standproduct->stand_product_id);
+			return response()->json('Standproduct added', 200);
     }
 
     public function editStandProduct($congress_id, $stand_id, $standproduct_id,  Request $request)

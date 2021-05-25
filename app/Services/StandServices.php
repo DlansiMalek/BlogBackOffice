@@ -96,7 +96,7 @@ class StandServices
     public function getStandById($stand_id)
     {
         return Stand::where('stand_id', '=', $stand_id)
-            ->with(['docs', 'organization'])
+            ->with(['docs', 'organization','products'])
             ->first();
     }
 
@@ -128,7 +128,7 @@ class StandServices
                 $query->where('status', '=', $status);
             }
         })
-            ->with(['docs', 'organization' => function ($query) {
+            ->with(['docs', 'products' , 'organization' => function ($query) {
                 $query->with('resource');
             }])
             ->where('congress_id', '=', $congress_id)->get();

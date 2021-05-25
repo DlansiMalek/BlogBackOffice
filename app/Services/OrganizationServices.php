@@ -43,9 +43,6 @@ class OrganizationServices
         $organization->description = $request->has("description")? $request->input('description') : null;
         $organization->mobile = $request->input("mobile");
         $organization->email = $request->input("email");
-        // $organization->admin_id = $admin_id;
-        // $organization->resource_id = $request->input("resource_id");
-        // $organization->is_sponsor = $request->input("is_sponsor");
         $organization->logo_position = $request->input("logo_position");
         $organization->save();
         return $organization;
@@ -160,14 +157,6 @@ class OrganizationServices
 
    public function getSponsorsByCongressId($congressId)
     {
-        // return Organization::whereHas('congressOrganization', function ($query) use ($congressId) {
-            // $query->where('congress_id', '=', $congressId)
-            // ->where('is_sponsor', '=', 1);
-        // })
-            // ->with(['admin', 'resource', 'congressOrganization' => function ($query) use ($congressId) {
-                // $query->where('congress_id', '=', $congressId);
-            // }])
-            // ->get();
 			 $sponsors = DB::table('organization')
             ->join('congress_organization', 'organization.organization_id', '=', 'congress_organization.organization_id')
             ->where('congress_organization.congress_id', '=',  $congressId )
