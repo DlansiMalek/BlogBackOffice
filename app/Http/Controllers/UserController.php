@@ -1944,7 +1944,7 @@ class UserController extends Controller
         return response()->json(['$users' => $users]);
     }
 
-    public function checkStandRights($congressId, $standId)
+    public function checkStandRights($congressId, $standId, $organizerId = null)
     {
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
@@ -1964,10 +1964,10 @@ class UserController extends Controller
         if (!Utils::isValidSendMail($congress, $user)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
-        $isModerator = $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+        $isModerator = $organizerId ? $this->userServices->isUserOrganizer($user->user_congresses[0]) : $this->userServices->isUserModeratorStand($user->user_congresses[0]);
 
         $userToUpdate = $user->user_congresses[0];
-        $roomName = 'eventizer_room_' . $congressId . 's' . $standId;
+        $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
         $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
@@ -1980,6 +1980,16 @@ class UserController extends Controller
                 "allowed_jitsi" => true,
                 "url_streaming" => null,
             ], 200);
+    }
+
+    public function getOrganizers($congressId)
+    {
+        if (!$congress = $this->congressServices->getById($congressId)) {
+            return response()->json(["error" => "congress not found"], 404);
+        }
+        $users = $this->userServices->getUsersMinByCongress($congressId, 2);
+
+        return response()->json($users);
     }
 
 }

@@ -18,6 +18,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Contracts\Providers\Auth;
 use Illuminate\Support\Facades\Log;
 
+use Illuminate\Support\Facades\Cache;
 
 class LoginController extends Controller
 {
@@ -79,6 +80,27 @@ class LoginController extends Controller
         }
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
+    }
+
+    public function login3DUser(Request $request) {
+        $credentials = request(['email', 'password']);
+
+        $email = $request->input("email");
+
+        $cacheKey = "login3DUser-".$email;
+
+        if (Cache::has($cacheKey)) {
+            $user = Cache::get($cacheKey);
+        } else {
+            $user = $this->userServices->getUser3DByEmail($email);
+            Cache::put($cacheKey, $user, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
+        }
+
+        return response()->json(['user' => $user, 'token' => $token, 'baseUriImg' => UrlUtils::getFilesUrl()], 200);
     }
 
     public function loginUser(Request $request)
