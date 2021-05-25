@@ -14,7 +14,13 @@ class AddColmnnBannerToTableCongressOrganization extends Migration
     public function up()
     {
         Schema::table('Congress_Organization', function (Blueprint $table) {
-           $table->string('banner')->nullable()->default(null);
+            $table->string('banner')->nullable()->default(null);
+            $table->unsignedInteger("resource_id")->nullable()->default(null);
+            $table->foreign("resource_id")->references('resource_id')->on('Resource')
+                ->onDelete('cascade');
+            $table->tinyInteger('is_sponsor')->default(0)->nullable();
+            $table->foreign("admin_id")->references('admin_id')->on('admin')
+                ->onDelete('cascade');
         });
     }
 
@@ -27,6 +33,9 @@ class AddColmnnBannerToTableCongressOrganization extends Migration
     {
         Schema::table('Congress_Organization', function (Blueprint $table) {
             $table->removeColumn("banner");
+            $table->removeColumn("is_sponsor");
+            $table->dropForeign(['resource_id']);
+            $table->dropForeign(['admin_id']);
         });
     }
 }

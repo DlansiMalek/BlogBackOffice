@@ -14,16 +14,13 @@ class CreateTableResourceProduct extends Migration
     public function up()
     {
         Schema::create('Resource_Product', function (Blueprint $table) {
-           $table->increments("resource_product_id");
-			
-		   $table->string("file_name")
-                ->nullable()->default(null);
-            
-			$table->unsignedInteger("stand_product_id");
+            $table->increments("resource_product_id");
+
+            $table->unsignedInteger("stand_product_id");
             $table->foreign("stand_product_id")->references('stand_product_id')->on('stand_product')
                 ->onDelete('cascade');
-			
-			$table->unsignedInteger("resource_id");
+
+            $table->unsignedInteger("resource_id");
             $table->foreign("resource_id")->references('resource_id')->on('Resource')
                 ->onDelete('cascade');
 
@@ -39,11 +36,10 @@ class CreateTableResourceProduct extends Migration
      */
     public function down()
     {
-         Schema::table('Resource_Product', function (Blueprint $table) {
+        Schema::table('Resource_Product', function (Blueprint $table) {
             $table->dropForeign(['stand_product_id']);
             $table->dropForeign(['resource_id']);
-            table->removeColumn("file_name");
         });
-		Schema::dropIfExists('Resource_Product');
+        Schema::dropIfExists('Resource_Product');
     }
 }

@@ -14,7 +14,9 @@ class AddEmailToOrganization extends Migration
     public function up()
     {
         Schema::table('Organization', function (Blueprint $table) {
-           $table->string('email');
+            $table->string('email');
+            $table->removeColumn("is_sponsor");
+            $table->dropForeign(['resource_id']);
         });
     }
 
@@ -26,7 +28,7 @@ class AddEmailToOrganization extends Migration
     public function down()
     {
         Schema::table('Organization', function (Blueprint $table) {
-             $table->dropForeign(['email']);
+            $table->dropForeign(['email']);
         });
     }
 }

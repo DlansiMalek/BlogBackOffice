@@ -35,17 +35,18 @@ class AdminController extends Controller
     protected $client;
     protected $offreServices;
 
-    public function __construct(UserServices $userServices,
-                                AdminServices $adminServices,
-                                CongressServices $congressService,
-                                PrivilegeServices $privilegeServices,
-                                SharedServices $sharedServices,
-                                BadgeServices $badgeServices,
-                                AccessServices $accessServices,
-                                SubmissionServices $submissionServices,
-                                MailServices $mailServices,
-                                OffreServices $offreServices)
-    {
+    public function __construct(
+        UserServices $userServices,
+        AdminServices $adminServices,
+        CongressServices $congressService,
+        PrivilegeServices $privilegeServices,
+        SharedServices $sharedServices,
+        BadgeServices $badgeServices,
+        AccessServices $accessServices,
+        SubmissionServices $submissionServices,
+        MailServices $mailServices,
+        OffreServices $offreServices
+    ) {
         $this->userServices = $userServices;
         $this->adminServices = $adminServices;
         $this->congressService = $congressService;
@@ -209,8 +210,10 @@ class AdminController extends Controller
     {
         //type : 1 : Enter Or 0 : Leave
         if (!$request->has(['isPresent', 'type', 'congressId'])) {
-            return response()->json(['resposne' => 'bad request',
-                'required fields' => ['isPresent', 'type', 'congressId']], 400);
+            return response()->json([
+                'resposne' => 'bad request',
+                'required fields' => ['isPresent', 'type', 'congressId']
+            ], 400);
         }
         $congressId = $request->input('congressId');
 
@@ -219,10 +222,12 @@ class AdminController extends Controller
             $userId = $user->user_id;
         }
 
-        $participator = $this->userServices->getUserByIdWithRelations($userId,
+        $participator = $this->userServices->getUserByIdWithRelations(
+            $userId,
             ['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }]);
+            }]
+        );
 
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
@@ -240,7 +245,7 @@ class AdminController extends Controller
 
         if ($request->has('channel_name')) {
             $access = $this->accessServices->getAccessByName($request->input('channel_name'));
-            if($access)
+            if ($access)
                 $accessId = $access->access_id;
         }
 
@@ -258,8 +263,13 @@ class AdminController extends Controller
             return response()->json(['message' => 'cannot leave , enter first'], 401);
         }
 
-        $this->userServices->makePresentToAccess($user_access, $participator,
-            $accessId, $request->input('isPresent'), $request->input('type'));
+        $this->userServices->makePresentToAccess(
+            $user_access,
+            $participator,
+            $accessId,
+            $request->input('isPresent'),
+            $request->input('type')
+        );
 
         return response()->json(["message" => "success sending and scanning"], 200);
     }
@@ -271,10 +281,12 @@ class AdminController extends Controller
         }
         $congressId = $request->input("congressId");
 
-        $participator = $this->userServices->getUserByIdWithRelations($userId,
+        $participator = $this->userServices->getUserByIdWithRelations(
+            $userId,
             ['user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }]);
+            }]
+        );
         if (!$participator) {
             return response()->json(['resposne' => 'participator not found'], 404);
         }
@@ -321,7 +333,8 @@ class AdminController extends Controller
         return response()->json(['admin' => $admin, 'menus' => $menus]);
     }
 
-    public function getAdminMenus($admin_id) {
+    public function getAdminMenus($admin_id)
+    {
         $offre = $this->offreServices->getActiveOffreByAdminId($admin_id);
         if (!$offre) {
             $menus = $this->offreServices->getAllMenu();
@@ -348,7 +361,6 @@ class AdminController extends Controller
         $participants = $this->userServices->getAllParticipatorByCongress($congressId);
 
         return response()->json($participants, 200);
-
     }
 
     public
@@ -357,7 +369,6 @@ class AdminController extends Controller
         $presences = $this->userServices->getAllPresentParticipatorByCongress($congressId);
 
         return response()->json($presences, 200);
-
     }
 
     public
@@ -381,8 +392,7 @@ class AdminController extends Controller
      * )
      *
      */
-    public
-    function getListPersonels($congress_id)
+    public function getListPersonels($congress_id)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
@@ -390,19 +400,16 @@ class AdminController extends Controller
         $personels = $this->adminServices->getListPersonelsByAdmin($congress_id);
 
         return response()->json($personels);
-
     }
-	
-	public
-    function getListOrganismAdmins($congress_id)
-    { 
-		 if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+
+    public function getListOrganismAdmins($congress_id)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $personels = $this->adminServices->getListPersonelsByAdmin($congress_id);
 
         return response()->json($personels);
-
     }
 
     public function addPersonnel(Request $request, $congress_id)
@@ -420,13 +427,16 @@ class AdminController extends Controller
 
             $admin = $this->adminServices->addPersonnel($admin, $password);
             $admin_id = $admin->admin_id;
-			if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
-            $user = $this->userServices->registerUser($request); }
+            if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
+                $user = $this->userServices->registerUser($request);
+            }
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress
-            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id,
-                $congress_id);
+            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress(
+                $admin_id,
+                $congress_id
+            );
 
             if ($admin_congress) {
                 return response()->json(['error' => 'Organisateur existant'], 505);
@@ -447,11 +457,16 @@ class AdminController extends Controller
             $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
             if (sizeof($submissions) > 0) {
                 $this->adminServices->affectEvaluatorToSubmissions(
-                    $submissions, $admin_id, $request->input("themesSelected"), $congress_id);
+                    $submissions,
+                    $admin_id,
+                    $request->input("themesSelected"),
+                    $congress_id
+                );
             }
         }
         $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
-        if ($privilegeId == 13 &&
+        if (
+            $privilegeId == 13 &&
             $congress->config_selection && ($congress->congress_type_id == 2 || $congress->congress_type_id == 1) &&
             sizeof($evalutors) < $congress->config_selection->num_evaluators
         ) {
@@ -462,14 +477,14 @@ class AdminController extends Controller
                 $admin_id,
                 $congress_id
             );
-
         }
 
         //create admin congress bind privilege admin and congress
         $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
             $privilegeId,
             $admin_id,
-            $congress_id);
+            $congress_id
+        );
 
         $admin = $this->adminServices->getAdminById($admin_id);
         if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
@@ -483,10 +498,12 @@ class AdminController extends Controller
             $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic(
+                    $badge,
                     $admin,
                     $admin->passwordDecrypt,
-                    $privilegeId);
+                    $privilegeId
+                );
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -508,7 +525,8 @@ class AdminController extends Controller
         $this->privilegeServices->editPrivilege(
             $privilegeId,
             $admin_id,
-            $congress_id);
+            $congress_id
+        );
         //message d'erreur à revoir
 
         if ($privilegeId == 11) {
@@ -571,8 +589,10 @@ class AdminController extends Controller
         }
 
 
-        $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($adminId,
-            $congressId);
+        $admin_congress = $this->privilegeServices->checkIfAdminOfCongress(
+            $adminId,
+            $congressId
+        );
 
         if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
             if (!$mail = $this->congressService->getMail($congressId, $mailtype->mail_type_id)) {
@@ -585,10 +605,12 @@ class AdminController extends Controller
             $badgeIdGenerator = $badge['badge_id_generator'];
             $fileAttached = false;
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
+                $fileAttached = $this->sharedServices->saveBadgeInPublic(
+                    $badge,
                     $admin,
                     $admin->passwordDecrypt,
-                    $admin_congress->privilege_id);
+                    $admin_congress->privilege_id
+                );
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
             $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
@@ -596,7 +618,6 @@ class AdminController extends Controller
             $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
         }
         return response()->json(['message' => 'sending credentials mails']);
-
     }
 
     function updateUserRfid(request $request, $userId)
@@ -728,8 +749,7 @@ class AdminController extends Controller
         if (!$admin = $this->adminServices->getAdminById($clientId)) {
             return response()->json(['messsage' => 'no admin found'], 404);
         }
-        if (!$adminPayment = $this->adminServices->getAdminPayment($clientId, $offreId)) {
-            {
+        if (!$adminPayment = $this->adminServices->getAdminPayment($clientId, $offreId)) { {
                 return response()->json(['messsage' => 'no admin payment found'], 404);
             }
         }
@@ -741,4 +761,3 @@ class AdminController extends Controller
         return response()->json(['payment_admin' => $adminPayment], 200);
     }
 }
-
