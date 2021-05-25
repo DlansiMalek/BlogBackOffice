@@ -16,11 +16,10 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Exception;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Madnest\Madzipper\Facades\Madzipper;
-use Illuminate\Filesystem\Filesystem;
 
 class SubmissionController extends Controller
 {
@@ -37,7 +36,7 @@ class SubmissionController extends Controller
     protected $communicationTypeService;
     protected $resourcesServices;
 
-    function __construct(
+    public function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
         AdminServices $adminServices,
@@ -49,8 +48,7 @@ class SubmissionController extends Controller
         SharedServices $sharedServices,
         CommunicationTypeService $communicationTypeService,
         ResourcesServices $resourcesServices
-    )
-    {
+    ) {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
         $this->adminServices = $adminServices;
@@ -122,7 +120,7 @@ class SubmissionController extends Controller
                 }
 
                 $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null,  $submission->title), $user, $congress, $mail->object, null, $userMail
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, $submission->title), $user, $congress, $mail->object, null, $userMail
                 );
             }
             return response()->json(['response' => 'Enregistrement avec succes'], 200);
@@ -155,6 +153,7 @@ class SubmissionController extends Controller
             $changedTheme = $submission->theme_id == $request->input('submission.theme_id') ? false : true;
             $user = $this->userServices->retrieveUserFromToken();
             $status = $request->input('addExternalFiles') ? '5' : $submission->status;
+            if ($submission->status == 6){$status=2;} 
             $name = $request->input('addExternalFiles') ? 'file_submitted' : 'edit_submission';
             $code = $request->input('addExternalFiles') ? null : $submission->upload_file_code;
             $submission = $this->submissionServices->editSubmission(
@@ -226,14 +225,14 @@ class SubmissionController extends Controller
 
         if ($mail)
         {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-            }
+        $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+        if (!$userMail) {
+        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+        }
 
-            $this->userServices->sendMail(
-                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
-            );
+        $this->userServices->sendMail(
+        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+        );
         }*/
         $upload_file_code = $request->query('code');
         return $this->submissionServices->getSubmission($submission_id, $upload_file_code);
@@ -320,7 +319,7 @@ class SubmissionController extends Controller
             $right = sizeof($submissions) - 1;
             $index = -1;
             while ($left <= $right) {
-                $midpoint = (int)floor(($left + $right) / 2);
+                $midpoint = (int) floor(($left + $right) / 2);
 
                 if ($submissions[$midpoint]['submission_id'] < $selectedSubmissions[$i]) {
                     $left = $midpoint + 1;
@@ -336,7 +335,6 @@ class SubmissionController extends Controller
                 return response()->json('no submission found', 404);
             }
 
-
         }
         return response()->json('success', 200);
     }
@@ -351,8 +349,8 @@ class SubmissionController extends Controller
         $submission->status = $request->input('status');
         $submission->update();
         $mail_type = $request->input('status') == 1 ?
-            $this->congressServices->getMailType('accept_submission', $this->type) :
-            $this->congressServices->getMailType('refuse_submission', $this->type);
+        $this->congressServices->getMailType('accept_submission', $this->type) :
+        $this->congressServices->getMailType('refuse_submission', $this->type);
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
         if ($mail) {
             $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
@@ -367,7 +365,6 @@ class SubmissionController extends Controller
         return response()->json(['response' => 'Submission status changed'], 201);
     }
 
-
     public function finalDecisionOnSubmission(Request $request, $submission_id)
     {
         //get submission by id
@@ -379,11 +376,11 @@ class SubmissionController extends Controller
 
         $submission->limit_date = $request->input('limit_date');
 
-        // generate code 
+        // generate code
 
         $type = $this->communicationTypeService->getCommunicationTypeById(
             $request->has('communication_type_id') ? $request->input('communication_type_id') :
-                $submission->communication_type_id
+            $submission->communication_type_id
         );
         if ($request->has('communication_type_id')) {
             $submission->communication_type_id = $request->input('communication_type_id');
@@ -410,8 +407,8 @@ class SubmissionController extends Controller
         //send email
         $areFiles = $request->has('areFiles') ? 1 : 0;
         $mailName = $request->input('status') == 3 ? 'refuse_submission' :
-            ($request->input('status') == 4 ? 'Attente_de_fichier' :
-                ($request->input('status') == 5 ? 'file_submitted' : 'accept_submission'));
+        ($request->input('status') == 4 ? 'Attente_de_fichier' :
+            ($request->input('status') == 5 ? 'file_submitted' : 'accept_submission'));
 
         $mailtype = $this->congressServices->getMailType($mailName, $this->type);
         $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
@@ -424,7 +421,7 @@ class SubmissionController extends Controller
             $link = '';
             if (($request->input('status') == 4)) {
                 $link = UrlUtils::getBaseUrlFrontOffice()
-                    . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
+                . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
             }
             $user = $this->userServices->getUserById($submission->user_id);
             $this->mailServices->sendMail(
@@ -461,18 +458,27 @@ class SubmissionController extends Controller
     public function putEvaluationToSubmission($submissionId, Request $request)
     {
         $note = $request->input('note', -1);
+        $comment = $request->input('description');
+        $status = $request->input('status');
         if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }
         try {
+            $submissionComment =$this->submissionServices->addSubmissionComments($comment,$submissionId);
+         if($submissionComment){
+             if($status){
+                $this->submissionServices->UpdateSatutsSubmission($submission,$status);
+             }
+          
+         }
             $admin = $this->adminServices->retrieveAdminFromToken();
             if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
                 return response()->json(['response' => 'bad request'], 400);
             }
             $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
             $evaluation->communication_type_id = $request->input('communication_type_id');
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
-
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);    
+            
             $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
             $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
 
@@ -485,11 +491,10 @@ class SubmissionController extends Controller
                     );
                 }
 
-
             }
             return response()->json($evaluation, 200);
         } catch (Exception $e) {
-            return response()->json(['response' => $e->getMessage()], 400);
+            //return response()->json(['response' => $e->getMessage()], 400);
         }
     }
 
@@ -532,9 +537,7 @@ class SubmissionController extends Controller
         return response()->json($submissions, 200);
     }
 
-
     //ATTESTATION SUBMISSION
-
 
     public function getAttestationSubmissionByCongress($congressId)
     {
@@ -820,7 +823,7 @@ class SubmissionController extends Controller
                                 $userMail,
                                 null,
                                 $fileName);
-                           }
+                        }
                     }
                 }
             }
@@ -954,6 +957,13 @@ class SubmissionController extends Controller
         $submissions = $this->submissionServices->mappingPeacksourceData($data);
 
         return response()->json($submissions, 200);
+    }
+    public function getSubmissionCommentsByIdSubmission($submissionId)
+    {
+        if (!$submission = $this->submissionServices->getSubmissionById($submissionId)) {
+            return response()->json(['response' => 'bad request'], 400);
+        }
+        return $this->submissionServices->getSubmissionCommentsByIdSubmission($submissionId);
     }
 
 }

@@ -7,6 +7,7 @@ use App\Models\AttestationSubmission;
 use App\Models\CommunicationType;
 use App\Models\ResourceSubmission;
 use App\Models\Submission;
+use App\Models\SubmissionComments;
 use App\Models\SubmissionEvaluation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -56,7 +57,7 @@ class SubmissionServices
                 $query->orderBy('rank');
             },
             'resources',
-            'congress.configSubmission'
+            'congress.configSubmission',
         ])
             ->where('submission_id', '=', $submission_id)
             ->when($upload_file_code !== 'null', function ($query) use ($upload_file_code) {
@@ -78,7 +79,6 @@ class SubmissionServices
             ->with(['congress', 'user'])
             ->first();
     }
-
 
     public function saveResourceSubmission($resourceIds, $submission_id)
     {
@@ -104,7 +104,7 @@ class SubmissionServices
         }
     }
 
-    function addResourceSubmission($resourceId, $submissionId)
+    public function addResourceSubmission($resourceId, $submissionId)
     {
 
         $resourceSubmission = new ResourceSubmission();
@@ -134,7 +134,6 @@ class SubmissionServices
         return $submissionEvaluation;
     }
 
-
     public function renderSubmissionForAdmin()
     {
         return Submission::with([
@@ -149,7 +148,7 @@ class SubmissionServices
             'submissions_evaluations' => function ($query) {
                 $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
                     ->with(['evaluator:admin_id,name,email']);
-            }
+            },
         ]);
     }
 
@@ -168,8 +167,8 @@ class SubmissionServices
                     }
                 });
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
-                    || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
-                    || $tri == 'theme_id' || $tri == 'congress_id')) {
+                || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
+                || $tri == 'theme_id' || $tri == 'congress_id')) {
                 $allSubmission = $allSubmission->orderBy($tri, $order);
             }
 
@@ -185,7 +184,7 @@ class SubmissionServices
                     'submissions_evaluations' => function ($query) use ($admin) {
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
-                    }
+                    },
                 ])->where('congress_id', '=', $congress_id)
                 ->when($status !== 'null', function ($query) use ($status) {
                     $query->where('status', '=', $status);
@@ -197,8 +196,8 @@ class SubmissionServices
                     }
                 });
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
-                    || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
-                    || $tri == 'theme_id' || $tri == 'congress_id')) {
+                || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
+                || $tri == 'theme_id' || $tri == 'congress_id')) {
                 $allSubmission = $allSubmission->orderBy($tri, $order);
             }
 
@@ -208,7 +207,6 @@ class SubmissionServices
         }
         return [];
     }
-
 
     public function getSubmissionDetailById($admin, $submission_id, $privilege_id)
     {
@@ -236,7 +234,7 @@ class SubmissionServices
                     'submissions_evaluations' => function ($query) use ($admin) {
                         $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
-                    }
+                    },
                 ])->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
                 if ($submissionById->status === 0) {
@@ -254,20 +252,37 @@ class SubmissionServices
         }
         return null;
     }
+    public function addSubmissionComments($description, $submission_id)
+    {
+        $submissionComment = new SubmissionComments();
+        $submissionComment->submission_id = $submission_id;
+        $submissionComment->description = $description;
+        $submissionComment->save();
+        return $submissionComment;
+    }
+    public function UpdateSatutsSubmission($submission, $status)
+    {
+        $submission->status = $status;
+        $submission->update();
+    }
+    public function getSubmissionCommentsByIdSubmission($submissionId)
+    {
+        return SubmissionComments::where('submission_id', '=', $submissionId)->get();
 
+    }
 
     public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation)
     {
         $evaluation->note = $note;
         $evaluation->save();
-        // supposons seulement un seul utilisateur a fait la correction 
+        // supposons seulement un seul utilisateur a fait la correction
         // dans ce cas on doit pas faire la moyenne
         if (!$global_note = SubmissionEvaluation::where('submission_id', '=', $submissionId)
             ->where('note', '>', 0)->average('note')) {
             $global_note = 0;
         }
-        // si !$global_note cela veut dire qu'un aucun correcteur a mis une note > 0 
-        // don cla note_globable sera 0 
+        // si !$global_note cela veut dire qu'un aucun correcteur a mis une note > 0
+        // don cla note_globable sera 0
 
         $submissionUpdated = Submission::where('submission_id', '=', $submissionId)->first();
         $submissionUpdated->global_note = $global_note;
@@ -311,7 +326,7 @@ class SubmissionServices
     public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
     {
         $allSubmission = Submission::with([
-            'resources', 'authors.service', 'authors.etablissment'
+            'resources', 'authors.service', 'authors.etablissment',
         ])->when($search !== "null" && $search !== "" && $search !== null,
             function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%');
@@ -320,7 +335,7 @@ class SubmissionServices
             ->where('congress_id', '=', $congressId)
             ->where('communication_type_id', '=', $communication_type_id);
         $otherSubmissions = Submission::with([
-            'resources', 'authors'
+            'resources', 'authors',
         ])->where('communication_type_id', '=', $communication_type_id)
             ->where('congress_id', '=', $congressId)
             ->where('status', '=', 1)
@@ -379,7 +394,7 @@ class SubmissionServices
         return AttestationSubmission::with([
             'communicationType',
             'attestation_param',
-            'attestation_blanc_param'
+            'attestation_blanc_param',
         ])->where('congress_id', '=', $congressId)
             ->orderBy('communication_type_id')
             ->get();
@@ -401,7 +416,6 @@ class SubmissionServices
         return AttestationSubmission::where('attestation_generator_id_blank', '=', $generatorId)
             ->first();
     }
-
 
     public function updateOrCreateAttestationParams($generatorId, $keys, $update)
     {
@@ -467,7 +481,7 @@ class SubmissionServices
     {
         return AttestationSubmission::with([
             'attestation_param',
-            'attestation_blanc_param'
+            'attestation_blanc_param',
         ])
             ->where('congress_id', '=', $congressId)
             ->where('enable', '=', 1)->get();
@@ -543,7 +557,7 @@ class SubmissionServices
                         "user_id" => $submission->user->user_id,
                         "first_name" => $submission->user->first_name,
                         "last_name" => $submission->user->last_name,
-                        "email" => $submission->user->email
+                        "email" => $submission->user->email,
                     ),
                     "authors" => array_map(function ($object) {
                         return array(
@@ -552,18 +566,17 @@ class SubmissionServices
                             "email" => $object['email'],
                             "rank" => $object['rank'],
                             "service" => isset($object['service']['label']) ? $object['service']['label'] : '-',
-                            "etablissement" => isset($object['etablissment']['label']) ? $object['etablissment']['label'] : '-'
+                            "etablissement" => isset($object['etablissment']['label']) ? $object['etablissment']['label'] : '-',
                         );
                     }, json_decode($submission->authors, true)),
                     "resources" => array_map(function ($object) {
                         return UrlUtils::getFilesUrl() . $object['path'];
-                    }, json_decode($submission->resources, true))
+                    }, json_decode($submission->resources, true)),
                 )
             );
         }
 
         return $res;
     }
-
 
 }
