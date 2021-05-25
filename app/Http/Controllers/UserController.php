@@ -1625,11 +1625,11 @@ class UserController extends Controller
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->update();
-        $userFirebase = $this->userServices->getUserFirebase($user->email);
-        if (!$userFirebase) {
-            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
-        } else {
+        try {
+            $userFirebase = $this->userServices->getUserFirebase($user->email);
             $this->userServices->resetFirebasePassword($userFirebase->uid, $user->passwordDecrypt);
+        } catch (Exception $e) {
+            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
         }
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
