@@ -199,6 +199,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
             Route::put('/edit/{standId}', 'StandController@editStands');
+			Route::get('/standsPagination/{offset}', 'StandController@getStandsByCongressPagination');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
             Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');

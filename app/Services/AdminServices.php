@@ -307,11 +307,12 @@ class AdminServices
         return $newPassword;
     }
 
-    public function addPersonnel($admin, $password, $email=null)
+    public function addPersonnel($admin, $password, $privilegeId)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
-        $personnel->email = $email ? $email : $admin["email"];
+        $personnel->email = $admin["email"];;
+        $personnel->privilege_id = $privilegeId;
         $personnel->mobile = $admin["mobile"];
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
