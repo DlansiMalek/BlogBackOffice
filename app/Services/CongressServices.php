@@ -1018,7 +1018,8 @@ class CongressServices
         $config_landing_page->event_link_twitter = $request->has("event_link_twitter") ? $request->input('event_link_twitter') : null;
         $config_landing_page->theme_color = $request->has("theme_color") ? $request->input('theme_color') : null;
         $config_landing_page->theme_mode = $request->has("theme_mode") ? $request->input('theme_mode') : null;
-        
+        $config_landing_page->name_partenaire =  $request->has("name_partenaire") ? $request->input('name_partenaire') : null;;
+        $config_landing_page->link_partenaire =  $request->has("link_partenaire") ? $request->input('link_partenaire') : null;;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
         
