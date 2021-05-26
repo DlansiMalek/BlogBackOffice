@@ -11,6 +11,7 @@ namespace App\Services;
 
 use App\Models\Admin;
 use App\Models\Admin_Privilege;
+use App\Models\AdminCongress;
 use App\Models\Congress_Organization;
 use App\Models\CongressOrganization;
 use App\Models\Organization;
@@ -29,7 +30,9 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id)
     {
-        return Organization::with(['congress_organization', 'users'])->find($organization_id);
+        return Organization::with(['CongressOrganization', 'resource', 'admin' => function ($query) {
+            $query->select('admin_id','email');
+        }])->find($organization_id);
     }
 
     public function addOrganization(Request $request, $admin_id)
@@ -46,6 +49,42 @@ class OrganizationServices
         return $organization;
     }
 
+    public function editOrganization($oldOrg, $request) {
+       
+        $oldOrg->name =  $request->input("name");
+        $oldOrg->description = $request->has("description")? $request->input('description') : null;
+        $oldOrg->mobile = $request->input("mobile");
+        $oldOrg->resource_id = $request->input("resource_id");
+        $oldOrg->is_sponsor = $request->input("is_sponsor");
+        $oldOrg->logo_position = $request->input("logo_position");
+        $oldOrg->update();
+        return $oldOrg ;
+    }
+
+    public function deleteOrganization($organization)
+    {
+        if ($organization->admin_id) {
+            $this->deleteAdminCongress($organization->admin_id);
+        }
+        return $organization->delete();
+    }
+
+    public function deleteAdminCongress($admin_id)
+    {
+        AdminCongress::where('admin_id', '=', $admin_id)->delete();
+    }
+
+    public function deleteCongressOrganization($congressOrganization)
+    {
+        return $congressOrganization->delete();
+    }
+
+    public function getCongressOrganization($congress_id, $organization_id)
+    {
+        return CongressOrganization::where('congress_id', '=', $congress_id)
+        ->where('organization_id', '=', $organization_id)
+        ->first();
+    }
 
     public function getOrganizationByAdminId($admin_id)
     {
@@ -112,4 +151,16 @@ class OrganizationServices
        ->with('resource')
        ->get();
    }
+
+   public function getSponsorsByCongressId($congressId)
+    {
+        return Organization::whereHas('congressOrganization', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId)
+            ->where('is_sponsor', '=', 1);
+        })
+            ->with(['admin', 'resource', 'congressOrganization' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->get();
+    }
 }

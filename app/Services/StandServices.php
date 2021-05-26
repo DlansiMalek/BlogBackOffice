@@ -22,16 +22,15 @@ class StandServices
     }
 
     public function saveResourceStand($resources,$stand_id) {
+        // pas besoin du bloc de supression car une fois on supprime une ressource, le resourceStand correspondant est supprimé automatiquement
         $oldResources = ResourceStand::where('stand_id', '=', $stand_id)
         ->with(['resource'])
         ->get();
         if (sizeof($oldResources) > 0) {
             foreach ($resources as $resource) {
                 $isExist = false ;
-                $resource['path'] = str_replace('('.$resource['resource_id'].')','',$resource['path']);
                 foreach ($oldResources as $oldResource) {
-                    $oldResource['resource']['path'] = str_replace('('.$oldResource['resource_id'].')','',$oldResource['resource']['path']);
-                    if ( ($oldResource['resource']['path'] == $resource['path']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
+                    if ( ($oldResource->file_name == $resource['pivot']['file_name']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
                      $this->editResourceStand($oldResource,$resource['resource_id']);
                      $isExist = true ;
                      break ;
@@ -41,14 +40,14 @@ class StandServices
                     break;
                     }
                 } if (!$isExist ) {
-                    $this->addResourceStand($resource['resource_id'],$stand_id);
+                    $this->addResourceStand($resource['resource_id'],$stand_id, $resource['pivot']['file_name']);
                 }
                 
             }
         } else {
             foreach ($resources as $resource) {
 
-                $this->addResourceStand($resource['resource_id'], $stand_id);
+                $this->addResourceStand($resource['resource_id'], $stand_id, $resource['pivot']['file_name']);
             }
         }
         
@@ -57,18 +56,19 @@ class StandServices
     public function getAllStandByCongressId($congressId)
     {
         $stands =  Stand::where("congress_id", "=", $congressId)
-        ->select('stand_id','name')
+        ->select('stand_id','name', 'status')
             ->get();
          return $stands;
         }
 
         
 
-    public function addResourceStand($resourceId, $stand_id)
+    public function addResourceStand($resourceId, $stand_id, $file_name)
     {
         $resourceStand = new ResourceStand();
         $resourceStand->resource_id = $resourceId;
         $resourceStand->stand_id = $stand_id;
+        $resourceStand->file_name = $file_name;
         $resourceStand->save();
 
         return $resourceStand;
@@ -99,18 +99,21 @@ class StandServices
         $oldStand->update();
         return $oldStand ;
     }
-    public function getStands($congress_id, $name = null)
+    public function getStands($congress_id, $name = null, $status = null)
     {
-        return Stand::where(function ($query) use ($name) {
+        return Stand::where(function ($query) use ($name, $status) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
+            if ($status) {
+                $query->where('status', '=', $status);
+            }
         })
-            ->with(['docs','organization'])
+            ->with(['docs','organization' => function ($query) {
+                $query->with('resource');
+            }])
             ->where('congress_id', '=', $congress_id)->get();
     }
-
-    
 
     public function getDocsByStands($stands)
     {
@@ -122,8 +125,8 @@ class StandServices
                     $res,
                     array(
                         "stand" => $stand->name,
-                        "path" => UrlUtils::getFilesUrl() . '/api/resource/' . $doc->path,
-                        "filename" => $doc->path,
+                        "path" => UrlUtils::getFilesUrl() . $doc->path,
+                        "filename" => $doc->pivot->file_name,
                         "version" => $doc->pivot->version
                     )
                 );
@@ -173,5 +176,11 @@ class StandServices
             }
         }
         return false;
+    }
+
+    public function modifyStatusStand($stand_id, $status)
+    {
+        return Stand::where('stand_id', '=', $stand_id)
+            ->update(['status' => $status]);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Services\CongressServices;
 use App\Services\StandServices;
 use App\Services\VotingServices;
+use App\Services\AccessServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -15,11 +16,15 @@ class StandController extends Controller
     protected $congressServices;
     protected $votingServices;
 
-    function __construct(StandServices $standServices, CongressServices $congressServices, VotingServices $votingServices)
+    function __construct(StandServices $standServices, 
+                        CongressServices $congressServices,
+                        VotingServices $votingServices,
+                        AccessServices $accessServices)
     {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
+        $this->accessServices = $accessServices;
     }
 
 
@@ -97,9 +102,9 @@ class StandController extends Controller
 
         $name = $request->query('name', '');
 
-        $stands = $this->congressServices->getStands($congressId, $name);
+        $stands = $this->standServices->getStands($congressId, $name);
 
-        $docs = $this->congressServices->getDocsByStands($stands);
+        $docs = $this->standServices->getDocsByStands($stands);
 
         return response()->json($docs);
     }
@@ -131,9 +136,12 @@ class StandController extends Controller
 
         $all = $request->query('all', false);
         $status = $request->query('status', 1);
+        $stand_id = $request->query('standId', null);
 
-        if ($all) {
+        if ($all=='true') {
             $this->standServices->modifyAllStatusStand($congressId, $status);
+        } else {
+            $this->standServices->modifyStatusStand($stand_id, $status);
         }
 
         return response()->json($this->standServices->getStands($congressId));
@@ -153,5 +161,24 @@ class StandController extends Controller
         }
 
         return response()->json($stands);
+    }
+
+    public function getAllAccessStandByCongressId($congress_id)
+    {
+        if (!$this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $stands = $this->standServices->getAllStandByCongressId($congress_id);
+        $accesses = $this->accessServices->getAccesssByCongressId($congress_id);
+        return response()->json(['stands' => $stands, 'accesses' => $accesses]);
+    }
+
+    public function getStandsByCongress($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $stands = $this->standServices->getStands($congress_id, null, 1);
+        return response()->json($stands, 200);
     }
 }

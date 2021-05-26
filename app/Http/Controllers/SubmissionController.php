@@ -122,7 +122,7 @@ class SubmissionController extends Controller
                 }
 
                 $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null,  $submission->title), $user, $congress, $mail->object, null, $userMail
                 );
             }
             return response()->json(['response' => 'Enregistrement avec succes'], 200);
