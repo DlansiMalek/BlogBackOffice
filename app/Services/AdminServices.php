@@ -107,10 +107,10 @@ class AdminServices
         return Admin::where("privilege_id", "=", 11)->get();
     }
 	
-	public function getOrganismAdmins()
+	public function getOrganismAdmins($congress_id)
     {
 
-       return Admin::where("privilege_id", "=", 7)->get();
+       return Admin::where("admin.privilege_id", "=", 7)->get();
     }
 
     public function affectUsersToEvaluator($users, $numEvalutors, $admin_id, $congress_id)

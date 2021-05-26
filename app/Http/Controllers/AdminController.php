@@ -402,12 +402,12 @@ class AdminController extends Controller
         return response()->json($personels);
     }
 
-    public function getListOrganismAdmins()
+    public function getListOrganismAdmins($congress_id)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->getOrganismAdmins();
+        $personels = $this->adminServices->getOrganismAdmins($congress_id);
 
         return response()->json($personels);
     }
