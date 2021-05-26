@@ -25,15 +25,18 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PDF;
 use function foo\func;
+use Kreait\Firebase\Auth;
 
 class UserServices
 {
 
     private $path = 'profile-pic/';
+    protected $firebaseDatabase;
 
     public function __construct()
     {
         ini_set('max_execution_time', 300);
+        $this->firebaseDatabase = app('firebase.auth');
     }
 
     public function getAllUsers()
