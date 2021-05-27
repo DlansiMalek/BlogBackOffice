@@ -26,7 +26,10 @@ class Stand extends Model
     function tracking() {
         return $this->hasMany(Tracking::class,'stand_id','stand_id');
     }
-
+	
+    function products() {
+        return $this->hasMany(StandProduct::class,'stand_id','stand_id');
+    }
 }
 
 

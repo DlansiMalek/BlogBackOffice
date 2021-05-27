@@ -16,11 +16,12 @@ class StandController extends Controller
     protected $congressServices;
     protected $votingServices;
 
-    function __construct(StandServices $standServices, 
-                        CongressServices $congressServices,
-                        VotingServices $votingServices,
-                        AccessServices $accessServices)
-    {
+    function __construct(
+        StandServices $standServices,
+        CongressServices $congressServices,
+        VotingServices $votingServices,
+        AccessServices $accessServices
+    ) {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
@@ -36,53 +37,40 @@ class StandController extends Controller
         $stands = $this->standServices->getStands($congress_id);
         return response()->json($stands, 200);
     }
-    function addStand (Request $request) {
-     
-        $stand = $this->standServices->addStand(
-            $request->input('name'),
-            $request->input('organization_id'),
-            $request->input('congress_id'),
-            $request->input('booth_size'),
-            $request->input('website_link'),
-            $request->input('fb_link'),
-            $request->input('insta_link'),
-            $request->input('twitter_link'),
-            $request->input('linkedin_link'),
-            $request->input('priority'),
-            $request->input('primary_color'),
-            $request->input('secondary_color'),
-            $request->input('with_products')
- 
-         );
-         $resources = $request->input('docs');
-         $this->standServices->saveResourceStand($resources,$stand->stand_id);
-         return response()->json('Stand added',200);
-     }
- 
- 
-     public function getStandById ($congressId,$stand_id)
-     {   return $this->standServices->getStandById($stand_id);
-         
-     }
- 
-     function editStand (Request $request, $congress_id, $stand_id) {
-        if (! $oldStand = $this->standServices->getStandById($stand_id)) {
-            return response()->json('stand not found',404);
+    function addStand(Request $request)
+    {
+
+        $stand = $this->standServices->addStand($request);
+        $resources = $request->input('docs');
+        $this->standServices->saveResourceStand($resources, $stand->stand_id);
+        return response()->json('Stand added', 200);
+    }
+
+
+    public function getStandById($congressId, $stand_id)
+    {
+        return $this->standServices->getStandById($stand_id);
+    }
+
+    function editStand(Request $request, $congress_id, $stand_id)
+    {
+        if (!$oldStand = $this->standServices->getStandById($stand_id)) {
+            return response()->json('stand not found', 404);
         }
-      
-    
-  
-       return response()->json('stand updated',200);
-      }
- 
-      public function deleteStand($congress_id , $stand_id)
-      {  
-          if (!$stand = $this->standServices->getStandById($stand_id)) {
-          return response()->json('no stand found' ,404);
-      }
+
+
+
+        return response()->json('stand updated', 200);
+    }
+
+    public function deleteStand($congress_id, $stand_id)
+    {
+        if (!$stand = $this->standServices->getStandById($stand_id)) {
+            return response()->json('no stand found', 404);
+        }
         $stand->delete();
-         return response()->json(['response' => 'stand deleted'],200);
-      }
+        return response()->json(['response' => 'stand deleted'], 200);
+    }
 
     public function editStands($congress_id, $stand_id, Request $request)
     {
@@ -109,8 +97,8 @@ class StandController extends Controller
             $request->input('primary_color'),
             $request->input('secondary_color'),
             $request->input('with_products')
-         );
-          $this->standServices->saveResourceStand($request->input('docs'),$stand->stand_id);
+        );
+        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id);
         return response()->json($stand, 200);
     }
 
@@ -158,7 +146,7 @@ class StandController extends Controller
         $status = $request->query('status', 1);
         $stand_id = $request->query('standId', null);
 
-        if ($all=='true') {
+        if ($all == 'true') {
             $this->standServices->modifyAllStatusStand($congressId, $status);
         } else {
             $this->standServices->modifyStatusStand($stand_id, $status);
