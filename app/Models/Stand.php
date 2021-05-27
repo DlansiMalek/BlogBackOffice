@@ -28,7 +28,7 @@ class Stand extends Model
     }
 	
     function products() {
-        return $this->hasMany(StandProduct::class,'stand_id','stand_id');
+        return $this->hasMany(StandProduct::class,'stand_id','stand_id')->with('docs');
     }
 }
 

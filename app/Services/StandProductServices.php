@@ -60,7 +60,7 @@ class StandProductServices
                 $isExist = false;
                 foreach ($oldResources as $oldResource) {
                     if (($oldResource->file_name == $resource['pivot']['file_name']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
-                        $this->editResourceStand($oldResource, $resource['resource_id']);
+                        $this->editResourceStandProduct($oldResource, $resource['resource_id']);
                         $isExist = true;
                         break;
                     }
