@@ -185,6 +185,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
         Route::get('/{standId}/checkStandRights', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('/{standId}/checkSupportRights/{organizerId}', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('getOrganizers', 'UserController@getOrganizers')->middleware('assign.guard:users');
 
         Route::post('program-link', 'CongressController@setProgramLink');
         Route::post('/abstractBook', 'CongressController@affectAbstractBookPathToCongress');
@@ -567,3 +569,10 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
+
+// 3D API
+Route::group(["prefix" => "3D"], function () {
+    Route::group(['middleware' => ['assign.guard:users']], function () {
+        Route::post('login', 'Auth\LoginController@login3DUser');
+    });
+}); 

@@ -48,3 +48,12 @@ class Submission extends Model
     }
 }
 
+/*
+  status:
+   0 : En attente
+   1 : Selectionnée
+   2 : En cours
+   3 : Refusée
+   4 : En attente de fichier
+   5 : Fichier soumis
+*/
