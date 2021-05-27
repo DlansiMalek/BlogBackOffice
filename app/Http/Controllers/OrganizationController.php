@@ -58,7 +58,6 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 		
-        $password  = Str::random(8);
 		$admin_id =$request->input("admin_id");
         $admin = $this->adminServices->getAdminById($admin_id);
         $organization = $this->organizationServices->getOrganizationByName($request->input("name"));
@@ -70,18 +69,9 @@ class OrganizationController extends Controller
             }
         }
 
-        // PrivilegeID = 7 : Organisme
         $this->adminServices->addAdminCongress($admin_id, $congress_id, $privilegeId);
 
-
-        $this->organizationServices->affectOrganizationToCongress(
-		$congress_id,
-		$organization->organization_id,
-		$request->input('is_sponsor'),
-		$request->input('banner'),
-		$request->input('resource_id'),
-		$request->input("admin_id")
-		);
+        $this->organizationServices->affectOrganizationToCongress($congress_id, $organization->organization_id, $request->input('is_sponsor'), $request->input('banner'), $request->input('resource_id'), $request->input("admin_id"));
 
         if ($mailtype = $this->congressServices->getMailType('organization')) {
             if (!$mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {

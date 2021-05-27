@@ -25,11 +25,6 @@ class Organization extends Model
         return $this->hasMany(CongressOrganization::class, 'organization_id', 'organization_id');
     }
 
-    function admin()
-    {
-        return $this->hasOne(Admin::class, 'admin_id', 'admin_id');
-    }
-
     function stands()
     {
         return $this->hasMany(Stand::class, 'organization_id', 'organization_id');

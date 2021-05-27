@@ -425,7 +425,7 @@ class AdminController extends Controller
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
 
-            $admin = $this->adminServices->addPersonnel($admin, $password,$privilegeId);
+            $admin = $this->adminServices->addPersonnel($admin, $password);
             $admin_id = $admin->admin_id;
             if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
                 $user = $this->userServices->registerUser($request);
@@ -433,10 +433,7 @@ class AdminController extends Controller
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress
-            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress(
-                $admin_id,
-                $congress_id
-            );
+            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id);
 
             if ($admin_congress) {
                 return response()->json(['error' => 'Organisateur existant'], 505);

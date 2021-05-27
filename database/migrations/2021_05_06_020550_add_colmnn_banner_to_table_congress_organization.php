@@ -19,6 +19,7 @@ class AddColmnnBannerToTableCongressOrganization extends Migration
             $table->foreign("resource_id")->references('resource_id')->on('Resource')
                 ->onDelete('cascade');
             $table->tinyInteger('is_sponsor')->default(0)->nullable();
+            $table->unsignedInteger("admin_id")->nullable()->default(null);
             $table->foreign("admin_id")->references('admin_id')->on('admin')
                 ->onDelete('cascade');
         });

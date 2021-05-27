@@ -19,16 +19,17 @@ class StandServices
         $stand->name = $request->input('name');
         $stand->organization_id = $request->input('organization_id');
         $stand->congress_id = $request->input('congress_id');
-        $stand->booth_size = $request->input('booth_size');
-        $stand->website_link = $request->input('website_link');
-        $stand->fb_link = $request->input('fb_link');
-        $stand->insta_link = $request->input('insta_link');
-        $stand->twitter_link = $request->input('twitter_link');
-        $stand->linkedin_link = $request->input('linkedin_link');
-        $stand->priority = $request->input('priority');
-        $stand->primary_color = $request->input('primary_color');
-        $stand->secondary_color = $request->input('secondary_color');
-        $stand->with_products = $request->input('with_products');
+        $stand->booth_size =  $request->has("booth_size") ? $request->input('booth_size') : null;
+        $stand->website_link = $request->has("website_link") ? $request->input('website_link') : null;
+        $stand->fb_link = $request->has("fb_link") ? $request->input('fb_link') : null;
+        $stand->insta_link =  $request->has("insta_link") ? $request->input('insta_link') : null;
+        $stand->twitter_link = $request->has("twitter_link") ? $request->input('twitter_link') : null;
+        $stand->linkedin_link = $request->has("linkedin_link") ? $request->input('linkedin_link') : null;
+        $stand->priority = $request->has("priority") ? $request->input('priority') : null;$request->input('priority');
+        $stand->primary_color = $request->has("primary_color") ? $request->input('primary_color') : null;
+        $stand->secondary_color = $request->has("secondary_color") ? $request->input('secondary_color') : null;
+        if($request->has('with_products'))
+            $stand->with_products = $request->input('with_products');
         $stand->save();
         return $stand;
     }
@@ -100,7 +101,7 @@ class StandServices
             ->first();
     }
 
-    public function editStand($oldStand, $name, $organization_id, $congress_id, $url_streaming, $booth_size, $website_link, $fb_link, $insta_link, $twitter_link, $linkedin_link, $priority, $primary_color, $secondary_color)
+    public function editStand($oldStand, $name, $organization_id, $url_streaming, $booth_size, $website_link, $fb_link, $insta_link, $twitter_link, $linkedin_link, $priority, $primary_color, $secondary_color)
     {
 
         $oldStand->name = $name;

@@ -111,7 +111,6 @@ class AdminServices
 
     public function getOrganismAdmins($congress_id)
     {
-
         return Admin::where("admin.privilege_id", "=", 7)->get();
     }
 
@@ -308,7 +307,7 @@ class AdminServices
         return $newPassword;
     }
 
-    public function addPersonnel($admin, $password, $privilegeId)
+    public function addPersonnel($admin, $password)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
@@ -316,9 +315,7 @@ class AdminServices
         $personnel->mobile = $admin["mobile"];
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
-        $personnel->privilege_id = $privilegeId;
-            $personnel->save();
-
+        $personnel->save();
         return $personnel;
     }
 

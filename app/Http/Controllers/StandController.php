@@ -52,17 +52,6 @@ class StandController extends Controller
         return $this->standServices->getStandById($stand_id);
     }
 
-    function editStand(Request $request, $congress_id, $stand_id)
-    {
-        if (!$oldStand = $this->standServices->getStandById($stand_id)) {
-            return response()->json('stand not found', 404);
-        }
-
-
-
-        return response()->json('stand updated', 200);
-    }
-
     public function deleteStand($congress_id, $stand_id)
     {
         if (!$stand = $this->standServices->getStandById($stand_id)) {
@@ -80,11 +69,10 @@ class StandController extends Controller
         if (!$oldStand = $this->standServices->getStandById($stand_id)) {
             return response()->json(['response' => 'Stand not found', 404]);
         }
-        $url_streaming = $request->has('url_streaming') ? $request->input('url_streaming') : null;
+
         $stand = $this->standServices->editStand(
             $oldStand,
             $request->input('name'),
-            $request->input('congress_id'),
             $request->input('organization_id'),
             $request->input('url_streaming'),
             $request->input('booth_size'),
