@@ -425,7 +425,7 @@ class AdminController extends Controller
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
 
-            $admin = $this->adminServices->addPersonnel($admin, $password);
+            $admin = $this->adminServices->addPersonnel($admin, $password,$privilegeId);
             $admin_id = $admin->admin_id;
             if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
                 $user = $this->userServices->registerUser($request);

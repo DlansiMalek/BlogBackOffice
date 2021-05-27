@@ -65,12 +65,14 @@ class AdminServices
     public function getAdminWithCurrentCongressFirst($admin_id, $congress_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(['admin_congresses' => function ($query) use ($congress_id) {
-                $query->orderByRaw("FIELD(congress_id,$congress_id) DESC")
-                    ->orderBy('congress_id', 'asc');
-            },
-                'admin_congresses.congress.config' ,
-                'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'])
+            ->with([
+                'admin_congresses' => function ($query) use ($congress_id) {
+                    $query->orderByRaw("FIELD(congress_id,$congress_id) DESC")
+                        ->orderBy('congress_id', 'asc');
+                },
+                'admin_congresses.congress.config',
+                'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'
+            ])
             ->first();
     }
 
@@ -106,11 +108,11 @@ class AdminServices
 
         return Admin::where("privilege_id", "=", 11)->get();
     }
-	
-	public function getOrganismAdmins($congress_id)
+
+    public function getOrganismAdmins($congress_id)
     {
 
-       return Admin::where("admin.privilege_id", "=", 7)->get();
+        return Admin::where("admin.privilege_id", "=", 7)->get();
     }
 
     public function affectUsersToEvaluator($users, $numEvalutors, $admin_id, $congress_id)
@@ -165,7 +167,6 @@ class AdminServices
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('privilege_id', '=', $privilegeId);
-
         })
             ->withCount([$relation => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -307,15 +308,16 @@ class AdminServices
         return $newPassword;
     }
 
-    public function addPersonnel($admin, $password, $email=null)
+    public function addPersonnel($admin, $password, $privilegeId)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
-        $personnel->email = $email ? $email : $admin["email"];
+        $personnel->email =  $admin["email"];
         $personnel->mobile = $admin["mobile"];
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
-        $personnel->save();
+        $personnel->privilege_id = $privilegeId;
+            $personnel->save();
 
         return $personnel;
     }
@@ -366,7 +368,6 @@ class AdminServices
             for ($i = sizeof($themesIds); $i < sizeof($themesAdmin); $i++) {
 
                 $themesAdmin[$i]->delete();
-
             }
         } //le cas ou themeadmin < themeIds donc on va affecter des themes à cet admin
         else {
@@ -376,7 +377,6 @@ class AdminServices
                 $themeAdmin->theme_id = $themesIds[$i];
                 $themeAdmin->admin_id = $admin_id;
                 $themeAdmin->save();
-
             }
         }
         return $themesAdmin;
@@ -472,7 +472,6 @@ class AdminServices
         $admin->privilege_id = 1;
         $admin->save();
         return $admin;
-
     }
 
     public function affectEvaluatorsToUser($evaluators, $numEvalutors, $congress_id, $user_id)
@@ -495,7 +494,6 @@ class AdminServices
         $evaluation->congress_id = $congress_id;
         $evaluation->user_id = $user_id;
         $evaluation->save();
-
     }
 
     public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null, $paymentLink = null)
@@ -552,15 +550,15 @@ class AdminServices
         return $adminPayment;
     }
 
-    public function getAdminOfCongress($congress_id) {
+    public function getAdminOfCongress($congress_id)
+    {
         return AdminCongress::where('congress_id', '=', $congress_id)
-        ->where('privilege_id', '=', 1)->first();
+            ->where('privilege_id', '=', 1)->first();
     }
 
     public function getEvaluationInscription($congress_id, $user_id)
     {
         return Evaluation_Inscription::where('congress_id', '=', $congress_id)
-        ->where('user_id', '=', $user_id)->get();
+            ->where('user_id', '=', $user_id)->get();
     }
-
 }

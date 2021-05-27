@@ -28,7 +28,7 @@ class StandProductController extends Controller
             $request->input('main_img'),
             $request->input('brochure_file'),
         ); 
-			$resources = $request->input('docs');
+			$resources = $request->input('product_resource_paths');
 			$this->standProductServices->saveResourceStandProduct($resources, $standproduct->stand_product_id);
 			return response()->json('Standproduct added', 200);
     }
@@ -62,7 +62,7 @@ class StandProductController extends Controller
         return response()->json($standproducts, 200);
     }
 
-    public function deleteStandproduct($congress_id, $stand_product_id)
+    public function deleteStandproduct($stand_product_id)
     {
         if (!$standproduct = $this->standProductServices->getStandProductById($stand_product_id)) {
             return response()->json('no such product found', 404);
