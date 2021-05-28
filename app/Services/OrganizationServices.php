@@ -29,11 +29,17 @@ class OrganizationServices
         return Organization::all();
     }
 
-    public function getOrganizationById($organization_id)
+    public function getOrganizationById($organization_id, $congress_id = null)
     {
-        return Organization::with(['CongressOrganization', 'resource', 'admin' => function ($query) {
-            $query->select('admin_id','email');
-        }])->find($organization_id);
+        return Organization::with([
+            'congressOrganization' => function ($query) use ($congress_id) {
+                if ($congress_id)
+                    $query->where('congress_id', '=', $congress_id);
+                    $query->with('resource');
+            }, 'resource',
+            'admin'
+        ])
+            ->find($organization_id);
     }
 
     public function addOrganization(Request $request)
@@ -51,9 +57,9 @@ class OrganizationServices
     public function editOrganization($oldOrg, $request) {
        
         $oldOrg->name =  $request->input("name");
+        $oldOrg->email =  $request->input("email");
         $oldOrg->description = $request->has("description")? $request->input('description') : null;
         $oldOrg->mobile = $request->input("mobile");
-        $oldOrg->resource_id = $request->input("resource_id");
         $oldOrg->is_sponsor = $request->input("is_sponsor");
         $oldOrg->logo_position = $request->input("logo_position");
         $oldOrg->update();
@@ -90,17 +96,10 @@ class OrganizationServices
         return Organization::with(['congress_organization'])->where('admin_id', "=", $admin_id)->first();
     }
 
-    public function getOrganizationByCongressIdAndOrgId($congress_id, $organizationId)
+    public function getOrganizationByEmail($email)
     {
-        return CongressOrganization::where('congress_id', '=', $congress_id)
-            ->where('organization_id', '=', $organizationId)
-            ->first();
-    }
-
-    public function getOrganizationByName($name)
-    {
-        $name = strtolower($name);
-        return Organization::whereRaw('lower(name) like (?)', ["{$name}"])
+        $email = strtolower($email);
+        return Organization::whereRaw('lower(email) like (?)', ["{$email}"])
             ->first();
     }
 
@@ -165,5 +164,14 @@ class OrganizationServices
                 $query->where('congress_id', '=', $congressId);
             }])
             ->get();
+    }
+
+    public function editCongressOrganization($congress_organization, $resource_id, $is_sponsor, $banner, $admin_id)
+    {
+        $congress_organization->resource_id = $resource_id;
+        $congress_organization->is_sponsor = $is_sponsor;
+        $congress_organization->banner = $banner;
+        $congress_organization->admin_id = $admin_id;
+        $congress_organization->update();
     }
 }

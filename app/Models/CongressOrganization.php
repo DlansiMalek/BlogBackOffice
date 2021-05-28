@@ -19,4 +19,8 @@ class CongressOrganization extends Model
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
 
+    public function resource() {
+        return $this->hasOne(Resource::class,'resource_id','resource_id');
+    }
+
 }

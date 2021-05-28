@@ -109,9 +109,12 @@ class AdminServices
         return Admin::where("privilege_id", "=", 11)->get();
     }
 
-    public function getOrganismAdmins($congress_id)
+    public function getAdminsByPrivilege($congress_id, $privilege_id)
     {
-        return Admin::where("admin.privilege_id", "=", 7)->get();
+        return Admin::whereHas('admin_congresses', function ($query) use ($congress_id, $privilege_id) {
+            $query->where('congress_id', '=', $congress_id);
+            $query->where('privilege_id', '=', $privilege_id);
+        })->get();
     }
 
     public function affectUsersToEvaluator($users, $numEvalutors, $admin_id, $congress_id)

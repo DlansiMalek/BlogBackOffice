@@ -19,6 +19,7 @@ class StandServices
         $stand->name = $request->input('name');
         $stand->organization_id = $request->input('organization_id');
         $stand->congress_id = $request->input('congress_id');
+        $stand->booth_size =  $request->has("url_streaming") ? $request->input('url_streaming') : null;
         $stand->booth_size =  $request->has("booth_size") ? $request->input('booth_size') : null;
         $stand->website_link = $request->has("website_link") ? $request->input('website_link') : null;
         $stand->fb_link = $request->has("fb_link") ? $request->input('fb_link') : null;

@@ -1133,7 +1133,7 @@ class UserController extends Controller
         }
 
         if ($organizationId != null) {
-            $congressOrganization = $this->organizationServices->getOrganizationByCongressIdAndOrgId($congressId, $organizationId);
+            $congressOrganization = $this->organizationServices->getCongressOrganization($congressId, $organizationId);
             $congressOrganization->montant = $congressOrganization->montant + $sum;
             $congressOrganization->update();
 

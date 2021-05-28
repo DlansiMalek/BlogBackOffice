@@ -402,12 +402,12 @@ class AdminController extends Controller
         return response()->json($personels);
     }
 
-    public function getListOrganismAdmins($congress_id)
+    public function getAdminsByPrivilege($congress_id, $privilege_id)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->getOrganismAdmins($congress_id);
+        $personels = $this->adminServices->getAdminsByPrivilege($congress_id, $privilege_id);
 
         return response()->json($personels);
     }
@@ -427,8 +427,17 @@ class AdminController extends Controller
 
             $admin = $this->adminServices->addPersonnel($admin, $password);
             $admin_id = $admin->admin_id;
-            if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
-                $user = $this->userServices->registerUser($request);
+            if (!$user = $this->userServices->getUserByEmail($admin['email'])) {
+                $name = explode(" ", $admin['name']);
+                $admin['first_name'] = $name[0];
+                $admin['last_name'] = $name[1];
+                $user = $this->userServices->addUserFromExcel($admin, $password);
+                $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+            } else {
+                if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
+                    $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+                }
+                
             }
         } else {
             $admin_id = $fetched->admin_id;
@@ -524,7 +533,20 @@ class AdminController extends Controller
             $admin_id,
             $congress_id
         );
+        $newAdmin = $this->adminServices->getAdminById($admin_id);
         //message d'erreur à revoir
+        $user = $this->userServices->getUserByEmail($admin['email']);
+        $name = explode(" ", $admin['name']);
+        $admin['first_name'] = $name[0];
+        $admin['last_name'] = $name[1];
+        if (!$user) {
+            $user = $this->userServices->addUserFromExcel($admin, $newAdmin->passwordDecrypt);
+            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        } else {
+            $this->userServices->editUserData($user, $admin);
+            $user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id);
+            $this->userServices->editUserPrivilege($user_congress, $privilegeId);
+        }
 
         if ($privilegeId == 11) {
             $themesAdmin = $this->adminServices->getThemeAdmin($admin['admin_id']);

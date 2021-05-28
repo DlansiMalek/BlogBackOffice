@@ -345,7 +345,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
         Route::get('congress', 'AdminController@getAdminCongresses');
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
-            Route::get('list/{congress_id}/organismadmins', 'AdminController@getListOrganismAdmins');
+            Route::get('list/{congress_id}/privilege/{privilege_id}', 'AdminController@getAdminsByPrivilege');
             Route::put('{congress_id}/edit/{admin_id}', 'AdminController@editPersonels');
             Route::get('{congress_id}/byId/{admin_id}', 'AdminController@getPersonelByIdAndCongressId');
             Route::post('{congress_id}/add', 'AdminController@addPersonnel');
@@ -452,7 +452,7 @@ Route::group(['prefix' => 'pack'], function () {
 //Organisation API
 Route::group(['prefix' => 'organization', "middleware" => ["assign.guard:admins"]], function () {
     Route::get('list', 'OrganizationController@getAll');
-    Route::put('{organization_id}/edit', 'OrganizationController@editOrganization');
+    Route::put('{organization_id}/edit/{congress_id}', 'OrganizationController@editOrganization');
 });
 
 //Privilege API
@@ -488,7 +488,7 @@ Route::group(['prefix' => 'payement'], function () {
 Route::group(["prefix" => "organization", 'middleware' => 'organization'], function () {
     Route::get('/admin/{admin_id}', "OrganizationController@getOrganizationByAdminId");
     Route::get('/admin/{admin_id}/congress/{congressId}', "OrganizationController@getOrganizationByAdminIdAndCongressId");
-    Route::get('/{organization_id}', "OrganizationController@getOrganizationById");
+    Route::get('/{organization_id}/{congress_id}', "OrganizationController@getOrganizationById");
     Route::get('/{organizatiolist-paginationn_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");

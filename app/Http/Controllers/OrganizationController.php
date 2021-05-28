@@ -50,8 +50,8 @@ class OrganizationController extends Controller
     public function addOrganization($congress_id, Request $request)
     {
         $privilegeId = 7; //Privilegg Organisme;
-        if (!$request->has(['name'])) {
-            return response()->json(["message" => "invalid request", "required inputs" => ['email', 'nom']], 404);
+        if (!$request->has(['email'])) {
+            return response()->json(["message" => "invalid request", "required inputs" => ['email', 'name']], 404);
         }
 
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
@@ -60,17 +60,14 @@ class OrganizationController extends Controller
 		
 		$admin_id =$request->input("admin_id");
         $admin = $this->adminServices->getAdminById($admin_id);
-        $organization = $this->organizationServices->getOrganizationByName($request->input("name"));
+        $organization = $this->organizationServices->getOrganizationByEmail($request->input("email"));
         if (!$organization) {
             $organization = $this->organizationServices->addOrganization($request);
         } else {
-            if ($this->organizationServices->getOrganizationByCongressIdAndOrgId($congress_id, $organization->organization_id)) {
+            if ($this->organizationServices->getCongressOrganization($congress_id, $organization->organization_id)) {
                 return response()->json(["message" => "organization already exists in this congress"], 401);
             }
         }
-
-        $this->adminServices->addAdminCongress($admin_id, $congress_id, $privilegeId);
-
         $this->organizationServices->affectOrganizationToCongress($congress_id, $organization->organization_id, $request->input('is_sponsor'), $request->input('banner'), $request->input('resource_id'), $request->input("admin_id"));
 
         if ($mailtype = $this->congressServices->getMailType('organization')) {
@@ -98,14 +95,11 @@ class OrganizationController extends Controller
         return response()->json($this->organizationServices->getOrganizationById($organization->organization_id));
     }
 
-    function editOrganization (Request $request, $organization_id) {
+    function editOrganization (Request $request, $organization_id, $congress_id) {
         $oldOrg = $this->organizationServices->getOrganizationById($organization_id);
         $email = $request->has("email") ? $request->input("email") : $request->input("name") . '@eventizer.io';
-        $admin = $this->adminServices->getAdminById($request->input("admin")["admin_id"]);
-        $admin->email = $email;
-        $admin->name = $request->input("name");
-        $admin->mobile = $request->input("mobile");
-        $this->adminServices->editPersonnel($admin);
+        $congress_organization = $this->organizationServices->getCongressOrganization($congress_id, $organization_id);
+        $this->organizationServices->editCongressOrganization($congress_organization, $request->input("resource_id"), $request->input("is_sponsor"), $request->input("banner"), $request->input("admin_id"));
         $this->organizationServices->editOrganization(
          $oldOrg,
          $request
@@ -156,7 +150,7 @@ class OrganizationController extends Controller
         return $this->organizationServices->getOrganizationByAdminId($admin_id);
     }
 
-    public function getOrganizationById($organization_id)
+    public function getOrganizationById($organization_id, $congress_id)
     {
         return $this->organizationServices->getOrganizationById($organization_id);
     }

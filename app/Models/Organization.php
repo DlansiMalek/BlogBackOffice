@@ -33,4 +33,9 @@ class Organization extends Model
     function resource() {
         return $this->hasOne(Resource::class,'resource_id','resource_id');
     }
+
+    function admin()
+    {
+        return $this->belongsToMany('App\Models\Admin', 'Congress_Organization', 'organization_id', 'admin_id');
+    }
 }
