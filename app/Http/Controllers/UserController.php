@@ -1133,11 +1133,10 @@ class UserController extends Controller
         }
 
         if ($organizationId != null) {
-            $congressOrganization = $this->organizationServices->getCongressOrganization($congressId, $organizationId);
-            $congressOrganization->montant = $congressOrganization->montant + $sum;
-            $congressOrganization->update();
-
-            return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
+            $organization = $this->organizationServices->getOrganizationById($organizationId);
+            $organization->montant = $organization->montant + $sum;
+            $organization->update();
+            return response()->json($organization);
         } else {
             return response()->json(['message' => 'import success']);
         }

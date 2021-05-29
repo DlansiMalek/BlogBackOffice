@@ -200,7 +200,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
             Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
-            Route::put('/edit/{standId}', 'StandController@editStands');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
             Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
@@ -452,7 +451,6 @@ Route::group(['prefix' => 'pack'], function () {
 //Organisation API
 Route::group(['prefix' => 'organization', "middleware" => ["assign.guard:admins"]], function () {
     Route::get('list', 'OrganizationController@getAll');
-    Route::put('{organization_id}/edit/{congress_id}', 'OrganizationController@editOrganization');
 });
 
 //Privilege API
