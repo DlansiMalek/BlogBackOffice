@@ -407,7 +407,7 @@ class AdminController extends Controller
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $personels = $this->adminServices->getOrganismAdmins($congress_id);
+        $personels = $this->adminServices->getAdminsByPrivilege($congress_id,$privilege_id);
 
         return response()->json($personels);
     }
