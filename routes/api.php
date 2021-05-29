@@ -574,5 +574,8 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
 Route::group(["prefix" => "3D"], function () {
     Route::group(['middleware' => ['assign.guard:users']], function () {
         Route::post('login', 'Auth\LoginController@login3DUser');
+        Route::group(["prefix" => "congress/{congressId}"], function () {
+            Route::get('booths', 'StandController@get3DBooths');
+        });
     });
 }); 

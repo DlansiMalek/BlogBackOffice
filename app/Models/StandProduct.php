@@ -18,7 +18,6 @@ class StandProduct extends Model
     }
 	function docs()
     {
-        return $this->belongsToMany(Resource::class,'Resource_Product','stand_product_id','resource_id')
-        ->withPivot(['file_name']);
+        return $this->belongsToMany(Resource::class,'Resource_Product','stand_product_id','resource_id');
     }
 }

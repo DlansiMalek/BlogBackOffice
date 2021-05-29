@@ -110,20 +110,15 @@ class StandServices
             ->where('congress_id', '=', $congress_id)->get();
     }
 	
-	public function getStandsPagination($congress_id, $name = null, $status = null,  $offset)
+	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::where(function ($query) use ($name, $status) {
-            if ($name) {
-                $query->where('name', '=', $name);
-            }
-            if ($status) {
-                $query->where('status', '=', $status);
-            }
-        })
-            ->with(['docs', 'products' , 'organization' => function ($query) {
-                $query->with('resource');
+        return Stand::with(['docs', 'products' , 'organization',
+            'organization.admin' => function ($query) {
+                $query->join('User','User.email', '=' ,'Admin.email')
+                ->leftJoin('Resource','Resource.resource_id','User.resource_id')
+                ->select('Admin.admin_id', 'User.user_id', 'User.gender', 'User.first_name', 'User.last_name', 'User.mobile','Resource.resource_id','Resource.path as img_user');
             }])
-            ->where('congress_id', '=', $congress_id)->paginate($offset);
+            ->where('congress_id', '=', $congress_id)->paginate($perPage);
     }
 
     public function getDocsByStands($stands)

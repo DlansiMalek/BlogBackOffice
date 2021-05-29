@@ -165,4 +165,15 @@ class StandController extends Controller
         $stands = $this->standServices->getStandsPagination($congress_id, null, 1, $offset);
         return response()->json($stands, 200);
     }
+    public function get3DBooths($congressId, Request $request) {
+
+        $perPage = $request->query('perPage', 10);
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+        $stands = $this->standServices->getStandsPagination($congressId, $perPage);
+
+        return response()->json($stands, 200);
+    }
 }

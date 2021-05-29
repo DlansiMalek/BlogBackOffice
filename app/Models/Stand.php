@@ -14,6 +14,8 @@ class Stand extends Model
     protected $fillable = ['name', 'congress_id', 'organization_id', 'url_streaming', 'booth_size', 'website_link', 'fb_link', 'insta_link', 'twitter_link', 'linkedin_link', 'priority', 'primary_color', 'secondary_color','with_products',];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+
+   
     function docs()
     {
         return $this->belongsToMany(Resource::class,'Resource_Stand','stand_id','resource_id')
@@ -28,7 +30,7 @@ class Stand extends Model
     }
 	
     function products() {
-        return $this->hasMany(StandProduct::class,'stand_id','stand_id')->with('docs');
+        return $this->hasMany(StandProduct::class,'stand_id','stand_id');
     }
 }
 

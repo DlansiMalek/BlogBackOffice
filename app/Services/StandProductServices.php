@@ -45,7 +45,8 @@ class StandProductServices
 
     public function getStandproducts($stand_id)
     {
-        return StandProduct::where('stand_id', '=', $stand_id)->with('docs')->get();
+        return StandProduct::where('stand_id', '=', $stand_id)
+            ->get();
     }
 
     public function saveResourceStandProduct($resources, $stand_product_id)
@@ -75,7 +76,6 @@ class StandProductServices
             }
         } else {
             foreach ($resources as $resource) {
-
                 $this->addResourceStandProduct($resource, $stand_product_id);
             }
         }

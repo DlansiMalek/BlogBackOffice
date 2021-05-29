@@ -28,7 +28,7 @@ class StandProductController extends Controller
             $request->input('main_img'),
             $request->input('brochure_file'),
         ); 
-			$resources = $request->input('product_resource_paths');
+			$resources = $request->has('product_resource_paths') ? $request->input('product_resource_paths') : [];
 			$this->standProductServices->saveResourceStandProduct($resources, $standproduct->stand_product_id);
 			return response()->json('Standproduct added', 200);
     }

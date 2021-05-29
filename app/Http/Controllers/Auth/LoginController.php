@@ -76,15 +76,7 @@ class LoginController extends Controller
         $credentials = request(['email', 'password']);
 
         $email = $request->input("email");
-
-        $cacheKey = "login3DUser-".$email;
-
-        if (Cache::has($cacheKey)) {
-            $user = Cache::get($cacheKey);
-        } else {
-            $user = $this->userServices->getUser3DByEmail($email);
-            Cache::put($cacheKey, $user, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
-        }
+        $user = $this->userServices->getUser3DByEmail($email);
 
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
