@@ -4,31 +4,27 @@ namespace App\Services;
 
 use App\Models\Stand;
 use App\Models\ResourceStand;
-use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Facades\Storage;
-use DateTime;
 
 class StandServices
 {
 
 
-    public function addStand($request)
+    public function addStand($stand, $congressId, $request)
     {
+        if (!$stand) {
+            $stand = new Stand();
+        }
 
-        $stand = new Stand();
-        $stand->name = $request->input('name');
+        $stand->name            = $request->input('name');
         $stand->organization_id = $request->input('organization_id');
-        $stand->congress_id = $request->input('congress_id');
-        $stand->booth_size = $request->input('booth_size');
-        $stand->website_link = $request->input('website_link');
-        $stand->fb_link = $request->input('fb_link');
-        $stand->insta_link = $request->input('insta_link');
-        $stand->twitter_link = $request->input('twitter_link');
-        $stand->linkedin_link = $request->input('linkedin_link');
-        $stand->priority = $request->input('priority');
-        $stand->primary_color = $request->input('primary_color');
-        $stand->secondary_color = $request->input('secondary_color');
-        $stand->with_products = $request->input('with_products');
+        $stand->congress_id     = $congressId;
+        $stand->url_streaming   = $request->input("url_streaming");
+        $stand->booth_size      = $request->input("booth_size") ;
+        $stand->priority        = $request->input("priority");
+        $stand->primary_color   = $request->input("primary_color");
+        $stand->secondary_color = $request->input("secondary_color");
+        $stand->floor_color     = $request->input("floor_color");
+        $stand->with_products   = $request->input('with_products');           
         $stand->save();
         return $stand;
     }
@@ -100,24 +96,6 @@ class StandServices
             ->first();
     }
 
-    public function editStand($oldStand, $name, $organization_id, $congress_id, $url_streaming, $booth_size, $website_link, $fb_link, $insta_link, $twitter_link, $linkedin_link, $priority, $primary_color, $secondary_color)
-    {
-
-        $oldStand->name = $name;
-        $oldStand->organization_id = $organization_id;
-        $oldStand->url_streaming = $url_streaming;
-        $oldStand->booth_size = $booth_size;
-        $oldStand->website_link = $website_link;
-        $oldStand->fb_link = $fb_link;
-        $oldStand->insta_link = $insta_link;
-        $oldStand->twitter_link = $twitter_link;
-        $oldStand->linkedin_link = $linkedin_link;
-        $oldStand->priority = $priority;
-        $oldStand->primary_color = $primary_color;
-        $oldStand->secondary_color = $secondary_color;
-        $oldStand->update();
-        return $oldStand;
-    }
     public function getStands($congress_id, $name = null, $status = null)
     {
         return Stand::where(function ($query) use ($name, $status) {
@@ -128,9 +106,7 @@ class StandServices
                 $query->where('status', '=', $status);
             }
         })
-            ->with(['docs', 'products' , 'organization' => function ($query) {
-                $query->with('resource');
-            }])
+            ->with(['docs', 'products' , 'organization'])
             ->where('congress_id', '=', $congress_id)->get();
     }
 	

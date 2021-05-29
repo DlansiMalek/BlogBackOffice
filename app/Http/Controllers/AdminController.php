@@ -402,12 +402,16 @@ class AdminController extends Controller
         return response()->json($personels);
     }
 
-    public function getListOrganismAdmins($congress_id)
+    public function getAdminsByPrivilege($congress_id, $privilege_id)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
+<<<<<<< HEAD
         $personels = $this->adminServices->getOrganismAdmins($congress_id);
+=======
+        $personels = $this->adminServices->getAdminsByPrivilege($congress_id, $privilege_id);
+>>>>>>> 316f170fa254c7e456a2735781d08ed2851dc58c
 
         return response()->json($personels);
     }
@@ -424,31 +428,35 @@ class AdminController extends Controller
         $password = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-
-            $admin = $this->adminServices->addPersonnel($admin, $password, $privilegeId );
+            $admin    = $this->adminServices->addPersonnel($admin, $password);
             $admin_id = $admin->admin_id;
-            if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
-                $user = $this->userServices->registerUser($request);
-            }
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress
-            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress(
-                $admin_id,
-                $congress_id
-            );
-
+            $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id);
             if ($admin_congress) {
                 return response()->json(['error' => 'Organisateur existant'], 505);
             }
-
             // else edit changed infos while creating
-
             $admin['admin_id'] = $admin_id;
             $this->adminServices->editPersonnel($admin);
         }
 
         $congress = $this->congressService->getById($congress_id);
+
+        // Add User if not exist
+        if (!$user = $this->userServices->getUserByEmail($admin['email'])) {
+            $name = explode(" ", $admin['name']);
+            $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
+            $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
+            $user = $this->userServices->addUserFromExcel($admin, $password);
+            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        } else {
+            // Add user to congress if not affected
+            if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
+                $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+            }
+        }
 
         //create themeAdmin if privilege is "comité Scientifique"
 
@@ -527,7 +535,20 @@ class AdminController extends Controller
             $admin_id,
             $congress_id
         );
+        $newAdmin = $this->adminServices->getAdminById($admin_id);
         //message d'erreur à revoir
+        $user = $this->userServices->getUserByEmail($admin['email']);
+        $name = explode(" ", $admin['name']);
+        $admin['first_name'] = $name[0];
+        $admin['last_name'] = $name[1];
+        if (!$user) {
+            $user = $this->userServices->addUserFromExcel($admin, $newAdmin->passwordDecrypt);
+            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        } else {
+            $this->userServices->editUserData($user, $admin);
+            $user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id);
+            $this->userServices->editUserPrivilege($user_congress, $privilegeId);
+        }
 
         if ($privilegeId == 11) {
             $themesAdmin = $this->adminServices->getThemeAdmin($admin['admin_id']);

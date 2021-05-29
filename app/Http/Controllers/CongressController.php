@@ -270,8 +270,11 @@ class CongressController extends Controller
                 $submissionData,
                 $congressId
             );
+        } else if($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
+            $this->congressServices->deleteConfigsubmission($configSubmission);
+            $this->congressServices->deleteAllThemes($congressId);
         }
-        if ($theme_ids) {
+        if ($theme_ids && sizeof($submissionData) > 0) {
             $this->congressServices->addSubmissionThemeCongress(
                 $theme_ids,
                 $congressId);

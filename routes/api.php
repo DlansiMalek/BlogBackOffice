@@ -185,6 +185,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('attestation-submission/affect', 'SubmissionController@affectAttestationToCongress')->middleware("admin");
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
         Route::get('/{standId}/checkStandRights', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('/{standId}/checkSupportRights/{organizerId}', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('getOrganizers', 'UserController@getOrganizers')->middleware('assign.guard:users');
 
         Route::post('program-link', 'CongressController@setProgramLink');
         Route::post('/abstractBook', 'CongressController@affectAbstractBookPathToCongress');
@@ -198,7 +200,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
             Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
-            Route::put('/edit/{standId}', 'StandController@editStands');
 			Route::get('/standsPagination/{offset}', 'StandController@getStandsByCongressPagination');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
@@ -345,6 +346,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
         Route::group(['prefix' => 'personels'], function () {
             Route::get('list/{congress_id}', 'AdminController@getListPersonels');
             Route::get('list/{congress_id}/organismadmins', 'AdminController@getListOrganismAdmins');
+            Route::get('list/{congress_id}/privilege/{privilege_id}', 'AdminController@getAdminsByPrivilege');
             Route::put('{congress_id}/edit/{admin_id}', 'AdminController@editPersonels');
             Route::get('{congress_id}/byId/{admin_id}', 'AdminController@getPersonelByIdAndCongressId');
             Route::post('{congress_id}/add', 'AdminController@addPersonnel');
@@ -451,7 +453,6 @@ Route::group(['prefix' => 'pack'], function () {
 //Organisation API
 Route::group(['prefix' => 'organization', "middleware" => ["assign.guard:admins"]], function () {
     Route::get('list', 'OrganizationController@getAll');
-    Route::put('{organization_id}/edit', 'OrganizationController@editOrganization');
 });
 
 //Privilege API
@@ -487,7 +488,7 @@ Route::group(['prefix' => 'payement'], function () {
 Route::group(["prefix" => "organization", 'middleware' => 'organization'], function () {
     Route::get('/admin/{admin_id}', "OrganizationController@getOrganizationByAdminId");
     Route::get('/admin/{admin_id}/congress/{congressId}', "OrganizationController@getOrganizationByAdminIdAndCongressId");
-    Route::get('/{organization_id}', "OrganizationController@getOrganizationById");
+    Route::get('/{organization_id}/{congress_id}', "OrganizationController@getOrganizationById");
     Route::get('/{organizatiolist-paginationn_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
@@ -525,7 +526,7 @@ Route::group(['prefix' => 'access'], function () {
     Route::delete('reset-score/{access_id}', 'AccessController@resetScore');
     Route::post('{congress_id}/uploadExcel', 'AccessController@uploadExcelAccess');
     Route::get('congress/{congress_id}/user', 'AccessController@getUserAccessesByCongressId')->middleware('assign.guard:users');
-    Route::get('paginantion/congress/{congress_id}', 'AccessController@getOnlineAccessesByCongressIdPginantion');
+    Route::get('paginantion/congress/{congress_id}', 'AccessController@getAccessesByCongressIdPginantion')->middleware('assign.guard:users');
 });
 
 Route::group(["prefix" => "notification"], function () {
@@ -568,3 +569,10 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
+
+// 3D API
+Route::group(["prefix" => "3D"], function () {
+    Route::group(['middleware' => ['assign.guard:users']], function () {
+        Route::post('login', 'Auth\LoginController@login3DUser');
+    });
+}); 

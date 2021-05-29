@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StandProduct extends Model
 {
- public $timestamps = true;
+    public $timestamps = true;
     protected $table = 'Stand_Product';
     protected $primaryKey = 'stand_product_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

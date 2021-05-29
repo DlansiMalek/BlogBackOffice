@@ -176,8 +176,6 @@ class CongressTest extends TestCase
             ->assertStatus(200);
     }
 
-
-
     public function testGetMailTypeById()
     {
         $congress = factory(Congress::class)->create();

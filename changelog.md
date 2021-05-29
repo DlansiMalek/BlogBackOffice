@@ -52,3 +52,14 @@ Inclut tous les fonctionnalités du milestone 3.0.18
 2. [Probléme timeout] GetAllUsers peaksource: [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/39)
 
 3. [Import Participant] Evolution à mettre en place pour gérer l'appel à candidature:  [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/38)
+
+# [3.0.19](https://gitlab.master.ssd.vps.vayetek.com/groups/eventizer/-/boards?scope=all&utf8=%E2%9C%93&milestone_title=Sprint-3.0.19)
+
+Inclut tous les fonctionnalités du milestone 3.0.19
+
+1. [Tests] Ajout des tests pour l'import participants [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/36)
+
+2. [DevOps] Load Performing Tests [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/30)
+
+3. [Access Test] Failed Test [ticket](https://gitlab.master.ssd.vps.vayetek.com/eventizer/backend/-/issues/42)
+

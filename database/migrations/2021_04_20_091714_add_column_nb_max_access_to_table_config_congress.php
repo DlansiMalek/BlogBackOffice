@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddEmailToOrganization extends Migration
+class AddColumnNbMaxAccessToTableConfigCongress extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class AddEmailToOrganization extends Migration
      */
     public function up()
     {
-        Schema::table('Organization', function (Blueprint $table) {
-            $table->string('email');
-            $table->removeColumn("is_sponsor");
-            $table->dropForeign(['resource_id']);
+        Schema::table('Config_Congress', function (Blueprint $table) {
+            $table->tinyInteger('nb_max_access')->default(-1);
+
         });
     }
 
@@ -27,8 +26,8 @@ class AddEmailToOrganization extends Migration
      */
     public function down()
     {
-        Schema::table('Organization', function (Blueprint $table) {
-            $table->dropForeign(['email']);
+        Schema::table('Config_Congress', function (Blueprint $table) {
+            $table->removeColumn('nb_max_access');
         });
     }
 }
