@@ -427,10 +427,11 @@ class SubmissionController extends Controller
                     . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
             }
             $user = $this->userServices->getUserById($submission->user_id);
+            $congress = $this->congressServices->getCongressById($submission->congress_id);
             $this->mailServices->sendMail(
                 $this->congressServices->renderMail(
                     $mail->template,
-                    null,
+                    $congress,
                     $user,
                     null,
                     null,
