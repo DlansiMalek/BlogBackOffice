@@ -153,7 +153,7 @@ class SubmissionController extends Controller
             $changedTheme = $submission->theme_id == $request->input('submission.theme_id') ? false : true;
             $user = $this->userServices->retrieveUserFromToken();
             $status = $request->input('addExternalFiles') ? '5' : $submission->status;
-            if ($submission->status == 6){$status=2;} 
+            if ($submission->status == 6) {$status = 2;}
             $name = $request->input('addExternalFiles') ? 'file_submitted' : 'edit_submission';
             $code = $request->input('addExternalFiles') ? null : $submission->upload_file_code;
             $submission = $this->submissionServices->editSubmission(
@@ -464,37 +464,52 @@ class SubmissionController extends Controller
             return response()->json(['response' => 'bad request'], 400);
         }
         try {
-            $submissionComment =$this->submissionServices->addSubmissionComments($comment,$submissionId);
-         if($submissionComment){
-             if($status){
-                $this->submissionServices->UpdateSatutsSubmission($submission,$status);
-             }
-          
-         }
-            $admin = $this->adminServices->retrieveAdminFromToken();
-            if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
-                return response()->json(['response' => 'bad request'], 400);
-            }
-            $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
-            $evaluation->communication_type_id = $request->input('communication_type_id');
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);    
-            
-            $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
-            $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
-
-            if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
-                if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
-                    $this->mailServices->sendMail(
-                        $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
-                    );
+            if ($comment) {
+                $submissionComment = $this->submissionServices->addSubmissionComments($comment, $submissionId);
+                if ($submissionComment) {
+                    if ($status) {
+                        $this->submissionServices->UpdateSatutsSubmission($submission, $status);
+                    }
+                    $mailtype = $this->congressServices->getMailType('submission_a_reviser', $this->type);
+                    $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+                    if ($mail) {
+                        $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                        if (!$userMail) {
+                            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                        }
+                        $linkSubmission = UrlUtils::getBaseUrlFrontOffice() . "/user-profile/submission/edit/".$submissionId;
+                        $this->mailServices->sendMail(
+                            $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null, null, null, null, null, null, null, null, $submission->title, null, [], $submissionComment, $linkSubmission), $submission->user, $submission->congress, $mail->object, null, $userMail
+                        );
+                    }
                 }
+            } else {
+                $admin = $this->adminServices->retrieveAdminFromToken();
+                if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
+                    return response()->json(['response' => 'bad request'], 400);
+                }
+                $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
+                $evaluation->communication_type_id = $request->input('communication_type_id');
+                $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
+
+                $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
+                $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+
+                if ($mail) {
+                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                    if (!$userMail) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                        $this->mailServices->sendMail(
+                            $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
+                        );
+                    }
+
+                }
+                return response()->json($evaluation, 200);
 
             }
-            return response()->json($evaluation, 200);
         } catch (Exception $e) {
-            //return response()->json(['response' => $e->getMessage()], 400);
+            return response()->json(['response' => $e->getMessage()], 400);
         }
     }
 
