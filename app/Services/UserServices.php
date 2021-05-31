@@ -397,7 +397,7 @@ class UserServices
             if ($privilegeId != null) {
                 $query->where('privilege_id', '=', $privilegeId);
             }
-        })->get();
+        })->with(['profile_img', 'user_congresses'])->get();
     }
     // public function getUsersCongress($congress_id,$privilegeIds = null){
     //     return User::whereHas('user_congresses', function ($query) use ($congress_id,$privilegeIds) {
@@ -1644,9 +1644,9 @@ class UserServices
             ->get();
     }
 
-    public function addUserFromExcel($userData)
+    public function addUserFromExcel($userData, $pass = null)
     {
-        $password  = Str::random(8);
+        $password = $pass ? $pass : Str::random(8);
         $user = new User();
 
         $user->email = $userData['email'];
@@ -1688,4 +1688,32 @@ class UserServices
         })->where("user_id", '=', $userId)->delete();
     }
 
+    public function isUserOrganizer($userCongress)
+    {
+        return $userCongress->privilege_id == 2;
+    }
+
+    public function getUser3DByEmail($email) {
+        $email = strtolower($email);
+        $user = User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->with([
+            'profile_img',
+            'user_congresses.congress.config' => function ($query) {
+                $query->select('config_congress_id','congress_id','logo','banner','url_streaming');
+            },
+            'user_congresses.congress'=> function ($query) {
+                $query->select('congress_id','name','start_date','end_date','description');
+            }
+            ])
+            ->select('user_id','first_name','last_name','gender','mobile','email','resource_id')
+            ->first();
+
+        return $user;
+    }
+
+    public function editUserPrivilege($userCongress, $data)
+    {
+        $userCongress->privilege_id = $data["privilege_id"];
+        $userCongress->update();
+    }
 }
