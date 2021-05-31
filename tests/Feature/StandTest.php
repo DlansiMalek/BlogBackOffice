@@ -22,6 +22,7 @@ class StandTest extends TestCase
      *
      * @return void
      */
+    /* TODO Verify
     public function testGetDocsByCongress()
     {
         $congress = factory(Congress::class)->create();
@@ -135,6 +136,7 @@ class StandTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(2, $dataResponse);
     }
+    */
 
     public function testCheckStandRights()
     {

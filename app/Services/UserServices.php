@@ -1644,9 +1644,9 @@ class UserServices
             ->get();
     }
 
-    public function addUserFromExcel($userData)
+    public function addUserFromExcel($userData, $pass = null)
     {
-        $password  = Str::random(8);
+        $password = $pass ? $pass : Str::random(8);
         $user = new User();
 
         $user->email = $userData['email'];
@@ -1709,5 +1709,11 @@ class UserServices
             ->first();
 
         return $user;
+    }
+
+    public function editUserPrivilege($userCongress, $data)
+    {
+        $userCongress->privilege_id = $data["privilege_id"];
+        $userCongress->update();
     }
 }
