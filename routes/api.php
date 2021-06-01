@@ -569,12 +569,10 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
-<<<<<<< HEAD
 Route::group(['prefix' => 'menu'], function () {
     Route::get('all', 'MenuController@getMenus');
     Route::post('/add', 'MenuController@setMenus');
 });
-=======
 
 // 3D API
 Route::group(["prefix" => "3D"], function () {
@@ -585,4 +583,3 @@ Route::group(["prefix" => "3D"], function () {
         });
     });
 }); 
->>>>>>> 57d590f1b1bff2139ab45b30203fa6dea7ab5afe
