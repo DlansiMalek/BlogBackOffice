@@ -280,6 +280,7 @@ class SubmissionController extends Controller
             $privilege_id = $adminCongress->privilege_id;
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
+            $congress = $this->congressServices->getCongressById($congressId);
             if ($privilege_id == 11) {
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
@@ -288,7 +289,7 @@ class SubmissionController extends Controller
                     if (!$userMail) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                         $this->mailServices->sendMail(
-                            $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
+                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
                         );
                     }
                 }
@@ -354,12 +355,13 @@ class SubmissionController extends Controller
             $this->congressServices->getMailType('accept_submission', $this->type) :
             $this->congressServices->getMailType('refuse_submission', $this->type);
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
+        $congress = $this->congressServices->getCongressById($congress_id);
         if ($mail) {
             $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
             if (!$userMail) {
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
                 );
             }
         }
