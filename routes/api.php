@@ -579,3 +579,4 @@ Route::group(["prefix" => "3D"], function () {
         });
     });
 }); 
+Route::post('organization/{congressId}', 'OrganizationController@saveOrganizationsFromExcel');

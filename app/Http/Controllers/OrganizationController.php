@@ -200,4 +200,33 @@ class OrganizationController extends Controller
 
         return response()->json($organizations);
     }
+    public function saveOrganizationsFromExcel($congressId, Request $request)
+    {
+        ini_set('max_execution_time', 500); //3 minutes
+        $congress = $this->congressServices->getById($congressId);
+        $organizations = $request->input("data");
+        if (!$oldOrganization = $this->organizationServices->getOrganizationById($congressId)) 
+        $oldOrganization = [];
+        foreach($oldOrganization as $old) 
+        {
+            $found = false;
+            foreach ($organizations as $org) {
+                if ($org['name']) {
+                    $organization=$this->organizationServices->OrganizationByNameAndCongress($org['name'],$congressId);
+                  /*  if ($organization){
+                        if ($organization->name == $name && $old->name == $name && $old->start_date == $start_date && $old->end_date == $end_date ) {
+                            $found = true;
+                            break;
+                        }   
+                    }
+                }*/
+                if (!$organization) {
+                     $this->organizationServices->addOrganizationFromExcel($org);
+                }
+            }
+        }
+
+
+    }
+    }
 }

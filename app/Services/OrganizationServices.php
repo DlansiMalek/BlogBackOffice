@@ -75,7 +75,7 @@ class OrganizationServices
 
     public function getOrganizationsByCongressId($congressId)
     {
-        return Organization::where('congress_id', '=', $congressId)
+        return Organization::with(['admin'])->where('congress_id', '=', $congressId)
             ->get();
     }
 
@@ -100,5 +100,28 @@ class OrganizationServices
             ->where('is_sponsor', '=', 1)
             ->where('congress_id', '=', $congressId)
             ->get();
+    }
+    public function addOrganizationFromExcel($organzationData)
+    {
+        $organization = new Organization();
+        $organization->name=$organzationData['name'];
+        $organization->description=$organzationData['description'];
+        $organization->mobile=$organzationData['mobile'];
+        $organization->email=$organzationData['email'];
+        $organization->website_link=$organzationData['website_link'];
+        $organization->twitter_link=$organzationData['twitter_link'];
+        $organization->linkedin_link=$organzationData['linkedin_link'];
+        $organization->insta_link=$organzationData['insta_link'];
+        $organization->fb_link=$organzationData['fb_link'];
+        $organization->fb_link=$organzationData['fb_link'];
+        $organization->admin_id=$organzationData['admin_id'];
+        $organization->save();
+        return $organization;
+    }
+    public function getOrganizationByNameAndCongress($organization_name, $congress_id)
+    {
+        return Organization::with(['admin'])
+            ->where('congress_id', '=', $congress_id)->where('name', '=', $organization_name)
+            ->first();
     }
 }
