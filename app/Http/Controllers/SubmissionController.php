@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
+use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\CommunicationTypeService;
@@ -754,7 +756,7 @@ class SubmissionController extends Controller
         }
     }
 
-    public function sendMailAttestationAllSubmission($congressId)
+    public function sendMailAttestationAllSubmission($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
@@ -782,6 +784,18 @@ class SubmissionController extends Controller
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId); // ICI
                 }]);
+            $withauths = $request->input('sendCoAuthor');
+            foreach ($users as $user) {
+                $subs = $user->submissions;
+                foreach ($subs as $sub) {
+                    $authors = $sub->authors;
+                    $i = 0;
+                    foreach ($authors as $author) {
+                        $authorsmails[$i] = $author->email;
+                        $i++;
+                    }
+                }
+            }
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             foreach ($users as $user) {
                 $request = array();
@@ -815,18 +829,42 @@ class SubmissionController extends Controller
                         }
                         if ($userMail->status != 1) {
                             $fileName = 'attestationsSubmission.zip';
-                            $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions),
+                            $this->mailServices->sendMail(
+                                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions),
                                 $user,
                                 $congress,
                                 $mail->object,
                                 true,
                                 $userMail,
                                 null,
-                                $fileName);
-                           }
+                                $fileName
+                            );
+                        }
                     }
+               
                 }
             }
+            if ($withauths == 1) {
+                foreach ($authorsmails as $authormail) {
+                    $author = Author::whereRaw('lower(email) like (?)', ["{$authormail}"])->first();
+                    $userauthor = $user;
+                    $userauthor->email = $author->email;
+                    $userauthor->first_name = $author->first_name;
+                    $userauthor->last_name = $author->last_name;
+                    $userAuthorMail = $user->user_mail[0];
+                    $fileName = 'attestationsSubmission.zip';
+                    $this->mailServices->sendMail(
+                        $this->congressServices->renderMail($mail->template, $congress, $userauthor, null, null, null, null, null, null, null, null, null, null, null, null, $userauthor->submissions),
+                        $userauthor,
+                        $congress,
+                        $mail->object,
+                        true,
+                        $userAuthorMail,
+                        null,
+                        $fileName
+                    );
+                }
+            } 
 
             return response()->json(['message' => 'send mail successs']);
         } catch (Exception $e) {
