@@ -145,7 +145,7 @@ class MailTypeSeedTable extends Seeder
         DB::table('Mail_Type')->insert([
             'mail_type_id' => 23,
             'name' => 'submission_a_reviser',
-            'display_name' => " reviser soumission",
+            'display_name' => "A réviser une soumission",
             'type' => "submission"
         ]);
 

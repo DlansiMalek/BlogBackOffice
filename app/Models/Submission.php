@@ -46,7 +46,7 @@ class Submission extends Model
     {
         return $this->belongsTo('App\Models\Congress', 'congress_id', 'congress_id');
     }
-    public function submissions_comments()
+    public function comments()
     {
         return $this->hasMany('App\Models\SubmissionComments', 'submission_id');
     }

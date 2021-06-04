@@ -251,9 +251,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::delete('{submissionId}', 'SubmissionController@deleteSubmission');
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
     Route::post('{congressId}/upload-submissions', 'SubmissionController@uploadSubmissions');
-
 });
-Route::get('submission/submissioncomments/{submissionId}', 'SubmissionController@getSubmissionCommentsByIdSubmission');
 
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');

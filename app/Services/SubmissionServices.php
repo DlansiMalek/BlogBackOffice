@@ -56,6 +56,7 @@ class SubmissionServices
             'authors' => function ($query) {
                 $query->orderBy('rank');
             },
+            'comments',
             'resources',
             'congress.configSubmission',
         ])
@@ -137,6 +138,7 @@ class SubmissionServices
     public function renderSubmissionForAdmin()
     {
         return Submission::with([
+            'comments',
             'user:user_id,first_name,last_name,email,mobile',
             'communicationType:communication_type_id,label',
             'authors' => function ($query) {
@@ -228,7 +230,7 @@ class SubmissionServices
                     ->only(['submission_id', 'title', 'type', 'communication_type_id', 'limit_date',
                         'prez_type', 'description', 'global_note', 'communicationType',
                         'status', 'theme', 'user', 'authors', 'submissions_evaluations',
-                        'congress_id', 'created_at', 'congress', 'resources']);
+                        'congress_id', 'created_at', 'congress', 'resources','comments']);
                 return $submissionToRender;
             }
 
@@ -237,6 +239,7 @@ class SubmissionServices
                 $query->where('admin_id', '=', $admin->admin_id);
             })
                 ->with([
+                    'comments',
                     'resources',
                     'user:user_id,first_name,last_name,email',
                     'theme:theme_id,label',
@@ -255,22 +258,22 @@ class SubmissionServices
                     ->only(['submission_id', 'title', 'type',
                         'prez_type', 'user', 'description', 'global_note', 'communicationType',
                         'status', 'theme', 'submissions_evaluations',
-                        'congress_id', 'created_at', 'resources']);
+                        'congress_id', 'created_at', 'resources', 'comments']);
 
                 return $submissionToRender;
             }
         }
         return null;
     }
-    public function addSubmissionComments($description, $submission_id)
+    public function addSubmissionComments($comment, $submission_id)
     {
         $submissionComment = new SubmissionComments();
         $submissionComment->submission_id = $submission_id;
-        $submissionComment->description = $description;
+        $submissionComment->description = $comment;
         $submissionComment->save();
         return $submissionComment;
     }
-    public function UpdateSatutsSubmission($submission, $status)
+    public function updateStatusSubmission($submission, $status)
     {
         $submission->status = $status;
         $submission->update();
