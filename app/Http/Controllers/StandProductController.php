@@ -50,6 +50,7 @@ class StandProductController extends Controller
             $request->input('main_img'),
             $request->input('brochure_file')
         );
+     
         return response()->json($standproduct, 200);
     }
 

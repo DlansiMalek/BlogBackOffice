@@ -45,22 +45,21 @@ class StandProductServices
 
     public function getStandproducts($stand_id)
     {
-        return StandProduct::where('stand_id', '=', $stand_id)
+        return StandProduct::where('stand_id', '=', $stand_id)->with(['docs'])
             ->get();
     }
 
     public function saveResourceStandProduct($resources, $stand_product_id)
     {
-
+   
         $oldResources = ResourceProduct::where('stand_product_id', '=', $stand_product_id)
-            ->with(['docs'])
+            ->with(['resource'])
             ->get();
-
         if (sizeof($oldResources) > 0) {
             foreach ($resources as $resource) {
                 $isExist = false;
                 foreach ($oldResources as $oldResource) {
-                    if (($oldResource->file_name == $resource['pivot']['file_name']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
+                    if ($oldResource['resource_id'] !== $resource['resource_id']) {
                         $this->editResourceStandProduct($oldResource, $resource['resource_id']);
                         $isExist = true;
                         break;
