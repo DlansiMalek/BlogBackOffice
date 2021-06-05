@@ -22,7 +22,6 @@ class StandTest extends TestCase
      *
      * @return void
      */
-    /* TODO Verify*/
     public function testGetDocsByCongress()
     {
         $congress = factory(Congress::class)->create();
