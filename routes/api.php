@@ -493,6 +493,8 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/{organizatiolist-paginationn_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
+    Route::post('{congressId}', 'OrganizationController@saveOrganizationsFromExcel');
+
 });
 
 
