@@ -210,7 +210,7 @@ class OrganizationController extends Controller
         foreach ($data as $org) {
             if ($org['organization_name']) {
                 $newAdmin = null;
-                if ($org['admin_name'] && $org['admin_email']) {
+                if (isset($org['admin_name']) && isset($org['admin_email'])) {
                     // Add Admin 
                     $adminByEmail = $this->adminServices->getAdminByMail($org['admin_email']);
                     $newAdmin = $this->adminServices->addAdminFromExcel($adminByEmail, $org);
