@@ -48,8 +48,8 @@ class OrganizationController extends Controller
 
     public function addOrganization($congress_id, Request $request)
     {
-        if (!$request->has(['name', 'admin_id'])) {
-            return response()->json(["message" => "invalid request", "required inputs" => ['name', 'admin_id']], 404);
+        if (!$request->has(['name'])) {
+            return response()->json(["message" => "invalid request", "required inputs" => ['name']], 404);
         }
 
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
