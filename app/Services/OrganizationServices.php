@@ -96,8 +96,7 @@ class OrganizationServices
 
    public function getSponsorsByCongressId($congressId)
     {
-        return Organization::with(['resource'])
-            ->where('is_sponsor', '=', 1)
+        return Organization::where('is_sponsor', '=', 1)
             ->where('congress_id', '=', $congressId)
             ->get();
     }
