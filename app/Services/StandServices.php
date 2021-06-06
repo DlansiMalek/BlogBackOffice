@@ -191,18 +191,18 @@ class StandServices
     }
     public function addStandFromExcel($stand,$name,$congressId,$organizationId)
     {
-        if($stand==null)
-        {
-        $stand = new Stand();
+        if(!$stand) {
+            $stand = new Stand();
         }
-        $stand->name            =$name;
+        $stand->name            = $name;
         $stand->organization_id = $organizationId;
         $stand->congress_id     = $congressId;
         $stand->save();
     }
-    public function getStandByCongressIdOrgizantionIdAndName($name,$congressId,$organizationId)
+    public function getStandByCongressIdOrgizantionIdAndName($name, $congressId, $organizationId)
     {
-        return Stand::where('name','=',$name)->where('congress_id', '=', $congressId)
+        return Stand::whereRaw('lower(name) like (?)', ["{$name}"])
+        ->where('congress_id', '=', $congressId)
         ->where('organization_id', '=', $organizationId) ->first();
     }
     

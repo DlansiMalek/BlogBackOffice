@@ -1720,28 +1720,30 @@ class UserServices
     public function addUserFromExcelOrgnization($user,$userData)
     {
         $password =Str::random(8);
-        if($user==null){
-        $user = new User();
+        if(!$user) { 
+            $user = new User();
         }
+
+
         $user->email = $userData['admin_email'];
-        $user->first_name = $userData['admin_name'];
-        $user->last_name = $userData['admin_name'];
-        $user->mobile = array_key_exists("admin_mobile", $userData)?$userData['admin_mobile']:"77777777";
+        $name = explode(" ", $userData['admin_name']);
+        $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
+        $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
+        $user->mobile = isset($userData['admin_mobile']) ? $userData['admin_mobile'] : null;
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
         return $user;
     }
-    public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId)
+    public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId, $privilegeId)
     {
-        if($userCongress==null)
-        {
+        if(!$userCongress) {
             $userCongress = new UserCongress();
         }
         $userCongress->congress_id = $congressId;
         $userCongress->user_id = $user_id;
-        $userCongress->privilege_id =7 ;    //privilege particiapant
+        $userCongress->privilege_id = $privilegeId ;    //privilege Organisme
         $userCongress->save();
 
     }

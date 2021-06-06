@@ -100,38 +100,30 @@ class OrganizationServices
             ->where('congress_id', '=', $congressId)
             ->get();
     }
-    public function addOrganizationFromExcel($organization,$organzationData,$congressId,$adminId=null)
+    public function addOrganizationFromExcel($organization,$organzationData,$congressId, $admin)
     {
-        if($organization==null)
-        {
-        $organization = new Organization();
+        if (!$organization) {
+            $organization = new Organization();
         }
-        $organization->name=$organzationData['organization_name'];
-        if(array_key_exists("organization_description", $organzationData))
-        $organization->description=$organzationData['organization_description'];
-        if(array_key_exists("organization_phone", $organzationData))
-        $organization->mobile=$organzationData['organization_phone'];
-        if(array_key_exists("organization_email", $organzationData))
-        $organization->email=$organzationData['organization_email'];
-        if(array_key_exists("organization_website", $organzationData))
-        $organization->website_link=$organzationData['organization_website'];
-        if(array_key_exists("organization_twitter", $organzationData))
-        $organization->twitter_link=$organzationData['organization_twitter'];
-        if(array_key_exists("organization_linkendin", $organzationData))
-        $organization->linkedin_link=$organzationData['organization_linkendin'];
-        if(array_key_exists("organization_insta", $organzationData))
-        $organization->insta_link=$organzationData['organization_insta'];
-        if(array_key_exists("organization_fb", $organzationData))
-        $organization->fb_link=$organzationData['organization_fb'];
-        $organization->congress_id =$congressId;
-        $organization->admin_id =$adminId;
+        $organization->name          = $organzationData['organization_name'];
+        $organization->description   = isset($organzationData["organization_description"]) ? $organzationData['organization_description'] : null;
+        $organization->mobile        = isset($organzationData['organization_phone']) ? $organzationData['organization_phone'] : null ;
+        $organization->email         = isset($organzationData['organization_email']) ? $organzationData['organization_email'] : null;
+        $organization->website_link  = isset($organzationData['organization_website']) ? $organzationData['organization_website'] : null;
+        $organization->twitter_link  = isset($organzationData['organization_twitter']) ? $organzationData['organization_twitter'] : null;
+        $organization->linkedin_link = isset($organzationData['organization_linkendin']) ? $organzationData['organization_linkendin'] : null;
+        $organization->insta_link    = isset($organzationData['organization_insta']) ? $organzationData['organization_insta'] : null;
+        $organization->fb_link       = isset($organzationData['organization_fb']) ? $organzationData['organization_fb'] : null ;
+        $organization->congress_id   = $congressId;
+        $organization->admin_id      = $admin ? $admin->admin_id : null;
         $organization->save();
         return $organization;
     }
     public function getOrganizationByNameAndCongress($organization_name, $congress_id)
     {
         return Organization::with(['admin'])
-            ->where('congress_id', '=', $congress_id)->where('name', '=', $organization_name)
+            ->where('congress_id', '=', $congress_id)
+            ->whereRaw('lower(name) like (?)', ["{$organization_name}"])
             ->first();
     }
 }

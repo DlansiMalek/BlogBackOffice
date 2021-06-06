@@ -206,50 +206,34 @@ class OrganizationController extends Controller
     public function saveOrganizationsFromExcel($congressId, Request $request)
     {
         ini_set('max_execution_time', 500); //3 minutes
-        $congress = $this->congressServices->getById($congressId);
         $data = $request->input("data");
-        if (!$oldOrganizations = $this->organizationServices->getOrganizationsByCongressId($congressId)) {
-            $oldOrganizations = [];
-        }
         foreach ($data as $org) {
-            if (array_key_exists("organization_name", $org) && array_key_exists("admin_name", $org) && array_key_exists("admin_email", $org)) {
-                $adminByEmail = $this->adminServices->getAdminByMail($org['admin_email']);
-                $newAdmin = $this->adminServices->addAdminFromExecl($adminByEmail, $org);
-                $adminCongress = null;
-                if ($adminByEmail) {
-                    $adminCongress = $this->adminServices->checkHasPrivilegeByCongress($adminByEmail->admin_id, $congressId);
+            if ($org['organization_name']) {
+                $newAdmin = null;
+                if ($org['admin_name'] && $org['admin_email']) {
+                    // Add Admin 
+                    $adminByEmail = $this->adminServices->getAdminByMail($org['admin_email']);
+                    $newAdmin = $this->adminServices->addAdminFromExcel($adminByEmail, $org);
+                    $adminCongress = null;
+                    if ($adminByEmail) {
+                        $adminCongress = $this->adminServices->checkHasPrivilegeByCongress($adminByEmail->admin_id, $congressId);
+                    }
+                    $this->adminServices->addAdminCongressFromExcel($adminCongress, $newAdmin->admin_id, $congressId, 7);
+                    // Add User
+                    $user_by_mail = $this->userServices->getUserByEmail($org['admin_email']);
+                    $newUser = $this->userServices->addUserFromExcelOrgnization($user_by_mail, $org);
+                    $userCongress = null;
+                    if ($user_by_mail) {
+                        $userCongress = $this->userServices->getUserCongress($congressId, $user_by_mail->user_id);
+                    }
+                    $this->userServices->addUserCongressFromExcelOrgnization($userCongress, $newUser->user_id, $congressId, 7);
                 }
-                $this->adminServices->addAdminCongressFromExecl($adminCongress, $newAdmin->admin_id, $congressId, 7);
-                $user_by_mail = $this->userServices->getUserByEmail($org['admin_email']);
-                $newUser = $this->userServices->addUserFromExcelOrgnization($user_by_mail, $org);
-                $userCongress = null;
-                if ($user_by_mail) {
-                    $userCongress = $this->userServices->getUserCongress($congressId, $user_by_mail->user_id);
-                }
-                $this->userServices->addUserCongressFromExcelOrgnization($userCongress, $newUser->user_id, $congressId);
+                // Add Organization & Stand
                 $newOrg = $this->organizationServices->getOrganizationByNameAndCongress($org['organization_name'], $congressId);
-                $newOrganization = $this->organizationServices->addOrganizationFromExcel($newOrg, $org, $congressId, $newAdmin->admin_id);
+                $newOrganization = $this->organizationServices->addOrganizationFromExcel($newOrg, $org, $congressId, $newAdmin);
                 $stand = $this->standServices->getStandByCongressIdOrgizantionIdAndName($org['organization_name'], $congressId, $newOrganization->organization_id);
                 $this->standServices->addStandFromExcel($stand, $org['organization_name'], $congressId, $newOrganization->organization_id);
-
             }
-            if (!array_key_exists("admin_name", $org) || !array_key_exists("admin_email", $org)) {
-                $newOrg = $this->organizationServices->getOrganizationByNameAndCongress($org['organization_name'], $congressId);
-                $newOrganization = $this->organizationServices->addOrganizationFromExcel($newOrg, $org, $congressId, null);
-            }
-            foreach ($oldOrganizations as $old) {
-                $found = false;
-                foreach ($data as $org) {
-                    if ($old->name == $org['organization_name']) {
-                        $found = true;
-                        break;
-                    }
-                }
-                if (!$found) {
-                    $this->organizationServices->deleteOrganization($old);
-                }
-            }
-
         }
         return response()->json($this->organizationServices->getOrganizationsByCongressId($congressId));
 
