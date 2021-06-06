@@ -189,4 +189,21 @@ class StandServices
         return Stand::where('stand_id', '=', $stand_id)
             ->update(['status' => $status]);
     }
+    public function addStandFromExcel($stand,$name,$congressId,$organizationId)
+    {
+        if($stand==null)
+        {
+        $stand = new Stand();
+        }
+        $stand->name            =$name;
+        $stand->organization_id = $organizationId;
+        $stand->congress_id     = $congressId;
+        $stand->save();
+    }
+    public function getStandByCongressIdOrgizantionIdAndName($name,$congressId,$organizationId)
+    {
+        return Stand::where('name','=',$name)->where('congress_id', '=', $congressId)
+        ->where('organization_id', '=', $organizationId) ->first();
+    }
+    
 }

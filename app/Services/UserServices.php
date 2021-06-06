@@ -1716,4 +1716,34 @@ class UserServices
         $userCongress->privilege_id = $data["privilege_id"];
         $userCongress->update();
     }
+
+    public function addUserFromExcelOrgnization($user,$userData)
+    {
+        $password =Str::random(8);
+        if($user==null){
+        $user = new User();
+        }
+        $user->email = $userData['admin_email'];
+        $user->first_name = $userData['admin_name'];
+        $user->last_name = $userData['admin_name'];
+        $user->mobile = array_key_exists("admin_mobile", $userData)?$userData['admin_mobile']:"77777777";
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
+        $user->email_verified = 1;
+        $user->save();
+        return $user;
+    }
+    public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId)
+    {
+        if($userCongress==null)
+        {
+            $userCongress = new UserCongress();
+        }
+        $userCongress->congress_id = $congressId;
+        $userCongress->user_id = $user_id;
+        $userCongress->privilege_id =7 ;    //privilege particiapant
+        $userCongress->save();
+
+    }
+
 }

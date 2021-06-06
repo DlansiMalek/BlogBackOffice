@@ -101,20 +101,31 @@ class OrganizationServices
             ->where('congress_id', '=', $congressId)
             ->get();
     }
-    public function addOrganizationFromExcel($organzationData)
+    public function addOrganizationFromExcel($organization,$organzationData,$congressId,$adminId=null)
     {
+        if($organization==null)
+        {
         $organization = new Organization();
-        $organization->name=$organzationData['name'];
-        $organization->description=$organzationData['description'];
-        $organization->mobile=$organzationData['mobile'];
-        $organization->email=$organzationData['email'];
-        $organization->website_link=$organzationData['website_link'];
-        $organization->twitter_link=$organzationData['twitter_link'];
-        $organization->linkedin_link=$organzationData['linkedin_link'];
-        $organization->insta_link=$organzationData['insta_link'];
-        $organization->fb_link=$organzationData['fb_link'];
-        $organization->fb_link=$organzationData['fb_link'];
-        $organization->admin_id=$organzationData['admin_id'];
+        }
+        $organization->name=$organzationData['organization_name'];
+        if(array_key_exists("organization_description", $organzationData))
+        $organization->description=$organzationData['organization_description'];
+        if(array_key_exists("organization_phone", $organzationData))
+        $organization->mobile=$organzationData['organization_phone'];
+        if(array_key_exists("organization_email", $organzationData))
+        $organization->email=$organzationData['organization_email'];
+        if(array_key_exists("organization_website", $organzationData))
+        $organization->website_link=$organzationData['organization_website'];
+        if(array_key_exists("organization_twitter", $organzationData))
+        $organization->twitter_link=$organzationData['organization_twitter'];
+        if(array_key_exists("organization_linkendin", $organzationData))
+        $organization->linkedin_link=$organzationData['organization_linkendin'];
+        if(array_key_exists("organization_insta", $organzationData))
+        $organization->insta_link=$organzationData['organization_insta'];
+        if(array_key_exists("organization_fb", $organzationData))
+        $organization->fb_link=$organzationData['organization_fb'];
+        $organization->congress_id =$congressId;
+        $organization->admin_id =$adminId;
         $organization->save();
         return $organization;
     }
