@@ -742,7 +742,7 @@ class UserController extends Controller
 
         return response()->json(
             [
-                "type" => $congress->config->is_agora ? "agora" : "jitsi",
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
@@ -1968,7 +1968,7 @@ class UserController extends Controller
 
         return response()->json(
             [
-                "type" => $congress->config->is_agora ? "agora" : "jitsi",
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
