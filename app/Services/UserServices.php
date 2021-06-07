@@ -1727,8 +1727,8 @@ class UserServices
 
         $user->email = $userData['admin_email'];
         $name = explode(" ", $userData['admin_name']);
-        $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
-        $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
+        $user->first_name = isset($name[0]) ? $name[0] : '-';
+        $user->last_name  = isset($name[1]) ? $name[1] : '-';
         $user->mobile = isset($userData['admin_mobile']) ? $userData['admin_mobile'] : null;
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
