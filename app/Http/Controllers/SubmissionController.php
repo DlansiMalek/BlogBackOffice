@@ -785,13 +785,14 @@ class SubmissionController extends Controller
                     $query->where('mail_id', '=', $mailId); // ICI
                 }]);
             $withauths = $request->input('sendCoAuthor');
-            foreach ($users as $user) {
+            $authorstomail= [];
+          $i = 0;
+            foreach ($users as $user) {  
                 $subs = $user->submissions;
                 foreach ($subs as $sub) {
                     $authors = $sub->authors;
-                    $i = 0;
                     foreach ($authors as $author) {
-                        $authorsmails[$i] = $author->email;
+                        $authorstomail[$i] = $author;
                         $i++;
                     }
                 }
@@ -845,9 +846,8 @@ class SubmissionController extends Controller
                 }
             }
             if ($withauths == 1) {
-                foreach ($authorsmails as $authormail) {
-                    $author = Author::whereRaw('lower(email) like (?)', ["{$authormail}"])->first();
-                    $userauthor = $user;
+                foreach ($authorstomail as $author) {Log::warning($author);
+                    $userauthor =  new User();
                     $userauthor->email = $author->email;
                     $userauthor->first_name = $author->first_name;
                     $userauthor->last_name = $author->last_name;
