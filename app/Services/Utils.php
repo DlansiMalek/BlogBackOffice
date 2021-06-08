@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use DateTime;
+use DateTimeZone;
 
 
 class Utils
@@ -290,5 +291,10 @@ class Utils
         return 'seance ' . $user_name . ' ' . $sd . ' - ' . $ed;          
     }
 
+    public static function getExpireTime($expireTimeInSeconds) {
+        $currentTimestamp = (new DateTime("now", new DateTimeZone('UTC')))->getTimestamp();
+        $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
+        return $privilegeExpiredTs;
+    }
 
 }
