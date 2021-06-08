@@ -48,6 +48,6 @@ class RoomServices
     }
 
     public function createTokenAgora($userId, $roomName, $isModerator) {
-        return RtcTokenBuilder::buildTokenWithUid(env('AGORA_APPID'), env('AGORA_CERTIFICATE'), $roomName, $userId, RtcTokenBuilder::RoleAttendee, Utils::getExpireTime(3600));
+        return RtcTokenBuilder::buildTokenWithUid(env('AGORA_APPID'), env('AGORA_CERTIFICATE'), $roomName, $userId, RtcTokenBuilder::RolePublisher, Utils::getExpireTime(3600));
     }
 }
