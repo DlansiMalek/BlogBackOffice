@@ -20,4 +20,7 @@ class Author extends Model
     public function etablissment() {
         return $this->hasOne('App\Models\Etablissement','etablissement_id','etablissement_id');
     }
+    function submissions() {
+        return $this->hasMany(Submission::class, "submission_id", "submission_id");
+    }
 }

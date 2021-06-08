@@ -785,18 +785,6 @@ class SubmissionController extends Controller
                     $query->where('mail_id', '=', $mailId); // ICI
                 }]);
             $withauths = $request->input('sendCoAuthor');
-            $authorstomail= [];
-          $i = 0;
-            foreach ($users as $user) {  
-                $subs = $user->submissions;
-                foreach ($subs as $sub) {
-                    $authors = $sub->authors;
-                    foreach ($authors as $author) {
-                        $authorstomail[$i] = $author;
-                        $i++;
-                    }
-                }
-            }
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             foreach ($users as $user) {
                 $request = array();
@@ -845,27 +833,61 @@ class SubmissionController extends Controller
                
                 }
             }
-            if ($withauths == 1) {
-                foreach ($authorstomail as $author) {Log::warning($author);
-                    $userauthor =  new User();
-                    $userauthor->email = $author->email;
-                    $userauthor->first_name = $author->first_name;
-                    $userauthor->last_name = $author->last_name;
-                    $userAuthorMail = $user->user_mail[0];
-                    $fileName = 'attestationsSubmission.zip';
-                    $this->mailServices->sendMail(
-                        $this->congressServices->renderMail($mail->template, $congress, $userauthor, null, null, null, null, null, null, null, null, null, null, null, null, $userauthor->submissions),
-                        $userauthor,
-                        $congress,
-                        $mail->object,
-                        true,
-                        $userAuthorMail,
-                        null,
-                        $fileName
-                    );
-                }
-            } 
+            $authorstomail = Author::whereHas('submissions', function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+                $query->where('status', '=', 1);
+            })
+            ->with('submissions')
+            ->get();
+            ini_set('max_execution_time', 400);
+            foreach ($authorstomail as $author) {
+                $request = array();
+                if ($author->email != null && $author->email != "") {
+                    foreach ($author->submissions as $submission) {
+                        $attestationSubmission = null;
+                        foreach ($attestationsSubmissions as $attestation) {
+                            if ($attestation->communication_type_id === $submission->communication_type_id) {
+                                $attestationSubmission = $attestation;
+                            }
+                        }
+                        if (!$attestationSubmission->attestation_generator_id) {
+                            continue;
+                        }
+                        $mappedSubmission = $this->sharedServices->submissionMapping(
+                            $submission->title,
+                            Utils::getFullName($author->first_name, $author->last_name),
+                            $submission->authors,
+                            $attestationSubmission->attestation_param
+                        );
+                        $mappedSubmission['badgeIdGenerator'] = $attestationSubmission->attestation_generator_id;
+                        array_push(
+                            $request,
+                            $mappedSubmission
+                        );
+                    }
+                    $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
 
+                    if ($withauths == 1) {
+                        $userauthor =  new User();
+                        $userauthor->email = $author->email;
+                        $userauthor->first_name = $author->first_name;
+                        $userauthor->last_name = $author->last_name;
+                        $userAuthorMail = $user->user_mail[0];
+                        $userauthor->submissions = $author->submissions;
+                        $fileName = 'attestationsSubmission.zip';
+                        $this->mailServices->sendMail(
+                            $this->congressServices->renderMail($mail->template, $congress, $userauthor, null, null, null, null, null, null, null, null, null, null, null, null, $userauthor->submissions),
+                            $userauthor,
+                            $congress,
+                            $mail->object,
+                            true,
+                            $userAuthorMail,
+                            null,
+                            $fileName
+                        );
+                    }
+                }
+            }
             return response()->json(['message' => 'send mail successs']);
         } catch (Exception $e) {
             Log::info($e->getMessage());
