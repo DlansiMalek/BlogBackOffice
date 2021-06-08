@@ -105,7 +105,6 @@ class RtcTokenBuilder
 * set pubDataStreamPrivilegeExpiredTs as the current Unix timestamp.
 * @return The new Token
 */
-
     public static function buildTokenWithUidAndPrivilege($appID, $appCertificate, $channelName, $uid,
                                                                  $joinChannelPrivilegeExpiredTs,
                                                                  $pubAudioPrivilegeExpiredTs, $pubVideoPrivilegeExpiredTs,
