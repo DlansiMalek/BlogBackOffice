@@ -28,4 +28,8 @@ class Organization extends Model
     {
       return $this->belongsTo('App\Models\Admin', 'admin_id', 'admin_id');
     }
+    function membres()
+    {
+      return $this->belongsToMany('App\Models\User', 'User_Congress', 'organization_id', 'user_id')/*->where('User_Congress.privilege_id','=',7)*/;
+    }
 }

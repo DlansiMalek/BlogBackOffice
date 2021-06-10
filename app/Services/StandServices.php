@@ -92,7 +92,9 @@ class StandServices
     public function getStandById($stand_id)
     {
         return Stand::where('stand_id', '=', $stand_id)
-            ->with(['docs', 'organization','products'])
+            ->with(['docs','products', 'organization.membres' => function ($query) {
+                    $query->where('privilege_id', '=', 7);
+                }])
             ->first();
     }
 
