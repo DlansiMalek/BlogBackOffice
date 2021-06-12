@@ -92,7 +92,7 @@ class MenuServices
                 }
             }
             $this->addMenu($new, $menu);
-            $oldChildrens = $this->getMenuChildrenByMenu($menu->menu_id);
+            $oldChildrens = $this->getMenuChildrenByMenu($new['menu_id']);
             foreach ($oldChildrens as $oldChildren) {
                 $exists = false;
                 foreach ($new["menu_children"] as $newChildren) {
