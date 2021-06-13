@@ -12,3 +12,5 @@ letsencrypt_email: vayetek@gmail.com
 docker_network: nginx-proxy
 
 project_version: "{{ lookup('env','CI_COMMIT_REF_NAME') }}"
+
+apm_server_name: https://apm.prod.master.vayetek.com

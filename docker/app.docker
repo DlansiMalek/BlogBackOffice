@@ -1,7 +1,7 @@
 FROM php:7.3-fpm
 
 # Set the locale
-RUN apt-get clean && apt-get update && apt-get install -y locales locales-all
+RUN apt-get clean && apt-get update && apt-get install -y locales locales-all wget
 RUN locale-gen fr_FR
 RUN locale-gen fr_FR.UTF-8
 RUN update-locale
@@ -25,5 +25,9 @@ ADD ./php.ini /usr/local/etc/php/php.ini
 ADD . /var/www
 
 COPY ./uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
+
+RUN wget https://github.com/elastic/apm-agent-php/releases/download/v1.0.1/apm-agent-php_1.0.1_all.deb
+RUN dpkg -i apm-agent-php_1.0.1_all.deb
 
 WORKDIR /var/www
