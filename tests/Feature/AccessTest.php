@@ -97,7 +97,6 @@ class AccessTest extends TestCase
         $this->assertEquals($access->access_id, $access_game->access_id);
     }
 
-    // TODO à corriger
     public function testGetScoresByCongressPeaksourceByAccessName()
     {
         $congress = factory(Congress::class)->create();
@@ -116,7 +115,6 @@ class AccessTest extends TestCase
         $this->assertEquals($dataResponse[0]['score'], 100);
     }
 
-    // TODO à corriger
     public function testEditAccessStatus()
     {
         $congress = factory(Congress::class)->create();
