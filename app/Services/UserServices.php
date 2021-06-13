@@ -1647,9 +1647,9 @@ class UserServices
             ->get();
     }
 
-    public function addUserFromExcel($userData)
+    public function addUserFromExcel($userData, $pass = null)
     {
-        $password  = Str::random(8);
+        $password = $pass ? $pass : Str::random(8);
         $user = new User();
 
         $user->email = $userData['email'];
@@ -1732,4 +1732,42 @@ class UserServices
     {
         return $this->firebaseDatabase->changeUserPassword($uid, $newPassword);
     }
+
+    public function editUserPrivilege($userCongress, $data)
+    {
+        $userCongress->privilege_id = $data["privilege_id"];
+        $userCongress->update();
+    }
+
+    public function addUserFromExcelOrgnization($user,$userData)
+    {
+        $password =Str::random(8);
+        if(!$user) { 
+            $user = new User();
+        }
+
+
+        $user->email = $userData['admin_email'];
+        $name = explode(" ", $userData['admin_name']);
+        $user->first_name = isset($name[0]) ? $name[0] : '-';
+        $user->last_name  = isset($name[1]) ? $name[1] : '-';
+        $user->mobile = isset($userData['admin_mobile']) ? $userData['admin_mobile'] : null;
+        $user->passwordDecrypt = $password;
+        $user->password = bcrypt($password);
+        $user->email_verified = 1;
+        $user->save();
+        return $user;
+    }
+    public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId, $privilegeId)
+    {
+        if(!$userCongress) {
+            $userCongress = new UserCongress();
+        }
+        $userCongress->congress_id = $congressId;
+        $userCongress->user_id = $user_id;
+        $userCongress->privilege_id = $privilegeId ;    //privilege Organisme
+        $userCongress->save();
+
+    }
+
 }

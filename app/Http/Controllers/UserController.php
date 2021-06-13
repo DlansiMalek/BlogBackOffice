@@ -724,7 +724,6 @@ class UserController extends Controller
             return response()->json(['response' => 'not authorized'], 401);
         }
         
-
         if (!$accessId) {
             $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
             $urlStreaming = $congress->config->url_streaming;
@@ -740,16 +739,22 @@ class UserController extends Controller
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
         $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
-        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        }
+        
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
 
         return response()->json(
             [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => $isAllowedJitsi,
+                "allowed" => $isAllowedJitsi,
                 "url_streaming" => $urlStreaming,
             ], 200);
 
@@ -1143,11 +1148,10 @@ class UserController extends Controller
         }
 
         if ($organizationId != null) {
-            $congressOrganization = $this->organizationServices->getOrganizationByCongressIdAndOrgId($congressId, $organizationId);
-            $congressOrganization->montant = $congressOrganization->montant + $sum;
-            $congressOrganization->update();
-
-            return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
+            $organization = $this->organizationServices->getOrganizationById($organizationId);
+            $organization->montant = $organization->montant + $sum;
+            $organization->update();
+            return response()->json($organization);
         } else {
             return response()->json(['message' => 'import success']);
         }
@@ -1968,16 +1972,23 @@ class UserController extends Controller
 
         $userToUpdate = $user->user_congresses[0];
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
-        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+       
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        }
+        
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
 
         return response()->json(
             [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => true,
+                "allowed" => true,
                 "url_streaming" => null,
             ], 200);
     }
