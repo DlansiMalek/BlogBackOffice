@@ -103,7 +103,7 @@ class PaymentController extends Controller
                 }
                 if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                     $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
-                    $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congress->congress_id;
+                    $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congress->congress_id.'/event-room';
                     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],$linkPrincipalRoom ), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
