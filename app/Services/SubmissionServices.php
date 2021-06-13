@@ -72,6 +72,17 @@ class SubmissionServices
             ->get();
     }
 
+    public function getSubmissionsByStatus($congressId, $status, $communicationType = null) {
+        return Submission::where('status','=',$status)
+                ->where(function($query) use ($communicationType) {
+                    if ($communicationType) {
+                        $query->where('communication_type_id','=', $communicationType);
+                    }
+                })
+                ->where('congress_id','=',$congressId)
+                ->get();
+    }
+
     public function getSubmissionById($submission_id)
     {
         return Submission::where('submission_id', '=', $submission_id)

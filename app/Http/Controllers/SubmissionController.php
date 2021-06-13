@@ -391,16 +391,9 @@ class SubmissionController extends Controller
             $submission->communication_type_id = $request->input('communication_type_id');
         }
         if ($type && $request->input('status') == '1' && !$submission->code) {
-            $index = -1;
-            $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
-            foreach ($submissions as $key => $value) {
-                if ($value->submission_id == $submission_id) {
-                    $index = $key + 1;
-                    break;
-                }
-
-            }
-            $code = Utils::generateSubmissionCode($type->abrv, $index);
+            $submissions = $this->submissionServices->getSubmissionsByStatus($submission->congress_id, 1, $type->communication_type_id);
+            $index = sizeof($submissions) + 1;
+            $code = Utils::generateSubmissionCode($type->abrv, $index.'');
             $submission->code = $code;
         }
         $file_upload_code = null;
