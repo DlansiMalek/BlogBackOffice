@@ -40,25 +40,25 @@ class LPSpeakerSeeder extends Seeder
         ]);
 
 
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 2,
             'first_name' => 'Speaker',
             'last_name' => 'Test 1',
             'role' => 'Motivator'
         ]);
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 2,
             'first_name' => 'Speaker',
             'last_name' => 'Test 2',
             'role' => 'Speaker'
         ]);
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 2,
             'first_name' => 'Speaker',
             'last_name' => 'Test 3',
             'role' => 'Motivator'
         ]);
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 2,
             'first_name' => 'Speaker',
             'last_name' => 'Test 4',
@@ -66,25 +66,25 @@ class LPSpeakerSeeder extends Seeder
         ]);
         
 
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 3,
             'first_name' => 'Speaker',
             'last_name' => 'Test 1',
             'role' => 'Motivator'
         ]);
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 3,
             'first_name' => 'Speaker',
             'last_name' => 'Test 2',
             'role' => 'Speaker'
         ]);
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 3,
             'first_name' => 'Speaker',
             'last_name' => 'Test 3',
             'role' => 'Motivator'
         ]);
-        DB::table('Config_LP')->insert([
+        DB::table('LP_Speaker')->insert([
             'congress_id' => 3,
             'first_name' => 'Speaker',
             'last_name' => 'Test 4',

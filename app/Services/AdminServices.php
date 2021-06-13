@@ -551,4 +551,10 @@ class AdminServices
         ->where('privilege_id', '=', 1)->first();
     }
 
+    public function getEvaluationInscription($congress_id, $user_id)
+    {
+        return Evaluation_Inscription::where('congress_id', '=', $congress_id)
+        ->where('user_id', '=', $user_id)->get();
+    }
+
 }

@@ -270,8 +270,11 @@ class CongressController extends Controller
                 $submissionData,
                 $congressId
             );
+        } else if($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
+            $this->congressServices->deleteConfigsubmission($configSubmission);
+            $this->congressServices->deleteAllThemes($congressId);
         }
-        if ($theme_ids) {
+        if ($theme_ids && sizeof($submissionData) > 0) {
             $this->congressServices->addSubmissionThemeCongress(
                 $theme_ids,
                 $congressId);
@@ -350,8 +353,17 @@ class CongressController extends Controller
         $startDate = $request->query('startDate', '');
         $endDate = $request->query('endDate', '');
         $status = $request->query('status', '');
-//        return response()->json(["response" => $request->all()],200);
-        return $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+
+        $cacheKey = "eventspagination-" . $offset . $perPage . $search . $startDate . $endDate . $status;
+
+        if (Cache::has($cacheKey)) {
+            $events = Cache::get($cacheKey);
+        } else {
+            $events = $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+            Cache::put($cacheKey, $events, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
+
+        return $events;
     }
 
     public function getMinimalCongress()
@@ -387,10 +399,18 @@ class CongressController extends Controller
 
     public function getCongressDetailsById($congress_id)
     {
-        ini_set('memory_limit', '-1');
-        if (!$congress = $this->congressServices->getCongressDetailsById($congress_id)) {
-            return response()->json(["error" => "congress not found"], 404);
+        $cacheKey = 'congress-' . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->congressServices->getCongressDetailsById($congress_id);
+            if (!$congress) {
+                return response()->json(["error" => "congress not found"], 404);
+            }
+            Cache::put($cacheKey, $congress, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
+
         return response()->json($congress);
     }
 
@@ -663,7 +683,7 @@ class CongressController extends Controller
         return $this->congressServices->getAllCongresses();
     }
 
-    public function sendCustomMailToAllUsers($mail_id)
+    public function sendCustomMailToAllUsers($mail_id, Request $request)
     {
 
         if (!$mail = $this->congressServices->getEmailById($mail_id))
@@ -671,6 +691,7 @@ class CongressController extends Controller
         $congressId = $mail->congress_id;
         $mailId = $mail->mail_id;
         $congress = $this->congressServices->getCongressById($mail->congress_id);
+        $privilege_ids = $request->input('privilege_ids');
 
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
@@ -686,7 +707,7 @@ class CongressController extends Controller
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId);
                 }
-            ], null);
+            ], null, $privilege_ids);
 
 
         foreach ($users as $user) {
@@ -1096,6 +1117,19 @@ class CongressController extends Controller
         $config_landing_page = $this->congressServices->syncronizeLandingPage($congress_id, $congress,$config_congress, $this->congressServices->getConfigLandingPageById($congress_id));
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+    public function getConfigLandingPageToFrontOffice($congress_id)
+    {
+    
+        $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
+        $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
+        return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
+    }
+    public function getLandingPageSpeakersToFrontOffice($congress_id)
+    {
+        
+        $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
+        return response()->json($speakers, 200);
     }
 
 }

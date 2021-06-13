@@ -7,14 +7,13 @@ use App\Models\User;
 use App\Services\AdminServices;
 use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
+use App\Services\UrlUtils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Contracts\Providers\Auth;
-use App\Services\UrlUtils;
-
 
 class LoginController extends Controller
 {
@@ -23,13 +22,11 @@ class LoginController extends Controller
     protected $userServices;
     protected $privilegeServices;
     protected $offreServices;
-    
 
     public function __construct(AdminServices $adminServices,
-                                PrivilegeServices $privilegeServices,
-                                UserServices $userServices,
-                                OffreServices $offreServices)
-    {
+        PrivilegeServices $privilegeServices,
+        UserServices $userServices,
+        OffreServices $offreServices) {
         $this->adminServices = $adminServices;
         $this->privilegeServices = $privilegeServices;
         $this->userServices = $userServices;
@@ -75,7 +72,6 @@ class LoginController extends Controller
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 
-
     public function loginUser(Request $request)
     {
         $credentials = request(['email', 'password']);
@@ -88,7 +84,7 @@ class LoginController extends Controller
 
         // TODO Je le déscative pour l'instant (à valider la tache d'envoi de mail)
         /*if ($user->email_verified == 0) {
-            return response()->json(['error' => 'email not verified'], 405);
+        return response()->json(['error' => 'email not verified'], 405);
         }*/
 
         return response()->json(['user' => $user, 'token' => $token], 200);
@@ -98,8 +94,9 @@ class LoginController extends Controller
     {
         $admin = $this->adminServices->getAdminByLogin($request['email']);
 
-        if (!$admin)
+        if (!$admin) {
             return response()->json(['error' => 'invalid email'], 501);
+        }
 
         $password = $this->adminServices->generateNewPassword($admin);
         // send email
@@ -112,7 +109,6 @@ class LoginController extends Controller
 
         return response()->json('check your email', 200);
     }
-
 
     /**
      * @SWG\Post(
@@ -138,7 +134,7 @@ class LoginController extends Controller
         $admin = $this->adminServices->getAdminByQrCode($request->input("QrCode"));
         $credentials = array(
             "email" => $admin->email,
-            "password" => $admin->passwordDecrypt
+            "password" => $admin->passwordDecrypt,
         );
 
         if (!$token = auth()->attempt($credentials)) {
@@ -152,9 +148,17 @@ class LoginController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function redirectToGoogleProvider()
+
+    public function redirectToGoogleProvider(Request $request)
     {
+
+        $id = $request->id;
+        $idCongress = $request->idCongress;
+
+        Session::put('id', $id);
+        Session::put('idCongress', $idCongress);
         return Socialite::driver('google')->with(["prompt" => "select_account"])->redirect();
+
     }
 
     /**
@@ -162,27 +166,50 @@ class LoginController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
     public function handleGoogleProviderCallback()
     {
+        $id = Session::get('id', url('/'));
+        $idCongress = Session::get('idCongress', url('/'));
+        Session::forget('idCongress');
+        Session::forget('id');
         try {
             $user = Socialite::with('google')->user();
         } catch (\Exception $e) {
-            return redirect('/api/login/google');
+            return redirect('/api/login/google/');
         }
         $existingUser = User::where('email', $user->email)->first();
-        if(!$existingUser) {
+        if (!$existingUser && $id !== null) {
+            $compte = "non";
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&compte=' . $compte);
+
+        }
+        if (!$existingUser) {
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
-        $token =auth()->login($existingUser, true);  
-        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'&user='.$existingUser->email);
+        $token = auth()->login($existingUser, true);
+        if ($idCongress !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
+
+        }
+        if ($id !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
+
+        } else {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/login?&token=' . $token . '&user=' . $existingUser->email);
+        }
     }
     /**
      * Redirect the user to the Facebook authentication page.
      *
      * @return \Illuminate\Http\Response
      */
-    public function redirectToFacebookProvider()
+    public function redirectToFacebookProvider(Request $request)
     {
+        $id = $request->id;
+        $idCongress = $request->idCongress;
+        Session::put('id', $id);
+        Session::put('idCongress', $idCongress);
         return Socialite::driver('facebook')->redirect();
     }
 
@@ -193,19 +220,34 @@ class LoginController extends Controller
      */
     public function handleFacebookProviderCallback()
     {
+        $id = Session::get('id', url('/'));
+        $idCongress = Session::get('idCongress', url('/'));
+        Session::forget('idCongress');
+        Session::forget('id');
         try {
             $user = Socialite::with('facebook')->user();
         } catch (\Exception $e) {
             return redirect('/api/login/facebook');
         }
         $existingUser = User::where('email', $user->email)->first();
-        if(!$existingUser) {
+        if (!$existingUser && $id !== null) {
+            $compte = "non";
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&compte=' . $compte);
+
+        }
+        if (!$existingUser) {
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
-        $token =auth()->login($existingUser, true);  
+        $token = auth()->login($existingUser, true);
+        if ($idCongress !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 
-        return redirect()->to(UrlUtils::getBaseUrlFrontOffice().'/login?&token='.$token.'&user='.$existingUser->email);
+        }
+        if ($id !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
+
+        } else {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/login?&token=' . $token . '&user=' . $existingUser->email);
+        }
     }
-
- 
 }

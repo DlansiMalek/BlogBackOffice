@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\RequestLandingPage;
 
-
-
 class LandingPageServices
 {
     public function __construct()
@@ -14,11 +12,16 @@ class LandingPageServices
 
     public function addRequestLandingPage($LandingPageRequest, $congress_id, $admin_id)
     {
-        $LandingPage = new RequestLandingPage();
+        if (!$LandingPage = $this->getLandingPagewithCongressIdAndAdminID($congress_id, $admin_id)) {
+            $LandingPage = new RequestLandingPage();
+            $exists = false;
+
+        }
         $LandingPage->dns = $LandingPageRequest->input('dns');
         $LandingPage->congress_id = $congress_id;
         $LandingPage->admin_id = $admin_id;
-        $LandingPage->save();
+        !$exists ? $LandingPage->save():  $LandingPage->update();
+        return $LandingPage;
     }
     public function getLandingPages()
     {
@@ -27,7 +30,11 @@ class LandingPageServices
 
     public function getLandingPagewithCongressId($congress_id)
     {
-        return RequestLandingPage::where('congress_id', '=', $congress_id)->where('status','!=',-1)->first();
+        return RequestLandingPage::where('congress_id', '=', $congress_id)->where('status', '!=', -1)->first();
+    }
+    public function getLandingPagewithCongressIdAndAdminID($congress_id, $admin_id)
+    {
+        return RequestLandingPage::where('congress_id', '=', $congress_id)->where('admin_id', '=', $admin_id)->where('status', '!=', -1)->first();
     }
     public function upadteStatusLandingPage($landingPage, $status)
     {

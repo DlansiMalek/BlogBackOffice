@@ -312,8 +312,7 @@ class AdminController extends Controller
         } else {
             if (count($admin->admin_congresses) > 0) {
                 $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
-                if (($admin->admin_congresses[0]->privilege_id == 2 || $admin->admin_congresses[0]->privilege_id == 7 || $admin->admin_congresses[0]->privilege_id == 11 
-                || $admin->admin_congresses[0]->privilege_id == 12 || $admin->admin_congresses[0]->privilege_id == 13)&& count($menus) == 0) {
+                if (count($menus) == 0) {
                     $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
                     $menus = $this->getAdminMenus($admin_congress->admin_id);
                 }
