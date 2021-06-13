@@ -16,7 +16,8 @@ class CreateRequestLandingPagesTable extends Migration
         Schema::create('Request_Landing_Page', function (Blueprint $table) {
             $table->increments('request_landing_page_id');
             $table->string('dns');
-            $table->tinyInteger('status')->default('0');
+            $table->tinyInteger('status')
+                ->nullable()->default(0);
             $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
             $table->unsignedInteger('admin_id');
