@@ -307,7 +307,7 @@ class CongressController extends Controller
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                 $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress->congress_id.'/event-room' ;
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,  $link, null, $userPayment ,null,null,null,null,null,null,null,null,null,[],$linkPrincipalRoom), $user, $congress, $mail->object, false, $userMail);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,  $link, null, $userPayment ,null,null,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, false, $userMail);
             }
         }
     }
@@ -519,7 +519,7 @@ class CongressController extends Controller
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congressId.'/event-room';
                         $this->mailServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],$linkPrincipalRoom),
+                            ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom),
                             $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                     }
                 }
