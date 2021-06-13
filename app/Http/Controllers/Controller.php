@@ -200,3 +200,16 @@ LEFT JOIN `Evaluation_Inscription` ON `Evaluation_Inscription`.`user_id` = `User
 WHERE Evaluation_Inscription.evaluation_inscription_id IS NULL
 
 */
+
+
+/*  Get code submission incremental
+
+SET @code=0;
+SELECT 
+  submission_id,
+  CONCAT('CA',LPAD(@code:=@code+1, 4, '0')) AS code
+ FROM submission
+ WHERE status =1 AND communication_type_id = 2
+ AND congress_id = 354;
+
+*/ 
