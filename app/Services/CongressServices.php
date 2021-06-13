@@ -250,6 +250,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
+                'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
