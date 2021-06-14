@@ -20,6 +20,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Exception;
 
 class AdminController extends Controller
 {
@@ -424,10 +425,16 @@ class AdminController extends Controller
         $password = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin    = $this->adminServices->addPersonnel($admin, $password);
+            $admin = $this->adminServices->addPersonnel($admin, $password);
+            $this->userServices->addUserFirebase($admin->email, $admin->passwordDecrypt);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
+            try {
+                $this->userServices->getUserFirebase($fetched->email);
+            } catch (Exception $e) {
+                $this->userServices->addUserFirebase($fetched->email, $fetched->passwordDecrypt);
+            }
             // check if he has already privilege to congress
             $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id);
             if ($admin_congress) {
@@ -732,6 +739,7 @@ class AdminController extends Controller
         }
 
         $admin = $this->adminServices->addClient($admin, $request);
+        $this->userServices->addUserFirebase($admin->email, $admin->passwordDecrypt);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
 
