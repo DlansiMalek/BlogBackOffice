@@ -64,23 +64,16 @@ class RequestLandingPageController extends Controller
         $status = $request->input('status');
         $this->landingPageServices->upadteStatusLandingPage($landingPage, $status);
         if ($status == 1) {
-            if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('accept_landing_page_demand')) {
-                return response()->json(['message' => 'Mail type not found'], 400);
-            }
+          $mailTypeAdmin = $this->mailServices->getMailTypeAdmin('accept_landing_page_demand');
             $linkBackOffice = $landingPage->dns;
         } else if ($status == -1) {
             $linkBackOffice = "";
-            if (!$mailTypeAdmin = $this->mailServices->getMailTypeAdmin('refuse_landing_page_demand')) {
-                return response()->json(['message' => 'Mail type not found'], 400);
-            }
+         $mailTypeAdmin = $this->mailServices->getMailTypeAdmin('refuse_landing_page_demand');
         }
+        if($mailTypeAdmin){
         $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
-
-        if (!$mailAdmin) {
-            return response()->json(['message' => 'Mail not found'], 400);
-        }
-
         $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template,  $landingPage->admin, null, null, $linkBackOffice), null, $mailAdmin->object,  $landingPage->admin, null, null);
+        }
         return response()->json($landingPage, 200);
     }
     public function getConfigLandingPage($congress_id)
