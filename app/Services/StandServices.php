@@ -94,7 +94,7 @@ class StandServices
         return Stand::where('stand_id', '=', $stand_id)
             ->with(['docs','products', 'organization.membres' => function ($query) {
                     $query->where('privilege_id', '=', 7);
-                }])
+                }, 'organization.membres.profile_img'])
             ->first();
     }
 

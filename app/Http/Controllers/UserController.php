@@ -1954,8 +1954,14 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
+        $stand = $this->standServices->getStandById($standId);
+        if (!$stand) {
+            return response()->json(['response' => 'No stand found'], 401);
+        }
+
         $userId = $user->user_id;
         $congress = $this->congressServices->getCongressById($congressId);
+        
 
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'user_congresses' => function ($query) use ($congressId) {
@@ -1968,7 +1974,10 @@ class UserController extends Controller
         if (!Utils::isValidSendMail($congress, $user)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
+        
         $isModerator = $organizerId ? $this->userServices->isUserOrganizer($user->user_congresses[0]) : $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+        $urlStreaming = !$isModerator && $stand->url_streaming ? $stand->url_streaming : null;
+        $allowed = $isModerator || !$stand->url_streaming;
 
         $userToUpdate = $user->user_congresses[0];
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
@@ -1988,8 +1997,8 @@ class UserController extends Controller
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed" => true,
-                "url_streaming" => null,
+                "allowed" => $allowed,
+                "url_streaming" => $urlStreaming
             ], 200);
     }
 
