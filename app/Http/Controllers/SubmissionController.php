@@ -420,50 +420,54 @@ class SubmissionController extends Controller
 
         //send email
         $areFiles = $request->has('areFiles') ? 1 : 0;
-        $mailName = $request->input('status') == 3 ? 'refuse_submission' :
-        ($request->input('status') == 4 ? 'Attente_de_fichier' :
-            ($request->input('status') == 5 ? 'file_submitted' : 'accept_submission'));
+        $mailName = $request->input('status') == 3
+            ? 'refuse_submission' : ($request->input('status') == 4
+            ? 'Attente_de_fichier' : ($request->input('status') == 5
+            ? 'file_submitted' : ($request->input('status') == 1
+            ? 'accept_submission' : '')));
 
-        $mailtype = $this->congressServices->getMailType($mailName, $this->type);
-        $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+        if ($mailName) {
+            $mailtype = $this->congressServices->getMailType($mailName, $this->type);
+            $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
 
-        if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
-            }
-            $link = '';
-            if (($request->input('status') == 4)) {
-                $link = UrlUtils::getBaseUrlFrontOffice()
-                . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
-            }
-            $user = $this->userServices->getUserById($submission->user_id);
-            $congress = $this->congressServices->getCongressById($submission->congress_id);
-            $this->mailServices->sendMail(
-                $this->congressServices->renderMail(
-                    $mail->template,
-                    $congress,
+            if ($mail) {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                }
+                $link = '';
+                if (($request->input('status') == 4)) {
+                    $link = UrlUtils::getBaseUrlFrontOffice()
+                    . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
+                }
+                $user = $this->userServices->getUserById($submission->user_id);
+                $congress = $this->congressServices->getCongressById($submission->congress_id);
+                $this->mailServices->sendMail(
+                    $this->congressServices->renderMail(
+                        $mail->template,
+                        $congress,
+                        $user,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        $link,
+                        $request->input('status') == '1' ? $submission->code : null,
+                        $submission->title,
+                        $type ? $type->label : null
+
+                    ),
                     $user,
                     null,
+                    $mail->object,
                     null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    $link,
-                    $request->input('status') == '1' ? $submission->code : null,
-                    $submission->title,
-                    $type ? $type->label : null
-
-                ),
-                $user,
-                null,
-                $mail->object,
-                null,
-                $userMail
-            );
+                    $userMail
+                );
+            }
         }
 
         return response()->json(['final decision made successfully'], 200);

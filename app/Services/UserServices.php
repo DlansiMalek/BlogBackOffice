@@ -25,15 +25,18 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PDF;
 use function foo\func;
+use Kreait\Firebase\Auth;
 
 class UserServices
 {
 
     private $path = 'profile-pic/';
+    protected $firebaseDatabase;
 
     public function __construct()
     {
         ini_set('max_execution_time', 300);
+        $this->firebaseDatabase = app('firebase.auth');
     }
 
     public function getAllUsers()
@@ -1709,6 +1712,25 @@ class UserServices
             ->first();
 
         return $user;
+    }
+    public function addUserFirebase($email, $password)
+    {
+        $userProperties = [
+            'email' => $email,
+            'password' => $password
+        ];
+        $this->firebaseDatabase->createUser($userProperties);
+    }
+
+    public function getUserFirebase($email)
+    {
+        $user = $this->firebaseDatabase->getUserByEmail($email);
+        return $user;
+    }
+
+    public function resetFirebasePassword($uid, $newPassword)
+    {
+        return $this->firebaseDatabase->changeUserPassword($uid, $newPassword);
     }
 
     public function editUserPrivilege($userCongress, $data)
