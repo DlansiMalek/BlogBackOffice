@@ -31,7 +31,7 @@ return [
      *
      */
     'credentials' => [
-        'file' => storage_path('firebase\firebass_credentials.json'),
+        'file' => storage_path('firebase/firebass_credentials.json'),
 
         /**
          * If you want to prevent the auto discovery of credentials, set the
