@@ -336,29 +336,30 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
+    public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
     {
-        $allSubmission = Submission::with([
-            'resources', 'authors.service', 'authors.etablissment',
-        ])->when($search !== "null" && $search !== "" && $search !== null,
-            function ($query) use ($search) {
-                $query->where('title', 'like', '%' . $search . '%');
-                $query->orWhere('code', 'like', '%' . $search . '%');
-            })->where('status', '=', 1)
-            ->where('congress_id', '=', $congressId)
-            ->where('communication_type_id', '=', $communication_type_id);
-        $otherSubmissions = Submission::with([
+        $submissions = Submission::with([
             'resources', 'authors',
-        ])->where('communication_type_id', '=', $communication_type_id)
-            ->where('congress_id', '=', $congressId)
-            ->where('status', '=', 1)
-            ->whereHas("authors", function ($query) use ($search) {
-                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+        ])->where('status', '=', 1)
+        ->where('congress_id', '=', $congressId);
 
-            })
-            ->union($allSubmission)
-            ->paginate($perPage);
-        return $otherSubmissions;
+        if ($communication_type_id != 'null' && $communication_type_id != '') {
+            $submissions->where('communication_type_id', '=', $communication_type_id);
+        }
+        if ($search != "null" && $search!='') {
+            $submissions->where('title', 'like', '%' . $search . '%')
+            ->orWhere('code', 'like', '%' . $search . '%')
+            ->orWhereHas("authors", function ($query) use ($search, $congressId) {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
+                ->whereHas('submission', function ($q) use ($congressId) {
+                    $q->where('congress_id', '=', $congressId);
+                });
+            });
+        }
+        $response = $submissions
+            ->offset($offset)->limit($perPage)
+            ->get();
+        return $response;
     }
 
     public function getAttestationSubmissionById($attestationSubmissionId)
