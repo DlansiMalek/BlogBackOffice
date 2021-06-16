@@ -27,6 +27,7 @@ use App\Services\Utils;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Exception;
 
 class UserController extends Controller
 {
@@ -504,6 +505,7 @@ class UserController extends Controller
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
+            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
             // TODO Sending Confirmation Mail
 
             if ($mailAdminType = $this->mailServices->getMailTypeAdmin('confirmation')) {
@@ -565,8 +567,14 @@ class UserController extends Controller
 
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request, $resource);
+            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
         } else {
             $user = $this->userServices->editUser($request, $user);
+            try {
+                $this->userServices->getUserFirebase($user->email);
+            } catch (Exception $e) {
+                $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
+            }
         }
 
         // Check if User already registed to congress
@@ -716,7 +724,6 @@ class UserController extends Controller
             return response()->json(['response' => 'not authorized'], 401);
         }
         
-
         if (!$accessId) {
             $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
             $urlStreaming = $congress->config->url_streaming;
@@ -732,16 +739,22 @@ class UserController extends Controller
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
         $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
-        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        }
+        
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
 
         return response()->json(
             [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => $isAllowedJitsi,
+                "allowed" => $isAllowedJitsi,
                 "url_streaming" => $urlStreaming,
             ], 200);
 
@@ -901,6 +914,7 @@ class UserController extends Controller
                 ]);
                 if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
                     $user = $this->userServices->saveUser($request);
+                    $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
                     array_push($savedUsers, $user->user_id);
                 } else {
                     array_push($savedUsers, $user->user_id);
@@ -947,6 +961,7 @@ class UserController extends Controller
                 // Create user if it doesn't exist
                 if (!$this->userServices->getUserByEmail($userData['email'])) {
                     $user = $this->userServices->addUserFromExcel($userData);
+                    $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
                 }
                 // Get User per mail
                 if ($user_by_mail = $this->userServices->getUserByEmail($userData['email'])) {
@@ -1614,6 +1629,12 @@ class UserController extends Controller
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->update();
+        try {
+            $userFirebase = $this->userServices->getUserFirebase($user->email);
+            $this->userServices->resetFirebasePassword($userFirebase->uid, $user->passwordDecrypt);
+        } catch (Exception $e) {
+            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
+        }
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
 
@@ -1933,8 +1954,14 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
+        $stand = $this->standServices->getStandById($standId);
+        if (!$stand) {
+            return response()->json(['response' => 'No stand found'], 401);
+        }
+
         $userId = $user->user_id;
         $congress = $this->congressServices->getCongressById($congressId);
+        
 
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'user_congresses' => function ($query) use ($congressId) {
@@ -1947,21 +1974,31 @@ class UserController extends Controller
         if (!Utils::isValidSendMail($congress, $user)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
+        
         $isModerator = $organizerId ? $this->userServices->isUserOrganizer($user->user_congresses[0]) : $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+        $urlStreaming = !$isModerator && $stand->url_streaming ? $stand->url_streaming : null;
+        $allowed = $isModerator || !$stand->url_streaming;
 
         $userToUpdate = $user->user_congresses[0];
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
-        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+       
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        }
+        
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
 
         return response()->json(
             [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => true,
-                "url_streaming" => null,
+                "allowed" => $allowed,
+                "url_streaming" => $urlStreaming
             ], 200);
     }
 

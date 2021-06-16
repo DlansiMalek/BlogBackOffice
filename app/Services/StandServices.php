@@ -92,7 +92,9 @@ class StandServices
     public function getStandById($stand_id)
     {
         return Stand::where('stand_id', '=', $stand_id)
-            ->with(['docs', 'organization','products'])
+            ->with(['docs','products', 'organization.membres' => function ($query) {
+                    $query->where('privilege_id', '=', 7);
+                }, 'organization.membres.profile_img'])
             ->first();
     }
 
@@ -189,4 +191,21 @@ class StandServices
         return Stand::where('stand_id', '=', $stand_id)
             ->update(['status' => $status]);
     }
+    public function addStandFromExcel($stand,$name,$congressId,$organizationId)
+    {
+        if(!$stand) {
+            $stand = new Stand();
+        }
+        $stand->name            = $name;
+        $stand->organization_id = $organizationId;
+        $stand->congress_id     = $congressId;
+        $stand->save();
+    }
+    public function getStandByCongressIdOrgizantionIdAndName($name, $congressId, $organizationId)
+    {
+        return Stand::whereRaw('lower(name) like (?)', ["{$name}"])
+        ->where('congress_id', '=', $congressId)
+        ->where('organization_id', '=', $organizationId) ->first();
+    }
+    
 }
