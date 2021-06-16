@@ -213,3 +213,7 @@ SELECT
  AND congress_id = 354;
 
 */ 
+
+// Search for submission with special caracter
+/* SELECT * FROM `Submission` WHERE description Like '%%'*/
+/* UPDATE Submission SET description = REPLACE(description,'','');*/
