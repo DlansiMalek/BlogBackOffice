@@ -566,7 +566,6 @@ class UserController extends Controller
 
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request, $resource);
-            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
         } else {
             $user = $this->userServices->editUser($request, $user);
         }
