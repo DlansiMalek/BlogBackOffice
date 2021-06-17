@@ -505,7 +505,6 @@ class UserController extends Controller
         // Get User per mail
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request);
-            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
             // TODO Sending Confirmation Mail
 
             if ($mailAdminType = $this->mailServices->getMailTypeAdmin('confirmation')) {
@@ -567,14 +566,8 @@ class UserController extends Controller
 
         if (!$user = $this->userServices->getUserByEmail($request->input('email'))) {
             $user = $this->userServices->saveUser($request, $resource);
-            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
         } else {
             $user = $this->userServices->editUser($request, $user);
-            try {
-                $this->userServices->getUserFirebase($user->email);
-            } catch (Exception $e) {
-                $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
-            }
         }
 
         // Check if User already registed to congress
@@ -914,7 +907,6 @@ class UserController extends Controller
                 ]);
                 if (!$user = $this->userServices->getUserByEmail($userData['email'])) {
                     $user = $this->userServices->saveUser($request);
-                    $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
                     array_push($savedUsers, $user->user_id);
                 } else {
                     array_push($savedUsers, $user->user_id);
@@ -961,7 +953,6 @@ class UserController extends Controller
                 // Create user if it doesn't exist
                 if (!$this->userServices->getUserByEmail($userData['email'])) {
                     $user = $this->userServices->addUserFromExcel($userData);
-                    $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
                 }
                 // Get User per mail
                 if ($user_by_mail = $this->userServices->getUserByEmail($userData['email'])) {
@@ -1629,12 +1620,6 @@ class UserController extends Controller
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->update();
-        try {
-            $userFirebase = $this->userServices->getUserFirebase($user->email);
-            $this->userServices->resetFirebasePassword($userFirebase->uid, $user->passwordDecrypt);
-        } catch (Exception $e) {
-            $this->userServices->addUserFirebase($user->email, $user->passwordDecrypt);
-        }
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template), $user, null, $mail->object, null, $userMail);
 
@@ -1954,8 +1939,14 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
+        $stand = $this->standServices->getStandById($standId);
+        if (!$stand) {
+            return response()->json(['response' => 'No stand found'], 401);
+        }
+
         $userId = $user->user_id;
         $congress = $this->congressServices->getCongressById($congressId);
+        
 
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'user_congresses' => function ($query) use ($congressId) {
@@ -1968,7 +1959,10 @@ class UserController extends Controller
         if (!Utils::isValidSendMail($congress, $user)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
+        
         $isModerator = $organizerId ? $this->userServices->isUserOrganizer($user->user_congresses[0]) : $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+        $urlStreaming = !$isModerator && $stand->url_streaming ? $stand->url_streaming : null;
+        $allowed = $isModerator || !$stand->url_streaming;
 
         $userToUpdate = $user->user_congresses[0];
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
@@ -1988,8 +1982,8 @@ class UserController extends Controller
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed" => true,
-                "url_streaming" => null,
+                "allowed" => $allowed,
+                "url_streaming" => $urlStreaming
             ], 200);
     }
 
