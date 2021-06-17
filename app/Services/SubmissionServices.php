@@ -348,7 +348,13 @@ class SubmissionServices
         }
         if ($search != "null" && $search!='') {
             $submissions->where('title', 'like', '%' . $search . '%')
-            ->orWhere('code', 'like', '%' . $search . '%')
+            ->orWhere(function($q) use ($search, $congressId, $communication_type_id) {
+                $q->where('congress_id', '=', $congressId)
+                ->where('code', 'like', '%' . $search . '%');
+                if ($communication_type_id != 'null' && $communication_type_id != '') {
+                    $q->where('communication_type_id', '=', $communication_type_id);
+                }
+            })
             ->orWhereHas("authors", function ($query) use ($search, $congressId) {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
                 ->whereHas('submission', function ($q) use ($congressId) {
