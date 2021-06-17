@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Room;
 use \Firebase\JWT\JWT;
+use App\Services\Agora\RtcTokenBuilder;
 
 class RoomServices
 {
@@ -44,5 +45,9 @@ class RoomServices
             $room->moderator_email = $moderator_email;
         $room->save();
         return $room;
+    }
+
+    public function createTokenAgora($userId, $roomName, $isModerator) {
+        return RtcTokenBuilder::buildTokenWithUid(env('AGORA_APPID'), env('AGORA_CERTIFICATE'), $roomName, $userId, RtcTokenBuilder::RolePublisher, Utils::getExpireTime(3600));
     }
 }

@@ -252,6 +252,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::put('{submissionId}/{congressId}/change-status', 'SubmissionController@changeSubmissionStatus');
     Route::post('{congressId}/upload-submissions', 'SubmissionController@uploadSubmissions');
 });
+
 Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'], function () {
     Route::post('add', 'SubmissionController@addSubmission');
     Route::group(['prefix' => '{submission_id}'], function () {
@@ -492,6 +493,8 @@ Route::group(["prefix" => "organization", 'middleware' => 'organization'], funct
     Route::get('/{organizatiolist-paginationn_id}/congress/{congressId}', "OrganizationController@getAllUserByOrganizationId");
     Route::get('/accept/{organization_id}/{user_id}', "OrganizationController@acceptParticipant");
     Route::get('/acceptAll/{organization_id}', "OrganizationController@acceptAllParticipants");
+    Route::post('{congressId}', 'OrganizationController@saveOrganizationsFromExcel');
+
 });
 
 

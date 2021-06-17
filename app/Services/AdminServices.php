@@ -93,12 +93,12 @@ class AdminServices
 
     public function AddAdmin(Request $request, $admin)
     {
-        $admin->name = $request->input('name');
-        $admin->mobile = $request->input('mobile');
-        $admin->email = $request->input('email');
-        $admin->privilege_id = 1;
+        $admin->name            = $request->input('name');
+        $admin->mobile          = $request->input('mobile');
+        $admin->email           = $request->input('email');
+        $admin->privilege_id    = 1;
         $admin->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
-        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        $admin->password        = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
         $admin->save();
         return $admin;
     }
@@ -565,5 +565,31 @@ class AdminServices
     {
         return Evaluation_Inscription::where('congress_id', '=', $congress_id)
             ->where('user_id', '=', $user_id)->get();
+    }
+    public function addAdminFromExcel($admin,$data)
+    {
+        $password =Str::random(8);
+        if(!$admin) {
+            $admin = new Admin();
+        }
+
+        $admin->name            = $data['admin_name'];
+        $admin->email           =  $data['admin_email'];
+        $admin->mobile          =  isset($data['admin_mobile']) ? $data['admin_mobile'] : "77777777";
+        $admin->passwordDecrypt = $password;
+        $admin->password        = bcrypt($password);
+        $admin->save();
+        return $admin;
+    }
+    public function addAdminCongressFromExcel($adminCongress,$adminId, $congressId, $privilegeId)
+    {
+        if(!$adminCongress) {
+            $adminCongress = new AdminCongress();
+        }
+
+        $adminCongress->admin_id = $adminId;
+        $adminCongress->congress_id = $congressId;
+        $adminCongress->privilege_id = $privilegeId;
+        $adminCongress->save();
     }
 }
