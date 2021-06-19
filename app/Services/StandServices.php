@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Stand;
 use App\Models\ResourceStand;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class StandServices
 {
@@ -126,6 +127,7 @@ class StandServices
             }
         })
             ->with(['docs', 'products' , 'organization'])
+            ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id)->get();
     }
 
