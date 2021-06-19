@@ -11,6 +11,7 @@ use App\Models\SubmissionComments;
 use App\Models\SubmissionEvaluation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class SubmissionServices
 {
@@ -377,6 +378,20 @@ class SubmissionServices
             ->offset($offset)->limit($perPage)
             ->get();
         return $response;
+    }
+
+    public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
+    {
+        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id;
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $submissions = $this->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        Cache::put($cacheKey, $submissions, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+        return $submissions;
     }
 
     public function getAttestationSubmissionById($attestationSubmissionId)

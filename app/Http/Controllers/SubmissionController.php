@@ -562,7 +562,7 @@ class SubmissionController extends Controller
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
         return response()->json($submissions, 200);
     }
 

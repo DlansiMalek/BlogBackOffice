@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Stand;
 use App\Models\ResourceStand;
+use Illuminate\Support\Facades\Cache;
 
 class StandServices
 {
@@ -100,6 +101,20 @@ class StandServices
             ->first();
     }
 
+    public function getStandCachedById($stand_id)
+    {
+        $cacheKey = 'stand-' . $stand_id;
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $stand = $this->getStandById($stand_id);
+        Cache::put($cacheKey, $stand, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+        return $stand;
+    }
+
     public function getStands($congress_id, $name = null, $status = null)
     {
         return Stand::where(function ($query) use ($name, $status) {
@@ -112,6 +127,19 @@ class StandServices
         })
             ->with(['docs', 'products' , 'organization'])
             ->where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function getCachedStands($congress_id) {
+        $cacheKey = 'stands-' . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $stands = $this->getStands($congress_id);
+        Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+        return $stands;
     }
 	
 	public function getStandsPagination($congress_id, $perPage)
