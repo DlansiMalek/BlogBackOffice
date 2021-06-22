@@ -96,7 +96,7 @@ class StandServices
                 $query->select('Resource.*', 'Resource_Stand.file_name');
             },'products', 'organization.membres' => function ($query) {
                     $query->where('privilege_id', '=', 7);
-                }, 'organization.membres.profile_img'])
+                }, 'organization.membres.profile_img', 'faq'])
             ->first();
     }
 
@@ -110,13 +110,13 @@ class StandServices
                 $query->where('status', '=', $status);
             }
         })
-            ->with(['docs', 'products' , 'organization'])
+            ->with(['docs', 'products' , 'organization', 'faq'])
             ->where('congress_id', '=', $congress_id)->get();
     }
 	
 	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::with(['docs', 'products' , 'organization',
+        return Stand::with(['docs', 'products' , 'organization', 'faq',
             'organization.admin' => function ($query) {
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
