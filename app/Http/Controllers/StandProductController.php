@@ -5,17 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\StandServices;
 use App\Services\StandProductServices;
+use App\Services\CongressServices;
 use Illuminate\Support\Facades\Log;
 
 class StandProductController extends Controller
 {
     protected $standServices;
     protected $standProductServices;
+    protected $congressServices;
 
-    function __construct(StandServices $standServices, StandProductServices $standProductServices)
+    function __construct(StandServices $standServices, StandProductServices $standProductServices, CongressServices $congressServices)
     {
         $this->standServices = $standServices;
         $this->standProductServices = $standProductServices;
+        $this->congressServices = $congressServices;
     }
 
     function addStandProduct(Request $request)
@@ -26,11 +29,14 @@ class StandProductController extends Controller
             $request->input('stand_id'),
             $request->input('description'),
             $request->input('main_img'),
-            $request->input('brochure_file'),
         ); 
 			$resources = $request->has('product_resource_paths') ? $request->input('product_resource_paths') : [];
+			$product_files = $request->has('product_file_paths') ? $request->input('product_file_paths') : [];
 			$this->standProductServices->saveResourceStandProduct($resources, $standproduct->stand_product_id);
-			return response()->json('Standproduct added', 200);
+			$this->standProductServices->saveProductFiles($product_files, $standproduct->stand_product_id);
+            $this->standProductServices->addAllProductTags($request->input('tags'), $standproduct->stand_product_id);
+            $this->standProductServices->addAllProductLinks($request->input('links'), $standproduct->stand_product_id);
+			return response()->json('Stand product added', 200);
     }
 
     public function editStandProduct($congress_id, $stand_id, $standproduct_id,  Request $request)
@@ -48,8 +54,12 @@ class StandProductController extends Controller
             $request->input('name'),
             $request->input('description'),
             $request->input('main_img'),
-            $request->input('brochure_file')
         );
+        $this->standProductServices->deleteOldTags($standproduct->stand_product_id);
+        $this->standProductServices->addAllProductTags($request->input('tags'), $standproduct->stand_product_id);
+        $this->standProductServices->deteAllProductLinks($standproduct->stand_product_id);
+        $this->standProductServices->addAllProductLinks($request->input('links'), $standproduct->stand_product_id);
+        
      
         return response()->json($standproduct, 200);
     }
@@ -75,5 +85,24 @@ class StandProductController extends Controller
     public function getStandProductById($congressId, $standproduct_id)
     {
         return $this->standProductServices->getStandProductById($standproduct_id);
+    }
+
+    public function addTag($congress_id, Request $request)
+    {
+        if (!$this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $this->standProductServices->addTag($request, $congress_id);
+        $tags = $this->standProductServices->getTags($congress_id);
+        return response()->json($tags);
+    }
+
+    public function getTags($congress_id)
+    {
+        if (!$this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $tags = $this->standProductServices->getTags($congress_id);
+        return response()->json($tags);
     }
 }

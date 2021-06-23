@@ -20,4 +20,9 @@ class StandProduct extends Model
     {
         return $this->belongsToMany(Resource::class,'Resource_Product','stand_product_id','resource_id');
     }
+    
+	function files()
+    {
+        return $this->belongsToMany(Resource::class,'Product_File','stand_product_id','resource_id');
+    }
 }
