@@ -73,7 +73,7 @@ class StandProductController extends Controller
         return response()->json($standproducts, 200);
     }
 
-    public function deleteStandproduct($stand_product_id)
+    public function deleteStandproduct($congress_id, $stand_product_id)
     {
         if (!$standproduct = $this->standProductServices->getStandProductById($stand_product_id)) {
             return response()->json('no such product found', 404);
@@ -84,7 +84,9 @@ class StandProductController extends Controller
 
     public function getStandProductById($congressId, $standproduct_id)
     {
-        return $this->standProductServices->getStandProductById($standproduct_id);
+        $product = $this->standProductServices->getStandProductById($standproduct_id);
+        return response()->json($product, 200);
+
     }
 
     public function addTag($congress_id, Request $request)

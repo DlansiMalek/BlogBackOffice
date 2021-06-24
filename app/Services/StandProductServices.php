@@ -43,13 +43,13 @@ class StandProductServices
     public function getStandProductById($standproduct_id)
     {
         return StandProduct::where('stand_product_id', '=', $standproduct_id)
-        ->with(['docs', 'files'])
+        ->with(['docs', 'files', 'product_tags'])
         ->first();
     }
 
     public function getStandproducts($stand_id)
     {
-        return StandProduct::where('stand_id', '=', $stand_id)->with(['docs'])
+        return StandProduct::where('stand_id', '=', $stand_id)->with(['docs', 'files'])
             ->get();
     }
 
