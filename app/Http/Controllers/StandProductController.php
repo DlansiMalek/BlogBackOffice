@@ -30,7 +30,7 @@ class StandProductController extends Controller
             $request->input('description'),
             $request->input('main_img'),
         );
-        $this->standProductServices->saveResourceStandProduct($request->input('docs'), $standproduct->stand_product_id);
+        $this->standProductServices->saveResourceStandProduct($request->input('imgs'), $standproduct->stand_product_id);
         $this->standProductServices->saveProductFiles($request->input('files'), $standproduct->stand_product_id);
         $this->standProductServices->saveProductVideos($request->input('videos'), $standproduct->stand_product_id);
         $this->standProductServices->addAllProductTags($request->input('tags'), $standproduct->stand_product_id);
@@ -54,7 +54,7 @@ class StandProductController extends Controller
             $request->input('description'),
             $request->input('main_img'),
         );
-        $this->standProductServices->saveResourceStandProduct($request->input('docs'), $standproduct->stand_product_id);
+        $this->standProductServices->saveResourceStandProduct($request->input('imgs'), $standproduct->stand_product_id);
         $this->standProductServices->saveProductFiles($request->input('files'), $standproduct->stand_product_id);
         $this->standProductServices->saveProductVideos($request->input('videos'), $standproduct->stand_product_id);
         $this->standProductServices->deleteOldTags($standproduct->stand_product_id);
@@ -106,5 +106,18 @@ class StandProductController extends Controller
         }
         $tags = $this->standProductServices->getTags($congress_id);
         return response()->json($tags);
+    }
+
+    public function getProductsBy3DBooth($congressId, $boothId) {
+        if (!$this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+        if (!$this->standServices->getStandById($boothId)) {
+            return response()->json(['response' => 'Booth not found', 404]);
+        }
+
+        $standproducts = $this->standProductServices->getStandproducts($boothId);
+        return response()->json($standproducts, 200);
     }
 }
