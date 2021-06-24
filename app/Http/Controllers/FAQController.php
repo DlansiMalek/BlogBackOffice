@@ -38,12 +38,12 @@ class FAQController extends Controller
         return response()->json($this->faqServices->getFAQById($faq->FAQ_id));
     }
 
-    public function deleteFAQ($FAQ_id)
+    public function deleteFAQ($congress_id,$stand_id,$FAQ_id)
     {
         if (!$faq = $this->faqServices->getFAQById($FAQ_id)) {
             return response()->json('no faq found', 404);
         }    
-        $this->FAQServices->deleteFAQ($faq);
+        $this->faqServices->deleteFAQ($faq);
         return response()->json(['response' => 'faq deleted'], 200);
     }
     public function getFAQById($FAQ_id)
