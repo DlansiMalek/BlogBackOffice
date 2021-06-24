@@ -20,4 +20,24 @@ class StandProduct extends Model
     {
         return $this->belongsToMany(Resource::class,'Resource_Product','stand_product_id','resource_id');
     }
+    
+	function files()
+    {
+        return $this->belongsToMany(Resource::class,'Product_File','stand_product_id','resource_id');
+    }
+
+    function product_tags()
+    {
+        return $this->belongsToMany(Tag::class,'Product_Tag','stand_product_id','tag_id');
+    }
+
+    function links()
+    {
+        return $this->hasMany(ProductLink::class,'stand_product_id','stand_product_id');
+    }
+
+    function videos()
+    {
+        return $this->belongsToMany(Resource::class,'Product_Video','stand_product_id','resource_id');
+    }
 }

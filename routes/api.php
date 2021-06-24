@@ -210,6 +210,15 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::put('/edit/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
         });
 
+        Route::group(['prefix' => 'product'], function () {
+            Route::group(['prefix' => 'tags'], function () {
+                Route::get('', 'StandProductController@getTags');
+                Route::post('add', 'StandProductController@addTag');
+            });
+            Route::get('{product_id}', 'StandProductController@getStandProductById');
+        });
+
+
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
