@@ -15,6 +15,7 @@ class ChangeColumnDescriptionTableStandProduct extends Migration
     {
         Schema::table('Stand_Product', function (Blueprint $table) {
             $table->text('description')->change();
+            $table->dropColumn('brochure_file');
         });
     }
 
@@ -27,6 +28,7 @@ class ChangeColumnDescriptionTableStandProduct extends Migration
     {
         Schema::table('Stand_Product', function (Blueprint $table) {
             $table->string('description')->change();
+            $table->string('brochure_file')->nullable()->default(null);
         });
     }
 }
