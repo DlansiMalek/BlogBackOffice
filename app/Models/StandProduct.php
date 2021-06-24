@@ -16,7 +16,7 @@ class StandProduct extends Model
     function stand() {
         return $this->belongsTo(Stand::class,'stand_id','stand_id');
     }
-	function docs()
+	function imgs()
     {
         return $this->belongsToMany(Resource::class,'Resource_Product','stand_product_id','resource_id');
     }
