@@ -50,7 +50,7 @@ class StandProductServices
 
     public function getStandproducts($stand_id)
     {
-        return StandProduct::where('stand_id', '=', $stand_id)->with(['imgs','files', 'videos', 'links'])
+        return StandProduct::where('stand_id', '=', $stand_id)->with(['product_tags','imgs','files', 'videos', 'links'])
             ->get();
     }
 
