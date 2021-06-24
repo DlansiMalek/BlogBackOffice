@@ -30,4 +30,14 @@ class StandProduct extends Model
     {
         return $this->belongsToMany(Tag::class,'Product_Tag','stand_product_id','tag_id');
     }
+
+    function links()
+    {
+        return $this->hasMany(ProductLink::class,'stand_product_id','stand_product_id');
+    }
+
+    function videos()
+    {
+        return $this->belongsToMany(Resource::class,'Product_Video','stand_product_id','resource_id');
+    }
 }

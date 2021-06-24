@@ -29,20 +29,19 @@ class StandProductController extends Controller
             $request->input('stand_id'),
             $request->input('description'),
             $request->input('main_img'),
-        ); 
-			$resources = $request->has('product_resource_paths') ? $request->input('product_resource_paths') : [];
-			$product_files = $request->has('product_file_paths') ? $request->input('product_file_paths') : [];
-			$this->standProductServices->saveResourceStandProduct($resources, $standproduct->stand_product_id);
-			$this->standProductServices->saveProductFiles($product_files, $standproduct->stand_product_id);
-            $this->standProductServices->addAllProductTags($request->input('tags'), $standproduct->stand_product_id);
-            $this->standProductServices->addAllProductLinks($request->input('links'), $standproduct->stand_product_id);
-			return response()->json('Stand product added', 200);
+        );
+        $this->standProductServices->saveResourceStandProduct($request->input('docs'), $standproduct->stand_product_id);
+        $this->standProductServices->saveProductFiles($request->input('files'), $standproduct->stand_product_id);
+        $this->standProductServices->saveProductVideos($request->input('videos'), $standproduct->stand_product_id);
+        $this->standProductServices->addAllProductTags($request->input('tags'), $standproduct->stand_product_id);
+        $this->standProductServices->addAllProductLinks($request->input('links'), $standproduct->stand_product_id);
+        return response()->json('Stand product added', 200);
     }
 
     public function editStandProduct($congress_id, $stand_id, $standproduct_id,  Request $request)
     {
 
-        if (!$Stand = $this->standServices->getStandById($stand_id)) {
+        if (!$stand = $this->standServices->getStandById($stand_id)) {
             return response()->json(['response' => 'Stand not found', 404]);
         }
         if (!$oldStandProduct = $this->standProductServices->getStandProductById($standproduct_id)) {
@@ -55,12 +54,14 @@ class StandProductController extends Controller
             $request->input('description'),
             $request->input('main_img'),
         );
+        $this->standProductServices->saveResourceStandProduct($request->input('docs'), $standproduct->stand_product_id);
+        $this->standProductServices->saveProductFiles($request->input('files'), $standproduct->stand_product_id);
+        $this->standProductServices->saveProductVideos($request->input('videos'), $standproduct->stand_product_id);
         $this->standProductServices->deleteOldTags($standproduct->stand_product_id);
         $this->standProductServices->addAllProductTags($request->input('tags'), $standproduct->stand_product_id);
         $this->standProductServices->deteAllProductLinks($standproduct->stand_product_id);
         $this->standProductServices->addAllProductLinks($request->input('links'), $standproduct->stand_product_id);
-        
-     
+
         return response()->json($standproduct, 200);
     }
 
@@ -86,7 +87,6 @@ class StandProductController extends Controller
     {
         $product = $this->standProductServices->getStandProductById($standproduct_id);
         return response()->json($product, 200);
-
     }
 
     public function addTag($congress_id, Request $request)
