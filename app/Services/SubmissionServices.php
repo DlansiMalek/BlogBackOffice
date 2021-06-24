@@ -362,6 +362,7 @@ class SubmissionServices
             $submissions->where('title', 'like', '%' . $search . '%')
             ->orWhere(function($q) use ($search, $congressId, $communication_type_id) {
                 $q->where('congress_id', '=', $congressId)
+                ->where('status', '=', 1)
                 ->where('code', 'like', '%' . $search . '%');
                 if ($communication_type_id != 'null' && $communication_type_id != '') {
                     $q->where('communication_type_id', '=', $communication_type_id);
@@ -370,7 +371,8 @@ class SubmissionServices
             ->orWhereHas("authors", function ($query) use ($search, $congressId) {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
                 ->whereHas('submission', function ($q) use ($congressId) {
-                    $q->where('congress_id', '=', $congressId);
+                    $q->where('Submission.congress_id', '=', $congressId)
+                    ->where('Submission.status', '=', 1);
                 });
             });
         }
