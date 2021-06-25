@@ -65,7 +65,7 @@ docker-package:
     - IMAGE_NAME_GCP="$GCP_REGISTRY/$CI_PROJECT_NAME:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GCP" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
-    - docker push "IMAGE_NAME_GCP"
+    - docker push "$IMAGE_NAME_GCP"
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
     - docker push "$IMAGE_NAME"
