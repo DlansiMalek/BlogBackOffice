@@ -9,7 +9,7 @@ class ProductFile extends Model
     protected $table = 'Product_File';
     protected $primaryKey = 'product_file_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
-    protected $fillable = ['resource_id', 'stand_product_id'];
+    protected $fillable = ['resource_id', 'stand_product_id', 'file_name'];
 
     function resource() 
     {
