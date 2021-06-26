@@ -88,11 +88,11 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 500m
-              memory: 4g
+              cpu: 600m
+              memory: 4G
             requests:
               cpu: 400m
-              memory: 3g
+              memory: 3G
           volumeMounts:
             - name: shared-files
               mountPath: /app
@@ -150,4 +150,18 @@ spec:
     certResolver: letsencrypt
     domains:
       - main: "${HOST_ROOT_DOMAIN}"
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend
+  namespace: backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-${CI_COMMIT_REF_NAME}
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
 ---
