@@ -88,11 +88,11 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 200m
-              memory: 400M
+              cpu: 500m
+              memory: 4g
             requests:
-              cpu: 100m
-              memory: 200M
+              cpu: 400m
+              memory: 3g
           volumeMounts:
             - name: shared-files
               mountPath: /app
