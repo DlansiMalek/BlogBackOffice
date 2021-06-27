@@ -205,19 +205,17 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
             Route::delete('/deletestandproduct/{stand_product_id}', 'StandProductController@deleteStandproduct');
             Route::get('{stand_id}/products', 'StandProductController@getStandproducts');
-            Route::post('/addproduct', 'StandProductController@addStandProduct');
-            Route::put('/edit/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
+            Route::put('/edit-product/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
+        });
+
+        Route::group(['prefix' => 'tags'], function () {
+            Route::get('', 'TagController@getTags');
+            Route::post('add', 'TagController@addTag');
         });
 
         Route::group(['prefix' => 'product'], function () {
-            Route::group(['prefix' => 'tags'], function () {
-                Route::get('', 'StandProductController@getTags');
-                Route::post('add', 'StandProductController@addTag');
-            });
             Route::get('{product_id}', 'StandProductController@getStandProductById');
         });
-
-
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')

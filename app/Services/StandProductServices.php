@@ -4,13 +4,9 @@ namespace App\Services;
 
 use App\Models\ProductLink;
 use App\Models\ProductFile;
-use App\Models\ProductTag;
 use App\Models\ProductVideo;
-use App\Models\Stand;
 use App\Models\StandProduct;
-use App\Models\ResourceStand;
 use App\Models\ResourceProduct;
-use App\Models\Tag;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Storage;
 use DateTime;
@@ -18,33 +14,32 @@ use Illuminate\Support\Facades\Log;
 
 class StandProductServices
 {
-
-
-    public function addStandProduct($name, $stand_id, $description, $main_img)
+    public function editStandProduct($oldStandProduct, $name, $description, $main_img, $stand_id)
     {
-        $standproduct = new StandProduct();
-        $standproduct->name = $name;
-        $standproduct->stand_id = $stand_id;
-        $standproduct->description = $description;
-        $standproduct->main_img = $main_img;
-        $standproduct->save();
-        return $standproduct;
-    }
-
-    public function editStandProduct($oldStandProduct, $name, $description, $main_img)
-    {
-
+        if (!$oldStandProduct)
+        $oldStandProduct = new StandProduct();
         $oldStandProduct->name = $name;
         $oldStandProduct->description = $description;
         $oldStandProduct->main_img = $main_img;
-        $oldStandProduct->update();
+        $oldStandProduct->stand_id = $stand_id;
+        $oldStandProduct->save();
         return $oldStandProduct;
     }
 
     public function getStandProductById($standproduct_id)
     {
         return StandProduct::where('stand_product_id', '=', $standproduct_id)
-            ->with(['imgs', 'files', 'product_tags', 'links', 'videos'])
+            ->with([
+                'imgs' => function ($query) {
+                    $query->select('Resource.*', 'Resource_Product.file_name');
+                },
+                'files'  => function ($query) {
+                    $query->select('Resource.*', 'Product_File.file_name');
+                },
+                'videos' => function ($query) {
+                    $query->select('Resource.*', 'Product_Video.file_name');
+                }, 'product_tags', 'links'
+            ])
             ->first();
     }
 
@@ -62,42 +57,42 @@ class StandProductServices
             foreach ($resources as $resource) {
                 $isExist = false;
                 foreach ($oldResources as $oldResource) {
+                    if (($oldResource->file_name == $resource['file_name']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
+                        $this->editResourceStandProduct($oldResource, $resource['resource_id']);
+                        $isExist = true;
+                        break;
+                    }
                     if ($oldResource['resource_id'] == $resource['resource_id']) {
                         $isExist = true;
                         break;
                     }
                 }
                 if (!$isExist) {
-                    $this->addResourceStandProduct($resource['resource_id'], $stand_product_id);
+                    $this->addResourceStandProduct($resource['resource_id'], $stand_product_id, $resource['file_name']);
                 }
             }
         } else {
             foreach ($resources as $resource) {
-                $this->addResourceStandProduct($resource['resource_id'], $stand_product_id);
+                $this->addResourceStandProduct($resource['resource_id'], $stand_product_id, $resource['file_name']);
             }
         }
     }
 
-    public function addResourceStandProduct($resource_id, $stand_product_id)
+    public function addResourceStandProduct($resource_id, $stand_product_id, $fileName)
     {
         $resourceStand = new ResourceProduct();
         $resourceStand->resource_id = $resource_id;
         $resourceStand->stand_product_id = $stand_product_id;
+        $resourceStand->file_name = $fileName;
         $resourceStand->save();
         return $resourceStand;
     }
-
-    public function getTags($congress_id)
+    
+    public function editResourceStandProduct($resource, $resourceId)
     {
-        return Tag::where('congress_id', '=', $congress_id)->get();
-    }
-
-    public function addTag($request, $congress_id)
-    {
-        $tag = new Tag();
-        $tag->label = $request->input('label');
-        $tag->congress_id = $congress_id;
-        $tag->save();
+        $resource->resource_id = $resourceId;
+        $resource->update();
+        return $resource;
     }
 
     public function saveProductFiles($resources, $stand_product_id)
@@ -108,58 +103,49 @@ class StandProductServices
             foreach ($resources as $resource) {
                 $isExist = false;
                 foreach ($oldResources as $oldResource) {
+                    if (($oldResource->file_name == $resource['file_name']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
+                        $this->editProductFile($oldResource, $resource['resource_id']);
+                        $isExist = true;
+                        break;
+                    }
                     if ($oldResource['resource_id'] == $resource['resource_id']) {
                         $isExist = true;
                         break;
                     }
                 }
                 if (!$isExist) {
-                    $this->addProductFile($resource['resource_id'], $stand_product_id);
+                    $this->addProductFile($resource['resource_id'], $stand_product_id, $resource['file_name']);
                 }
             }
         } else {
             foreach ($resources as $resource) {
-                $this->addProductFile($resource['resource_id'], $stand_product_id);
+                $this->addProductFile($resource['resource_id'], $stand_product_id, $resource['file_name']);
             }
         }
     }
 
-    public function addProductFile($resource_id, $stand_product_id)
+    public function addProductFile($resource_id, $stand_product_id, $fileName)
     {
         $productFile = new ProductFile();
         $productFile->resource_id = $resource_id;
         $productFile->stand_product_id = $stand_product_id;
+        $productFile->file_name = $fileName;
         $productFile->save();
         return $productFile;
     }
-
-    public function addAllProductTags($tags, $stand_product_id)
+    
+    public function editProductFile($resource, $resourceId)
     {
-        if (sizeof($tags) > 0)
-        {
-            foreach ($tags as $tag) {
-                $this->addProductTag($tag, $stand_product_id);
-            }
-        }
-    }
-
-    public function addProductTag($tag_id, $stand_product_id)
-    {
-        $product_tag = new ProductTag();
-        $product_tag->tag_id = $tag_id;
-        $product_tag->stand_product_id = $stand_product_id;
-        $product_tag->save();
-    }
-
-    public function deleteOldTags($stand_product_id)
-    {
-        return ProductTag::where('stand_product_id', '=', $stand_product_id)->delete();
+        $resource->resource_id = $resourceId;
+        $resource->update();
+        return $resource;
     }
 
     public function addAllProductLinks($links, $stand_product_id)
     {
         if (sizeof($links) > 0) {
             foreach ($links as $link) {
+                if(!empty($link))
                 $this->addProductLink($link['link'], $stand_product_id);
             }
         }
@@ -186,28 +172,41 @@ class StandProductServices
             foreach ($resources as $resource) {
                 $isExist = false;
                 foreach ($oldResources as $oldResource) {
+                    if (($oldResource->file_name == $resource['file_name']) && ($oldResource['resource_id'] !== $resource['resource_id'])) {
+                        $this->editProductVideo($oldResource, $resource['resource_id']);
+                        $isExist = true;
+                        break;
+                    }
                     if ($oldResource['resource_id'] == $resource['resource_id']) {
                         $isExist = true;
                         break;
                     }
                 }
                 if (!$isExist) {
-                    $this->addProductVideo($resource['resource_id'], $stand_product_id);
+                    $this->addProductVideo($resource['resource_id'], $stand_product_id, $resource['file_name']);
                 }
             }
         } else {
             foreach ($resources as $resource) {
-                $this->addProductVideo($resource['resource_id'], $stand_product_id);
+                $this->addProductVideo($resource['resource_id'], $stand_product_id, $resource['file_name']);
             }
         }
     }
 
-    public function addProductVideo($resource_id, $stand_product_id)
+    public function addProductVideo($resource_id, $stand_product_id, $fileName)
     {
         $productFile = new ProductVideo();
         $productFile->resource_id = $resource_id;
         $productFile->stand_product_id = $stand_product_id;
+        $productFile->file_name = $fileName;
         $productFile->save();
         return $productFile;
+    }
+
+    public function editProductVideo($resource, $resourceId)
+    {
+        $resource->resource_id = $resourceId;
+        $resource->update();
+        return $resource;
     }
 }
