@@ -7,7 +7,6 @@ use App\Services\StandServices;
 use App\Services\StandProductServices;
 use App\Services\CongressServices;
 use App\Services\TagServices;
-use Illuminate\Support\Facades\Log;
 
 class StandProductController extends Controller
 {
@@ -44,7 +43,7 @@ class StandProductController extends Controller
             $request->input('main_img'),
             $request->input('stand_id')
         );
-        $this->standProductServices->saveResourceStandProduct($request->input('docs'), $standproduct->stand_product_id);
+        $this->standProductServices->saveResourceStandProduct($request->input('imgs'), $standproduct->stand_product_id);
         $this->standProductServices->saveProductFiles($request->input('files'), $standproduct->stand_product_id);
         $this->standProductServices->saveProductVideos($request->input('videos'), $standproduct->stand_product_id);
         $this->tagServices->deleteOldTags($standproduct->stand_product_id);
