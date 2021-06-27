@@ -77,4 +77,17 @@ class StandProductController extends Controller
         $product = $this->standProductServices->getStandProductById($standproduct_id);
         return response()->json($product, 200);
     }
+
+    public function getProductsBy3DBooth($congressId, $boothId) {
+        if (!$this->congressServices->getCongressById($congressId)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+
+        if (!$this->standServices->getStandById($boothId)) {
+            return response()->json(['response' => 'Booth not found', 404]);
+        }
+
+        $standproducts = $this->standProductServices->getStandproducts($boothId);
+        return response()->json($standproducts, 200);
+    }
 }
