@@ -154,7 +154,7 @@ class StandController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $stands = $this->standServices->getCachedStands($congress_id, null, 1);
+        $stands = $this->standServices->getCachedStands($congress_id);
         return response()->json($stands, 200);
     }
 
