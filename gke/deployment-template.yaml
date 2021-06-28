@@ -88,11 +88,11 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 600m
+              cpu: 3
               memory: 4G
             requests:
-              cpu: 400m
-              memory: 3G
+              cpu: 2
+              memory: 2G
           volumeMounts:
             - name: shared-files
               mountPath: /app
@@ -118,6 +118,10 @@ spec:
             periodSeconds: 10
             tcpSocket:
               port: 80
+          resources:
+            requests:
+              memory: 1G
+              cpu: 300m
           volumeMounts:
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
@@ -151,7 +155,7 @@ spec:
     domains:
       - main: "${HOST_ROOT_DOMAIN}"
 ---
-apiVersion: autoscaling/v1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   name: backend
@@ -163,5 +167,17 @@ spec:
     name: backend-${CI_COMMIT_REF_NAME}
   minReplicas: 2
   maxReplicas: 10
-  targetCPUUtilizationPercentage: 60
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 ---
