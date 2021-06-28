@@ -27,16 +27,16 @@ class FAQServices
         return $FAQ->delete();
     }
 
-    public function addFAQ($faq ,Request $request)
+    public function addFAQ($faquestion, $faq)
     {
-        if (!$faq)
-          $faq = new FAQ();
-        
-        $faq->question  = $request->input("question");
-        $faq->response  = $request->input("response");
-        $faq->stand_id  = $request->input('stand_id');
-        $faq->save();
-        return $faq;
+        if (!$faquestion) {
+            $faquestion = new FAQ();
+        }
+        $faquestion->question  = strval($faq['question']);
+        $faquestion->response  = strval($faq['response']);
+        $faquestion->stand_id  = (int)$faq['stand_id'];
+        $faquestion->save();
+        return true;
     }
 
     public function getStandFAQ($stand_id)

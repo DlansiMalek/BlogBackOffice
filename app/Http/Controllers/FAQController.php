@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FAQ;
 use Illuminate\Http\Request;
 use App\Services\StandServices;
 use App\Services\FAQServices;
@@ -20,22 +21,21 @@ class FAQController extends Controller
 
     function addFAQ(Request $request)
     {
-        if (!$request->has(['question'])) {
-            return response()->json(["message" => "invalid request", "required inputs" => ['question']], 404);
-        }
-        $stand = null;
-        if ($request->has('stand_id')) {
-            if (!$stand = $this->standServices->getStandById($request->input('stand_id'))) {
+        $faqs = $request->all();
+        foreach ($faqs as $faq) {
+            $stand_id = (int)$faq['stand_id'];
+            if (!$stand = $this->standServices->getStandById($stand_id)) {
                 return response()->json(["message" => "stand not found"], 404);
             }
+            if (array_key_exists('FAQ_id', $faq)) {
+                $faquestion = $this->faqServices->getFAQById($faq['FAQ_id']);
+            } else {
+                $faquestion = new FAQ();
+            }
+            $faquestions = $this->faqServices->addFAQ($faquestion, $faq);
         }
-        $faq = null;
-        if ($request->has('FAQ_id')) {
-            $faq = $this->faqServices->getFAQById($request->input('FAQ_id'));
-        }
-        $faq = $this->faqServices->addFAQ($faq , $request);
 
-        return response()->json($this->faqServices->getFAQById($faq->FAQ_id));
+        return response()->json($this->faqServices->getStandFAQ($stand_id));
     }
 
     public function deleteFAQ($congress_id,$stand_id,$FAQ_id)
