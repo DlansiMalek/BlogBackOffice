@@ -29,4 +29,9 @@ class Resource extends Model
 
         return $this->hasMany(ResourceProduct::class, 'resource_id', 'resource_id');
     }
+
+    public function product_file()
+    {
+        return $this->hasMany(ProductFile::class, 'resource_id', 'resource_id');
+    }
 }

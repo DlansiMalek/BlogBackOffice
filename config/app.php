@@ -182,8 +182,7 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Madnest\Madzipper\MadzipperServiceProvider::class,
-        Kreait\Laravel\Firebase\ServiceProvider::class
+        Madnest\Madzipper\MadzipperServiceProvider::class
     ],
 
     /*

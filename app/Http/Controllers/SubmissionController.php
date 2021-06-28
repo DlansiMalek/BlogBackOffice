@@ -393,16 +393,9 @@ class SubmissionController extends Controller
             $submission->communication_type_id = $request->input('communication_type_id');
         }
         if ($type && $request->input('status') == '1' && !$submission->code) {
-            $index = -1;
-            $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
-            foreach ($submissions as $key => $value) {
-                if ($value->submission_id == $submission_id) {
-                    $index = $key + 1;
-                    break;
-                }
-
-            }
-            $code = Utils::generateSubmissionCode($type->abrv, $index);
+            $submissions = $this->submissionServices->getSubmissionsByStatus($submission->congress_id, 1, $type->communication_type_id);
+            $index = sizeof($submissions) + 1;
+            $code = Utils::generateSubmissionCode($type->abrv, $index.'');
             $submission->code = $code;
         }
         $file_upload_code = null;
@@ -560,7 +553,6 @@ class SubmissionController extends Controller
     public function getAllSubmissionsByCongress($congressId, Request $request)
     {
         $search = $request->query('search', '');
-        $status = $request->query('status', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
         $communication_type_id = $request->query('communication_type_id');
@@ -570,7 +562,7 @@ class SubmissionController extends Controller
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id);
+        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
         return response()->json($submissions, 200);
     }
 

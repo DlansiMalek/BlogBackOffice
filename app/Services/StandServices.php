@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Stand;
 use App\Models\ResourceStand;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class StandServices
 {
@@ -92,10 +94,26 @@ class StandServices
     public function getStandById($stand_id)
     {
         return Stand::where('stand_id', '=', $stand_id)
-            ->with(['docs','products', 'organization.membres' => function ($query) {
+            ->with(['docs' => function($query) {
+                $query->select('Resource.*', 'Resource_Stand.file_name');
+            },'products', 'organization.membres' => function ($query) {
                     $query->where('privilege_id', '=', 7);
                 }, 'organization.membres.profile_img'])
             ->first();
+    }
+
+    public function getStandCachedById($stand_id)
+    {
+        $cacheKey = 'stand-' . $stand_id;
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $stand = $this->getStandById($stand_id);
+        Cache::put($cacheKey, $stand, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+        return $stand;
     }
 
     public function getStands($congress_id, $name = null, $status = null)
@@ -109,12 +127,26 @@ class StandServices
             }
         })
             ->with(['docs', 'products' , 'organization'])
+            ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function getCachedStands($congress_id) {
+        $cacheKey = 'stands-' . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $stands = $this->getStands($congress_id);
+        Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+        return $stands;
     }
 	
 	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::with(['docs', 'products' , 'organization',
+        return Stand::with(['docs', 'organization',
             'organization.admin' => function ($query) {
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
