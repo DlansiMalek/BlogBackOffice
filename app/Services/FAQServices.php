@@ -17,9 +17,9 @@ class FAQServices
         return FAQ::all();
     }
 
-    public function getFAQById($FAQ_id)
+    public function getFAQById($faq_id)
     {
-        return FAQ::find($FAQ_id);
+        return FAQ::find($faq_id);
     }
 
     public function deleteFAQ($FAQ)
@@ -32,9 +32,9 @@ class FAQServices
         if (!$faquestion) {
             $faquestion = new FAQ();
         }
-        $faquestion->question  = strval($faq['question']);
-        $faquestion->response  = strval($faq['response']);
-        $faquestion->stand_id  = (int)$faq['stand_id'];
+        $faquestion->question  =  $faq['question'];
+        $faquestion->response  =  $faq['response'];
+        $faquestion->stand_id  =  $faq['stand_id'];
         $faquestion->save();
         return true;
     }

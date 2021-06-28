@@ -14,7 +14,7 @@ class CreateTableFaq extends Migration
     public function up()
     {
         Schema::create('FAQ', function (Blueprint $table) {
-            $table->increments("FAQ_id");
+            $table->increments("faq_id");
             $table->unsignedInteger('stand_id');
             $table->foreign("stand_id")
                 ->references('stand_id')
@@ -33,6 +33,9 @@ class CreateTableFaq extends Migration
      */
     public function down()
     {
+        Schema::table('FAQ', function (Blueprint $table) {
+            $table->dropForeign(['stand_id']);
+        });
         Schema::dropIfExists('FAQ');
     }
 }

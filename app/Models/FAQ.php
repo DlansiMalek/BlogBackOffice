@@ -9,7 +9,7 @@ class FAQ extends Model
 {
     public $timestamps = true;
     protected $table = 'FAQ';
-    protected $primaryKey = 'FAQ_id';
+    protected $primaryKey = 'faq_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['stand_id', 'question' ,'response'];
 

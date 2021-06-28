@@ -19,36 +19,35 @@ class FAQController extends Controller
         $this->faqServices   = $faqServices;
     }
 
-    function addFAQ(Request $request)
+    function addFAQ($congress_id, $standId, Request $request)
     {
+        if (!$stand = $this->standServices->getStandById($standId)) {
+            return response()->json(["message" => "stand not found"], 404);
+        }
         $faqs = $request->all();
         foreach ($faqs as $faq) {
-            $stand_id = (int)$faq['stand_id'];
-            if (!$stand = $this->standServices->getStandById($stand_id)) {
-                return response()->json(["message" => "stand not found"], 404);
-            }
-            if (array_key_exists('FAQ_id', $faq)) {
-                $faquestion = $this->faqServices->getFAQById($faq['FAQ_id']);
+            if (array_key_exists('faq_id', $faq)) {
+                $faquestion = $this->faqServices->getFAQById($faq['faq_id']);
             } else {
                 $faquestion = new FAQ();
             }
             $faquestions = $this->faqServices->addFAQ($faquestion, $faq);
         }
 
-        return response()->json($this->faqServices->getStandFAQ($stand_id));
+        return response()->json($this->faqServices->getStandFAQ($standId), 200);
     }
 
-    public function deleteFAQ($congress_id,$stand_id,$FAQ_id)
+    public function deleteFAQ($congress_id,$stand_id,$faq_id)
     {
-        if (!$faq = $this->faqServices->getFAQById($FAQ_id)) {
+        if (!$faq = $this->faqServices->getFAQById($faq_id)) {
             return response()->json('no faq found', 404);
         }    
         $this->faqServices->deleteFAQ($faq);
         return response()->json(['response' => 'faq deleted'], 200);
     }
-    public function getFAQById($FAQ_id)
+    public function getFAQById($faq_id)
     {
-        return $this->faqServices->getFAQById($FAQ_id);
+        return $this->faqServices->getFAQById($faq_id);
     }
 
     public function getStandFAQs($congress_id, $stand_id)
