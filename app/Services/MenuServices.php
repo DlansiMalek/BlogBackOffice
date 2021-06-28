@@ -31,7 +31,6 @@ class MenuServices
             $menuExist = true;
         }
 
-        $menuChildren->menu_children_id = $valueRequest['menu_children_id'];
         $menuChildren->key = $valueRequest["key"];
         $menuChildren->icon = $valueRequest["icon"];
         $menuChildren->url = $valueRequest["url"];
@@ -54,7 +53,6 @@ class MenuServices
             $menuExist = true;
         }
 
-        $menu->menu_id = $new["menu_id"];
         $menu->key = $new["key"];
         $menu->url = $new["url"];
         $menu->icon = $new["icon"];
@@ -65,6 +63,7 @@ class MenuServices
         } else {
              $menu->update();
             }
+            return $menu;
     }
     public function setMenus($newMenu)
     {
@@ -91,7 +90,7 @@ class MenuServices
                     break;
                 }
             }
-            $this->addMenu($new, $menu);
+           $newMenuadd= $this->addMenu($new, $menu);
             $oldChildrens = $this->getMenuChildrenByMenu($new['menu_id']);
             foreach ($oldChildrens as $oldChildren) {
                 $exists = false;
@@ -115,7 +114,7 @@ class MenuServices
                     }
                 }
             
-        $this->addMenuChildren($valueRequest, $menuChildren ,$menu->menu_id);
+        $this->addMenuChildren($valueRequest, $menuChildren , $newMenuadd->menu_id);
 
             }
 
