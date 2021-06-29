@@ -13,8 +13,10 @@ class AddColumnStandTypeIdToTableStand extends Migration
      */
     public function up()
     {
-        Schema::table('table_stand', function (Blueprint $table) {
-            //
+        Schema::table('Stand', function (Blueprint $table) {
+            $table->unsignedInteger('stand_type_id')->nullable()->default(null);
+            $table->foreign("stand_type_id")->references('stand_type_id')->on('Stand_Type')
+                ->onDelete('set null');
         });
     }
 
@@ -25,8 +27,9 @@ class AddColumnStandTypeIdToTableStand extends Migration
      */
     public function down()
     {
-        Schema::table('table_stand', function (Blueprint $table) {
-            //
+        Schema::table('Stand', function (Blueprint $table) {
+            $table->dropForeign('stand_type_id');
+            $table->removeColumn('stand_type_id');
         });
     }
 }

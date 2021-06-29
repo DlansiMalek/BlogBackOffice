@@ -16,7 +16,7 @@ class CreateTableStandContentConfig extends Migration
         Schema::create('Stand_Content_Config', function (Blueprint $table) {
             $table->increments('stand_content_config_id');
 
-            $table->string('key ')->nullable()->default(null);
+            $table->string('key')->nullable()->default(null);
             $table->string('label')->nullable()->default(null);
             $table->string('size')->nullable()->default(null);
             $table->string('default_file')->nullable()->default(null);
