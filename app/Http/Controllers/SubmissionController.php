@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Submission;
 use App\Models\SubmissionComments;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
@@ -986,5 +987,43 @@ class SubmissionController extends Controller
         $submissions = $this->submissionServices->mappingPeacksourceData($data);
 
         return response()->json($submissions, 200);
+    }
+
+    public function makeMassSubmissionEligible($congressId, $eligibility, Request $request)
+    {
+        $subs = $request->all();
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response(['error' => "congress not found"], 404);
+        }
+        foreach ($subs as $sub) {
+            if (!$submission = $this->submissionServices->getSubmissionByIdWithRelation(
+                ['authors', 'user'],
+                $sub
+            )) {
+                return response(['error' => "submission not found"], 404);
+            }
+            if ($submission->congress_id != $congressId) {
+                return response(['error' => "an error has occurred"], 400);
+            }
+            if ($submission->status != 1) {
+                return response(['error' => "submission" + $eligibility + " not selected"], 400);
+            }
+            try {
+                $admin = $this->adminServices->retrieveAdminFromToken();
+                if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
+                    return response()->json(['error' => 'bad request'], 400);
+                }
+                if ($eligibility == "true") {
+                    $response = $this->submissionServices->makeSubmissionEligible($submission);
+                }
+                if ($eligibility == "false") {
+                    $response = $this->submissionServices->makeSubmissionNotEligible($submission);
+                }
+            } catch (Exception $e) {
+                Log::info($e->getMessage());
+                return response()->json(['response' => $e->getMessage()], 400);
+            }
+        }
+        return response()->json(['Changes done successfully'], 200);
     }
 }

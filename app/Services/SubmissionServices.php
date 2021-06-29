@@ -427,6 +427,12 @@ class SubmissionServices
         $submission->update();
         return 'submission is eligible';
     }
+    public function makeSubmissionNotEligible($submission)
+    {
+        $submission->eligible = 0;
+        $submission->update();
+        return 'submission is not eligible';
+    }
 
     public function deleteAttestationSubmission($attestationSubmission)
     {
