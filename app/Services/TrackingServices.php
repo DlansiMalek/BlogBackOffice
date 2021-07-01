@@ -30,6 +30,9 @@ class TrackingServices
 
     public function sendUserInfo($congressId, $formInputs, $user)
     {
+        if (env('ELASTIC_DISABLED')) {
+            return true;
+        }
 
         $object = $this->getBasicUserInfos($congressId, $user);
 
@@ -99,6 +102,10 @@ class TrackingServices
 
     private function sendTracking($tracking, $actionName = null, $dateEntry = null, $dateLeave = null)
     {
+        if (env('ELASTIC_DISABLED')) {
+            return true;
+        }
+
         $form_params = array(
             'user_id' => strval($tracking['user_id']),
             'comment' => $tracking['comment'] ? $tracking['comment'] : "",
@@ -142,6 +149,10 @@ class TrackingServices
 
     public function sendTrackingNormal($trackings)
     {
+        if (env('ELASTIC_DISABLED')) {
+            return true;
+        }
+
         foreach ($trackings as $tracking) {
             $this->sendTracking($tracking);
         }

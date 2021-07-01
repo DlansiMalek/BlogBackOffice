@@ -53,7 +53,7 @@ class StandTest extends TestCase
         $resource_stand = factory(ResourceStand::class)->create(['stand_id' => $stand->stand_id, 'resource_id' => $resource->resource_id]);
         $resource2 = factory(Resource::class)->create();
         $stand->docs = $this->getFakeDocs($resource2->resource_id, $resource_stand->file_name);
-        $response = $this->put('api/congress/' . $congress->congress_id . '/stand/edit/' . $stand->stand_id, $stand->toArray())
+        $response = $this->post('api/congress/' . $congress->congress_id . '/stand/add', $stand->toArray())
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
@@ -120,7 +120,7 @@ class StandTest extends TestCase
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/stands')
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(1, $dataResponse);
+        $this->assertCount(2, $dataResponse);
     }
 
     public function testGetStands()
@@ -135,6 +135,7 @@ class StandTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(2, $dataResponse);
     }
+    
 
     public function testCheckStandRights()
     {

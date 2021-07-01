@@ -142,5 +142,12 @@ class MailTypeSeedTable extends Seeder
             'display_name' => "Mail d'attestation en masse",
             'type' => "submission"
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 23,
+            'name' => 'submission_a_reviser',
+            'display_name' => "A réviser une soumission",
+            'type' => "submission"
+        ]);
+
     }
 }

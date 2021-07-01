@@ -20,4 +20,7 @@ class Author extends Model
     public function etablissment() {
         return $this->hasOne('App\Models\Etablissement','etablissement_id','etablissement_id');
     }
+    public function submission() {
+        return $this->belongsTo('App\Models\Submission','submission_id','submission_id');
+    }
 }

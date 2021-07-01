@@ -63,6 +63,9 @@
             - "{{ project_dir }}/.env:/var/www/.env"
             - "{{ project_dir }}/data:/var/www/storage/app"
           env_file: "{{ project_dir }}/.env"
+          environment:
+            ELASTIC_APM_SERVER_URL: "{{ apm_server_name }}"
+            ELASTIC_APM_SERVICE_NAME: "{{ project_name }}-{{project_version}}-app"
 
       networks:
         default:
