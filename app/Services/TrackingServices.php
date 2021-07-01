@@ -156,4 +156,70 @@ class TrackingServices
 
         return json_decode($res->getBody(), true);
     }
+
+    public function enrichPolicyByCongress($congress_id)
+    {
+        $env = env('APP_ENV');
+
+        $data = array(
+            'match' => array(
+                'indices' => 'eventizer-tracking-users-' . $env . '-' . $congress_id,
+                'match_field' => 'user_id',
+                'enrich_fields' => [
+                    '*'
+                ],
+                'query' => array(
+                    'bool' => array(
+                        'must' => array(
+                            array(
+                                'match' => array(
+                                    'congress_id' => $congress_id
+                                )
+                            ),
+                            array(
+                                'match' => array(
+                                    'env' => $env
+                                )
+                            )
+                        )
+                    )
+                )
+
+            )
+        );
+
+        $res = $this->client->put('/eventizer-tracking-users-' . $env . '-'. $congress_id , [
+            'body' => json_encode($data, true)
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function enrichPolicyByUserDetails($congress_id)
+    {
+        $env = env('APP_ENV');
+        $data = array(
+            'processors' => array(
+                array(
+                    'enrich' => array(
+                        'policy_name' => 'eventizer-tracking-users-' . $env . '-' . $congress_id ,
+                        'field' => 'user_id',
+                        'target_field' => 'user',
+                        'max_matches' => '1'
+                    )
+                    ),
+                    array (
+                        'script' => array (
+                            'lang' => 'painless',
+                            'source' => '',
+                        )
+                    )
+            )
+        );
+        $res = $this->client->put('/eventizer-tracking-user-lookup-' . $env . '-'. $congress_id , [
+            'body' => json_encode($data, true)
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
 }

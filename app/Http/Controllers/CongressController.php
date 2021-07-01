@@ -93,12 +93,15 @@ class CongressController extends Controller
         if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return $this->congressServices->addCongress(
+        $congress = $this->congressServices->addCongress(
             $request,
             $request->input('config'),
             $admin->admin_id,
             $request->input('config_selection')
         );
+        $this->trackingServices->enrichPolicyByCongress($congress->congress_id);
+        $this->trackingServices->enrichPolicyByUserDetails($congress->congress_id);
+        return $congress;
     }
 
     public function editStatus(Request $request, $congressId, $status)
