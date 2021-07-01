@@ -13,7 +13,6 @@ use App\Models\ConfigCongress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Log;
 
 class SubmissionTest extends TestCase
 {
@@ -138,7 +137,6 @@ class SubmissionTest extends TestCase
         $this->put('/api/submission/make_eligible/' . $congress->congress_id . '/' . $eligibilityTrue, $request)
             ->assertStatus(200);
     }
-
 
     private function getDataSubmission()
     {
