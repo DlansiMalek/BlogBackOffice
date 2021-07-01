@@ -146,7 +146,7 @@ class StandServices
 	
 	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::with(['docs', 'products' , 'organization',
+        return Stand::with(['docs', 'organization',
             'organization.admin' => function ($query) {
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
