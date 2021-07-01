@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Submission;
 use App\Models\SubmissionComments;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
@@ -987,5 +988,25 @@ class SubmissionController extends Controller
         $submissions = $this->submissionServices->mappingPeacksourceData($data);
 
         return response()->json($submissions, 200);
+    }
+
+    public function makeMassSubmissionEligible($congressId, $eligibility, Request $request)
+    {
+        $subs = $request->all();
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response(['error' => "congress not found"], 404);
+        }
+        foreach ($subs as $submissionId) {
+            $submission = $this->submissionServices->getSubmissionByIdWithRelation([],$submissionId);
+            if ($submission->status === 1) {
+                if ($eligibility == "true") {
+                    $response = $this->submissionServices->makeSubmissionEligible($submission);
+                }
+                if ($eligibility == "false") {
+                    $response = $this->submissionServices->makeSubmissionNotEligible($submission);
+                }
+            }
+        }
+        return response()->json(['Changes done successfully'], 200);
     }
 }
