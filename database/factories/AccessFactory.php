@@ -9,7 +9,7 @@ use Faker\Generator as Faker;
 $factory->define(Access::class, function (Faker $faker) {
     return [
         'name' => $faker->sentence,
-        'price' => $faker->randomFloat($nbMaxDecimals = NULL, $min = 0, $max = 300),
+        'price' => $faker->randomFloat($nbMaxDecimals = 2, $min = 0, $max = 300),
         'duration' => $faker->numberBetween($min = 1, $max = 100),
         'max_places' => $faker->numberBetween($min = 1, $max = 100),
         'room' => $faker->sentence,
