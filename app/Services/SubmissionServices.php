@@ -156,7 +156,8 @@ class SubmissionServices
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'service_id',
                     'etablissement_id')
-                    ->with(['service', 'etablissment']);
+                    ->with(['service', 'etablissment'])
+                    ->orderBy('rank');
             },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
@@ -324,7 +325,10 @@ class SubmissionServices
     public function getSubmissionsByUserId($user, $offset, $perPage, $search, $perCongressId, $status)
     {
         return Submission::where('user_id', '=', $user->user_id)
-            ->with('authors', 'congress', 'resources')
+            ->with([
+            'authors' => function ($query) {
+                $query->orderBy('rank');
+            }, 'congress', 'resources'])
             ->offset($offset)->limit($perPage)
             ->when($perCongressId !== "null", function ($query) use ($perCongressId) {
                 $query->where('congress_id', '=', $perCongressId);
@@ -351,7 +355,9 @@ class SubmissionServices
     public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
     {
         $submissions = Submission::with([
-            'resources', 'authors',
+            'resources', 'authors' => function ($query) {
+                $query->orderBy('rank');
+            },
         ])->where('status', '=', 1)
         ->where('congress_id', '=', $congressId);
 
@@ -426,6 +432,12 @@ class SubmissionServices
         $submission->eligible = 1;
         $submission->update();
         return 'submission is eligible';
+    }
+    public function makeSubmissionNotEligible($submission)
+    {
+        $submission->eligible = 0;
+        $submission->update();
+        return 'submission is not eligible';
     }
 
     public function deleteAttestationSubmission($attestationSubmission)
