@@ -7,6 +7,7 @@ use App\Services\CongressServices;
 use App\Services\StandServices;
 use App\Services\VotingServices;
 use App\Services\AccessServices;
+use App\Services\AdminServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -15,17 +16,20 @@ class StandController extends Controller
     protected $standServices;
     protected $congressServices;
     protected $votingServices;
+    protected $adminServices;
 
     function __construct(
         StandServices $standServices,
         CongressServices $congressServices,
         VotingServices $votingServices,
-        AccessServices $accessServices
+        AccessServices $accessServices,
+        AdminServices $adminServices
     ) {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
         $this->accessServices = $accessServices;
+        $this->adminServices = $adminServices;
     }
 
 
@@ -58,7 +62,7 @@ class StandController extends Controller
 
     public function getStandById($congressId, $stand_id)
     {
-        return $this->standServices->getStandCachedById($stand_id);
+        return $this->standServices->getStandById($stand_id);
     }
 
     public function deleteStand($congress_id, $stand_id)
@@ -168,5 +172,42 @@ class StandController extends Controller
         $stands = $this->standServices->getStandsPagination($congressId, $perPage);
 
         return response()->json($stands, 200);
+    }
+
+    public function getAllStandTypes()
+    {
+        $types = $this->standServices->getAllStandTypes();
+        return response()->json($types, 200);
+    }
+    
+    public function getContentConfigByStandType($stand_id, $stand_type_id)
+    {
+        if (!$this->standServices->getStandTypeById($stand_type_id))
+            return response()->json('No type found', 404);
+        $config = $this->standServices->getContentConfigByStandType($stand_id, $stand_type_id);
+        return response()->json($config, 200);
+    }
+
+    public function editStandContentFiles($stand_id, $stand_type_id, Request $request)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin not found'], 404);
+
+        if (!$stand = $this->standServices->getStandById($stand_id))
+            return response()->json(['error' => 'stand not found'], 404);
+
+        if (!$this->standServices->getStandTypeById($stand_type_id))
+            return response()->json('No type found', 404);
+        $data = $request->all();
+        $this->standServices->editStandType($stand_type_id, $stand);
+        $this->standServices->editStandContentFiles($data, $stand_id);
+        return response()->json(['response' => 'added successfully'], 200);
+    }
+
+    public function deleteStandContentFiles($stand_content_file_id)
+    {
+        $contentFile = $this->standServices->getStandContentFile($stand_content_file_id);
+        $contentFile->delete();
+        return response()->json(['response' => 'deleted successfully'], 200);
     }
 }

@@ -242,6 +242,13 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     });
 });
 
+Route::group(['prefix' => 'stand', "middleware" => ['assign.guard:admins']], function () {
+    Route::get('types', 'StandController@getAllStandTypes');
+    Route::get('/{stand_id}/content-config/{stand_type_id}', 'StandController@getContentConfigByStandType');
+    Route::post('/{stand_id}/edit-content-file/{stand_type_id}', 'StandController@editStandContentFiles');
+    Route::delete('/delete-content-file/{stand_content_file_id}', 'StandController@deleteStandContentFiles'); 
+});
+
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('types', 'SubmissionController@getSubmissionType');
