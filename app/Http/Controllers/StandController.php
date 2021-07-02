@@ -62,7 +62,7 @@ class StandController extends Controller
 
     public function getStandById($congressId, $stand_id)
     {
-        return $this->standServices->getStandCachedById($stand_id);
+        return $this->standServices->getStandById($stand_id);
     }
 
     public function deleteStand($congress_id, $stand_id)

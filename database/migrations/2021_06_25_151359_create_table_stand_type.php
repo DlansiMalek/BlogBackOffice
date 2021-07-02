@@ -18,8 +18,8 @@ class CreateTableStandType extends Migration
 
             $table->string('name');
             $table->string('preview_img')->nullable()->default(null);
-            $table->boolean('is_fixed')->default(false);
-            $table->boolean('is_publicity')->default(false);
+            $table->boolean('is_fixed')->nullable()->default(false);
+            $table->boolean('is_publicity')->nullable()->default(false);
             $table->timestamps();
         });
     }

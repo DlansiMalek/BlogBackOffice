@@ -14,6 +14,8 @@ class StandContentConfigSeeder extends Seeder
      */
     public function run()
     {
+
+        // Stand 3x3
         DB::table('Stand_Content_Config')->insert([
             'stand_content_config_id'=> 1,
             'key' => 'logo_blanc',
@@ -85,8 +87,7 @@ class StandContentConfigSeeder extends Seeder
             'stand_type_id' => 1
         ]);
 
-
-
+        // Stand 6x4
         DB::table('Stand_Content_Config')->insert([
             'stand_content_config_id'=> 8,
             'key' => 'logo_blanc',
@@ -198,8 +199,7 @@ class StandContentConfigSeeder extends Seeder
             'stand_type_id' => 2
         ]);
 
-        
-
+        // Stand 10x4
         DB::table('Stand_Content_Config')->insert([
             'stand_content_config_id'=> 19,
             'key' => 'logo_blanc',
@@ -381,8 +381,7 @@ class StandContentConfigSeeder extends Seeder
             'stand_type_id' => 3
         ]);
 
-
-
+        // Stand 6x4 V2
         DB::table('Stand_Content_Config')->insert([
             'stand_content_config_id'=> 37,
             'key' => 'logo_colore',
@@ -454,8 +453,7 @@ class StandContentConfigSeeder extends Seeder
             'stand_type_id' => 4
         ]);
 
-
-
+        // Stand 15x8
         DB::table('Stand_Content_Config')->insert([
             'stand_content_config_id'=> 44,
             'key' => 'logo',
@@ -556,6 +554,5 @@ class StandContentConfigSeeder extends Seeder
             'accept_file' => 'video/*',
             'stand_type_id' => 5
         ]);
-
     }
 }

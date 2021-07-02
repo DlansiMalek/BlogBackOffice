@@ -16,38 +16,23 @@ class StandTypeSeeder extends Seeder
     {
         DB::table('Stand_Type')->insert([
             'stand_type_id'=> 1,
-            'name'=> 'Stand 3x3',
-            'preview_img'=> '',
-            'is_publicity' => false,
-            'is_fixed' => false
+            'name'=> 'Stand 3x3'
         ]);
         DB::table('Stand_Type')->insert([
             'stand_type_id'=> 2,
-            'name'=> 'Stand 6x4',
-            'preview_img'=> '',
-            'is_publicity' => false,
-            'is_fixed' => false
+            'name'=> 'Stand 6x4'
         ]);
         DB::table('Stand_Type')->insert([
             'stand_type_id'=> 3,
-            'name'=> 'Stand 10x4',
-            'preview_img'=> '',
-            'is_publicity' => false,
-            'is_fixed' => false
+            'name'=> 'Stand 10x4'
         ]);
         DB::table('Stand_Type')->insert([
             'stand_type_id'=> 4,
-            'name'=> 'Stand 6x4 V2',
-            'preview_img'=> '',
-            'is_publicity' => false,
-            'is_fixed' => false
+            'name'=> 'Stand 6x4 V2'
         ]);
         DB::table('Stand_Type')->insert([
             'stand_type_id'=> 5,
-            'name'=> 'Stand 15x8',
-            'preview_img'=> '',
-            'is_publicity' => false,
-            'is_fixed' => false
+            'name'=> 'Stand 15x8'
         ]);
     }
 }
