@@ -265,8 +265,6 @@ class UserTest extends TestCase
             ->create(['congress_id' => $congress->congress_id]);
         $access = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
         $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
-        Log::info($pack);
-        Log::info($access);
         $user = $this->getUserData($pack->pack_id, $access->access_id);
         $this->post('api/user/congress/' . $congress->congress_id . '/register', $user)
             ->assertStatus(200);
