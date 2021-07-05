@@ -228,7 +228,13 @@ class UserController extends Controller
             }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
+                $query->where('congress_id', '=', $congressId)
+                ->with([ "question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },]);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -615,7 +621,13 @@ class UserController extends Controller
             }, 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
+                $query->where('congress_id', '=', $congressId)
+                ->with([ "question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },]);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type',
         ]);
@@ -1997,4 +2009,32 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function changeQrCode($user_id, Request $request)
+    {
+        $congressId = $request->input("congressId");
+
+        if (!$user = $this->userServices->getUserByIdWithRelations($user_id, ['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }]))
+            return response()->json(['error' => 'user not found'], 400);
+
+        $oldUsers = $this->userServices->getMinUserByQrCode($request->input("qrcode"));
+
+        foreach ($oldUsers as $oldUser
+        ) {
+            if ($oldUser->user_id != $user->user_id) {
+                $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
+                $oldUser->update();
+            }
+        }
+
+        if (sizeof($user->user_congresses) > 0) {
+            $user->user_congresses[0]->isPresent = 1;
+            $user->user_congresses[0]->update();
+        }
+
+        $user->qr_code = $request->get('qrcode');
+        $user->update();
+        return $user;
+    }
 }
