@@ -24,7 +24,12 @@ class FAQController extends Controller
         if (!$stand = $this->standServices->getStandById($standId)) {
             return response()->json(["message" => "stand not found"], 404);
         }
-        $faqs = $request->all();
+        $faqsTodelete = $request[1];
+        foreach ($faqsTodelete as $faq) {
+            $faquestion = $this->faqServices->getFAQById($faq);
+            $faquestions = $this->faqServices->deleteFAQ($faquestion);
+        }
+        $faqs = $request[0];
         foreach ($faqs as $faq) {
             if (array_key_exists('faq_id', $faq)) {
                 $faquestion = $this->faqServices->getFAQById($faq['faq_id']);
@@ -37,14 +42,6 @@ class FAQController extends Controller
         return response()->json($this->faqServices->getStandFAQ($standId), 200);
     }
 
-    public function deleteFAQ($congress_id,$stand_id,$faq_id)
-    {
-        if (!$faq = $this->faqServices->getFAQById($faq_id)) {
-            return response()->json('no faq found', 404);
-        }    
-        $this->faqServices->deleteFAQ($faq);
-        return response()->json(['response' => 'faq deleted'], 200);
-    }
     public function getFAQById($faq_id)
     {
         return $this->faqServices->getFAQById($faq_id);
