@@ -58,7 +58,7 @@ class StandController extends Controller
 
     public function getStandById($congressId, $stand_id)
     {
-        return $this->standServices->getStandById($stand_id);
+        return $this->standServices->getStandCachedById($stand_id);
     }
 
     public function deleteStand($congress_id, $stand_id)
@@ -154,17 +154,10 @@ class StandController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $stands = $this->standServices->getStands($congress_id, null, 1);
+        $stands = $this->standServices->getCachedStands($congress_id);
         return response()->json($stands, 200);
     }
-	public function getStandsByCongressPagination($congress_id, $offset)
-    {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
-            return response()->json(['response' => 'Congress not found', 404]);
-        }
-        $stands = $this->standServices->getStandsPagination($congress_id, null, 1, $offset);
-        return response()->json($stands, 200);
-    }
+
     public function get3DBooths($congressId, Request $request) {
 
         $perPage = $request->query('perPage', 10);

@@ -43,18 +43,12 @@ class FAQTest extends TestCase
         $organization1 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
         $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization1->organization_id, 'status' => 1]);
         $faq = factory(FAQ::class)->create(['stand_id' => $stand->stand_id]);
-        $faqs[] = $faq;
-        $response =  $this->put('api/congress/' . $congress->congress_id . '/stand/' . $stand->stand_id . '/FAQ', $faqs)
-            ->assertStatus(200);
-    }
-
-    public function testDeleteFAQ()
-    {
-        $congress = factory(Congress::class)->create();
-        $organization = factory(Organization::class)->create();
-        $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id, 'status' => 1]);
-        $faq = factory(FAQ::class)->create(['stand_id' => $stand->stand_id]);
-        $response = $this->delete('api/congress/' . $congress->congress_id . '/stand/' . $stand->stand_id . '/deleteFAQ/' . $faq->faq_id)
+        $faq1 = factory(FAQ::class)->create(['stand_id' => $stand->stand_id]);
+        $faqs[0]= $faq;
+        $faqsTodelete[0]=$faq1->faq_id;
+        $data[0] = $faqs;
+        $data[1] = $faqsTodelete;
+        $response =  $this->put('api/congress/' . $congress->congress_id . '/stand/' . $stand->stand_id . '/FAQ', $data)
             ->assertStatus(200);
     }
 
