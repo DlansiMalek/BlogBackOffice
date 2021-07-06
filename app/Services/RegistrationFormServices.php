@@ -35,7 +35,7 @@ class RegistrationFormServices
         $oldInputs = $this->getForm($congressId);
         foreach ($oldInputs as $old) {
             $exists = false;
-            foreach ($newInputs->all() as &$new) {
+            foreach ($newInputs->all() as $new) {
                 if ($old->form_input_id == $new['form_input_id']) {
                     $exists = true;
                     break;
