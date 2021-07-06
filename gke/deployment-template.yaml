@@ -27,7 +27,7 @@ metadata:
 spec:
   revisionHistoryLimit: 2
   minReadySeconds: 5
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: backend
@@ -91,7 +91,7 @@ spec:
               cpu: 3
               memory: 4G
             requests:
-              cpu: 2
+              cpu: 1
               memory: 2G
           volumeMounts:
             - name: shared-files
@@ -165,7 +165,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: backend-${CI_COMMIT_REF_NAME}
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 10
   metrics:
     - type: Resource
