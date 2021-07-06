@@ -20,7 +20,7 @@ class CreateTableFaq extends Migration
                 ->references('stand_id')
                 ->on('Stand')->onDelete('cascade');
             $table->string('question')->nullable()->default(null);
-            $table->string('response')->nullable()->default(null);
+            $table->text('response')->nullable()->default(null);
             $table->timestamps();
             $table->softDeletes();
         });
