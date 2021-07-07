@@ -23,7 +23,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 1
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -33,7 +33,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 1
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -43,7 +43,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 1
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -53,7 +53,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 1
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -63,7 +63,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 1
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -73,7 +73,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 1
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -95,7 +95,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -105,7 +105,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -115,7 +115,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -125,7 +125,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -135,7 +135,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -145,7 +145,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -155,7 +155,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -165,7 +165,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -175,7 +175,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -185,7 +185,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 2
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -207,7 +207,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -217,7 +217,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -227,7 +227,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -237,7 +237,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -247,7 +247,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -257,7 +257,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -267,7 +267,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -277,7 +277,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -287,7 +287,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -297,7 +297,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -307,7 +307,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -317,7 +317,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -327,7 +327,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -337,7 +337,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -347,7 +347,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -357,7 +357,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -367,7 +367,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 3
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -389,7 +389,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 4
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -429,7 +429,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 4
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -439,7 +439,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 4
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -449,7 +449,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 4
         ]);
 
@@ -461,7 +461,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -471,7 +471,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -481,7 +481,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -491,7 +491,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -501,7 +501,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -511,7 +511,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
@@ -521,7 +521,7 @@ class StandContentConfigSeeder extends Seeder
             'size'=> null,
             'default_file' => null,
             'default_url' => null,
-            'accept_file' => 'jpg;png;jpeg',
+            'accept_file' => '.jpg;.png;.jpeg',
             'stand_type_id' => 5
         ]);
         DB::table('Stand_Content_Config')->insert([
