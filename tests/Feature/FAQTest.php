@@ -13,18 +13,6 @@ use Illuminate\Support\Facades\Log;
 
 class FAQTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function test_example()
-    {
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-    }
-
     public function testGetStandFaqs()
     {
         $congress = factory(Congress::class)->create();
@@ -43,12 +31,8 @@ class FAQTest extends TestCase
         $organization1 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
         $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization1->organization_id, 'status' => 1]);
         $faq = factory(FAQ::class)->create(['stand_id' => $stand->stand_id]);
-        $faq1 = factory(FAQ::class)->create(['stand_id' => $stand->stand_id]);
         $faqs[0]= $faq;
-        $faqsTodelete[0]=$faq1->faq_id;
-        $data[0] = $faqs;
-        $data[1] = $faqsTodelete;
-        $response =  $this->put('api/congress/' . $congress->congress_id . '/stand/' . $stand->stand_id . '/FAQ', $data)
+        $response =  $this->put('api/congress/' . $congress->congress_id . '/stand/' . $stand->stand_id . '/FAQ', $faqs)
             ->assertStatus(200);
     }
 
