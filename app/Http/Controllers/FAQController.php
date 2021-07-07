@@ -24,12 +24,12 @@ class FAQController extends Controller
         if (!$stand = $this->standServices->getStandById($standId)) {
             return response()->json(["message" => "stand not found"], 404);
         }
-        $faqsTodelete = $request[1];
+        $faqsTodelete = $this->faqServices->getStandFAQ($standId);
         foreach ($faqsTodelete as $faq) {
-            $faquestion = $this->faqServices->getFAQById($faq);
-            $faquestions = $this->faqServices->deleteFAQ($faquestion);
+          //  $faquestion = $this->faqServices->getFAQById($faq);
+            $faq = $this->faqServices->deleteFAQ($faq);
         }
-        $faqs = $request[0];
+        $faqs = $request->all();
         foreach ($faqs as $faq) {
             if (array_key_exists('faq_id', $faq)) {
                 $faquestion = $this->faqServices->getFAQById($faq['faq_id']);
