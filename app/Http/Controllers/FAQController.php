@@ -26,7 +26,6 @@ class FAQController extends Controller
         }
         $faqsTodelete = $this->faqServices->getStandFAQ($standId);
         foreach ($faqsTodelete as $faq) {
-          //  $faquestion = $this->faqServices->getFAQById($faq);
             $faq = $this->faqServices->deleteFAQ($faq);
         }
         $faqs = $request->all();

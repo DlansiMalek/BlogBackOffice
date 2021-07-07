@@ -36,7 +36,7 @@ class FAQServices
         $faquestion->response  =  $faq['response'];
         $faquestion->stand_id  =  $faq['stand_id'];
         $faquestion->save();
-        return true;
+        return $faquestion;
     }
 
     public function getStandFAQ($stand_id)
