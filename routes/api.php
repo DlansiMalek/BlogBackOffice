@@ -242,6 +242,13 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     });
 });
 
+Route::group(['prefix' => 'stand', "middleware" => ['assign.guard:admins']], function () {
+    Route::get('types', 'StandController@getAllStandTypes');
+    Route::get('/{stand_id}/content-config/{stand_type_id}', 'StandController@getContentConfigByStandType');
+    Route::post('/{stand_id}/edit-content-file/{stand_type_id}', 'StandController@editStandContentFiles');
+    Route::delete('/delete-content-file/{stand_content_file_id}', 'StandController@deleteStandContentFiles'); 
+});
+
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('types', 'SubmissionController@getSubmissionType');
@@ -249,6 +256,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::get('{submissionId}/send-mail-attestation/{congressId}', 'SubmissionController@sendMailAttestationById');
     Route::get('{congressId}/status/{status}', 'SubmissionController@getSubmissionByStatus');
     Route::get('{submissionId}/make_eligible/{congressId}', 'SubmissionController@makeSubmissionEligible');
+    Route::put('/make_eligible/{congressId}/{eligibility}', 'SubmissionController@makeMassSubmissionEligible');
     Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::post('congress/{congressId}/changeSubmissionsStatus', 'SubmissionController@changeMultipleSubmissionsStatus');
     Route::put('{submissionId}/evaluate/type/put/', 'SubmissionController@putEvaluationToSubmission');
