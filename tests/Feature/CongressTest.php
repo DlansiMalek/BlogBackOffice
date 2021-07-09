@@ -183,14 +183,6 @@ class CongressTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function testGetCongressOrganizations()
-    {
-        //  api/congress/1/organization
-        $congress = factory(Congress::class)->create();
-        $this->get('/api/congress/' . $congress->congress_id . '/organization')
-            ->assertStatus(200);
-    }
-
     public function testGetConfigLandingPage()
     {
         $congress = factory(Congress::class)->create();

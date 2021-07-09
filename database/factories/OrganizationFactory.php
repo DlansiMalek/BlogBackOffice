@@ -9,6 +9,6 @@ $factory->define(Organization::class, function (Faker $faker) {
     return [
         'name' => $faker->word,
         'description' => $faker->sentence,
-        'mobile' => $faker->phoneNumber,
+        'mobile' => $faker->phoneNumber
     ];
 });

@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
-use Tymon\JWTAuth\Contracts\Providers\Auth;
 
 class LoginController extends Controller
 {
@@ -72,6 +71,19 @@ class LoginController extends Controller
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 
+    public function login3DUser(Request $request) {
+        $credentials = request(['email', 'password']);
+
+        $email = $request->input("email");
+        $user = $this->userServices->getUser3DByEmail($email);
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
+        }
+
+        return response()->json(['user' => $user, 'token' => $token, 'baseUriImg' => UrlUtils::getFilesUrl()], 200);
+    }
+
     public function loginUser(Request $request)
     {
         $credentials = request(['email', 'password']);
@@ -87,7 +99,7 @@ class LoginController extends Controller
         return response()->json(['error' => 'email not verified'], 405);
         }*/
 
-        return response()->json(['user' => $user, 'token' => $token], 200);
+        return response()->json(['user' => $user, 'token' => $token ], 200);
     }
 
     public function forgetPassword(Request $request)
