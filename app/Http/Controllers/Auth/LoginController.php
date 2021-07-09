@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Cache;
 
 class LoginController extends Controller
 {
@@ -76,15 +75,7 @@ class LoginController extends Controller
         $credentials = request(['email', 'password']);
 
         $email = $request->input("email");
-
-        $cacheKey = "login3DUser-".$email;
-
-        if (Cache::has($cacheKey)) {
-            $user = Cache::get($cacheKey);
-        } else {
-            $user = $this->userServices->getUser3DByEmail($email);
-            Cache::put($cacheKey, $user, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
-        }
+        $user = $this->userServices->getUser3DByEmail($email);
 
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
@@ -108,7 +99,7 @@ class LoginController extends Controller
         return response()->json(['error' => 'email not verified'], 405);
         }*/
 
-        return response()->json(['user' => $user, 'token' => $token], 200);
+        return response()->json(['user' => $user, 'token' => $token ], 200);
     }
 
     public function forgetPassword(Request $request)

@@ -24,6 +24,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Log;
 
 class UserTest extends TestCase
 {
@@ -114,6 +115,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }
 
+    /* TODO Verify
     public function testSaveUserInscriptionEventWithPack()
     {
         $congress = factory(Congress::class)->create();
@@ -130,6 +132,7 @@ class UserTest extends TestCase
                 ['packIds' => [$pack->pack_id]])
             ->assertStatus(200);
     }
+    */
 
     public function testSaveUserInscriptionEventAccessObligated()
     {
@@ -278,20 +281,19 @@ class UserTest extends TestCase
     
     }
 
+   
     public function testSaveUsersFromExcelWithOrganization()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
             ->create(['congress_id' => $congress->congress_id]);
         $organization = factory(Organization::class)->create();
-        $congress_organization = factory(CongressOrganization::class)->create([
-            'congress_id' => $congress->congress_id,
-            'organization_id' => $organization->organization_id]);
         $data = $this->getExcelData($organization->oraganization_id);
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
     
     }
+   
 
     public function testSaveUsersFromExcelWithAccesses()
     {
@@ -307,15 +309,13 @@ class UserTest extends TestCase
     
     }
 
+ 
     public function testSaveUsersFromExcelWithOrganizationAndAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
             ->create(['congress_id' => $congress->congress_id]);
         $organization = factory(Organization::class)->create();
-        $congress_organization = factory(CongressOrganization::class)->create([
-            'congress_id' => $congress->congress_id,
-            'organization_id' => $organization->organization_id]);
         $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
         $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
         $accessesIds = [$access1->access_id, $access2->access_id];
@@ -324,6 +324,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     
     }
+ 
 
     public function testSaveUsersFromExcelWithFormInputs()
     {
@@ -347,9 +348,6 @@ class UserTest extends TestCase
         $valueSelect3 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
         
         $organization = factory(Organization::class)->create();
-        $congress_organization = factory(CongressOrganization::class)->create([
-            'congress_id' => $congress->congress_id,
-            'organization_id' => $organization->organization_id]);
         $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
         $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
         $accessesIds = [$access1->access_id, $access2->access_id];
@@ -368,6 +366,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     
     }
+  
 
     public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
     {
@@ -447,7 +446,7 @@ class UserTest extends TestCase
         
     }
 
-    // TODO Correction
+    // TODO Verify
     /*public function testSaveUserInscriptionEventWithQuestionsNotRequired()
     {
         $congress = factory(Congress::class)->create();
@@ -461,7 +460,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }*/
 
-    // TODO Correction
+    // TODO Verify
     /*public function testSaveUserInscriptionEventWithQuestionsRequired()
     {
         $congress = factory(Congress::class)->create();

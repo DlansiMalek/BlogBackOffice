@@ -35,7 +35,9 @@ class ConfigLP extends Model
         'event_link_linkedin',
         'event_link_twitter',
         'theme_color',
-        'theme_mode'
+        'theme_mode',
+        'name_partenaire',
+        'link_partenaire'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
