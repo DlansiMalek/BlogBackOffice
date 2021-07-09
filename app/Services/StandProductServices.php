@@ -45,7 +45,16 @@ class StandProductServices
 
     public function getStandproducts($stand_id)
     {
-        return StandProduct::where('stand_id', '=', $stand_id)->with(['product_tags','imgs','files', 'videos', 'links'])
+        return StandProduct::where('stand_id', '=', $stand_id)->with([
+            'product_tags', 
+            'imgs'  => function ($query) {
+                $query->select('Resource_Product.*', 'Resource.*');
+            },'files' => function ($query) {
+                $query->select('Product_File.*', 'Resource.*');
+            },'videos' => function ($query) {
+                $query->select('Product_Video.*', 'Resource.*');
+            }, 'links'
+        ])
             ->get();
     }
 
