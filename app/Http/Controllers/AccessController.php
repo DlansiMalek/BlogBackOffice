@@ -169,6 +169,12 @@ class AccessController extends Controller
         $this->notificationServices->sendNotificationToCongress('Changement du programme: ' . $access->name
             , $access->congress_id);
 
+    
+        if ($request->has('privileges')&& count($request->input('privileges'))) {
+           $this->congressServices->addAllAllowedAccessByCongressId($request->input('privileges'), $access->congress_id,$access->access_id);
+            } else  $this->congressServices->deleteAllAllowedAccessByCongressId($access->congress_id,$access->access_id);
+
+        
         return $this->accessServices->getAccessById($access->access_id);
     }
 

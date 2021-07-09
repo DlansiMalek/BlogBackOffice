@@ -8,7 +8,7 @@ class AllowedOnlineAccess extends Model
 {
     protected $table = 'Allowed_Online_Access';
     protected $primaryKey = 'allowed_online_access_id';
-    protected $fillable = ['congress_id', 'privilege_id'];
+    protected $fillable = ['congress_id', 'privilege_id','access_id'];
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 }

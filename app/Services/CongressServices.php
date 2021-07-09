@@ -516,37 +516,39 @@ class CongressServices
         return $configCongress;
     }
 
-    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId)
+    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId,$access_id=null)
     {
         foreach ($privilegeIds as $privilegeId) {
-            $this->addAllowedOnlineAccess($privilegeId, $congressId);
+            $this->addAllowedOnlineAccess($privilegeId, $congressId,$access_id);
         }
     }
 
-    public function addAllowedOnlineAccess($privilege_id, $congress_id)
+    public function addAllowedOnlineAccess($privilege_id, $congress_id,$access_id=null)
     {
         $newAllowedOnlineAccess = new AllowedOnlineAccess();
         $newAllowedOnlineAccess->privilege_id = $privilege_id;
         $newAllowedOnlineAccess->congress_id = $congress_id;
+        $newAllowedOnlineAccess->access_id = $access_id;
         $newAllowedOnlineAccess->save();
     }
 
-    public function getAllAllowedOnlineAccess($congress_id)
+    public function getAllAllowedOnlineAccess($congress_id,$access_id=null)
     {
-        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)->where('access_id', '=', $access_id)
+
             ->get();
     }
 
-    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id)
+    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id,$access_id=null)
     {
         return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
-            ->where('privilege_id', '=', $privilege_id)
+            ->where('privilege_id', '=', $privilege_id)->where('access_id', '=', $access_id)
             ->first();
     }
 
-    public function deleteAllAllowedAccessByCongressId($congress_id)
+    public function deleteAllAllowedAccessByCongressId($congress_id,$access_id=null)
     {
-        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)->where('access_id','=',$access_id)
             ->delete();
     }
 
