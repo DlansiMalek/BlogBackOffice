@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by IntelliJ IDEA.
  * User: ABBES
@@ -144,14 +145,41 @@ class TrackingServices
         foreach ($trackings as $tracking) {
             $this->sendTracking($tracking);
         }
-
     }
 
-    public function getTrackings($congress_id, $request) 
+    public function getTrackings($congress_id, $request)
     {
         $env = env('APP_ENV');
-        $res = $this->client->post('/eventizer-tracking-tracks-' . $env . '-'. $congress_id . '/_search' , [
-            'body' => json_encode( $request->all())
+        $res = $this->client->post('/eventizer-tracking-tracks-' . $env . '-' . $congress_id . '/_search', [
+            'body' => json_encode($request->all())
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+
+    public function createIndexByCongress($congress_id)
+    {
+        $env = env('APP_ENV');
+
+        $data = array(
+            'mappings' => array (
+                'properties' => array (
+                    'user_id' => array(
+                        'type' => 'text',
+                        'fields' => array (
+                            'keyword' => array (
+                                'type' => 'keyword',
+                                'ignore_above' => 256
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        $res = $this->client->put('/eventizer-tracking-users-' . $env . '-' . $congress_id, [
+            'body' => json_encode($data, true)
         ]);
 
         return json_decode($res->getBody(), true);
@@ -188,10 +216,17 @@ class TrackingServices
             )
         );
 
-        $res = $this->client->put('/eventizer-tracking-users-' . $env . '-'. $congress_id , [
+        $res = $this->client->put('/_enrich/policy/eventizer-tracking-users-' . $env . '-' . $congress_id, [
             'body' => json_encode($data, true)
         ]);
 
+        return json_decode($res->getBody(), true);
+    }
+
+    public function executePolicy($congress_id)
+    {
+        $env = env('APP_ENV');
+        $res = $this->client->post('/_enrich/policy/eventizer-tracking-users-' . $env . '-' . $congress_id .'/_execute');
         return json_decode($res->getBody(), true);
     }
 
@@ -202,21 +237,21 @@ class TrackingServices
             'processors' => array(
                 array(
                     'enrich' => array(
-                        'policy_name' => 'eventizer-tracking-users-' . $env . '-' . $congress_id ,
+                        'policy_name' => 'eventizer-tracking-users-' . $env . '-' . $congress_id,
                         'field' => 'user_id',
                         'target_field' => 'user',
                         'max_matches' => '1'
                     )
-                    ),
-                    array (
-                        'script' => array (
-                            'lang' => 'painless',
-                            'source' => '',
-                        )
+                ),
+                array(
+                    'script' => array(
+                        'lang' => 'painless',
+                        'source' =>  "\n      if (!ctx.containsKey('date')) {\n        ctx.date = ctx.date_entry;\n      }\n    ",
                     )
+                )
             )
         );
-        $res = $this->client->put('/eventizer-tracking-user-lookup-' . $env . '-'. $congress_id , [
+        $res = $this->client->put('/_ingest/pipeline/eventizer-tracking-user-lookup-' . $env . '-' . $congress_id, [
             'body' => json_encode($data, true)
         ]);
 
