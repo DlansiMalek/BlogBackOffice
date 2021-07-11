@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\Stand;
 use App\Models\ResourceStand;
+use App\Models\StandContentConfig;
+use App\Models\StandContentFile;
+use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -98,7 +101,7 @@ class StandServices
                 $query->select('Resource.*', 'Resource_Stand.file_name');
             },'products', 'organization.membres' => function ($query) {
                     $query->where('privilege_id', '=', 7);
-                }, 'organization.membres.profile_img'])
+                }, 'organization.membres.profile_img', 'faq'])
             ->first();
     }
 
@@ -126,7 +129,7 @@ class StandServices
                 $query->where('status', '=', $status);
             }
         })
-            ->with(['docs', 'products' , 'organization'])
+            ->with(['docs', 'products' , 'organization', 'faq'])
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id)->get();
     }
@@ -146,7 +149,7 @@ class StandServices
 	
 	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::with(['docs', 'products' , 'organization',
+        return Stand::with(['docs', 'organization', 'faq',
             'organization.admin' => function ($query) {
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
@@ -238,6 +241,64 @@ class StandServices
         return Stand::whereRaw('lower(name) like (?)', ["{$name}"])
         ->where('congress_id', '=', $congressId)
         ->where('organization_id', '=', $organizationId) ->first();
+    }
+
+    public function getAllStandTypes()
+    {
+        return StandType::get();
+    }
+
+    public function getStandTypeById($stand_type_id)
+    {
+        return StandType::where('stand_type_id', '=', $stand_type_id)->first();
+    }
+
+    public function getContentConfigByStandType($stand_id, $stand_type_id)
+    {
+        return StandContentConfig::where('stand_type_id', '=', $stand_type_id)
+        ->with(['stand_content_file'  => function ($query) use ($stand_id) {
+            $query->where('Stand_Content_File.stand_id', '=', $stand_id)
+            ->select('Stand_Content_File.*');
+        },])->get();
+    }
+
+    public function editStandType($stand_type_id, $stand)
+    {
+        $stand->stand_type_id = $stand_type_id;
+        $stand->update();
+    }
+
+    public function editStandContentFiles($data, $stand_id)
+    {
+        foreach ($data as $d) {
+            $file = null;
+            if (count($d['stand_content_file']) > 0) {
+                $file = $this->getStandContentFile($d['stand_content_file'][0]['stand_content_file_id']);
+                $this->editStandContentFile($file, $d, $stand_id);
+            }
+        }
+    }
+
+    public function editStandContentFile($file, $data, $stand_id)
+    {
+        $contentFile = $file!=null ? $file : new StandContentFile();
+        $contentFile->url = $data['stand_content_file'][0]['url'];
+        $contentFile->file = $data['stand_content_file'][0]['file'];
+        $contentFile->stand_id = $stand_id;
+        $contentFile->stand_content_config_id = $data['stand_content_config_id'];
+        $contentFile->save();
+    }
+
+    public function getStandContentFile($stand_content_file_id)
+    {
+        return StandContentFile::where('stand_content_file_id', '=', $stand_content_file_id)
+            ->first();
+    }
+
+    public function getStandContentFiles($stand_content_file_id)
+    {
+        return StandContentFile::where('stand_content_file_id', '=', $stand_content_file_id)
+            ->first();
     }
     
 }
