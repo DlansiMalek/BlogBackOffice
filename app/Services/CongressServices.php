@@ -1026,6 +1026,9 @@ class CongressServices
         $config_landing_page->theme_mode = $request->has("theme_mode") ? $request->input('theme_mode') : null;
         $config_landing_page->name_partenaire =  $request->has("name_partenaire") ? $request->input('name_partenaire') : null;;
         $config_landing_page->link_partenaire =  $request->has("link_partenaire") ? $request->input('link_partenaire') : null;;
+        $config_landing_page->show_date =  $request->has("show_date") ? $request->input('show_date') : null;;
+        $config_landing_page->background_color =  $request->has("background_color") ? $request->input('background_color') : null;;
+        $config_landing_page->opacity_color =  $request->has("opacity_color") ? $request->input('opacity_color') : null;;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
         
