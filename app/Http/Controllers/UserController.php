@@ -720,7 +720,7 @@ class UserController extends Controller
         if (!$accessId) {
             $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
             $urlStreaming = $congress->config->url_streaming;
-
+    
         } else {
             $access = $this->accessServices->getAccessById($accessId);
             $isAllowedJitsi =   $access->max_online_participants && $access->url_streaming ?   $access->max_online_participants >= $access->nb_current_participants : true;
@@ -728,7 +728,7 @@ class UserController extends Controller
 
         }
         $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId,$accessId);
-        if (count($allowedOnlineAccess) != 0 && $urlStreaming) {
+        if (count($allowedOnlineAccess) != 0 && $urlStreaming && $isAllowedJitsi ) {
             $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id,$accessId) ? true : false;
         }
    
