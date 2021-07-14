@@ -103,5 +103,8 @@ class DatabaseSeeder extends Seeder
         $this->call(LPSpeakerSeeder::class);
         
         $this->call(AccessGameSeeder::class);
+
+        $this->call(StandTypeSeeder::class);
+        $this->call(StandContentConfigSeeder::class);
     }
 }
