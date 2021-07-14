@@ -37,7 +37,10 @@ class ConfigLP extends Model
         'theme_color',
         'theme_mode',
         'name_partenaire',
-        'link_partenaire'
+        'link_partenaire',
+        'show_date',
+        'background_color',
+        'opacity_color'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
