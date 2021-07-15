@@ -814,7 +814,7 @@ class SubmissionController extends Controller
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId); // ICI
                 }]);
-            $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
+            $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);  
             foreach ($users as $user) {
                 $request = array();
                 if ($user->email != null && $user->email != "") {
@@ -834,7 +834,6 @@ class SubmissionController extends Controller
                         $mappedSubmission['badgeIdGenerator'] = $attestationSubmission->attestation_generator_id;
                         array_push($request, $mappedSubmission);
                     }
-                    $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
 
                     if ($mail && $request) {
                         $userMail = null;
@@ -844,6 +843,7 @@ class SubmissionController extends Controller
                             $userMail = $user->user_mails[0];
                         }
                         if ($userMail->status != 1) {
+                            $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
                             $fileName = 'attestationsSubmission.zip';
                             $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions),
                                 $user,
