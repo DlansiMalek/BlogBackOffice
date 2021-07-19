@@ -53,6 +53,11 @@ class MailTypeAdminSeedTable extends Seeder
             'name' => 'create_offre',
             'display_name' => 'Création d\'un offre'
         ]);
+        DB::table('Mail_Type_Admin')->insert([
+            'mail_type_admin_id' => 8,
+            'name' => 'contact_us',
+            'display_name' => 'Contacter nous'
+        ]);
 
     }
 }
