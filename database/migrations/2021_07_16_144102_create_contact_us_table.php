@@ -13,12 +13,12 @@ class CreateContactUsTable extends Migration
      */
     public function up()
     {
-        Schema::create('contact_us', function (Blueprint $table) {
-            $table->bigIncrements('contact_id');
+        Schema::create('Contact_Us', function (Blueprint $table) {
+            $table->bigIncrements('contact_us_id');
             $table->string('user_name');
-			$table->string('email');
+            $table->string('email');
             $table->string('subject');
-            $table->text('message')->nullable()->default(null);
+            $table->text('message');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateContactUsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('contact_us');
+        Schema::dropIfExists('Contact_Us');
     }
 }
