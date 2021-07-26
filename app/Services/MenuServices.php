@@ -55,7 +55,7 @@ class MenuServices
 
         $menu->key = $new["key"];
         $menu->url = $new["url"];
-        $menu->icon = $new["icon"];
+        $menu->icon = $new["icon"] ? $new["icon"] : "";
         $menu->index = $new["index"];
 
         if (!$menuExist) {
