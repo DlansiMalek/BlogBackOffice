@@ -145,6 +145,7 @@ class SubmissionTest extends TestCase
             'start_submission_date' => $this->faker->date(),
             'max_words' => $this->faker->numberBetween(100, 500),
             'num_evaluators' => $this->faker->numberBetween(1, 5),
+            'show_file_upload' => $this->faker->numberBetween(0, 1),
         ];
     }
 }
