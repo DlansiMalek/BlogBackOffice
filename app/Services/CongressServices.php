@@ -562,6 +562,7 @@ class CongressServices
         $configSubmission->num_evaluators = $submissionData['num_evaluators'];
         $configSubmission->start_submission_date = $submissionData['start_submission_date'];
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
+        $configSubmission->show_file_upload = $submissionData['show_file_upload'];
         $configSubmission->save();
         return $configSubmission;
 
