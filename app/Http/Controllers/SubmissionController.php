@@ -88,7 +88,12 @@ class SubmissionController extends Controller
                 $request->input('submission.description'),
                 $request->input('submission.congress_id'),
                 $request->input('submission.theme_id'),
-                $user->user_id
+                $user->user_id,
+                null,
+                null,
+                null,
+                $request->input('submission.key_words'),
+
             );
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
@@ -168,7 +173,8 @@ class SubmissionController extends Controller
                 $request->input('submission.communication_type_id'),
                 $request->input('submission.description'),
                 $request->input('submission.theme_id'),
-                $code
+                $code,
+                $request->input('submission.key_words')
             );
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
