@@ -348,19 +348,19 @@ class CongressController extends Controller
 
     public function getCongressPagination(Request $request)
     {
-        $offset = $request->query('offset', 0);
+        $page = $request->query('page', 1);
         $perPage = $request->query('perPage', 6);
         $search = $request->query('search', '');
         $startDate = $request->query('startDate', '');
         $endDate = $request->query('endDate', '');
         $status = $request->query('status', '');
 
-        $cacheKey = "eventspagination-" . $offset . $perPage . $search . $startDate . $endDate . $status;
+        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
         } else {
-            $events = $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+            $events = $this->congressServices->getCongressPagination($page, $perPage, $search, $startDate, $endDate, $status);
             Cache::put($cacheKey, $events, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
 

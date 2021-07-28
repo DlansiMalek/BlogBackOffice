@@ -119,13 +119,13 @@ class CongressServices
                 $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
             },
         ])->orderBy('start_date', 'desc')
-            ->offset($offset)->limit($perPage)
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
-            })
-            ->get();
+            });
+          
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage) : $all_congresses->get();
 
         if ($startDate) {
             $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
@@ -150,7 +150,7 @@ class CongressServices
                     "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
         });
 
-        return response()->json($congress_renderer);
+        return response()->json($all_congresses);
     }
 
     public function getMinimalCongress()
