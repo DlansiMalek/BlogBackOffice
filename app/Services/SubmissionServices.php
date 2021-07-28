@@ -33,7 +33,7 @@ class SubmissionServices
             $submission->eligible = $eligible;
         }
         $submission->extId = $extId;
-        $submission->key_words =str_replace(array("\r\n","\n"),'<br />',$key_words);
+        $submission->key_words = str_replace(array("\r\n","\n"),'<br>',$key_words);
         $submission->save();
         return $submission;
     }
