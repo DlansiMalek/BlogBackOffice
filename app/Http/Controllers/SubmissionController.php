@@ -473,9 +473,11 @@ class SubmissionController extends Controller
         $note = $request->input('note', -1);
         $comment = $request->input('comment');
         $status = $request->input('status');
+        $theme = $request->input('theme');
         if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }
+          $submission = $this->submissionServices->editSubmission($submission,$submission->title,$submission->type,$submission->status,$submission->communication_type_id,$submission->description,$theme,$submission->code);
         try {
             // send evaluation to submission
             $admin = $this->adminServices->retrieveAdminFromToken();
