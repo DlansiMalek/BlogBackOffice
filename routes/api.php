@@ -587,8 +587,8 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
 Route::group(['prefix' => 'menu'], function () {
-    Route::get('all', 'MenuController@getMenus');
-    Route::post('/add', 'MenuController@setMenus');
+    Route::get('all/{show_after_reload}', 'MenuController@getMenus');
+    Route::post('/add/{show_after_reload}', 'MenuController@setMenus');
 });
 
 // 3D API

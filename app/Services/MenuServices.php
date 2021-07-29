@@ -8,12 +8,12 @@ use App\Models\MenuChildren;
 class MenuServices
 {
 
-    public function getAllMenus()
+    public function getAllMenus($show_after_reload)
     {
         return Menu::with(['menu_children' => function ($query) {
             $query->orderBy('index');
 
-        }])->orderBy('index')->get();
+        }])->orderBy('index')->where('show_after_reload','=',$show_after_reload)->get();
 
     }
     public function getMenuChildrenByMenu($menuId)
@@ -44,7 +44,7 @@ class MenuServices
         }
 
     }
-    public function addMenu($new, $menu = null)
+    public function addMenu($new, $menu = null,$show_after_reload)
     {
 
         if (!$menu) {$menu = new Menu();
@@ -57,7 +57,7 @@ class MenuServices
         $menu->url = $new["url"];
         $menu->icon = $new["icon"] ? $new["icon"] : "";
         $menu->index = $new["index"];
-
+        $menu->show_after_reload = $show_after_reload;
         if (!$menuExist) {
             $menu->save();
         } else {
@@ -65,9 +65,9 @@ class MenuServices
             }
             return $menu;
     }
-    public function setMenus($newMenu)
+    public function setMenus($newMenu,$show_after_reload)
     {
-        $oldMenu = $this->getAllMenus();
+        $oldMenu = $this->getAllMenus($show_after_reload);
         foreach ($oldMenu as $old) {
             $exists = false;
             foreach ($newMenu->all() as $new) {
@@ -90,7 +90,7 @@ class MenuServices
                     break;
                 }
             }
-           $newMenuadd= $this->addMenu($new, $menu);
+           $newMenuadd= $this->addMenu($new, $menu,$show_after_reload);
             $oldChildrens = $this->getMenuChildrenByMenu($new['menu_id']);
             foreach ($oldChildrens as $oldChildren) {
                 $exists = false;

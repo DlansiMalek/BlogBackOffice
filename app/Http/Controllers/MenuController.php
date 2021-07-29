@@ -15,13 +15,13 @@ class MenuController extends Controller
     ) {
         $this->menuServices = $menuServices;
     }
-    public function getMenus()
+    public function getMenus($show_after_reload)
     {
-        return $this->menuServices->getAllMenus();
+        return $this->menuServices->getAllMenus($show_after_reload);
     }
-    public function setMenus(Request $request)
+    public function setMenus(Request $request,$show_after_reload)
     {
-        $this->menuServices->setMenus($request);
-        return $this->menuServices->getAllMenus();
+        $this->menuServices->setMenus($request,$show_after_reload);
+        return $this->menuServices->getAllMenus($show_after_reload);
     }
 }
