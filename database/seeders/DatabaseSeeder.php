@@ -13,6 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call(StandTypeSeeder::class);
+        $this->call(StandContentConfigSeeder::class);
+        
         $this->call(MenuDatabaseSeeder::class);
         $this->call(CongressTypeTableSeeder::class);
         $this->call(CongressSeedTable::class);
@@ -103,5 +106,6 @@ class DatabaseSeeder extends Seeder
         $this->call(LPSpeakerSeeder::class);
         
         $this->call(AccessGameSeeder::class);
+
     }
 }

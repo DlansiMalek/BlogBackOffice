@@ -7,13 +7,16 @@ use App\Models\Organization;
 use App\Models\Resource;
 use App\Models\ResourceStand;
 use App\Models\Stand;
+use App\Models\StandContentConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Models\Payment;
+use App\Models\StandContentFile;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Log;
 
 class StandTest extends TestCase
 {
@@ -151,6 +154,79 @@ class StandTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function testGetAllStandTypes()
+    {
+        $this->get('api/stand/types')
+            ->assertStatus(200);
+    }
+
+    public function testGetContentConfigByStandType()
+    {
+        $congress = factory(Congress::class)->create();
+        $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $standTypeId = $this->faker->numberBetween(1, 5);
+        $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id, 'stand_type_id' => $standTypeId]);
+        $standContentConfig = StandContentConfig::where('stand_type_id', '=', $standTypeId)->first();
+        $standContentFile = factory(StandContentFile::class)->create(['stand_id' => $stand->stand_id, 'stand_content_config_id' => $standContentConfig->stand_content_config_id]);
+        $response = $this->get('api/stand/' . $stand->stand_id .  '/content-config/' . $standTypeId)
+            ->assertStatus(200);
+
+    }
+
+    public function testAddStandContentFiles()
+    {
+        $congress = factory(Congress::class)->create();
+        $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id]);
+        $standTypeId = $this->faker->numberBetween(1, 5);
+        $standContentConfig = StandContentConfig::where('stand_type_id', '=', $standTypeId)->get();
+        foreach ($standContentConfig as $content) {
+            $content['stand_content_file'] = [];
+        }
+        $file = $standContentConfig[0]['stand_content_file'];
+        $file[0] = $this->getFakeContentFiles();
+        $standContentConfig[0]['stand_content_file'] = $file;
+        $file2 = $standContentConfig[1]['stand_content_file'];
+        $file2[0] = $this->getFakeContentFiles();
+        $standContentConfig[1]['stand_content_file']= $file2;
+        $response = $this->post('api/stand/' . $stand->stand_id .  '/edit-content-file/' . $standTypeId, $standContentConfig->toArray())
+            ->assertStatus(200);
+    }
+
+    public function testEditStandContentFiles()
+    {
+        $congress = factory(Congress::class)->create();
+        $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $standTypeId = $this->faker->numberBetween(1, 5);
+        $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id, 'stand_type_id' => $standTypeId]);
+        $newStandTypeId = $this->faker->numberBetween(1, 5);
+        $standContentConfig = StandContentConfig::where('stand_type_id', '=', $newStandTypeId)->get();
+        foreach ($standContentConfig as $content) {
+            $content['stand_content_file'] = [];
+        }
+        $file = $standContentConfig[0]['stand_content_file'];
+        $file[0] = $this->getFakeContentFiles();
+        $standContentConfig[0]['stand_content_file'] = $file;
+        $file2 = $standContentConfig[1]['stand_content_file'];
+        $file2[0] = $this->getFakeContentFiles();
+        $standContentConfig[1]['stand_content_file']= $file2;
+        
+        $response = $this->post('api/stand/' . $stand->stand_id .  '/edit-content-file/' . $newStandTypeId, $standContentConfig->toArray())
+            ->assertStatus(200);
+
+    }
+
+    public function testDeleteStandContentFiles()
+    {
+        $congress = factory(Congress::class)->create();
+        $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $standTypeId = $this->faker->numberBetween(1, 5);
+        $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id, 'stand_type_id' => $standTypeId]);
+        $standContentConfig = StandContentConfig::where('stand_type_id', '=', $standTypeId)->first();
+        $standContentFile = factory(StandContentFile::class)->create(['stand_id' => $stand->stand_id, 'stand_content_config_id' => $standContentConfig->stand_content_config_id]);
+        $response = $this->delete('api/stand/delete-content-file/' . $standContentFile->stand_content_file_id)
+            ->assertStatus(200);
+    }
 
 
     private function getFakeStand($congress_id, $organization_id, $resource_id1, $resource_id2)
@@ -186,6 +262,16 @@ class StandTest extends TestCase
                 ]
 
             ]
+        ];
+    }
+
+    private function getFakeContentFiles($stand_content_file_id = null)
+    {
+        $isFile = $this->faker->boolean();
+        return [
+            'stand_content_file_id' => $stand_content_file_id,
+            'file' => $isFile ? $this->faker->sentence : null,
+            'url' => $isFile ? null : $this->faker->url
         ];
     }
 }
