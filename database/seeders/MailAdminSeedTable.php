@@ -45,8 +45,8 @@ class MailAdminSeedTable extends Seeder
             'mail_type_admin_id' => 7
         ]);
         DB::table('Mail_Admin')->insert([
-            'object' => "Contacter nous",
-            'template' => '<p>Monsieur/Madame {{$contact-&gt;user_name}}</p><p>vous communique le message suivant:</p><p>{{$contact-&gt;message}}</p><p>veuillez repondre via cette adresse :{{$contact-&gt;email}}</p>',
+            'object' => "Contactez-nous",
+            'template' => '<p>Monsieur/Madame {{$contact-&gt;user_name}}</p><p>Vous communique le message suivant:</p><p>{{$contact-&gt;message}}</p><p>veuillez repondre via cette adresse :{{$contact-&gt;email}}</p>',
             'mail_type_admin_id' => 8
         ]);
     }
