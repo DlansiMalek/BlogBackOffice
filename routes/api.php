@@ -43,6 +43,9 @@ Route::get('/action', 'SharedController@getAllActions');
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
+Route::group(['prefix' => 'contact-us'], function () {
+    Route::post('/send', 'ContactUsController@addContactUs');
+});
 
 //SMS API
 
