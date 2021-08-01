@@ -119,13 +119,14 @@ class CongressServices
                 $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
             },
         ])->orderBy('start_date', 'desc')
-            ->offset($offset)->limit($perPage)
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
-            })
-            ->get();
+            });
+          
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage,["congress_id", "name", "start_date",
+        "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
 
         if ($startDate) {
             $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
@@ -143,14 +144,8 @@ class CongressServices
         if ($status == "2") {
             $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
         }
-
-        $congress_renderer = $all_congresses->map(function ($congress) {
-            return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date", "admin_congresses",
-                    "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
-        });
-
-        return response()->json($congress_renderer);
+        
+        return $all_congresses;
     }
 
     public function getMinimalCongress()
@@ -696,7 +691,7 @@ class CongressServices
     }
 
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null)
+                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null)
     {
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
@@ -750,6 +745,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
         $template = str_replace('{{%24linkFrontOffice}}', '{{$linkFrontOffice}}', $template);
+        $template = str_replace('{{%24linkPrincipalRoom}}', '{{$linkPrincipalRoom}}', $template);
         $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
@@ -772,7 +768,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom]);
 
     }
 
