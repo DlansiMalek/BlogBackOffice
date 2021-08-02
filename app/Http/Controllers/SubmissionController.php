@@ -284,7 +284,7 @@ class SubmissionController extends Controller
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
             $congress = $this->congressServices->getCongressById($congressId);
-            if ($privilege_id == 11) {
+            if ($privilege_id == config('privilege.Comite_scientifique')) {
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
                 if ($mail) {
@@ -794,7 +794,7 @@ class SubmissionController extends Controller
             if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
             $mailtype = $this->congressServices->getMailType('attestation_all', 'submission');
@@ -888,7 +888,7 @@ class SubmissionController extends Controller
             if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
             $user = $submission['user'];

@@ -288,7 +288,7 @@ class MailServices
             ->join('Admin_Congress', function ($join) use ($congress_id) {
                 $join->on('Admin_Congress.admin_id', '=', 'Offre.admin_id')
                     ->where('congress_id', '=', $congress_id)
-                    ->where('privilege_id', '=', 1);
+                    ->where('privilege_id', '=', config('privilege.Admin'));
             })->first();
     }
 

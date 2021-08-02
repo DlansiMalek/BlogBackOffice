@@ -333,7 +333,7 @@ class AccessController extends Controller
             foreach ($accesses as $access) {
                 if ($access['email']) {
                     $user = $this->userServices->getUserByEmail($access['email'], $congress_id);
-                    if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
+                    if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == config('privilege.Moderateur') || $user->user_congresses[0]->privilege_id == config('privilege.Conferencier_Orateur'))) {
                         $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
                         $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
                         $name = Utils::setAccessName($start_date, $end_date, $user->first_name . ' ' . $user->last_name);
@@ -353,7 +353,7 @@ class AccessController extends Controller
             $found = false;
             if ($access['email']) {
                 $user = $this->userServices->getUserByEmail($access['email'], $congress_id);
-                if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == 5 || $user->user_congresses[0]->privilege_id == 8)) {
+                if ($user && count($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id == config('privilege.Moderateur') || $user->user_congresses[0]->privilege_id == config('privilege.Conferencier_Orateur'))) {
                     $start_date = isset($access['start_date']) ? $access['start_date'] : null ;
                     $end_date = isset($access['end_date']) ? $access['end_date'] : null ;
                     $name = Utils::setAccessName($start_date, $end_date, $user->first_name . ' ' . $user->last_name);
@@ -365,7 +365,7 @@ class AccessController extends Controller
                 }
                 if (!$found) {
                     $newAccess = $this->accessServices->addAccessFromExcel($start_date, $end_date, $access_type_id, $congress_id, $name );
-                    $user->user_congresses[0]->privilege_id == 5 ? $this->accessServices->addChair($newAccess->access_id ,$user->user_id) : $this->accessServices->addSpeaker($newAccess->access_id ,$user->user_id);
+                    $user->user_congresses[0]->privilege_id == config('privilege.Moderateur') ? $this->accessServices->addChair($newAccess->access_id ,$user->user_id) : $this->accessServices->addSpeaker($newAccess->access_id ,$user->user_id);
                 }
             } else {
                 $errors = $errors . ' ' . $access['line'];

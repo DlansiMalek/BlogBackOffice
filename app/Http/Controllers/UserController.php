@@ -204,7 +204,7 @@ class UserController extends Controller
         if (!$admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congressId)) {
             return response()->json('no admin found', 404);
         }
-        $admin_id = $admin_congress->privilege_id == 13 ? $admin->admin_id : null;
+        $admin_id = $admin_congress->privilege_id == config('privilege.Comite_de_selection') ? $admin->admin_id : null;
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'accesses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -314,7 +314,7 @@ class UserController extends Controller
         $search = Str::lower($request->query('search', ''));
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
-        $admin_id = $admin_congress->privilege_id == 13 ? $admin->admin_id : null;
+        $admin_id = $admin_congress->privilege_id == config('privilege.Comite_de_selection') ? $admin->admin_id : null;
         $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order, $admin_id);
 
         foreach ($users as $user) {
