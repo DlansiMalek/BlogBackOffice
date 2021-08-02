@@ -161,7 +161,7 @@ class SubmissionServices
             },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
-                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                     ->with(['evaluator:admin_id,name,email']);
             },
         ]);
@@ -242,7 +242,7 @@ class SubmissionServices
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type', 'communication_type_id', 'limit_date',
                         'prez_type', 'description', 'global_note', 'communicationType',
-                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
+                        'status', 'theme', 'user', 'authors','submissions_evaluations',
                         'congress_id', 'created_at', 'congress', 'resources','comments']);
                 return $submissionToRender;
             }
@@ -258,7 +258,7 @@ class SubmissionServices
                     'theme:theme_id,label',
                     'communicationType:communication_type_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
-                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id', 'theme_id')
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     },
                 ])->where('submission_id', '=', $submission_id)->first();
