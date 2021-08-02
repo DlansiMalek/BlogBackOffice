@@ -258,7 +258,7 @@ class SubmissionServices
                     'theme:theme_id,label',
                     'communicationType:communication_type_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
-                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id', 'theme_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     },
                 ])->where('submission_id', '=', $submission_id)->first();
@@ -297,9 +297,10 @@ class SubmissionServices
 
     }
 
-    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation)
+    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme_id)
     {
         $evaluation->note = $note;
+        $evaluation->theme_id = $theme_id;
         $evaluation->save();
         // supposons seulement un seul utilisateur a fait la correction
         // dans ce cas on doit pas faire la moyenne
