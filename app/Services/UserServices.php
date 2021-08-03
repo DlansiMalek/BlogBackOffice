@@ -141,7 +141,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $newUser->privilege_id = $request->input('privilege_id');
         } else {
-            $newUser->privilege_id = 3;
+            $newUser->privilege_id = config('privilege.Participant');
         }
 
         $newUser->email = $email;
@@ -287,7 +287,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $user->privilege_id = $request->input('privilege_id');
         } else {
-            $user->privilege_id = 3;
+            $user->privilege_id = config('privilege.Participant');
         }
 
 
@@ -687,8 +687,8 @@ class UserServices
                     "is_valid" => $this->checkValidUser($congress, $user),
                     "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
                     "channel_name" => $channelName,
-                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
-                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
+                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === config('privilege.Organisme') ? $user->avatar_id : null,
+                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === config('privilege.Participant') ? Utils::mapDataByKey($user->accesses, 'name') : []
                 )
             );
 
@@ -746,7 +746,7 @@ class UserServices
 
     public function isUserModerator($userCongress)
     {
-        return $userCongress->privilege_id == 5 || $userCongress->privilege_id == 8;
+        return $userCongress->privilege_id == config('privilege.Moderateur') || $userCongress->privilege_id == config('privilege.Conferencier_Orateur');
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -849,7 +849,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $newUser->privilege_id = $request->input('privilege_id');
         } else {
-            $newUser->privilege_id = 3;
+            $newUser->privilege_id = config('privilege.Participant');
         }
 
         if ($request->has('email') && $request->input('email') != "")
@@ -895,7 +895,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $newUser->privilege_id = $request->input('privilege_id');
         } else {
-            $newUser->privilege_id = 3;
+            $newUser->privilege_id = config('privilege.Participant');
         }
 
         $newUser->update();
@@ -930,7 +930,7 @@ class UserServices
     public function getFastUsersByCongressId($congressId)
     {
         return User::where('congress_id', '=', $congressId)
-            ->where('privilege_id', '=', 3)
+            ->where('privilege_id', '=', config('privilege.Participant'))
             ->get();
     }
 
@@ -1522,7 +1522,7 @@ class UserServices
     {
         //users id who are registred in the congress
         $accepted_user_id_array = UserCongress::select('user_id')->where('congress_id', '=', $congressId)
-            ->where('privilege_id', '=', 3);
+            ->where('privilege_id', '=', config('privilege.Participant'));
         //users who got refused with mails refused
         return User::with(['user_congresses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
@@ -1675,7 +1675,7 @@ class UserServices
 
     public function isUserModeratorStand($userCongress)
     {
-        return $userCongress->privilege_id == 7;
+        return $userCongress->privilege_id == config('privilege.Organisme');
     }
     
     public function deleteFormInputUserByKey($userId, $congressId, $key)
@@ -1688,7 +1688,7 @@ class UserServices
 
     public function isUserOrganizer($userCongress)
     {
-        return $userCongress->privilege_id == 2;
+        return $userCongress->privilege_id == config('privilege.Organisateur');
     }
 
     public function getUser3DByEmail($email) {

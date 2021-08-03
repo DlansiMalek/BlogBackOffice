@@ -193,12 +193,12 @@ class AccessController extends Controller
         $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($accessId, $userId);
 
         if ($chairPerson) {
-            return response()->json(['privilegeId' => 5]);
+            return response()->json(['privilegeId' => config('privilege.Moderateur')]);
         }
 
         $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($accessId, $userId);
         if ($speakerPerson) {
-            return response()->json(['privilegeId' => 8]);
+            return response()->json(['privilegeId' => config('privilege.Conferencier_Orateur')]);
         }
 
         return response()->json(['message' => 'not found'], 404);

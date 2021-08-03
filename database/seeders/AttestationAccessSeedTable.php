@@ -16,7 +16,7 @@ class AttestationAccessSeedTable extends Seeder
         DB::table('Attestation_Access')->insert([
             'access_id' => 1,
             'attestation_generator_id' => "5ba40e537e3f6c0001ff19a9",
-            'privilege_id' => 1
+            'privilege_id' => config('privilege.Admin')
         ]);
     }
 }

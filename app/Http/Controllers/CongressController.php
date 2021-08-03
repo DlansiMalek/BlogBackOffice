@@ -625,7 +625,7 @@ class CongressController extends Controller
                 foreach ($user->accesses as $access) {
                     if ($strict == 0 || $access->pivot->isPresent == 1) {
                         if (sizeof($access->attestations) > 0) {
-                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
                             if ($attestationId) {
                                 array_push($request,
                                     array(
@@ -641,11 +641,11 @@ class CongressController extends Controller
                     $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $user->user_id);
                     $privilegeId = null;
                     if ($chairPerson) {
-                        $privilegeId = 5;
+                        $privilegeId = config('privilege.Moderateur');
                     }
                     $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $user->user_id);
                     if ($speakerPerson) {
-                        $privilegeId = 8;
+                        $privilegeId = config('privilege.Conferencier_Orateur');
                     }
                     $attestationId = null;
                     if ($privilegeId)
