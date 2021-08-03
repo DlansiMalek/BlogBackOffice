@@ -363,14 +363,12 @@ class SubmissionServices
         ->where('congress_id', '=', $congressId);
 
         if ($communication_type_id != 'null' && $communication_type_id != '') {
-            $submissions->where('communication_type_id', '=', $communication_type_id);Log::warning("comm");  
+            $submissions->where('communication_type_id', '=', $communication_type_id);  
         }
-        if ( $theme_id != 'null' &&  $theme_id != '') {Log::warning("theme");  
-            $submissions->orWhereHas("theme", function ($query) use ($theme_id){
-                $query->where('theme_id','=', $theme_id);
-            });
+        if ( $theme_id != 'null' &&  $theme_id != '') { 
+            $submissions->where('theme_id','=', $theme_id);
         }
-        if ($search != "null" && $search!='') {Log::warning("search");  
+        if ($search != "null" && $search!='') {  
             $submissions->where('title', 'like', '%' . $search . '%')
             ->orWhere(function($q) use ($search, $congressId, $communication_type_id, $theme_id) {
                 $q->where('congress_id', '=', $congressId)
@@ -379,10 +377,8 @@ class SubmissionServices
                 if ($communication_type_id != 'null' && $communication_type_id != '') {
                     $q->where('communication_type_id', '=', $communication_type_id);
                 }
-                if ( $theme_id != 'null' &&  $theme_id != '') {Log::warning("theme search");  
-                    $q->orWhereHas("theme", function ($query) use ($theme_id){
-                        $query->where('theme_id','=', $theme_id);
-                    });
+                if ( $theme_id != 'null' &&  $theme_id != '') { 
+                        $q->where('theme_id','=', $theme_id);
                 }
             })
             ->orWhereHas("authors", function ($query) use ($search, $congressId) {
