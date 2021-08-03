@@ -14,7 +14,7 @@ class AddThemeIdToSubmissionEvaluation extends Migration
     public function up()
     {
         Schema::table('Submission_Evaluation', function (Blueprint $table) {
-            $table->unsignedInteger('theme_id')->nullable();
+            $table->unsignedInteger('theme_id')->nullable()->default(null);
             $table->foreign('theme_id')->references('theme_id')->on('Theme')
             ->onDelete('set null');
         });
@@ -29,6 +29,7 @@ class AddThemeIdToSubmissionEvaluation extends Migration
     {
         Schema::table('Submission_Evaluation', function (Blueprint $table) {
             $table->dropForeign(['theme_id']);
+            $table->removeColumn('theme_id');
         });
     }
 }
