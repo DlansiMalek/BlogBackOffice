@@ -12,6 +12,7 @@ use App\Models\SubmissionEvaluation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class SubmissionServices
 {
@@ -352,26 +353,36 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
+    public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id)
     {
         $submissions = Submission::with([
-            'resources', 'authors' => function ($query) {
+            'theme','resources', 'authors' => function ($query) {
                 $query->orderBy('rank');
             },
         ])->where('status', '=', 1)
         ->where('congress_id', '=', $congressId);
 
         if ($communication_type_id != 'null' && $communication_type_id != '') {
-            $submissions->where('communication_type_id', '=', $communication_type_id);
+            $submissions->where('communication_type_id', '=', $communication_type_id);Log::warning("comm");  
         }
-        if ($search != "null" && $search!='') {
+        if ( $theme_id != 'null' &&  $theme_id != '') {Log::warning("theme");  
+            $submissions->orWhereHas("theme", function ($query) use ($theme_id){
+                $query->where('theme_id','=', $theme_id);
+            });
+        }
+        if ($search != "null" && $search!='') {Log::warning("search");  
             $submissions->where('title', 'like', '%' . $search . '%')
-            ->orWhere(function($q) use ($search, $congressId, $communication_type_id) {
+            ->orWhere(function($q) use ($search, $congressId, $communication_type_id, $theme_id) {
                 $q->where('congress_id', '=', $congressId)
                 ->where('status', '=', 1)
                 ->where('code', 'like', '%' . $search . '%');
                 if ($communication_type_id != 'null' && $communication_type_id != '') {
                     $q->where('communication_type_id', '=', $communication_type_id);
+                }
+                if ( $theme_id != 'null' &&  $theme_id != '') {Log::warning("theme search");  
+                    $q->orWhereHas("theme", function ($query) use ($theme_id){
+                        $query->where('theme_id','=', $theme_id);
+                    });
                 }
             })
             ->orWhereHas("authors", function ($query) use ($search, $congressId) {
@@ -388,15 +399,15 @@ class SubmissionServices
         return $response;
     }
 
-    public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
+    public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id)
     {
-        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id;
+        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id.$theme_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
-        $submissions = $this->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        $submissions = $this->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id);
         Cache::put($cacheKey, $submissions, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
         return $submissions;
