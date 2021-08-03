@@ -108,7 +108,7 @@ class CongressServices
         return configSelection::where('congress_id', '=', $congress_id)->first();
     }
 
-    public function getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status)
+    public function getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status,$minPrice,$maxPrice,$type)
     {
 
         $all_congresses = Congress::with([
@@ -122,29 +122,40 @@ class CongressServices
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
-                $query->orWhere('description', 'LIKE', '%' . $search . '%');
+                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
+            })
+            ->where(function ($query) use ($minPrice,$maxPrice, $startDate, $endDate,$type) {
+                if ($startDate != '' && $startDate != 'null')
+                    $query->whereDate('start_date', '>=', date($startDate));
+                if ($endDate != '' && $endDate != 'null')
+                    $query->whereDate('end_date', '<=', date($endDate));
+                    if ($minPrice != '' && $minPrice != 'null')
+                    $query->where('price', '>=', $minPrice);
+                    if ($maxPrice != '' && $maxPrice != 'null')
+                    $query->where('price', '<=', $maxPrice); 
+                    if ($type != '' && $type != 'null')
+                    {
+                        if($type==1 || $type==3)
+                        $query->where('congress_type_id', '=', 1); 
+                        else
+                        $query->where('congress_type_id', '>=', 2); 
+
+                    }
+
+                    
             });
-          
+        // $todayDate = date("Y-m-d");
+        // if ($status == "0") {
+        //     $all_congresses = $all_congresses->where('end_date', '<=', $todayDate);
+        // }
+        // if ($status == "1") {
+        //     $all_congresses = $all_congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate)->values();
+        // }
+        // if ($status == "2") {
+        //     $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
+        // }
         $all_congresses = $perPage ? $all_congresses->paginate($perPage,["congress_id", "name", "start_date",
         "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
-
-        if ($startDate) {
-            $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
-        }
-        if ($endDate) {
-            $all_congresses = $all_congresses->where('end_date', '<=', $endDate)->values();
-        }
-        $todayDate = date("Y-m-d");
-        if ($status == "0") {
-            $all_congresses = $all_congresses->where('end_date', '<=', $todayDate)->values();
-        }
-        if ($status == "1") {
-            $all_congresses = $all_congresses->where('end_date', '>', $todayDate)->where('start_date', '<=', $todayDate)->values();
-        }
-        if ($status == "2") {
-            $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
-        }
-        
         return $all_congresses;
     }
 
