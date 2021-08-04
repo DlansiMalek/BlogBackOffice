@@ -556,12 +556,9 @@ class SubmissionController extends Controller
         $search = $request->query('search', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
-        $communication_type_id = $request->query('communication_type_id');
-        $theme_id = $request->query('theme_id');
+        $communication_type_id = $request->query('communication_type_id','');
+        $theme_id = $request->query('theme_id','');
         if (!$communication_type_id) {
-            return response()->json(['response' => 'bad request'], 400);
-        }
-        if (!$theme_id) {
             return response()->json(['response' => 'bad request'], 400);
         }
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
