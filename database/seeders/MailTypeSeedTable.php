@@ -148,6 +148,24 @@ class MailTypeSeedTable extends Seeder
             'display_name' => "A réviser une soumission",
             'type' => "submission"
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 24,
+            'name' => 'request_meeting',
+            'display_name' => "demande de réunion ",
+            'type' => "event"
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 25,
+            'name' => 'accept_meeting',
+            'display_name' => "Acceptation de la demande de réunion",
+            'type' => "event"
+        ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 26,
+            'name' => 'decline_meeting',
+            'display_name' => "Refus de la demande de réunion",
+            'type' => "event"
+        ]);
 
     }
 }
