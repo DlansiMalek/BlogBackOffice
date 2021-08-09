@@ -1708,9 +1708,9 @@ class UserServices
 
         return $user;
     }
-    public function editUserPrivilege($userCongress, $data)
+    public function editUserPrivilege($userCongress, $privilege_id)
     {
-        $userCongress->privilege_id = $data["privilege_id"];
+        $userCongress->privilege_id = $privilege_id;
         $userCongress->update();
     }
 

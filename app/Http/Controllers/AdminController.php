@@ -542,7 +542,6 @@ class AdminController extends Controller
             $user = $this->userServices->addUserFromExcel($admin, $newAdmin->passwordDecrypt);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
         } else {
-            $this->userServices->editUserData($user, $admin);
             $user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id);
             $this->userServices->editUserPrivilege($user_congress, $privilegeId);
         }
