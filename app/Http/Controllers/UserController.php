@@ -2029,4 +2029,13 @@ class UserController extends Controller
         $user->update();
         return $user;
     }
+
+    public function getAllUsersByCongressFrontOfficeWithPagination($congress_id,Request $request)
+    {
+        $page = $request->query('page', 1);
+        $perPage = $request->query('perPage', 10);
+        $search = Str::lower($request->query('search', ''));
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$page,$perPage,$search);
+        return response()->json($users);
+    }
 }
