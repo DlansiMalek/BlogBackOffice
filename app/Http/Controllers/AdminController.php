@@ -536,8 +536,8 @@ class AdminController extends Controller
         //message d'erreur à revoir
         $user = $this->userServices->getUserByEmail($admin['email']);
         $name = explode(" ", $admin['name']);
-        $admin['first_name'] = $name[0];
-        $admin['last_name'] = $name[1];
+        $admin['first_name'] = strpos($admin['name'], ' ')?$name[0]:$name;
+        $admin['last_name'] =  strpos($admin['name'], ' ')?$name[1]:'';
         if (!$user) {
             $user = $this->userServices->addUserFromExcel($admin, $newAdmin->passwordDecrypt);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
