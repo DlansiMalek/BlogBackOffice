@@ -828,7 +828,6 @@ class SubmissionController extends Controller
                         $mappedSubmission['badgeIdGenerator'] = $attestationSubmission->attestation_generator_id;
                         array_push($request, $mappedSubmission);
                     }
-                    $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
 
                     if ($mail) {
                         $authorMail = null;
@@ -838,6 +837,7 @@ class SubmissionController extends Controller
                             $authorMail = $author->author_mails[0];
                         }
                         if ($authorMail->status != 1) {
+                            $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
                             $fileName = 'attestationsSubmission.zip';
                             $this->mailServices->sendMail(
                                 $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
