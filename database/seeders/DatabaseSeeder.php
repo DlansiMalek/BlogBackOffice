@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(StandTypeSeeder::class);
         $this->call(StandContentConfigSeeder::class);
-        
+        $this->call(CountriesSeedTable::class);
         $this->call(MenuDatabaseSeeder::class);
         $this->call(CongressTypeTableSeeder::class);
         $this->call(CongressSeedTable::class);
@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AccessSeedTable::class);
         $this->call(AttestationAccessSeedTable::class);
         $this->call(PackSeedTable::class);
-        $this->call(CountriesSeedTable::class);
         $this->call(PackAdminSeeder::class);
         $this->call(HistoryTableSeeder::class);
         $this->call(UserSeedTable::class);
