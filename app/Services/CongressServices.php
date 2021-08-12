@@ -506,6 +506,7 @@ class CongressServices
         $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
         $configCongress->nb_max_access = $configCongressRequest['nb_max_access'];
         $configCongress->is_agora = $configCongressRequest['is_agora'];
+        $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->update();
 
         return $configCongress;
