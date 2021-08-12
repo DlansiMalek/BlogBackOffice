@@ -183,8 +183,10 @@ class SharedServices
         array_shift($co_authors);
         $authors = "";
         for ($i = 0; $i < sizeof($co_authors); $i++) {
-            $firstName = isset($co_authors[$i]['first_name'][0]) ? $co_authors[$i]['first_name'][0] : '';
-            $authors .= strtoupper($firstName . '. ' . $co_authors[$i]['last_name']) . ' ,';
+            if ($co_authors[$i]['rank'] != 1) {
+                $firstName = isset($co_authors[$i]['first_name'][0]) ? $co_authors[$i]['first_name'][0] : '';
+                $authors .= strtoupper($firstName . '. ' . $co_authors[$i]['last_name']) . ' ,';
+            }
         }
         $authors = substr($authors, 0, -1);
         $mappingList = ['principal_author' => $principal_author,

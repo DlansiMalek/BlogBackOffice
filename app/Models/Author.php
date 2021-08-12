@@ -23,4 +23,8 @@ class Author extends Model
     function submissions() {
         return $this->hasMany(Submission::class, "submission_id", "submission_id");
     }
+    function author_mails()
+    {
+        return $this->hasMany(AuthorMail::class, "author_id", "author_id");
+    }
 }
