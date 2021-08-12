@@ -24,9 +24,11 @@ use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\PrivilegeServices;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Exception;
 
 class UserController extends Controller
 {
@@ -48,6 +50,7 @@ class UserController extends Controller
     protected $offreServices;
     protected $standServices;
     protected $registrationFormServices;
+    protected $privilegeServices;
 
     public function __construct(UserServices $userServices, CongressServices $congressServices,
         AdminServices $adminServices,
@@ -65,7 +68,8 @@ class UserController extends Controller
         TrackingServices $trackingServices,
         OffreServices $offreServices,
         StandServices $standServices,
-        RegistrationFormServices $registrationFormServices) {
+        RegistrationFormServices $registrationFormServices,
+        PrivilegeServices $privilegeServices) {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -84,6 +88,7 @@ class UserController extends Controller
         $this->offreServices = $offreServices;
         $this->standServices = $standServices;
         $this->registrationFormServices = $registrationFormServices;
+        $this->privilegeServices = $privilegeServices;
     }
 
     public function getLoggedUser()
@@ -413,9 +418,10 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congress->congress_id.'/event-room';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom ), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
         } else if ($status == -1) {
@@ -711,12 +717,12 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        $privilege = $this->privilegeServices->getPrivilegeById($user->user_congresses[0]->privilege_id);
+        $isModerator = $this->userServices->isUserModerator($privilege);
         if (!$isModerator && !Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
         
-
         if (!$accessId) {
             $isAllowedJitsi = $congress->config->max_online_participants && $congress->config->url_streaming ? $congress->config->max_online_participants >= $congress->config->nb_current_participants : true;
             $urlStreaming = $congress->config->url_streaming;
@@ -732,16 +738,22 @@ class UserController extends Controller
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
         $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
-        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        }
+        
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
 
         return response()->json(
             [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => $isAllowedJitsi,
+                "allowed" => $isAllowedJitsi,
                 "url_streaming" => $urlStreaming,
             ], 200);
 
@@ -872,9 +884,10 @@ class UserController extends Controller
 
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congress->congress_id.'/event-room';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,null,null,$linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
             $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
@@ -1724,9 +1737,10 @@ class UserController extends Controller
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress_id.'/event-room';
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail);
                 }
             }
             $this->smsServices->sendSmsToUsers($user, null, $congress_id, $congress);
@@ -1739,8 +1753,9 @@ class UserController extends Controller
 
             if ($mailtype = $this->congressServices->getMailType('inscription')) {
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
+                    $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress_id.'/event-room';
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                   $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,  $link, null, $userPayment ,null,null,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, false, $userMail);
                 }
             }
         }
@@ -1933,8 +1948,14 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 401);
         }
+        $stand = $this->standServices->getStandById($standId);
+        if (!$stand) {
+            return response()->json(['response' => 'No stand found'], 401);
+        }
+
         $userId = $user->user_id;
         $congress = $this->congressServices->getCongressById($congressId);
+        
 
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'user_congresses' => function ($query) use ($congressId) {
@@ -1947,21 +1968,31 @@ class UserController extends Controller
         if (!Utils::isValidSendMail($congress, $user)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
+        
         $isModerator = $organizerId ? $this->userServices->isUserOrganizer($user->user_congresses[0]) : $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+        $urlStreaming = !$isModerator && $stand->url_streaming ? $stand->url_streaming : null;
+        $allowed = $isModerator || !$stand->url_streaming;
 
         $userToUpdate = $user->user_congresses[0];
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
-        $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+       
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
+        }
+        
         $userToUpdate->token_jitsi = $token;
         $userToUpdate->update();
 
         return response()->json(
             [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
                 "token" => $token,
                 "is_moderator" => $isModerator,
                 "privilege_id" => $user->user_congresses[0]->privilege_id,
-                "allowed_jitsi" => true,
-                "url_streaming" => null,
+                "allowed" => $allowed,
+                "url_streaming" => $urlStreaming
             ], 200);
     }
 
@@ -1975,4 +2006,32 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function changeQrCode($user_id, Request $request)
+    {
+        $congressId = $request->input("congressId");
+
+        if (!$user = $this->userServices->getUserByIdWithRelations($user_id, ['user_congresses' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        }]))
+            return response()->json(['error' => 'user not found'], 400);
+
+        $oldUsers = $this->userServices->getMinUserByQrCode($request->input("qrcode"));
+
+        foreach ($oldUsers as $oldUser
+        ) {
+            if ($oldUser->user_id != $user->user_id) {
+                $oldUser->qr_code = Utils::generateCode($oldUser->user_id);
+                $oldUser->update();
+            }
+        }
+
+        if (sizeof($user->user_congresses) > 0) {
+            $user->user_congresses[0]->isPresent = 1;
+            $user->user_congresses[0]->update();
+        }
+
+        $user->qr_code = $request->get('qrcode');
+        $user->update();
+        return $user;
+    }
 }

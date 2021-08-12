@@ -93,12 +93,12 @@ class AdminServices
 
     public function AddAdmin(Request $request, $admin)
     {
-        $admin->name = $request->input('name');
-        $admin->mobile = $request->input('mobile');
-        $admin->email = $request->input('email');
-        $admin->privilege_id = 1;
+        $admin->name            = $request->input('name');
+        $admin->mobile          = $request->input('mobile');
+        $admin->email           = $request->input('email');
+        $admin->privilege_id    = 1;
         $admin->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
-        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        $admin->password        = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
         $admin->save();
         return $admin;
     }
@@ -501,7 +501,7 @@ class AdminServices
         $evaluation->save();
     }
 
-    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null, $paymentLink = null)
+    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null, $paymentLink = null, $contact=null)
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
@@ -509,9 +509,11 @@ class AdminServices
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
         $template = str_replace('{{$user-&gt;gender}}', '{{$user->gender}}', $template);
-
-
-        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink]);
+        $template = str_replace('{{$contact-&gt;message}}', '{{$contact->message}}', $template);
+        $template = str_replace('{{$contact-&gt;subject}}', '{{$contact->subject}}', $template);
+        $template = str_replace('{{$contact-&gt;email}}', '{{$contact->email}}', $template);
+        $template = str_replace('{{$contact-&gt;user_name}}', '{{$contact->user_name}}', $template);
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink,'contact' => $contact]);
     }
 
     public function getClientById($admin_id)
@@ -565,5 +567,31 @@ class AdminServices
     {
         return Evaluation_Inscription::where('congress_id', '=', $congress_id)
             ->where('user_id', '=', $user_id)->get();
+    }
+    public function addAdminFromExcel($admin,$data)
+    {
+        $password =Str::random(8);
+        if(!$admin) {
+            $admin = new Admin();
+        }
+
+        $admin->name            = $data['admin_name'];
+        $admin->email           =  $data['admin_email'];
+        $admin->mobile          =  isset($data['admin_mobile']) ? $data['admin_mobile'] : "77777777";
+        $admin->passwordDecrypt = $password;
+        $admin->password        = bcrypt($password);
+        $admin->save();
+        return $admin;
+    }
+    public function addAdminCongressFromExcel($adminCongress,$adminId, $congressId, $privilegeId)
+    {
+        if(!$adminCongress) {
+            $adminCongress = new AdminCongress();
+        }
+
+        $adminCongress->admin_id = $adminId;
+        $adminCongress->congress_id = $congressId;
+        $adminCongress->privilege_id = $privilegeId;
+        $adminCongress->save();
     }
 }

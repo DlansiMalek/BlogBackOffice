@@ -51,6 +51,10 @@ class Submission extends Model
     {
         return $this->belongsTo('App\Models\Congress', 'congress_id', 'congress_id');
     }
+    public function comments()
+    {
+        return $this->hasMany('App\Models\SubmissionComments', 'submission_id');
+    }
 }
 
 /*
@@ -61,4 +65,5 @@ class Submission extends Model
    3 : Refusée
    4 : En attente de fichier
    5 : Fichier soumis
+   6 : A reviser
 */

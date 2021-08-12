@@ -27,4 +27,7 @@ class Author extends Model
     {
         return $this->hasMany(AuthorMail::class, "author_id", "author_id");
     }
+    public function submission() {
+        return $this->belongsTo('App\Models\Submission','submission_id','submission_id');
+    }
 }
