@@ -25,6 +25,7 @@ use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\PrivilegeServices;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -53,7 +54,7 @@ class UserController extends Controller
     protected $standServices;
     protected $registrationFormServices;
     protected $meetingServices;
-    
+    protected $privilegeServices;
 
     public function __construct(UserServices $userServices, CongressServices $congressServices,
         AdminServices $adminServices,
@@ -71,7 +72,9 @@ class UserController extends Controller
         TrackingServices $trackingServices,
         OffreServices $offreServices,
         StandServices $standServices,
-        RegistrationFormServices $registrationFormServices, MeetingServices $meetingServices) {
+        RegistrationFormServices $registrationFormServices,
+        MeetingServices $meetingServices,
+        PrivilegeServices $privilegeServices) {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -91,6 +94,7 @@ class UserController extends Controller
         $this->standServices = $standServices;
         $this->registrationFormServices = $registrationFormServices;
         $this->meetingServices = $meetingServices;
+        $this->privilegeServices = $privilegeServices;
     }
 
     public function getLoggedUser()
@@ -210,7 +214,7 @@ class UserController extends Controller
         if (!$admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congressId)) {
             return response()->json('no admin found', 404);
         }
-        $admin_id = $admin_congress->privilege_id == 13 ? $admin->admin_id : null;
+        $admin_id = $admin_congress->privilege_id == config('privilege.Comite_de_selection') ? $admin->admin_id : null;
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'accesses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -320,7 +324,7 @@ class UserController extends Controller
         $search = Str::lower($request->query('search', ''));
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
-        $admin_id = $admin_congress->privilege_id == 13 ? $admin->admin_id : null;
+        $admin_id = $admin_congress->privilege_id == config('privilege.Comite_de_selection') ? $admin->admin_id : null;
         $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order, $admin_id);
 
         foreach ($users as $user) {
@@ -532,7 +536,7 @@ class UserController extends Controller
     {
         $packId = $request->input('packIds', []);
         $accessesIds = $request->input('accessesId', []);
-        $privilegeId = 3;
+        $privilegeId = config('privilege.Participant');
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
             return response()->json(['response' => 'No user found'], 404);
@@ -564,7 +568,7 @@ class UserController extends Controller
 
         $privilegeId = $request->input('privilege_id');
 
-        if ($request->has('avatar_id') && $privilegeId != 7) {
+        if ($request->has('avatar_id') && $privilegeId != config('privilege.Organisme')) {
             $request->merge(['avatar_id' => null]);
         }
         //check if date limit
@@ -608,7 +612,7 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request', 'required fields' => ['price']], 400);
         }
 
-        if ($request->has('avatar_id') && $privilegeId != 7) {
+        if ($request->has('avatar_id') && $privilegeId != config('privilege.Organisme')) {
             $request->merge(['avatar_id' => null]);
         }
 
@@ -640,13 +644,13 @@ class UserController extends Controller
             $user->payments[0]->price = $request->input("price");
             $user->payments[0]->update();
         } else {
-            if ($privilegeId == 3 && $request->input("price") != 0) {
+            if ($privilegeId == config('privilege.Participant') && $request->input("price") != 0) {
                 $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, $request->input("price"), false);
             }
 
         }
 
-        if ($privilegeId != 3 && sizeof($user->payments) > 0) {
+        if ($privilegeId != config('privilege.Participant') && sizeof($user->payments) > 0) {
             $user->payments[0]->delete();
         }
 
@@ -661,7 +665,7 @@ class UserController extends Controller
         //Save Access Premium
         $userAccessIds = $this->accessServices->getAccessIdsByAccess($user->accesses);
 
-        if ($privilegeId != 3) {
+        if ($privilegeId != config('privilege.Participant')) {
             $packs = $this->packServices->getAllPackByCongress($congressId);
             $packIds = $this->packServices->getPackIdsByPacks($packs);
             $this->packServices->editUserPacksWithPackId($userId, $user->user_packs, $packIds);
@@ -719,7 +723,8 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        $privilege = $this->privilegeServices->getPrivilegeById($user->user_congresses[0]->privilege_id);
+        $isModerator = $this->userServices->isUserModerator($privilege);
         if (!$isModerator && !Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
             return response()->json(['response' => 'not authorized'], 401);
         }
@@ -1052,7 +1057,7 @@ class UserController extends Controller
                         }
                     }
                     
-                    if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+                    if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == config('privilege.Participant') && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
                         $evaluations = $this->adminServices->getEvaluationInscription($congressId, $user->user_id);
                         if (count($evaluations) == 0) {
                             $evalutors = $this->adminServices->getEvaluatorsByCongress($congressId, 13, 'evaluations');
@@ -1194,7 +1199,7 @@ class UserController extends Controller
             foreach ($user->accesses as $access) {
                 if ($access->pivot->isPresent == 1) {
                     if (sizeof($access->attestations) > 0) {
-                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
                         if ($attestationId) {
                             array_push(
                                 $request,
@@ -1210,11 +1215,11 @@ class UserController extends Controller
                 $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $userId);
                 $privilegeId = null;
                 if ($chairPerson) {
-                    $privilegeId = 5;
+                    $privilegeId = config('privilege.Moderateur');
                 }
                 $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $userId);
                 if ($speakerPerson) {
-                    $privilegeId = 8;
+                    $privilegeId = config('privilege.Conferencier_Orateur');
                 }
                 $attestationId = null;
                 if ($privilegeId) {
@@ -1320,7 +1325,7 @@ class UserController extends Controller
             foreach ($user->accesses as $access) {
                 if ($strict == 0 || $access->pivot->isPresent == 1) {
                     if (sizeof($access->attestations) > 0) {
-                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
                         if ($attestationId) {
                             array_push(
                                 $request,
@@ -1336,11 +1341,11 @@ class UserController extends Controller
                 $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $userId);
                 $privilegeId = null;
                 if ($chairPerson) {
-                    $privilegeId = 5;
+                    $privilegeId = config('privilege.Moderateur');
                 }
                 $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $userId);
                 if ($speakerPerson) {
-                    $privilegeId = 8;
+                    $privilegeId = config('privilege.Conferencier_Orateur');
                 }
                 $attestationId = null;
                 if ($privilegeId) {
@@ -1670,7 +1675,7 @@ class UserController extends Controller
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 
-        if ($privilegeId == 3) {
+        if ($privilegeId == config('privilege.Participant')) {
             $this->userServices->affectPacksToUser($user->user_id, $packId);
             $accessInPackNotInRegister = $this->accessServices->getAllAccessByPackIds(
                 $user->user_id,
@@ -1700,7 +1705,7 @@ class UserController extends Controller
         $accesses = $this->accessServices->getAllAccessByAccessIds($accessesId);
         $totalPrice = $this->userServices->calculateCongressFees($congress, $pack, $accesses);
         $isFree = false;
-        if ($privilegeId == 3) {
+        if ($privilegeId == config('privilege.Participant')) {
             $nbParticipants = $this->congressServices->getParticipantsCount($congress_id, 3, null);
             $freeNb = $this->paymentServices->getFreeUserByCongressId($congress_id);
             //Free Inscription (By Chance)
@@ -1714,7 +1719,7 @@ class UserController extends Controller
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
 
-        if ($privilegeId != 3 || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $totalPrice == 0) || $isFree || $whiteList) {
+        if ($privilegeId != config('privilege.Participant') || $congress->congress_type_id == 3 || ($congress->congress_type_id == 1 && $totalPrice == 0) || $isFree || $whiteList) {
             //Free Mail
             if ($isFree) {
                 if ($mailtype = $this->congressServices->getMailType('free')) {
@@ -1760,7 +1765,7 @@ class UserController extends Controller
                 }
             }
         }
-        if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == 3 && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
+        if ($congress->config_selection && $congress->config_selection->num_evaluators > 0 && $privilegeId == config('privilege.Participant') && ($congress->congress_type_id == 2 || ($congress->congress_type_id == 1 && $congress->config_selection))) {
             $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
             $this->adminServices->affectEvaluatorsToUser(
                 $evalutors,
@@ -1771,7 +1776,7 @@ class UserController extends Controller
         }
 
         // Notify Organizer Mail Rule (privilege ==3 & configCongress Activated & form user-register not backoffice add)
-        if ($privilegeId === 3 && $congress->config->replyto_mail && $congress->config->is_notif_register_mail && !$user->is_admin_created) {
+        if ($privilegeId === config('privilege.Participant') && $congress->config->replyto_mail && $congress->config->is_notif_register_mail && !$user->is_admin_created) {
             $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
             $template = Utils::getDefaultMailNotifNewRegister();
             $objectMail = "Nouvelle Inscription";
