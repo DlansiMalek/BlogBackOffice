@@ -436,12 +436,12 @@ class CongressController extends Controller
             'users.responses.form_input',
             'users.responses.values',
             "users" => function ($query) use ($congressId) {
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             },
             "form_inputs.type",
             "form_inputs.values",
             "accesss.participants.user_congresses" => function ($query) {
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             },
             "tracking",
             "stand"
@@ -625,7 +625,7 @@ class CongressController extends Controller
                 foreach ($user->accesses as $access) {
                     if ($strict == 0 || $access->pivot->isPresent == 1) {
                         if (sizeof($access->attestations) > 0) {
-                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
                             if ($attestationId) {
                                 array_push($request,
                                     array(
@@ -641,11 +641,11 @@ class CongressController extends Controller
                     $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $user->user_id);
                     $privilegeId = null;
                     if ($chairPerson) {
-                        $privilegeId = 5;
+                        $privilegeId = config('privilege.Moderateur');
                     }
                     $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $user->user_id);
                     if ($speakerPerson) {
-                        $privilegeId = 8;
+                        $privilegeId = config('privilege.Conferencier_Orateur');
                     }
                     $attestationId = null;
                     if ($privilegeId)
@@ -783,14 +783,14 @@ class CongressController extends Controller
             $userCongress = new UserCongress();
             $userCongress->congress_id = $congress->congress_id;
             $userCongress->user_id = $user->user_id;
-            $userCongress->privilege_id = 3;    //privilege particiapant
+            $userCongress->privilege_id = config('privilege.Participant');    //privilege particiapant
             $userCongress->save();
         }
 
         //add badges
         $badge = new Badge();
         $badge->badge_id_generator = "5c6dbd67d2cb3900015d7a65";
-        $badge->privilege_id = 3;
+        $badge->privilege_id = config('privilege.Participant');
         $badge->congress_id = $congress->congress_id;
         $badge->save();
 
@@ -823,17 +823,17 @@ class CongressController extends Controller
             return response()->json('no congress found', 404);
         }
         $totalUsers = $this->congressServices->getParticipantsCount($congressId, null, null);
-        $participantUsers = $this->congressServices->getParticipantsCount($congressId, 3, null);
+        $participantUsers = $this->congressServices->getParticipantsCount($congressId, config('privilege.Participant'), null);
         $revenue = $this->congressServices->getRevenuCongress($congressId);
         $gratuitNb = $this->paymentServices->getFreeUserByCongressId($congressId);
         $totalPresenceUsers = $this->congressServices->getParticipantsCount($congressId, null, 1);
-        $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, 3, 1);
-        $users = $this->userServices->getUsersTracking($congressId, [1, 2, 3, 4], 3);
+        $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, config('privilege.Participant'), 1);
+        $users = $this->userServices->getUsersTracking($congressId, [1, 2, 3, 4], config('privilege.Participant'));
         $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                    $query->where('privilege_id', '=', 3);
+                    $query->where('privilege_id', '=', config('privilege.Participant'));
                 },
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
@@ -866,7 +866,7 @@ class CongressController extends Controller
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                    $query->where('privilege_id', '=', 3);
+                    $query->where('privilege_id', '=', config('privilege.Participant'));
                 },
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
@@ -909,7 +909,7 @@ class CongressController extends Controller
             return response()->json(['error' => 'user is not registered in congress'], 404);
         }
         if (!($adminCongress = (AdminCongress::where('congress_id', '=', $congress_id)
-            ->where('privilege_id', '=', 1)->first()))) {
+            ->where('privilege_id', '=', config('privilege.Admin'))->first()))) {
             return response()->json(['error' => 'bad request'], 400);
         }
         $user_congress = $this->congressServices->confirmPresence($congress_id, $user_id, $present);

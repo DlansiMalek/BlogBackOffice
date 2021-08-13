@@ -116,7 +116,7 @@ class CongressServices
             "theme:label,description",
             "location.city:city_id,name",
             'admin_congresses' => function ($query) {
-                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
+                $query->where('privilege_id', '=', config('privilege.Admin'))->with('admin:admin_id,name');
             },
         ])->orderBy('start_date', 'desc')
             ->where('private', '=', 0)
@@ -164,7 +164,7 @@ class CongressServices
                 $query->whereNull('parent_id');
             },
             'accesss.participants.user_congresses' => function ($query) {
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             }
         ])
             ->get();
@@ -193,7 +193,7 @@ class CongressServices
             },
             'accesss.participants.user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             }
         ])
             ->where("congress_id", "=", $congressId)
@@ -461,7 +461,7 @@ class CongressServices
         $admin_congress = new AdminCongress();
         $admin_congress->admin_id = $adminId;
         $admin_congress->congress_id = $congress->congress_id;
-        $admin_congress->privilege_id = 1;
+        $admin_congress->privilege_id = config('privilege.Admin');
         $admin_congress->save();
         return $congress;
     }
