@@ -13,7 +13,7 @@ class AddMeetingDurationToConfigCongressTable extends Migration
      */
     public function up()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
+        Schema::table('Config_Congress', function (Blueprint $table) {
             $table->integer('meeting_duration')->default(30);
             $table->integer('pause_duration')->default(0);
         });
@@ -26,7 +26,7 @@ class AddMeetingDurationToConfigCongressTable extends Migration
      */
     public function down()
     {
-        Schema::table('config_congress', function (Blueprint $table) {
+        Schema::table('Config_Congress', function (Blueprint $table) {
             $table->removeColumn("meeting_duration");
             $table->removeColumn("pause_duration");
         });
