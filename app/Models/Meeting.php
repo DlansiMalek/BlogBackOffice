@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
- 
+
 use Illuminate\Database\Eloquent\Model;
- 
+
 
 class Meeting extends Model
 {
- 
+
     protected $table = 'Meeting';
     protected $primaryKey = 'meeting_id';
     protected $fillable = ['name', 'start_date', 'end_date'];
@@ -17,7 +17,6 @@ class Meeting extends Model
 
     public function user_meeting()
     {
-
         return $this->hasMany(UserMeeting::class, 'meeting_id', 'meeting_id');
     }
 }

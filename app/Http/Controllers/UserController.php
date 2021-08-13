@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
+use App\Models\Meeting;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -28,6 +29,8 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Exception;
+use App\Services\MeetingServices;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -49,6 +52,8 @@ class UserController extends Controller
     protected $offreServices;
     protected $standServices;
     protected $registrationFormServices;
+    protected $meetingServices;
+    
 
     public function __construct(UserServices $userServices, CongressServices $congressServices,
         AdminServices $adminServices,
@@ -66,7 +71,7 @@ class UserController extends Controller
         TrackingServices $trackingServices,
         OffreServices $offreServices,
         StandServices $standServices,
-        RegistrationFormServices $registrationFormServices) {
+        RegistrationFormServices $registrationFormServices, MeetingServices $meetingServices) {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -85,6 +90,7 @@ class UserController extends Controller
         $this->offreServices = $offreServices;
         $this->standServices = $standServices;
         $this->registrationFormServices = $registrationFormServices;
+        $this->meetingServices = $meetingServices;
     }
 
     public function getLoggedUser()
@@ -2028,5 +2034,57 @@ class UserController extends Controller
         $user->qr_code = $request->get('qrcode');
         $user->update();
         return $user;
+    }
+
+    public function checkMeetingRights($congressId, $meetingId = null)
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+        $userId = $user->user_id;
+        $congress = $this->congressServices->getCongressById($congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
+        $meeting = $this->meetingServices->getMeetingById($meetingId);
+        if (!$meeting) {
+            return response()->json(['response' => 'No meeting found'], 401);
+        }
+        $allowed = true;
+        $usermeeting = $this->meetingServices->getUserMeetingById($userId);
+        if (!$usermeeting) {
+            $allowed = false;
+            return response()->json(['response' => 'No user meetings found'], 401);
+        }
+
+        if ($meeting->user_meeting[0]->status == 0 || $meeting->user_meeting[0]->status == -1) {
+            $allowed = false;
+        }
+        if (!Utils::isValidSendMail($congress, $user)) {
+            return response()->json(['response' => 'not authorized'], 401);
+        }
+        $userToUpdate = $user->user_congresses[0];
+        $roomName = $meeting->name ?  'eventizer_room_' . $congressId . 'support' . $meeting->name : 'eventizer_room_' . $congressId . 's' . $meeting->meeting_id;
+
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, null);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, null, $user->first_name . " " . $user->last_name);
+        }
+
+        $userToUpdate->token_jitsi = $token;
+        $userToUpdate->update();
+
+        return response()->json(
+            [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
+                "token" => $token,
+                "privilege_id" => $user->user_congresses[0]->privilege_id,
+                "allowed" => $allowed
+
+            ],
+            200
+        );
     }
 }

@@ -46,6 +46,11 @@ Route::group(['prefix' => 'congress'], function () {
 Route::group(['prefix' => 'contact-us'], function () {
     Route::post('/send', 'ContactUsController@addContactUs');
 });
+Route::group(['prefix' => 'meetings'], function () {
+    Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
+    Route::post('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('', 'MeetingController@getUserMeetingById');
+});
 
 //SMS API
 
@@ -189,6 +194,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
         Route::get('/{standId}/checkStandRights', 'UserController@checkStandRights')->middleware('assign.guard:users');
         Route::get('/{standId}/checkSupportRights/{organizerId}', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('/{meetingId}/checkMeetingRights', 'UserController@checkMeetingRights')->middleware('assign.guard:users');
         Route::get('getOrganizers', 'UserController@getOrganizers')->middleware('assign.guard:users');
 
         Route::post('program-link', 'CongressController@setProgramLink');
