@@ -21,11 +21,11 @@ class ContactUsTest extends TestCase
   private function getFakeContact()
   {
     return [
-      'email' => $this->faker->word,
+      'email' => $this->faker->email,
       'user_name' =>  $this->faker->word,
       'subject'   =>  $this->faker->word,
-      'message'  =>  $this->faker->word,
-      'mobile' =>  $this->faker->word,
+      'message'  =>  $this->faker->sentence,
+      'mobile' =>  $this->faker->phoneNumber,
     ];
   }
 }
