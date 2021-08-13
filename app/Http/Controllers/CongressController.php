@@ -316,8 +316,9 @@ class CongressController extends Controller
 
         if ($mailtype = $this->congressServices->getMailType('inscription')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+                $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress->congress_id.'/event-room' ;
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false, $userMail);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,  $link, null, $userPayment ,null,null,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, false, $userMail);
             }
         }
     }
@@ -358,19 +359,19 @@ class CongressController extends Controller
 
     public function getCongressPagination(Request $request)
     {
-        $offset = $request->query('offset', 0);
+        $page = $request->query('page', 1);
         $perPage = $request->query('perPage', 6);
         $search = $request->query('search', '');
         $startDate = $request->query('startDate', '');
         $endDate = $request->query('endDate', '');
         $status = $request->query('status', '');
 
-        $cacheKey = "eventspagination-" . $offset . $perPage . $search . $startDate . $endDate . $status;
+        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
         } else {
-            $events = $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+            $events = $this->congressServices->getCongressPagination($page, $perPage, $search, $startDate, $endDate, $status);
             Cache::put($cacheKey, $events, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
 
@@ -527,8 +528,9 @@ class CongressController extends Controller
                     }
                     if ($userMail->status != 1) {
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
+                        $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congressId.'/event-room';
                         $this->mailServices->sendMail($this->congressServices
-                            ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice),
+                            ->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom),
                             $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                     }
                 }
