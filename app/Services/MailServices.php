@@ -305,7 +305,7 @@ class MailServices
        
         $message = array(
             'sender' => array(
-                'email' => env('MAIL_USERNAME', 'contact@eventizer.io'),
+                'email'=> $replyTo,
                 'name' => $fromMailName,
             ),
             'htmlContent' => $html,

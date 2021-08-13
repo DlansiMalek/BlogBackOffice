@@ -93,12 +93,17 @@ class CongressController extends Controller
         if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return $this->congressServices->addCongress(
+        $congress = $this->congressServices->addCongress(
             $request,
             $request->input('config'),
             $admin->admin_id,
             $request->input('config_selection')
         );
+        $tack1 = $this->trackingServices->createIndexByCongress($congress->congress_id);
+        $tack2 = $this->trackingServices->enrichPolicyByCongress($congress->congress_id);
+        $tack4 = $this->trackingServices->executePolicy($congress->congress_id);
+        $tack3 = $this->trackingServices->enrichPolicyByUserDetails($congress->congress_id);
+        return $congress;
     }
 
     public function editStatus(Request $request, $congressId, $status)
@@ -115,8 +120,10 @@ class CongressController extends Controller
             $configCongress->status = $status;
         }
         $configCongress->update();
+        if ($status == 0)
+            $execute = $this->trackingServices->executePolicy($congressId);
 
-        return response()->json(['message' => 'auto presence updating']);
+        return response()->json(['message' => 'auto presence updating', 'execute' => $execute]);
     }
 
     public function switchUsersRoom($congressId, Request $request)

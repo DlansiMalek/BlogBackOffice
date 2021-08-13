@@ -23,8 +23,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use PDF;
-use function foo\func;
 
 class UserServices
 {
@@ -1710,7 +1708,6 @@ class UserServices
 
         return $user;
     }
-
     public function editUserPrivilege($userCongress, $data)
     {
         $userCongress->privilege_id = $data["privilege_id"];

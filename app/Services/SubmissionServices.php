@@ -11,6 +11,7 @@ use App\Models\SubmissionComments;
 use App\Models\SubmissionEvaluation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class SubmissionServices
 {
@@ -72,6 +73,17 @@ class SubmissionServices
         return Submission::with(['submissions_evaluations', 'congress.configSubmission'])
             ->where('congress_id', '=', $congress_id)
             ->get();
+    }
+
+    public function getSubmissionsByStatus($congressId, $status, $communicationType = null) {
+        return Submission::where('status','=',$status)
+                ->where(function($query) use ($communicationType) {
+                    if ($communicationType) {
+                        $query->where('communication_type_id','=', $communicationType);
+                    }
+                })
+                ->where('congress_id','=',$congressId)
+                ->get();
     }
 
     public function getSubmissionById($submission_id)
@@ -144,7 +156,8 @@ class SubmissionServices
             'authors' => function ($query) {
                 $query->select('submission_id', 'author_id', 'first_name', 'last_name', 'service_id',
                     'etablissement_id')
-                    ->with(['service', 'etablissment']);
+                    ->with(['service', 'etablissment'])
+                    ->orderBy('rank');
             },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
@@ -312,7 +325,10 @@ class SubmissionServices
     public function getSubmissionsByUserId($user, $offset, $perPage, $search, $perCongressId, $status)
     {
         return Submission::where('user_id', '=', $user->user_id)
-            ->with('authors', 'congress', 'resources')
+            ->with([
+            'authors' => function ($query) {
+                $query->orderBy('rank');
+            }, 'congress', 'resources'])
             ->offset($offset)->limit($perPage)
             ->when($perCongressId !== "null", function ($query) use ($perCongressId) {
                 $query->where('congress_id', '=', $perCongressId);
@@ -336,29 +352,54 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id)
+    public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
     {
-        $allSubmission = Submission::with([
-            'resources', 'authors.service', 'authors.etablissment',
-        ])->when($search !== "null" && $search !== "" && $search !== null,
-            function ($query) use ($search) {
-                $query->where('title', 'like', '%' . $search . '%');
-                $query->orWhere('code', 'like', '%' . $search . '%');
-            })->where('status', '=', 1)
-            ->where('congress_id', '=', $congressId)
-            ->where('communication_type_id', '=', $communication_type_id);
-        $otherSubmissions = Submission::with([
-            'resources', 'authors',
-        ])->where('communication_type_id', '=', $communication_type_id)
-            ->where('congress_id', '=', $congressId)
-            ->where('status', '=', 1)
-            ->whereHas("authors", function ($query) use ($search) {
-                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+        $submissions = Submission::with([
+            'resources', 'authors' => function ($query) {
+                $query->orderBy('rank');
+            },
+        ])->where('status', '=', 1)
+        ->where('congress_id', '=', $congressId);
 
+        if ($communication_type_id != 'null' && $communication_type_id != '') {
+            $submissions->where('communication_type_id', '=', $communication_type_id);
+        }
+        if ($search != "null" && $search!='') {
+            $submissions->where('title', 'like', '%' . $search . '%')
+            ->orWhere(function($q) use ($search, $congressId, $communication_type_id) {
+                $q->where('congress_id', '=', $congressId)
+                ->where('status', '=', 1)
+                ->where('code', 'like', '%' . $search . '%');
+                if ($communication_type_id != 'null' && $communication_type_id != '') {
+                    $q->where('communication_type_id', '=', $communication_type_id);
+                }
             })
-            ->union($allSubmission)
-            ->paginate($perPage);
-        return $otherSubmissions;
+            ->orWhereHas("authors", function ($query) use ($search, $congressId) {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
+                ->whereHas('submission', function ($q) use ($congressId) {
+                    $q->where('Submission.congress_id', '=', $congressId)
+                    ->where('Submission.status', '=', 1);
+                });
+            });
+        }
+        $response = $submissions
+            ->offset($offset)->limit($perPage)
+            ->get();
+        return $response;
+    }
+
+    public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
+    {
+        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id;
+
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $submissions = $this->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        Cache::put($cacheKey, $submissions, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+        return $submissions;
     }
 
     public function getAttestationSubmissionById($attestationSubmissionId)
@@ -391,6 +432,12 @@ class SubmissionServices
         $submission->eligible = 1;
         $submission->update();
         return 'submission is eligible';
+    }
+    public function makeSubmissionNotEligible($submission)
+    {
+        $submission->eligible = 0;
+        $submission->update();
+        return 'submission is not eligible';
     }
 
     public function deleteAttestationSubmission($attestationSubmission)

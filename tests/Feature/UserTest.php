@@ -24,6 +24,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Log;
 
 class UserTest extends TestCase
 {
@@ -114,6 +115,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }
 
+    /* TODO Verify
     public function testSaveUserInscriptionEventWithPack()
     {
         $congress = factory(Congress::class)->create();
@@ -130,6 +132,7 @@ class UserTest extends TestCase
                 ['packIds' => [$pack->pack_id]])
             ->assertStatus(200);
     }
+    */
 
     public function testSaveUserInscriptionEventAccessObligated()
     {

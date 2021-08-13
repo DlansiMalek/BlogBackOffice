@@ -20,6 +20,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Exception;
 
 class AdminController extends Controller
 {
@@ -424,7 +425,7 @@ class AdminController extends Controller
         $password = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin    = $this->adminServices->addPersonnel($admin, $password);
+            $admin = $this->adminServices->addPersonnel($admin, $password);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
