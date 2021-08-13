@@ -119,13 +119,14 @@ class CongressServices
                 $query->where('privilege_id', '=', config('privilege.Admin'))->with('admin:admin_id,name');
             },
         ])->orderBy('start_date', 'desc')
-            ->offset($offset)->limit($perPage)
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
-            })
-            ->get();
+            });
+          
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage,["congress_id", "name", "start_date",
+        "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
 
         if ($startDate) {
             $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
@@ -143,14 +144,8 @@ class CongressServices
         if ($status == "2") {
             $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
         }
-
-        $congress_renderer = $all_congresses->map(function ($congress) {
-            return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date", "admin_congresses",
-                    "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
-        });
-
-        return response()->json($congress_renderer);
+        
+        return $all_congresses;
     }
 
     public function getMinimalCongress()
@@ -511,6 +506,7 @@ class CongressServices
         $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
         $configCongress->nb_max_access = $configCongressRequest['nb_max_access'];
         $configCongress->is_agora = $configCongressRequest['is_agora'];
+        $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->update();
 
         return $configCongress;

@@ -24,6 +24,7 @@ use App\Services\TrackingServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\PrivilegeServices;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -49,6 +50,7 @@ class UserController extends Controller
     protected $offreServices;
     protected $standServices;
     protected $registrationFormServices;
+    protected $privilegeServices;
 
     public function __construct(UserServices $userServices, CongressServices $congressServices,
         AdminServices $adminServices,
@@ -66,7 +68,8 @@ class UserController extends Controller
         TrackingServices $trackingServices,
         OffreServices $offreServices,
         StandServices $standServices,
-        RegistrationFormServices $registrationFormServices) {
+        RegistrationFormServices $registrationFormServices,
+        PrivilegeServices $privilegeServices) {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
         $this->congressServices = $congressServices;
@@ -85,6 +88,7 @@ class UserController extends Controller
         $this->offreServices = $offreServices;
         $this->standServices = $standServices;
         $this->registrationFormServices = $registrationFormServices;
+        $this->privilegeServices = $privilegeServices;
     }
 
     public function getLoggedUser()
@@ -713,7 +717,8 @@ class UserController extends Controller
                 $query->where('user_id', '=', $userId)->where('access_id', '=', $accessId);
             }]);
 
-        $isModerator = $this->userServices->isUserModerator($user->user_congresses[0]);
+        $privilege = $this->privilegeServices->getPrivilegeById($user->user_congresses[0]->privilege_id);
+        $isModerator = $this->userServices->isUserModerator($privilege);
         if (!$isModerator && !Utils::isValidSendMail($congress, $user) || ($accessId && sizeof($user->accesses) == 0)) {
             return response()->json(['response' => 'not authorized'], 401);
         }

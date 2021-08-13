@@ -744,9 +744,12 @@ class UserServices
         return $this->createOrUpdateUser($email, $firstName, $lastName, $gender, $mobile, $countryId);
     }
 
-    public function isUserModerator($userCongress)
+    public function isUserModerator($privilege)
     {
-        return $userCongress->privilege_id == config('privilege.Moderateur') || $userCongress->privilege_id == config('privilege.Conferencier_Orateur');
+        return $privilege->privilege_id   == config('privilege.Moderateur')
+            || $privilege->privilege_id   == config('privilege.Conferencier_Orateur')
+            || $privilege->priv_reference == config('privilege.Moderateur')
+            || $privilege->priv_reference == config('privilege.Conferencier_Orateur');
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -1708,9 +1711,9 @@ class UserServices
 
         return $user;
     }
-    public function editUserPrivilege($userCongress, $data)
+    public function editUserPrivilege($userCongress, $privilege_id)
     {
-        $userCongress->privilege_id = $data["privilege_id"];
+        $userCongress->privilege_id = $privilege_id;
         $userCongress->update();
     }
 
