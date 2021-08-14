@@ -2035,7 +2035,11 @@ class UserController extends Controller
         $page = $request->query('page', 1);
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$page,$perPage,$search);
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
+        }
+
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$page,$perPage,$search,$user->user_id);
         return response()->json($users);
     }
 }

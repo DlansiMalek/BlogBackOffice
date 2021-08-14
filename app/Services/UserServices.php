@@ -1747,10 +1747,12 @@ class UserServices
 
     }
 
-    public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$page,$perPage , $search )
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$page,$perPage , $search,$user_id )
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId,$search) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId,$search,$user_id) {
             $query->where('congress_id', '=', $congressId);
+            $query->where('user_id', '!=', $user_id);
+
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }      

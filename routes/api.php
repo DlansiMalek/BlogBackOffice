@@ -327,7 +327,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('status-presence', 'UserController@getUserStatusPresences');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
-            Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination');
+            Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination') ->middleware('assign.guard:users');;
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
