@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
+use App\Models\User;
 use App\Models\Submission;
 use App\Models\SubmissionComments;
 use App\Services\AdminServices;
@@ -284,7 +286,7 @@ class SubmissionController extends Controller
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
             $congress = $this->congressServices->getCongressById($congressId);
-            if ($privilege_id == 11) {
+            if ($privilege_id == config('privilege.Comite_scientifique')) {
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
                 if ($mail) {
@@ -784,7 +786,7 @@ class SubmissionController extends Controller
         }
     }
 
-    public function sendMailAttestationAllSubmission($congressId)
+    public function sendMailAttestationAllSubmission($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
@@ -794,7 +796,7 @@ class SubmissionController extends Controller
             if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
             $mailtype = $this->congressServices->getMailType('attestation_all', 'submission');
@@ -803,22 +805,13 @@ class SubmissionController extends Controller
                 return response()->json(['error' => 'mail attestation submission not found'], 400);
             }
             $mailId = $mail->mail_id;
-            $users = $this->userServices->getUsersSubmissionWithRelations($congressId, ['submissions' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-                $query->where('status', "=", 1);
-                $query->where('eligible', "=", 1);
-                $query->with(['authors' => function ($query) {
-                    $query->orderBy('rank');
-                }]);
-            },
-                'user_mails' => function ($query) use ($mailId) {
-                    $query->where('mail_id', '=', $mailId); // ICI
-                }]);
-            $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);  
-            foreach ($users as $user) {
+            $withAuthors = $request->input('sendCoAuthor');
+            $authors = $this->authorServices->getAuthorsAttestation($congressId, $mailId, $withAuthors);
+            $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
+            foreach ($authors as $author) {
                 $request = array();
-                if ($user->email != null && $user->email != "") {
-                    foreach ($user->submissions as $submission) {
+                if ($author->email != null && $author->email != "") {
+                    foreach ($author->submissions as $submission) {
                         $attestationSubmission = null;
                         foreach ($attestationsSubmissions as $attestation) {
                             if ($attestation->communication_type_id === $submission->communication_type_id) {
@@ -828,6 +821,7 @@ class SubmissionController extends Controller
                         if (!$attestationSubmission->attestation_generator_id) {
                             continue;
                         }
+                        
                         $mappedSubmission = $this->sharedServices->submissionMapping($submission->title,
                             $submission->authors,
                             $attestationSubmission->attestation_param);
@@ -835,32 +829,34 @@ class SubmissionController extends Controller
                         array_push($request, $mappedSubmission);
                     }
 
-                    if ($mail && $request) {
-                        $userMail = null;
-                        if (sizeof($user->user_mails) == 0) {
-                            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    if ($mail) {
+                        $authorMail = null;
+                        if (sizeof($author->author_mails) == 0) {
+                            $authorMail = $this->authorServices->addingMailAuthor($mail->mail_id, $author->author_id);
                         } else {
-                            $userMail = $user->user_mails[0];
+                            $authorMail = $author->author_mails[0];
                         }
-                        if ($userMail->status != 1) {
+                        if ($authorMail->status != 1) {
                             $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
                             $fileName = 'attestationsSubmission.zip';
-                            $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions),
-                                $user,
+                            $this->mailServices->sendMail(
+                                $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
+                                $author,
                                 $congress,
                                 $mail->object,
                                 true,
-                                $userMail,
+                                $authorMail,
                                 null,
-                                $fileName);
+                                $fileName
+                            );
                         }
                     }
+               
                 }
             }
-
-            return response()->json(['message' => 'send mail successs']);
+            return response()->json(['message' => 'send mail successs', 'authors' => $authors]);
         } catch (Exception $e) {
-            Log::info($e->getMessage());
+            Log::info($e);
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
@@ -888,7 +884,7 @@ class SubmissionController extends Controller
             if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
             $user = $submission['user'];
