@@ -27,7 +27,7 @@ class OffreTest extends TestCase
             'start_date' => $this->faker->date(),
             'end_date' => $this->faker->date(),
         ];
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
         $token = JWTAuth::fromUser($superAdmin);
         $this->withHeader('Authorization', 'Bearer ' . $token)
             ->post('api/offre/add', $offre)
@@ -36,10 +36,10 @@ class OffreTest extends TestCase
 
     public function testAddOffre()
     {
-        $admin = factory(Admin::class)->create(['privilege_id' => 1]);
+        $admin = factory(Admin::class)->create(['privilege_id' => config('privilege.Admin')]);
         $offre = $this->createOffre($admin->admin_id);
         $offre['menus'] = $this->getFakeMenus();
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
         $token = JWTAuth::fromUser($superAdmin);
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->post('api/offre/add', $offre)
@@ -56,11 +56,11 @@ class OffreTest extends TestCase
 
     public function testEditOffre()
     {
-        $admin = factory(Admin::class)->create(['privilege_id' => 1]);
+        $admin = factory(Admin::class)->create(['privilege_id' => config('privilege.Admin')]);
         $offre = $this->createOffre($admin->admin_id);
         $offre['menus'] = $this->getFakeMenus();
         $offreOld = factory(Offre::class)->create(['admin_id' => $admin->admin_id, 'status' => 1]);
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
         $token = JWTAuth::fromUser($superAdmin);
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->put('api/offre/edit/' . $offreOld->offre_id, $offre)
@@ -79,9 +79,9 @@ class OffreTest extends TestCase
 
     public function testGetOffreById()
     {
-        $admin = factory(Admin::class)->create(['privilege_id' => 1]);
+        $admin = factory(Admin::class)->create(['privilege_id' => config('privilege.Admin')]);
         $offre = factory(Offre::class)->create(['admin_id'=> $admin->admin_id, 'status' => 1]);
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
         $token = JWTAuth::fromUser($superAdmin);
         $this->withHeader('Authorization', 'Bearer ' . $token)
             ->get('api/offre/get/' . $offre->offre_id)
