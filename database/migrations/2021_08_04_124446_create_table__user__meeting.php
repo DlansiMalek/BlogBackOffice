@@ -18,6 +18,8 @@ class CreateTableUserMeeting extends Migration
             $table->tinyInteger('status')->default(0);
             $table->unsignedInteger('user_sender_id');
             $table->foreign('user_sender_id')->references('user_id')->on('User')->onDelete('cascade');
+            $table->unsignedInteger('user_canceler')->nullable();
+            $table->foreign('user_canceler')->references('user_id')->on('User')->onDelete('cascade');
             $table->unsignedInteger('user_receiver_id');
             $table->foreign('user_receiver_id')->references('user_id')->on('User')->onDelete('cascade');
             $table->unsignedInteger('meeting_id');
@@ -36,6 +38,8 @@ class CreateTableUserMeeting extends Migration
         Schema::table('User_Meeting', function (Blueprint $table) {
             $table->dropForeign(['user_sender_id']);
             $table->dropForeign(['user_receiver_id']);
+            $table->dropForeign(['meeting_id']);
+            $table->dropForeign(['user_canceler']);
         });
         Schema::dropIfExists('User_Meeting');
     }

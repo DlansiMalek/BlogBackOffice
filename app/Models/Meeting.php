@@ -11,7 +11,7 @@ class Meeting extends Model
 
     protected $table = 'Meeting';
     protected $primaryKey = 'meeting_id';
-    protected $fillable = ['name', 'start_date', 'end_date'];
+    protected $fillable = ['name', 'start_date', 'end_date','user_canceler'];
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 

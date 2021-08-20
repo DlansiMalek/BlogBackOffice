@@ -151,7 +151,7 @@ class MailTypeSeedTable extends Seeder
         DB::table('Mail_Type')->insert([
             'mail_type_id' => 24,
             'name' => 'request_meeting',
-            'display_name' => "demande de réunion ",
+            'display_name' => "Demande de réunion ",
             'type' => "event"
         ]);
         DB::table('Mail_Type')->insert([

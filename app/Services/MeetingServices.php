@@ -24,12 +24,15 @@ class MeetingServices
         $meeting->save();
         return $meeting;
     }
-    public function addUserMeeting($meeting, $request, $user_id)
+    public function addUserMeeting($meeting, $usermeeting, $request, $user_id)
     {
-        $usermeeting = new UserMeeting();
+        if (!$usermeeting) {
+            $usermeeting = new UserMeeting();
+        }
         $usermeeting->user_sender_id     = $user_id;
         $usermeeting->user_receiver_id   = $request->input('user_received_id');
         $usermeeting->meeting_id         = $meeting->meeting_id;
+        $usermeeting->status   = 0;
         $usermeeting->save();
         return $usermeeting;
     }
@@ -46,13 +49,20 @@ class MeetingServices
                 ->orwhere('user_receiver_id', '=', $user_id);
         })->get();
     }
-    public function getUserMeetingsById($meeting_id)
+    public function getUserMeetingsByMeetingId($meeting_id)
     {
         return UserMeeting::where('meeting_id', '=', $meeting_id)->get();
     }
-    public function updatemeetingstatus($user_meeting, $request)
+    public function getUserMeetingsById($user_meeting_id)
+    {
+        return UserMeeting::where('user_meeting_id', '=', $user_meeting_id)->get();
+    }
+    
+    public function updateMeetingStatus($user_meeting, $request)
     {
         $user_meeting->status = $request->input('status');
+        if($request->input('user_canceler')){
+        $user_meeting->user_canceler = $request->input('user_canceler');}
         $user_meeting->save();
         return $user_meeting;
     }
