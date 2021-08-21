@@ -116,7 +116,7 @@ class StandServices
         return $stand;
     }
 
-    public function getStands($congress_id, $page = null, $perPage = null, $name = null, $status = null)
+    public function getStands($congress_id,  $name = null, $status = null,$perPage = null)
     {
         $allStand = Stand::where(function ($query) use ($name, $status) {
             if ($name) {
@@ -142,7 +142,7 @@ class StandServices
             return Cache::get($cacheKey);
         }
 
-        $stands = $this->getStands($congress_id, $page, $perPage);
+        $stands = $this->getStands($congress_id, null,null, $perPage);
         Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
         return $stands;
