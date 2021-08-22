@@ -404,17 +404,6 @@ class UserTest extends TestCase
             ->assertStatus(200);
     
     }
-    public function testGetAllUsersByCongressFrontOfficeWithPagination()
-    {
-        //  api/user/congress/congress_id/list-pagination
-        $congress = factory(Congress::class)->create();
-        $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
-            'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
-
-        $this->get('api/user/congress/' . $congress->congress_id . '/listUsers')
-            ->assertStatus(200);
-
-    }
 
     private function getUserData($pack_id, $access_id)
     {

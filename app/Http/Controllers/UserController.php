@@ -2032,14 +2032,13 @@ class UserController extends Controller
 
     public function getAllUsersByCongressFrontOfficeWithPagination($congress_id,Request $request)
     {
-        $page = $request->query('page', 1);
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
         }
 
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$page,$perPage,$search,$user->user_id);
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search,$user->user_id);
         return response()->json($users);
     }
 }

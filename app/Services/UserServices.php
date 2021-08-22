@@ -1747,7 +1747,7 @@ class UserServices
 
     }
 
-    public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$page,$perPage , $search,$user_id )
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$perPage , $search,$user_id )
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId,$search,$user_id) {
             $query->where('congress_id', '=', $congressId);
