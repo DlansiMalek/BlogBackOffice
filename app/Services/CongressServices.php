@@ -116,16 +116,17 @@ class CongressServices
             "theme:label,description",
             "location.city:city_id,name",
             'admin_congresses' => function ($query) {
-                $query->where('privilege_id', '=', '1')->with('admin:admin_id,name');
+                $query->where('privilege_id', '=', config('privilege.Admin'))->with('admin:admin_id,name');
             },
         ])->orderBy('start_date', 'desc')
-            ->offset($offset)->limit($perPage)
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
-            })
-            ->get();
+            });
+          
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage,["congress_id", "name", "start_date",
+        "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
 
         if ($startDate) {
             $all_congresses = $all_congresses->where('start_date', '>=', $startDate)->values();
@@ -143,14 +144,8 @@ class CongressServices
         if ($status == "2") {
             $all_congresses = $all_congresses->where('start_date', '>', $todayDate)->values();
         }
-
-        $congress_renderer = $all_congresses->map(function ($congress) {
-            return collect($congress->toArray())
-                ->only(["congress_id", "name", "start_date", "admin_congresses",
-                    "end_date", "price", "description", "congress_type_id", "config", "theme", "location"])->all();
-        });
-
-        return response()->json($congress_renderer);
+        
+        return $all_congresses;
     }
 
     public function getMinimalCongress()
@@ -169,7 +164,7 @@ class CongressServices
                 $query->whereNull('parent_id');
             },
             'accesss.participants.user_congresses' => function ($query) {
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             }
         ])
             ->get();
@@ -198,7 +193,7 @@ class CongressServices
             },
             'accesss.participants.user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             }
         ])
             ->where("congress_id", "=", $congressId)
@@ -466,7 +461,7 @@ class CongressServices
         $admin_congress = new AdminCongress();
         $admin_congress->admin_id = $adminId;
         $admin_congress->congress_id = $congress->congress_id;
-        $admin_congress->privilege_id = 1;
+        $admin_congress->privilege_id = config('privilege.Admin');
         $admin_congress->save();
         return $congress;
     }
@@ -511,6 +506,7 @@ class CongressServices
         $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
         $configCongress->nb_max_access = $configCongressRequest['nb_max_access'];
         $configCongress->is_agora = $configCongressRequest['is_agora'];
+        $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->update();
 
         return $configCongress;
@@ -696,7 +692,7 @@ class CongressServices
     }
 
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null)
+                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null)
     {
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
@@ -750,6 +746,7 @@ class CongressServices
         $template = str_replace('{{$participant-&gt;pack-&gt;label}}', '{{$participant->pack->label}}', $template);
         $template = str_replace('{{%24link}}', '{{$link}}', $template);
         $template = str_replace('{{%24linkFrontOffice}}', '{{$linkFrontOffice}}', $template);
+        $template = str_replace('{{%24linkPrincipalRoom}}', '{{$linkPrincipalRoom}}', $template);
         $template = str_replace('{{%24linkSondage}}', '{{$linkSondage}}', $template);
         $template = str_replace('{{$participant-&gt;accesses}}', $accesses, $template);
         $template = str_replace('{{$organization-&gt;name}}', '{{$organization->name}}', $template);
@@ -772,7 +769,7 @@ class CongressServices
 
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom]);
 
     }
 
