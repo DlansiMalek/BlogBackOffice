@@ -2057,7 +2057,7 @@ class UserController extends Controller
             return response()->json(['response' => 'No meeting found'], 401);
         }
         $allowed = true;
-        $userMeeting = $this->meetingServices->getUserMeetingById($userId);
+        $userMeeting = $this->meetingServices->getUserMeetingsById($userId);
         if (!$userMeeting) {
             $allowed = false;
             return response()->json(['response' => 'No user meetings found'], 401);

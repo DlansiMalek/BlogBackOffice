@@ -31,6 +31,12 @@ class MailSeedTable extends Seeder
         DB::table('Mail')->insert([
             'object' => 'to change',
             'template' => '<p>to change <p>',
+            'mail_type_id' => 24
+        ]);
+
+        DB::table('Mail')->insert([
+            'object' => 'to change',
+            'template' => '<p>to change <p>',
             'mail_type_id' => 25
         ]);
 

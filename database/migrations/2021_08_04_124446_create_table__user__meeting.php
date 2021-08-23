@@ -18,7 +18,7 @@ class CreateTableUserMeeting extends Migration
             $table->tinyInteger('status')->default(0);
             $table->unsignedInteger('user_sender_id');
             $table->foreign('user_sender_id')->references('user_id')->on('User')->onDelete('cascade');
-            $table->unsignedInteger('user_canceler')->nullable();
+            $table->unsignedInteger('user_canceler')->nullable()->default(null);
             $table->foreign('user_canceler')->references('user_id')->on('User')->onDelete('cascade');
             $table->unsignedInteger('user_receiver_id');
             $table->foreign('user_receiver_id')->references('user_id')->on('User')->onDelete('cascade');

@@ -9,6 +9,7 @@ use App\Services\UserServices;
 use App\Services\AdminServices;
 use App\Services\MailServices;
 use App\Services\CongressServices;
+use Illuminate\Support\Facades\Log;
 
 
 class MeetingController extends Controller
@@ -33,13 +34,10 @@ class MeetingController extends Controller
         $this->userServices = $userServices;
     }
 
-    public function getMeetingById($meeting_id)
-    {
-        return $this->meetingServices->getMeetingById($meeting_id);
-    }
+  
     public function getUserMeetingById(Request $request)
     {
-        return $this->meetingServices->getUserMeetingById($request->input('user_id'));
+        return $this->meetingServices->getMeetingByUserId($request->input('user_id'));
     }
 
     function addMeeting(Request $request)
@@ -49,30 +47,31 @@ class MeetingController extends Controller
         $meeting_pause = $congress->config->pause_duration;
         $user_sender  = $this->userServices->retrieveUserFromToken();
         $user_receiver = $this->userServices->getUserById($request->input('user_received_id'));
-        if (!$user_sender) {
-            return response()->json(['response' => 'No user found'], 401);
+        if(!$user_sender)
+        { 
+            $user_sender = $this->userServices->getUserById($request->input('user_sender_id'));
         }
         if (!$user_receiver) {
             return response()->json(['response' => 'No user found'], 401);
         }
         $meeting = null;
-        if ($request->input('meeting_id')) {
+        if ($request->has('meeting_id')) {
             $meeting = $this->meetingServices->getMeetingById($request->input('meeting_id'));
         }
         $userMeet= null;
-        if($request->input('user_meeting')['user_meeting_id'])
+        if($request->has('user_meeting')['user_meeting_id'])
         {
-            $userMeet = $this->meetingServices->getUserMeetingsById($request->input('user_meeting')['user_meeting_id']);
+            $userMeet = $this->meetingServices->UserMeetingsById($request->input('user_meeting')['user_meeting_id']);
         }
         $meeting = $this->meetingServices->addMeeting($meeting,  $request);
         $usermeeting = $this->meetingServices->addUserMeeting($meeting, $userMeet[0], $request, $user_sender->user_id);
         if ($mailtype = $this->congressServices->getMailType('request_meeting')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id), $user_receiver, $congress, $mail->object, null, null, null, null);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, null, null, null);
             }else
             {
                 if ($mail = $this->congressServices->getMailOutOfCongress(24)) {
-                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id), $user_receiver, $congress, $mail->object, null, null, null, null);
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, null, null, null);
             }
             }
         }
@@ -84,7 +83,14 @@ class MeetingController extends Controller
         $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
         $user_sender  = $this->userServices->retrieveUserFromToken();
         $user_receiver = $this->userServices->getUserById($request->input('user_received_id'));
-        $status = $request->has('status');
+        if(!$user_sender)
+        {
+            $user_sender = $this->userServices->getUserById($request->input('user_sender_id'));
+        }
+        if (!$user_receiver) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+        $status = $request->input('status');
         $meeting = null;
         if ($request->has('meeting_id')) {
             $meeting = $this->meetingServices->getMeetingById($request->input('meeting_id'));
@@ -94,22 +100,25 @@ class MeetingController extends Controller
         if ($status == 1) {
             if ($mailtype = $this->congressServices->getMailType('accept_meeting')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null), $user_receiver, $congress, $mail->object, null, null, null, null);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null), $user_sender, $congress, $mail->object, null, null, null, null);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, null, null, null);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
                 } else {
                     if ($mail = $this->congressServices->getMailOutOfCongress(25)) {
-                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id), $user_receiver, $congress, $mail->object, null, null, null, null);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null,  $meeting->meeting_id, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, null, null, null);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress,  $user_sender, null, null, null,  $meeting->meeting_id, $user_receiver, $user_sender),  $user_sender, $congress, $mail->object, null, null, null, null);
+                        
                     }
                 }
             }
         } else {
             if ($mailtype = $this->congressServices->getMailType('decline_meeting')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null), $user_sender, $congress, $mail->object, null, null, null, null);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null), $user_receiver, $congress, $mail->object, null, null, null, null);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, null, null, null);
                 } else {
                     if ($mail = $this->congressServices->getMailOutOfCongress(26)) {
-                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id), $user_receiver, $congress, $mail->object, null, null, null, null);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, null, null, null);
+                        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, $meeting->meeting_id, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
                     }
                 }
             }
