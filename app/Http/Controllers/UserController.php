@@ -745,7 +745,7 @@ class UserController extends Controller
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
         $roomName = $accessId ? 'eventizer_room_' . $congressId . $accessId : 'eventizer_room_' . $congressId;
         if ($congress->config && $congress->config->is_agora) {
-            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+            $token = $this->roomServices->createTokenAgora($user->user_id . '_' .$user->first_name . '_' . $user->last_name , $roomName, $isModerator);
         } else {
             $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
         }
