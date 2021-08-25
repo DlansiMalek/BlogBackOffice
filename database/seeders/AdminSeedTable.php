@@ -19,7 +19,7 @@ class AdminSeedTable extends Seeder
             'name' => 'SuperAdmin Vayetek',
             'email' => 'super_admin@vayetek.com',
             'mobile' => '77777777',
-            'privilege_id' => 9,
+            'privilege_id' => config('privilege.Super_Admin'),
             'passwordDecrypt' => 'SuperAdminVayetek',
             'password' => bcrypt('SuperAdminVayetek')
         ]);
@@ -29,7 +29,7 @@ class AdminSeedTable extends Seeder
             'name' => 'Marketing Vayetek',
             'email' => 'marketing@vayetek.com',
             'mobile' => '77777777',
-            'privilege_id' => 10,
+            'privilege_id' => config('privilege.Marketing'),
             'passwordDecrypt' => 'MarketingVayetek',
             'password' => bcrypt('MarketingVayetek')
         ]);
@@ -39,7 +39,7 @@ class AdminSeedTable extends Seeder
             'name' => 'Admin Vayetek',
             'email' => 'admin@vayetek.com',
             'mobile' => '77777777',
-            'privilege_id' => 1,
+            'privilege_id' => config('privilege.Admin'),
             'passwordDecrypt' => 'AdminVayetek',
             'password' => bcrypt('AdminVayetek')
         ]);
@@ -51,7 +51,7 @@ class AdminSeedTable extends Seeder
             'email' => 'organisateur@vayetek.com',
             'mobile' => '77777777',
             'passwordDecrypt' => 'OrganisateurVayetek',
-            'privilege_id' => 2,
+            'privilege_id' => config('privilege.Organisateur'),
             'password' => bcrypt('OrganisateurVayetek')
         ]);
 
@@ -60,7 +60,7 @@ class AdminSeedTable extends Seeder
             'name' => 'Organisme Vayetek',
             'email' => 'organisme@vayetek.com',
             'mobile' => '77777777',
-            'privilege_id' => 7,
+            'privilege_id' => config('privilege.Organisme'),
             'passwordDecrypt' => 'OrganismeVayetek',
             'password' => bcrypt('OrganismeVayetek')
         ]);
