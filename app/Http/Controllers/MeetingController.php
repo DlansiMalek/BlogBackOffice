@@ -11,6 +11,7 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Services\UrlUtils;
 
 
 class MeetingController extends Controller
@@ -84,6 +85,10 @@ class MeetingController extends Controller
             }
             }
         }
+        if ($request->hase('verification_code')) {
+            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+            return redirect($linkFrontOffice);
+        }
         return response()->json($meeting, 200);
     }
 
@@ -95,6 +100,11 @@ class MeetingController extends Controller
         if(!$user_sender)
         {
             $user_sender = $this->userServices->getUserById($request->input('user_sender_id'));
+            if($request->has('verification_code')){
+                $verification_code = $request->input('verification_code');
+                if(!$user_sender->verification_code== $verification_code)
+                { return response()->json(['response' => 'No verification code found'], 401);}
+            }
         }
         if (!$user_receiver) {
             return response()->json(['response' => 'No user found'], 401);
@@ -131,6 +141,10 @@ class MeetingController extends Controller
                     }
                 }
             }
+        }
+        if ($request->hase('verification_code')) {
+            $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+            return redirect($linkFrontOffice);
         }
         return response()->json($meeting, 200);
     }
