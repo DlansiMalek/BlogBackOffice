@@ -136,10 +136,11 @@ class CongressServices
                 }
 
                 if ($type != '' && $type != 'null') {
-                    if ($type == 1 || $type == 3) {
+                    if ($type == 1 ) {
                         $query->where('congress_type_id', '=', 1);
-                    } else {
+                    } if ($type == 2 ){
                         $query->where('congress_type_id', '>=', 2);
+
                     }
 
                 }
