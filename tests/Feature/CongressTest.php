@@ -316,6 +316,16 @@ class CongressTest extends TestCase
         $this->assertEquals($config_congress->banner, $configLP->prp_banner_event);
     }
 
+    public function testgetCongressPagination()
+    {
+        $congress = factory(Congress::class)->create();
+        $response = $this->get('api/congress/list/pagination')
+            ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertCount(6, $dataResponse['data']);
+        
+    }
+
     private function getFakeDataCongress()
     {
         return [
