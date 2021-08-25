@@ -513,6 +513,7 @@ class AdminServices
         $template = str_replace('{{$contact-&gt;subject}}', '{{$contact->subject}}', $template);
         $template = str_replace('{{$contact-&gt;email}}', '{{$contact->email}}', $template);
         $template = str_replace('{{$contact-&gt;user_name}}', '{{$contact->user_name}}', $template);
+        $template = str_replace('{{$contact-&gt;mobile}}', '{{$contact->mobile}}', $template);
         return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink,'contact' => $contact]);
     }
 
