@@ -85,7 +85,7 @@ class MeetingController extends Controller
             }
             }
         }
-        if ($request->hase('verification_code')) {
+        if ($request->has('verification_code')) {
             $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
             return redirect($linkFrontOffice);
         }
@@ -142,7 +142,7 @@ class MeetingController extends Controller
                 }
             }
         }
-        if ($request->hase('verification_code')) {
+        if ($request->has('verification_code')) {
             $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
             return redirect($linkFrontOffice);
         }
