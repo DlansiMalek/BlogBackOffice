@@ -64,7 +64,7 @@ class MeetingServices
     {
        
         $user_meeting->status = $request->input('status');
-        $user_meeting->user_canceler = $request->input('user_canceler')!= null?$request->input('user_canceler')!= null : null ;   
+        $user_meeting->user_canceler = $request->input('user_canceler')!= null?$request->input('user_canceler') : null ;   
         $user_meeting->save();
         return $user_meeting;
     }

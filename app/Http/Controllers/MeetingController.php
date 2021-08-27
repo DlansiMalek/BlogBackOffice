@@ -69,9 +69,10 @@ class MeetingController extends Controller
             $meeting = $this->meetingServices->getMeetingById($request->input('meeting_id'));
         }
         $userMeet= null;
-        if($request->has('user_meeting')['user_meeting_id'])
+  
+        if($request->input('user_meeting')['user_meeting_id'])
         {
-            $userMeet = $this->meetingServices->UserMeetingsById($request->input('user_meeting')['user_meeting_id']);
+            $userMeet = $this->meetingServices->UserMeetingsById($request->input('user_meeting')['user_meeting_id']);    
         }
         $meeting = $this->meetingServices->addMeeting($meeting,  $request);
         $usermeeting = $this->meetingServices->addUserMeeting($meeting, $userMeet[0], $request, $user_sender->user_id);

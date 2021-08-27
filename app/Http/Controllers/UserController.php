@@ -2041,7 +2041,7 @@ class UserController extends Controller
         return $user;
     }
 
-    public function checkMeetingRights($congressId, $meetingId = null)
+    public function checkMeetingRights($congressId, $meetingId )
     {
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
@@ -2053,11 +2053,11 @@ class UserController extends Controller
             return response()->json(['response' => 'No congress found'], 401);
         }
         $meeting = $this->meetingServices->getMeetingById($meetingId);
-        if (!$meeting) {
+        if (!$meeting->meeting_id) {
             return response()->json(['response' => 'No meeting found'], 401);
         }
         $allowed = true;
-        $userMeeting = $this->meetingServices->getUserMeetingsById($userId);
+        $userMeeting = $this->meetingServices->getUserMeetingsById($meeting->meeting_id,$userId);
         if (!$userMeeting) {
             $allowed = false;
             return response()->json(['response' => 'No user meetings found'], 401);
@@ -2066,9 +2066,7 @@ class UserController extends Controller
         if ($meeting->user_meeting[0]->status == 0 || $meeting->user_meeting[0]->status == -1) {
             $allowed = false;
         }
-        if (!Utils::isValidSendMail($congress, $user)) {
-            return response()->json(['response' => 'not authorized'], 401);
-        }
+        
         $userToUpdate = $user->user_congresses[0];
         $roomName = $meeting->name ?  'eventizer_room_' . $congressId . 'support' . $meeting->name : 'eventizer_room_' . $congressId . 's' . $meeting->meeting_id;
 
