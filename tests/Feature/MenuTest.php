@@ -21,20 +21,20 @@ class MenuTest extends TestCase
   
     }
 
-    // public function testSetMenus()
-    // {
-    //     $allMenu=Menu::with(['menu_children'])->get();
-    //     $newmenu = $this->getFakeMenu();
-
-    //     array_push($allMenu,$newmenu);
-    //     $response = $this->post('api/menu/add/'.$newmenu['show_after_reload'], $allMenu->toArray())
-    //         ->assertStatus(200);
+    public function testSetMenus()
+    {
+        $newmenu = $this->getFakeMenu();
+        $allMenu=Menu::with(['menu_children'])->where('show_after_reload','=',$newmenu['show_after_reload'])->get();
+        $allMenu[count($allMenu)]=$newmenu ;
+        $response = $this->post('api/menu/add/'.$newmenu['show_after_reload'], $allMenu->toArray())
+            ->assertStatus(200);
   
-    // }
+    }
 
     private function getFakeMenu()
     {
         return [
+            'menu_id' => $this->faker->numberBetween(0, 100),         
             'key' => $this->faker->word,
             'icon' => $this->faker->word,
             'url'=>$this->faker->word,
