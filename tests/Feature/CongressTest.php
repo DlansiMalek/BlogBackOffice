@@ -318,11 +318,23 @@ class CongressTest extends TestCase
 
     public function testgetCongressPagination()
     {
-        $response = $this->get('api/congress/list/pagination')
+     
+     $response = $this->get('api/congress/list/pagination')
             ->assertStatus(200);
-        $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(6, $dataResponse['data']);
-        
+             $dataResponse = json_decode($response->getContent(), true);
+             $data= $dataResponse['data'];
+             $congress = Congress ::where('congress_id', '=',  $data[0]['congress_id'])
+             ->first();
+        $this->assertEquals( $data[0]['name'], $congress->name);
+        $this->assertEquals( $data[0]['start_date'], $congress->start_date);
+        $this->assertEquals( $data[0]['end_date'], $congress->end_date);
+        $this->assertEquals( $data[0]['price'], $congress->price);
+        $this->assertEquals( $data[0]['congress_type_id'], $congress->congress_type_id);
+        $this->assertEquals( $data[0]['description'], $congress->description);
+        $this->assertEquals( $data[0]['config']['free'], $congress['config']->free);
+        $this->assertEquals( $data[0]['config']['congress_id'], $congress['config']->congress_id);
+        $this->assertEquals( $data[0]['config']['logo'], $congress['config']->logo);
+        $this->assertEquals( $data[0]['config']['banner'], $congress['config']->banner);
     }
 
     private function getFakeDataCongress()
