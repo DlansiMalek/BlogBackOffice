@@ -397,7 +397,6 @@ class UserTest extends TestCase
         $user1 = factory(User::class)->create();
         $user2 = factory(User::class)->create();
         $user3 = factory(User::class)->create();
-
         $congress = factory(Congress::class)->create();
         $userCongress = factory(UserCongress::class)->create(['user_id' => $user1->user_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
