@@ -1661,6 +1661,10 @@ class UserServices
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
         return $user;
     }
 
@@ -1736,6 +1740,10 @@ class UserServices
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
         return $user;
     }
     public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId, $privilegeId)
