@@ -391,6 +391,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
 
     }
+    
     public function testgetAllUsersByCongressFrontOfficeWithPagination()
     {
         //  api/user/congress/congress_id/listUsers'
@@ -408,7 +409,22 @@ class UserTest extends TestCase
         $response= $this->withHeader('Authorization', 'Bearer ' . $token)->
         get('api/user/congress/' . $congress->congress_id . '/listUsers')->assertStatus(200);    
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(2, $dataResponse['data']);      
+       $userVerification= User::where('user_id', '=', $user3->user_id)->first() ;
+       $this->assertEquals($dataResponse['data'][1]['first_name'], $userVerification->first_name);
+       $this->assertEquals($dataResponse['data'][1]['last_name'], $userVerification->last_name);
+       $this->assertEquals($dataResponse['data'][1]['gender'], $userVerification->gender);
+       $this->assertEquals($dataResponse['data'][1]['mobile'], $userVerification->mobile);
+       $this->assertEquals($dataResponse['data'][1]['email_verified'], $userVerification->email_verified);
+       $this->assertEquals($dataResponse['data'][1]['verification_code'], $userVerification->verification_code);
+       $this->assertEquals($dataResponse['data'][1]['qr_code'], $userVerification->qr_code);
+       $this->assertEquals($dataResponse['data'][1]['rfid'], $userVerification->rfid);
+       $this->assertEquals($dataResponse['data'][1]['path_cv'], $userVerification->path_cv);
+       $this->assertEquals($dataResponse['data'][1]['country_id'], $userVerification->country_id);
+       $this->assertEquals($dataResponse['data'][1]['resource_id'], $userVerification->resource_id);
+       $this->assertEquals($dataResponse['data'][1]['avatar_id'], $userVerification->avatar_id);
+       $this->assertEquals($dataResponse['data'][1]['img_base64'], $userVerification->img_base64);
+       $this->assertCount(2, $dataResponse['data']);      
+
     }
 
     private function getUserData($pack_id, $access_id)
