@@ -1983,7 +1983,7 @@ class UserController extends Controller
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
        
         if ($congress->config && $congress->config->is_agora) {
-            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+            $token = $this->roomServices->createTokenAgora($user->user_id . '_' .$user->first_name . '_' . $user->last_name, $roomName, $isModerator);
         } else {
             $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
         }
@@ -2068,10 +2068,10 @@ class UserController extends Controller
         }
         
         $userToUpdate = $user->user_congresses[0];
-        $roomName = $meeting->name ?  'eventizer_room_' . $congressId . 'support' . $meeting->name : 'eventizer_room_' . $congressId . 's' . $meeting->meeting_id;
+        $roomName = 'eventizer_room_' . $congressId . '_m_' . $meeting->meeting_id;
 
         if ($congress->config && $congress->config->is_agora) {
-            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, null);
+            $token = $this->roomServices->createTokenAgora($user->user_id . '_' .$user->first_name . '_' . $user->last_name, $roomName, null);
         } else {
             $token = $this->roomServices->createToken($user->email, $roomName, null, $user->first_name . " " . $user->last_name);
         }

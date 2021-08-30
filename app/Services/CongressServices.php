@@ -694,7 +694,7 @@ class CongressServices
     }
     
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting_id=null, $user_receiver=null, $user_sender=null,$verification_code = null)
+                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null)
     {
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
@@ -721,14 +721,16 @@ class CongressServices
         }
 
         $submissionsParms = "";
-        if (sizeof($submissions) > 0) {
-            $submissionsParms = "<ul>";
-            foreach ($submissions as $submission) {
-                $type = $submission->communicationType ? $submission->communicationType->label : " ";
-                $submissionsParms = $submissionsParms
-                    . "<li>" . $submission->code . ": " . $submission->title . " ( " . $type . " ) " . "</li>";
+        if (is_array($submissions)) {
+            if (sizeof($submissions) > 0) {
+                $submissionsParms = "<ul>";
+                foreach ($submissions as $submission) {
+                    $type = $submission->communicationType ? $submission->communicationType->label : " ";
+                    $submissionsParms = $submissionsParms
+                        . "<li>" . $submission->code . ": " . $submission->title . " ( " . $type . " ) " . "</li>";
+                }
+                $submissionsParms = $submissionsParms . "</ul>";
             }
-            $submissionsParms = $submissionsParms . "</ul>";
         }
 
         if ($congress != null) {
@@ -737,7 +739,6 @@ class CongressServices
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
         }
-
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
@@ -761,6 +762,11 @@ class CongressServices
         $template = str_replace('{{$room-&gt;name}}', '{{$room->name}}', $template);
         $template = str_replace('{{$participant-&gt;password}}', '{{$participant->passwordDecrypt}}', $template);
         $template = str_replace('{{$submissionComment-&gt;description}}', '{{$submissionComment->description}}', $template);
+        $template = str_replace('{{$user_receiver-&gt;last_name}}', '{{$user_receiver->last_name}}', $template);
+        $template = str_replace('{{$user_receiver-&gt;first_name}}', '{{$user_receiver->first_name}}', $template);
+        $template = str_replace('{{$user_sender-&gt;last_name}}', '{{$user_sender->last_name}}', $template);
+        $template = str_replace('{{$user_sender-&gt;first_name}}', '{{$user_sender->first_name}}', $template);
+        $template = str_replace('{{$meeting-&gt;start_date}}', '{{$meeting->start_date}}', $template);
         $template = str_replace('{{%24linkSubmission}}', '{{$linkSubmission}}', $template);
         $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
         $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;
@@ -768,14 +774,14 @@ class CongressServices
         $template = str_replace('{{$buttons}}', '
                                                   <a href="{{$linkAccept}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
                                                   <a href="{{$linkRefuse}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
-        $linkAcceptMeeting =$user_receiver !=null && $user_sender != null && $verification_code !=null?  UrlUtils::getBaseUrl() . '/meetings/update?congress_id=' . $congress->congress_id . '&user_received_id=' . $user_receiver->user_id .'&user_sender_id=' . $user_sender->user_id . '&meeting_id=' . $meeting_id . '&status=1&verification_code='.$verification_code : null ;
-        $linkRefuseMeeting =$user_receiver !=null && $user_sender != null && $verification_code !=null?  UrlUtils::getBaseUrl() . '/meetings/update?congress_id=' . $congress->congress_id . '&user_received_id=' . $user_receiver->user_id .'&user_sender_id=' . $user_sender->user_id . '&meeting_id=' . $meeting_id . '&status=-1=verification_code'.$verification_code : null ;
+        $linkAcceptMeeting =$user_receiver !=null && $user_sender != null && $verification_code !=null?  UrlUtils::getBaseUrl() . '/meetings/update?congress_id=' . $congress->congress_id . '&user_received_id=' . $user_receiver->user_id .'&user_sender_id=' . $user_sender->user_id . '&meeting_id=' . $meeting->meeting_id . '&status=1&verification_code='.$verification_code : null ;
+        $linkRefuseMeeting =$user_receiver !=null && $user_sender != null && $verification_code !=null?  UrlUtils::getBaseUrl() . '/meetings/update?congress_id=' . $congress->congress_id . '&user_received_id=' . $user_receiver->user_id .'&user_sender_id=' . $user_sender->user_id . '&meeting_id=' . $meeting->meeting_id . '&status=-1&verification_code='.$verification_code : null ;
         $template = str_replace('{{$meetingButtons}}', '
                                                   <a href="{{$linkAcceptMeeting}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
                                                   <a href="{{$linkRefuseMeeting}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting]);
+        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting]);
 
     }
 
