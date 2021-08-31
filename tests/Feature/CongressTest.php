@@ -120,7 +120,7 @@ class CongressTest extends TestCase
         $adminCongressOld = factory(AdminCongress::class)->create([
             'admin_id' => $this->admin->admin_id,
             'congress_id' => $congressOld->congress_id,
-            'privilege_id' => 1
+            'privilege_id' => config('privilege.Admin')
         ]);
 
         $configCongressOld = factory(ConfigCongress::class)->create(['congress_id' => $congressOld->congress_id]);

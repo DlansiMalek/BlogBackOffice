@@ -145,7 +145,7 @@ class BadgeController extends Controller
                 ->where('admin_id', '=', $admin->admin_id)->first()))) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'forbidden'], 403);
             }
 
@@ -175,7 +175,7 @@ class BadgeController extends Controller
                 ->where('admin_id', '=', $admin->admin_id)->first()))) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'forbidden'], 403);
             }
             $badges = $this->badgeServices->getBadgesByCongressAndPrivilege($congressId, $privilegeId);
@@ -199,7 +199,7 @@ class BadgeController extends Controller
             ->where('admin_id', '=', $admin->admin_id)->first()))) {
             return response()->json(['error' => 'bad request'], 400);
         }
-        if ($adminCongress->privilege_id != 1) {
+        if ($adminCongress->privilege_id != config('privilege.Admin')) {
             return response()->json(['error' => 'forbidden'], 403);
         }
         if (!$badge = $this->badgeServices->getBadgeByCongress($congressId, $badgeId)) {

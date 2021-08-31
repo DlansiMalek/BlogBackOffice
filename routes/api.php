@@ -43,6 +43,9 @@ Route::get('/action', 'SharedController@getAllActions');
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
+Route::group(['prefix' => 'contact-us'], function () {
+    Route::post('/send', 'ContactUsController@addContactUs');
+});
 
 //SMS API
 
@@ -202,9 +205,16 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::get('docs', 'StandController@getDocsByCongress');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
-            Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
+            Route::delete('deleteStand/{stand_id}', 'StandController@deleteStand');
             Route::delete('/deletestandproduct/{stand_product_id}', 'StandProductController@deleteStandproduct');
             Route::get('{stand_id}/products', 'StandProductController@getStandproducts');
+            Route::post('/addproduct', 'StandProductController@addStandProduct');
+            Route::put('/edit/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
+            Route::group(['prefix' => '{stand_id}/FAQ'], function () {
+                Route::get('', 'FAQController@getStandFAQs');
+                Route::put('', 'FAQController@addFAQ');
+              });
+            Route::delete('{stand_id}/deleteFAQ/{FAQ_id}', 'FAQController@deleteFAQ');
             Route::put('/edit-product/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
         });
 
@@ -585,6 +595,10 @@ Route::group(["prefix" => "peaksource"], function () {
 Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
+});
+Route::group(['prefix' => 'menu'], function () {
+    Route::get('all/{show_after_reload}', 'MenuController@getMenus');
+    Route::post('/add/{show_after_reload}', 'MenuController@setMenus');
 });
 
 // 3D API
