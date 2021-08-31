@@ -36,6 +36,15 @@ class Stand extends Model
     function faq() {
         return $this->hasMany(FAQ::class,'stand_id','stand_id');
     }
+
+    function stand_content_file() {
+        return $this->belongsToMany(StandContentConfig::class, 'Stand_Content_File', 'stand_id', 'stand_content_config_id')
+            ->withPivot(['file', 'url']);
+    }
+
+    function stand_type() {
+        return $this->hasOne(StandType::class,'stand_type_id','stand_type_id');
+    }
 }
 
 

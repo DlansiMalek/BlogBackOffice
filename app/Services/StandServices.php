@@ -154,7 +154,8 @@ class StandServices
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
                 ->select('Admin.admin_id', 'User.user_id', 'User.gender', 'User.first_name', 'User.last_name', 'User.mobile','Resource.resource_id','Resource.path as img_user');
-            }])
+            }, 
+            'stand_content_file', 'stand_type'])
             ->where('congress_id', '=', $congress_id)->paginate($perPage);
     }
 
