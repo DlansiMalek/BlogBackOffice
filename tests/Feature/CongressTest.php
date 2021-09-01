@@ -332,6 +332,7 @@ class CongressTest extends TestCase
         $this->assertEquals($data[0]['config']['banner'], $congress['config']->banner);
         $this->assertEquals($data[0]['config']['status'], $congress['config']->status);
         $this->assertEquals($data[0]['config']['currency_code'], $congress['config']->currency_code);
+        $this->assertEquals($data[0]['config']['program_link'], $congress['config']->program_link);
 
     }
 
