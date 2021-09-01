@@ -106,7 +106,7 @@ class MeetingController extends Controller
             $meeting = $this->meetingServices->getMeetingById($request->input('meeting_id'));
         }
         $user_meeting = $meeting['user_meeting']->first();
-        $meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request);
+        $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request);
         if ($status == 1) {
             if ($mailtype = $this->congressServices->getMailType('accept_meeting')) {
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
