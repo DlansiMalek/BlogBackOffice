@@ -14,4 +14,9 @@ class Category extends Model
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
+
+    public function projects()
+    {
+        return $this->hasMany('App\Models\Project', 'category_id', 'category_id');
+    }
 }

@@ -14,4 +14,13 @@ class Project extends Model
 
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
+
+    public function admin()
+    {
+        return $this->hasOne('App\Models\Admin', 'admin_id', 'admin_id');
+    }
+    public function category()
+    {
+        return $this->hasOne('App\Models\Category', 'category_id', 'category_id');
+    }
 }
