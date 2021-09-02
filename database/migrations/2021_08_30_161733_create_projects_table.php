@@ -17,6 +17,7 @@ class CreateProjectsTable extends Migration
             $table->increments('project_id');
             $table->string('nom');
             $table->date('date');
+            $table->string("project_img")->nullable()->default(null);
             $table->string('lien')->nullable()->default(null);
             $table->integer('admin_id')->unsigned()->nullable()->default(null);
             $table->foreign('admin_id')->references('admin_id')
