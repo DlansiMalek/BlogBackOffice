@@ -43,6 +43,14 @@ Route::get('/action', 'SharedController@getAllActions');
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
+Route::group(['prefix' => 'contact-us'], function () {
+    Route::post('/send', 'ContactUsController@addContactUs');
+});
+Route::group(['prefix' => 'meetings'], function () {
+    Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
+    Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('', 'MeetingController@getUserMeetingById');
+});
 
 //SMS API
 
@@ -186,6 +194,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
         Route::get('/{standId}/checkStandRights', 'UserController@checkStandRights')->middleware('assign.guard:users');
         Route::get('/{standId}/checkSupportRights/{organizerId}', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('/{meetingId}/checkMeetingRights', 'UserController@checkMeetingRights')->middleware('assign.guard:users');
         Route::get('getOrganizers', 'UserController@getOrganizers')->middleware('assign.guard:users');
 
         Route::post('program-link', 'CongressController@setProgramLink');
@@ -592,6 +601,10 @@ Route::group(["prefix" => "peaksource"], function () {
 Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
+});
+Route::group(['prefix' => 'menu'], function () {
+    Route::get('all/{show_after_reload}', 'MenuController@getMenus');
+    Route::post('/add/{show_after_reload}', 'MenuController@setMenus');
 });
 
 // 3D API

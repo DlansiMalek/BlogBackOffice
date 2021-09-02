@@ -566,7 +566,7 @@ class AccessServices
                 ->whereHas('user.user_congresses', function($query) use ($congress_id, $exclureInvitee) {
                     if($exclureInvitee){
                         $query->where('congress_id', '=', $congress_id);
-                        $query->where('privilege_id', '<>', 6);
+                        $query->where('privilege_id', '<>', config('privilege.Invite'));
                     }
                 })
                 ->orderBy('score','desc')->with(['access' => function ($query) {
