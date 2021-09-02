@@ -10,6 +10,7 @@
 namespace App\Services;
 
 use App\Models\Author;
+use App\Models\AuthorMail;
 use App\Models\Etablissement;
 use App\Models\Service;
 
@@ -220,5 +221,40 @@ class AuthorServices
             $etablissementId = $etablissement->etablissement_id;
         }
         return $etablissementId;
+    }
+
+    public function getAuthorsAttestation($congressId, $mailId, $withAuthors)
+    {
+        return Author::whereHas('submissions', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('status', '=', 1);
+            $query->where('eligible', "=", 1);
+        })
+            ->with(['submissions' => function ($query) use ($congressId) {
+                $query->where("congress_id", "=", $congressId);
+                $query->where('status', "=", 1);
+                $query->where('eligible', "=", 1);
+                $query->with(['authors' => function ($query) {
+                    $query->orderBy('rank');
+                }]);
+            },
+            'author_mails' => function ($query) use ($mailId) {
+                $query->where('mail_id', '=', $mailId);
+            }])->where(function ($query) use ($withAuthors) {
+                if ($withAuthors == 0) {
+                    $query->where('rank', '=', 1);
+                }
+            })
+            ->get();
+    }
+
+    public function addingMailAuthor($mailId, $authorId)
+    {
+        $mailAuthor = new AuthorMail();
+        $mailAuthor->author_id = $authorId;
+        $mailAuthor->mail_id = $mailId;
+        $mailAuthor->save();
+
+        return $mailAuthor;
     }
 }

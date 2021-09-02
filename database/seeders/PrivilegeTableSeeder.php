@@ -14,51 +14,51 @@ class PrivilegeTableSeeder extends Seeder
     public function run()
     {
         DB::table('Privilege')->insert([
-            'privilege_id' => 1,
+            'privilege_id' => config('privilege.Admin'),
             'name' => 'Admin'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 2,
+            'privilege_id' => config('privilege.Organisateur'),
             'name' => 'Organisateur'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 3,
+            'privilege_id' => config('privilege.Participant'),
             'name' => 'Participant'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 5,
+            'privilege_id' => config('privilege.Moderateur'),
             'name' => 'Modérateur'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 6,
+            'privilege_id' => config('privilege.Invite'),
             'name' => 'Invité'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 7,
+            'privilege_id' => config('privilege.Organisme'),
             'name' => 'Organisme (laboratoire, société, etc)'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 8,
+            'privilege_id' => config('privilege.Conferencier_Orateur'),
             'name' => 'Conférencier/Orateur'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 9,
+            'privilege_id' => config('privilege.Super_Admin'),
             'name' => 'Super Admin'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id' => 10,
+            'privilege_id' => config('privilege.Marketing'),
             'name' => 'Marketing'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id'=>11,
+            'privilege_id'=> config('privilege.Comite_scientifique'),
             'name'=>'Comite scientifique'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id'=>12,
+            'privilege_id'=> config('privilege.Comite_d_organisation'),
             'name'=>'Comite d`organisation'
         ]);
         DB::table('Privilege')->insert([
-            'privilege_id'=>13,
+            'privilege_id'=> config('privilege.Comite_de_selection'),
             'name'=>'Comite de selection'
         ]);
     }

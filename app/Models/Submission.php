@@ -17,6 +17,11 @@ class Submission extends Model
         return $this->belongsTo('App\Models\User', 'user_id');
     }
 
+    public function author()
+    {
+        return $this->belongsTo('App\Models\Author', 'author_id');
+    }
+
     public function communicationType()
     {
         return $this->belongsTo('App\Models\CommunicationType', 'communication_type_id');

@@ -17,7 +17,7 @@ class AdminMiddleware
     public function handle($request, Closure $next)
     {
         Try {
-            if (JWTAuth::parseToken()->toUser()->privilege_id == 1)
+            if (JWTAuth::parseToken()->toUser()->privilege_id == config('privilege.Admin'))
                 return $next($request);
             else
                 return response()->json(['error' => 'Permission denied'], 403);
