@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ConfigMailSeeder::class);
         $this->call(MailTypeSeedTable::class);
         $this->call(MailSeedTable::class);
+        $this->call(MailMeetingSeeder::class);
         $this->call(UserMailSeeder::class);
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
