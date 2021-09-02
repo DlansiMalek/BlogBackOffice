@@ -134,7 +134,7 @@ class SharedServices
             $mappingList = ['first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'email' => $user->email,
-                'country' => $user->country->name,
+                'country' => $user->country ? $user->country->name : '',
                 'mobile' => $user->mobile];
         }
         $badgeParams = $badge['badge_param'];
