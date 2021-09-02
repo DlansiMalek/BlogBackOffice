@@ -174,8 +174,8 @@ class UserTest extends TestCase
         $adminCongress2 = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
             'congress_id' => $congress2->congress_id, 'privilege_id' => $this->admin->privilege_id]);
         $user = factory(User::class)->create();
-        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress1->congress_id, 'user_id' => $user->user_id, 'privilege_id' => 3]);
-        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress2->congress_id, 'user_id' => $user->user_id, 'privilege_id' => 3]);
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress1->congress_id, 'user_id' => $user->user_id, 'privilege_id' => config('privilege.Participant')]);
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress2->congress_id, 'user_id' => $user->user_id, 'privilege_id' => config('privilege.Participant')]);
         
         $response = $this->get('api/user/congress/' . $congress1->congress_id . '/list-pagination')
             ->assertStatus(200);
@@ -193,11 +193,11 @@ class UserTest extends TestCase
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
         
         $user1 = factory(User::class)->create();
-        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => 3]);
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => config('privilege.Participant')]);
         $payment1 = factory(Payment::class)->create(['user_id' => $user1->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 1]);
         
         $user2 = factory(User::class)->create();
-        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => 3]);
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => config('privilege.Participant')]);
         $payment2 = factory(Payment::class)->create(['user_id' => $user2->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 0]);
 
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
@@ -216,16 +216,16 @@ class UserTest extends TestCase
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
         
         $user1 = factory(User::class)->create();
-        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => 3, 'isSelected' => 1]);
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 1]);
         
         $user2 = factory(User::class)->create();
-        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => 3, 'isSelected' => 1]);
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 1]);
 
         $user3 = factory(User::class)->create();
-        $userCongress3 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user3->user_id, 'privilege_id' => 3, 'isSelected' => -1]);
+        $userCongress3 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user3->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => -1]);
 
         $user4 = factory(User::class)->create();
-        $userCongress4 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user4->user_id, 'privilege_id' => 3, 'isSelected' => 0]);
+        $userCongress4 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user4->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 0]);
 
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
             ->assertStatus(200);
@@ -243,13 +243,13 @@ class UserTest extends TestCase
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
         
         $user1 = factory(User::class)->create(['country_id' => 'TUN']);
-        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => 3]);
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => config('privilege.Participant')]);
         
         $user2 = factory(User::class)->create(['country_id' => 'BHS']);
-        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => 3]);
+        $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => config('privilege.Participant')]);
 
         $user3 = factory(User::class)->create(['country_id' => 'TUR']);
-        $userCongress3 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user3->user_id, 'privilege_id' => 3]);
+        $userCongress3 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user3->user_id, 'privilege_id' => config('privilege.Participant')]);
 
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
             ->assertStatus(200);
@@ -409,7 +409,7 @@ class UserTest extends TestCase
     {
         return [
             'email' => $this->faker->email,
-            'privilege_id' => 3,
+            'privilege_id' => config('privilege.Participant'),
             'first_name' => $this->faker->name,
             'last_name' => $this->faker->name,
             'packIds' => [
@@ -424,7 +424,7 @@ class UserTest extends TestCase
     private function getExcelData($organizationId = null, $accessesIds = [])
     {
         return [
-            "privilegeId" => 3,
+            "privilegeId" => config('privilege.Participant'),
             "organisationId" => $organizationId,
             "data" => [
                 [

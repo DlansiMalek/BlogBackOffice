@@ -169,7 +169,7 @@ class SubmissionServices
 
     public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id, $status, $perPage = null, $search = null, $tri = null, $order = null)
     {
-        if ($privilege_id == 1 || $privilege_id == 12) {
+        if ($privilege_id == config('privilege.Admin') || $privilege_id == config('privilege.Comite_d_organisation')) {
             $allSubmission = $this->renderSubmissionForAdmin()
                 ->when($status !== 'null', function ($query) use ($status) {
                     $query->where('status', '=', $status);
@@ -195,7 +195,7 @@ class SubmissionServices
             $allSubmission = $perPage ? $allSubmission->paginate($perPage) : $allSubmission->get();
 
             return $allSubmission;
-        } elseif ($privilege_id == 11) {
+        } elseif ($privilege_id == config('privilege.Comite_scientifique')) {
             $allSubmission = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
                 $query->where('admin_id', '=', $admin->admin_id);
             })
@@ -235,7 +235,7 @@ class SubmissionServices
 
     public function getSubmissionDetailById($admin, $submission_id, $privilege_id)
     {
-        if ($privilege_id == 1 || $privilege_id == 12) {
+        if ($privilege_id == config('privilege.Admin') || $privilege_id == config('privilege.Comite_d_organisation')) {
             $submissionById = $this->renderSubmissionForAdmin()
                 ->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
@@ -247,7 +247,7 @@ class SubmissionServices
                 return $submissionToRender;
             }
 
-        } elseif ($privilege_id == 11) {
+        } elseif ($privilege_id == config('privilege.Comite_scientifique')) {
             $submissionById = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
                 $query->where('admin_id', '=', $admin->admin_id);
             })
