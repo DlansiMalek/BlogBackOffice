@@ -41,6 +41,8 @@ class ConfigCongress extends Model
         'is_submission_enabled',
         'application',
         'nb_max_access',
+        'meeting_duration',
+        'pause_duration',
         'default_country'
     ];
 
