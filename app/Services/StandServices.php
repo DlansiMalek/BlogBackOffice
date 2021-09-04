@@ -100,7 +100,7 @@ class StandServices
             ->with(['docs' => function($query) {
                 $query->select('Resource.*', 'Resource_Stand.file_name');
             },'products', 'organization.membres' => function ($query) {
-                    $query->where('privilege_id', '=', 7);
+                    $query->where('privilege_id', '=', config('privilege.Organisme'));
                 }, 'organization.membres.profile_img', 'faq'])
             ->first();
     }

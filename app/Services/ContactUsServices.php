@@ -14,6 +14,7 @@ class ContactUsServices
         $contact = new ContactUs();
         $contact->user_name = $request->input('user_name');
         $contact->email     = $request->input('email');
+        $contact->mobile   = $request->input("mobile");
         $contact->subject   = $request->input("subject");
         $contact->message   = $request->input("message");
         $contact->save();

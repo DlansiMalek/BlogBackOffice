@@ -217,3 +217,9 @@ SELECT
 // Search for submission with special caracter
 /* SELECT * FROM `Submission` WHERE description Like '%%'*/
 /* UPDATE Submission SET description = REPLACE(description,'','');*/
+
+/* Set random QRCode
+UPDATE User 
+SET `qr_code` = CONCAT(CONV(FLOOR(RAND() * 99999999999999), 10, 36), `user_id`)
+WHERE qr_code IS NULL
+*/
