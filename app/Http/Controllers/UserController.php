@@ -238,7 +238,13 @@ class UserController extends Controller
             }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
+                $query->where('congress_id', '=', $congressId)
+                ->with([ "question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },]);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -626,7 +632,13 @@ class UserController extends Controller
             }, 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
+                $query->where('congress_id', '=', $congressId)
+                ->with([ "question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },]);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type',
         ]);
