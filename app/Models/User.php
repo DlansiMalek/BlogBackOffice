@@ -140,4 +140,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Tracking::class, 'user_id', 'user_id');
     }
+    function meetings()
+    {
+        return $this->belongsToMany(Meeting::class,'User_Meeting','user_id','meeting_id');
+    }
 }

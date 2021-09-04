@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
+use App\Models\Meeting;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -29,6 +30,8 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Exception;
+use App\Services\MeetingServices;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -50,6 +53,7 @@ class UserController extends Controller
     protected $offreServices;
     protected $standServices;
     protected $registrationFormServices;
+    protected $meetingServices;
     protected $privilegeServices;
 
     public function __construct(UserServices $userServices, CongressServices $congressServices,
@@ -69,6 +73,7 @@ class UserController extends Controller
         OffreServices $offreServices,
         StandServices $standServices,
         RegistrationFormServices $registrationFormServices,
+        MeetingServices $meetingServices,
         PrivilegeServices $privilegeServices) {
         $this->smsServices = $smsServices;
         $this->userServices = $userServices;
@@ -88,6 +93,7 @@ class UserController extends Controller
         $this->offreServices = $offreServices;
         $this->standServices = $standServices;
         $this->registrationFormServices = $registrationFormServices;
+        $this->meetingServices = $meetingServices;
         $this->privilegeServices = $privilegeServices;
     }
 
@@ -232,7 +238,13 @@ class UserController extends Controller
             }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
+                $query->where('congress_id', '=', $congressId)
+                ->with([ "question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },]);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type', 'packs' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -620,7 +632,13 @@ class UserController extends Controller
             }, 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.form_input' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
+                $query->where('congress_id', '=', $congressId)
+                ->with([ "question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },]);
             }, 'responses.values', 'responses.form_input.values',
             'responses.form_input.type',
         ]);
@@ -1977,7 +1995,7 @@ class UserController extends Controller
         $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
        
         if ($congress->config && $congress->config->is_agora) {
-            $token = $this->roomServices->createTokenAgora($user->user_id, $roomName, $isModerator);
+            $token = $this->roomServices->createTokenAgora($user->user_id . '_' .$user->first_name . '_' . $user->last_name, $roomName, $isModerator);
         } else {
             $token = $this->roomServices->createToken($user->email, $roomName, $isModerator, $user->first_name . " " . $user->last_name);
         }
@@ -2033,5 +2051,55 @@ class UserController extends Controller
         $user->qr_code = $request->get('qrcode');
         $user->update();
         return $user;
+    }
+
+    public function checkMeetingRights($congressId, $meetingId )
+    {
+        $user = $this->userServices->retrieveUserFromToken();
+        if (!$user) {
+            return response()->json(['response' => 'No user found'], 401);
+        }
+        $userId = $user->user_id;
+        $congress = $this->congressServices->getCongressById($congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
+        $meeting = $this->meetingServices->getMeetingById($meetingId);
+        if (!$meeting->meeting_id) {
+            return response()->json(['response' => 'No meeting found'], 401);
+        }
+        $allowed = true;
+        $userMeeting = $this->meetingServices->getUserMeetingsById($meeting->meeting_id,$userId);
+        if (!$userMeeting) {
+            $allowed = false;
+            return response()->json(['response' => 'No user meetings found'], 401);
+        }
+
+        if ($meeting->user_meeting[0]->status == 0 || $meeting->user_meeting[0]->status == -1) {
+            $allowed = false;
+        }
+        
+        $userToUpdate = $user->user_congresses[0];
+        $roomName = 'eventizer_room_' . $congressId . '_m_' . $meeting->meeting_id;
+
+        if ($congress->config && $congress->config->is_agora) {
+            $token = $this->roomServices->createTokenAgora($user->user_id . '_' .$user->first_name . '_' . $user->last_name, $roomName, null);
+        } else {
+            $token = $this->roomServices->createToken($user->email, $roomName, null, $user->first_name . " " . $user->last_name);
+        }
+
+        $userToUpdate->token_jitsi = $token;
+        $userToUpdate->update();
+
+        return response()->json(
+            [
+                "type" => $congress->config && $congress->config->is_agora ? "agora" : "jitsi",
+                "token" => $token,
+                "privilege_id" => $user->user_congresses[0]->privilege_id,
+                "allowed" => $allowed
+
+            ],
+            200
+        );
     }
 }
