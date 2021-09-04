@@ -178,6 +178,12 @@ class CongressServices
             "attestation",
             "form_inputs.type",
             "form_inputs.values",
+            "form_inputs.question_reference"=> function ($query) {
+                $query->with(['reference', 
+                'response_reference'  => function ($q) {
+                    $q->with(['value']);
+                } ]);
+            },
             "config",
             "config_selection",
             "badges" => function ($query) use ($congressId) {
