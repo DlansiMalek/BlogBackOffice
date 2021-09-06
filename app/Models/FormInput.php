@@ -27,4 +27,9 @@ class FormInput extends Model
     {
         return $this->hasMany("App\Models\FormInputValue", "form_input_id", "form_input_id");
     }
+
+    public function question_reference() {
+        return $this->hasMany("App\Models\QuestionReference", "form_input_id", "form_input_id");
+    }
+
 }

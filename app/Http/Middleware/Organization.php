@@ -20,7 +20,7 @@ class Organization
         Try {
             $user = JWTAuth::parseToken()->toUser();
             $adminCongresses = AdminCongress::where('admin_id', '=', $user->admin_id)
-                ->whereIn('privilege_id', [1, 7])
+                ->whereIn('privilege_id', [config('privilege.Admin'), config('privilege.Organisme')])
                 ->get();
             if (sizeof($adminCongresses) != 0) {
                 return $next($request);

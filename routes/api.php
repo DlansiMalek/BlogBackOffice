@@ -43,6 +43,14 @@ Route::get('/action', 'SharedController@getAllActions');
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
 });
+Route::group(['prefix' => 'contact-us'], function () {
+    Route::post('/send', 'ContactUsController@addContactUs');
+});
+Route::group(['prefix' => 'meetings'], function () {
+    Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
+    Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('', 'MeetingController@getUserMeetingById');
+});
 
 //SMS API
 
@@ -186,6 +194,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('attestation-submission/enabled', 'SubmissionController@getAttestationSubmissionEnabled')->middleware("admin");
         Route::get('/{standId}/checkStandRights', 'UserController@checkStandRights')->middleware('assign.guard:users');
         Route::get('/{standId}/checkSupportRights/{organizerId}', 'UserController@checkStandRights')->middleware('assign.guard:users');
+        Route::get('/{meetingId}/checkMeetingRights', 'UserController@checkMeetingRights')->middleware('assign.guard:users');
         Route::get('getOrganizers', 'UserController@getOrganizers')->middleware('assign.guard:users');
 
         Route::post('program-link', 'CongressController@setProgramLink');
@@ -200,16 +209,29 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
             Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
-			Route::get('/standsPagination/{offset}', 'StandController@getStandsByCongressPagination');
             Route::put('/change-status', 'StandController@modiyStatusStand');
             Route::get('/get-status', 'StandController@getStatusStand');
-            Route::delete('deleteStand/{stand_id}', 'standController@deleteStand');
+            Route::delete('deleteStand/{stand_id}', 'StandController@deleteStand');
             Route::delete('/deletestandproduct/{stand_product_id}', 'StandProductController@deleteStandproduct');
             Route::get('{stand_id}/products', 'StandProductController@getStandproducts');
             Route::post('/addproduct', 'StandProductController@addStandProduct');
             Route::put('/edit/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
+            Route::group(['prefix' => '{stand_id}/FAQ'], function () {
+                Route::get('', 'FAQController@getStandFAQs');
+                Route::put('', 'FAQController@addFAQ');
+              });
+            Route::delete('{stand_id}/deleteFAQ/{FAQ_id}', 'FAQController@deleteFAQ');
+            Route::put('/edit-product/{standId}/{standproduct_id}', 'StandProductController@editStandProduct');
         });
 
+        Route::group(['prefix' => 'tags'], function () {
+            Route::get('', 'TagController@getTags');
+            Route::post('add', 'TagController@addTag');
+        });
+
+        Route::group(['prefix' => 'product'], function () {
+            Route::get('{product_id}', 'StandProductController@getStandProductById');
+        });
 
         Route::group(['prefix' => 'attestation'], function () {
             Route::post('affect/{accessId}', 'BadgeController@affectAttestationToCongress')
@@ -236,6 +258,13 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     });
 });
 
+Route::group(['prefix' => 'stand', "middleware" => ['assign.guard:admins']], function () {
+    Route::get('types', 'StandController@getAllStandTypes');
+    Route::get('/{stand_id}/content-config/{stand_type_id}', 'StandController@getContentConfigByStandType');
+    Route::post('/{stand_id}/edit-content-file/{stand_type_id}', 'StandController@editStandContentFiles');
+    Route::delete('/delete-content-file/{stand_content_file_id}', 'StandController@deleteStandContentFiles'); 
+});
+
 //Submission API
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission'], function () {
     Route::get('types', 'SubmissionController@getSubmissionType');
@@ -243,6 +272,7 @@ Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'submission']
     Route::get('{submissionId}/send-mail-attestation/{congressId}', 'SubmissionController@sendMailAttestationById');
     Route::get('{congressId}/status/{status}', 'SubmissionController@getSubmissionByStatus');
     Route::get('{submissionId}/make_eligible/{congressId}', 'SubmissionController@makeSubmissionEligible');
+    Route::put('/make_eligible/{congressId}/{eligibility}', 'SubmissionController@makeMassSubmissionEligible');
     Route::put('{submissionId}/evaluate/put/', 'SubmissionController@putEvaluationToSubmission');
     Route::post('congress/{congressId}/changeSubmissionsStatus', 'SubmissionController@changeMultipleSubmissionsStatus');
     Route::put('{submissionId}/evaluate/type/put/', 'SubmissionController@putEvaluationToSubmission');
@@ -572,6 +602,10 @@ Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
 });
+Route::group(['prefix' => 'menu'], function () {
+    Route::get('all/{show_after_reload}', 'MenuController@getMenus');
+    Route::post('/add/{show_after_reload}', 'MenuController@setMenus');
+});
 
 // LandingPage
 Route::group(['prefix' => 'request-landing-page'], function () {
@@ -598,6 +632,9 @@ Route::group(["prefix" => "3D"], function () {
         Route::post('login', 'Auth\LoginController@login3DUser');
         Route::group(["prefix" => "congress/{congressId}"], function () {
             Route::get('booths', 'StandController@get3DBooths');
+            Route::group(["prefix" => "booths/{boothId}"], function () {
+                Route::get('products', 'StandProductController@getProductsBy3DBooth');
+            });
         });
     });
 }); 

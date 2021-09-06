@@ -9,16 +9,10 @@ use App\Services\OffreServices;
 use App\Services\PrivilegeServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
-use Error;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
-use Tymon\JWTAuth\Contracts\Providers\Auth;
-use Illuminate\Support\Facades\Log;
-
-use Illuminate\Support\Facades\Cache;
 
 class LoginController extends Controller
 {
@@ -73,11 +67,6 @@ class LoginController extends Controller
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
-        try {
-            $this->userServices->getUserFirebase($request->input("email"));
-        } catch (Exception $e) {
-            $this->userServices->addUserFirebase($request->input("email"), $request->input("password"));
-        }
 
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
@@ -104,11 +93,6 @@ class LoginController extends Controller
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
-        try {
-            $this->userServices->getUserFirebase($request->input("email"));
-        } catch (Exception $e) {
-            $this->userServices->addUserFirebase($request->input("email"), $request->input("password"));
-        }
 
         // TODO Je le déscative pour l'instant (à valider la tache d'envoi de mail)
         /*if ($user->email_verified == 0) {
@@ -130,12 +114,6 @@ class LoginController extends Controller
         // send email
         // ??
         $email = $admin->email;
-        try {
-            $userFirebase = $this->userServices->getUserFirebase($email);
-            $this->userServices->resetFirebasePassword($userFirebase->uid, $password);
-        } catch (Exception $e) {
-            $this->userServices->addUserFirebase($email, $password);
-        }
         Mail::send('forgetPasswordMail', ['user_name' => $admin->name, 'last_name' => $admin->last_name,
             'password' => $password], function ($message) use ($email) {
             $message->to($email)->subject('Change your password');

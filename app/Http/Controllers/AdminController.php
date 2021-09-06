@@ -320,7 +320,7 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
-        if ($admin->privilege_id == 1) {
+        if ($admin->privilege_id == config('privilege.Admin')) {
             $menus = $this->getAdminMenus($admin->admin_id);
         } else {
             if (count($admin->admin_congresses) > 0) {
@@ -426,15 +426,9 @@ class AdminController extends Controller
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
             $admin = $this->adminServices->addPersonnel($admin, $password);
-            $this->userServices->addUserFirebase($admin->email, $admin->passwordDecrypt);
             $admin_id = $admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
-            try {
-                $this->userServices->getUserFirebase($fetched->email);
-            } catch (Exception $e) {
-                $this->userServices->addUserFirebase($fetched->email, $fetched->passwordDecrypt);
-            }
             // check if he has already privilege to congress
             $admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin_id, $congress_id);
             if ($admin_congress) {
@@ -463,7 +457,7 @@ class AdminController extends Controller
 
         //create themeAdmin if privilege is "comité Scientifique"
 
-        if ($privilegeId == 11) {
+        if ($privilegeId == config('privilege.Comite_scientifique')) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
             $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
             if (sizeof($submissions) > 0) {
@@ -477,7 +471,7 @@ class AdminController extends Controller
         }
         $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
         if (
-            $privilegeId == 13 &&
+            $privilegeId == config('privilege.Comite_de_selection') &&
             $congress->config_selection && ($congress->congress_type_id == 2 || $congress->congress_type_id == 1) &&
             sizeof($evalutors) < $congress->config_selection->num_evaluators
         ) {
@@ -542,18 +536,17 @@ class AdminController extends Controller
         //message d'erreur à revoir
         $user = $this->userServices->getUserByEmail($admin['email']);
         $name = explode(" ", $admin['name']);
-        $admin['first_name'] = $name[0];
-        $admin['last_name'] = $name[1];
+        $admin['first_name'] = strpos($admin['name'], ' ')?$name[0]:$name;
+        $admin['last_name'] =  strpos($admin['name'], ' ')?$name[1]:'';
         if (!$user) {
             $user = $this->userServices->addUserFromExcel($admin, $newAdmin->passwordDecrypt);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
         } else {
-            $this->userServices->editUserData($user, $admin);
             $user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id);
             $this->userServices->editUserPrivilege($user_congress, $privilegeId);
         }
 
-        if ($privilegeId == 11) {
+        if ($privilegeId == config('privilege.Comite_scientifique')) {
             $themesAdmin = $this->adminServices->getThemeAdmin($admin['admin_id']);
             $this->adminServices->modifyAdminThemes($themesAdmin, $admin['admin_id'], $request->input('themesSelected'));
         }
@@ -739,7 +732,6 @@ class AdminController extends Controller
         }
 
         $admin = $this->adminServices->addClient($admin, $request);
-        $this->userServices->addUserFirebase($admin->email, $admin->passwordDecrypt);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
 

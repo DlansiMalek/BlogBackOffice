@@ -57,15 +57,20 @@ docker-package:
     - develop
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - cat $GCP_AUTH | docker login -u _json_key --password-stdin $GCP_REGISTRY
   after_script:
     - docker logout "$CI_REGISTRY"
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
-    - docker build --pull -t "$IMAGE_NAME" -f docker/app.docker .
+    - IMAGE_NAME_GCP="$GCP_REGISTRY/$CI_PROJECT_NAME:app-$CI_COMMIT_REF_NAME"
+    - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GCP" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
+    - docker push "$IMAGE_NAME_GCP"
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
-    - docker build --pull -t "$IMAGE_NAME" -f docker/web.docker .
+    - IMAGE_NAME_GCP="$GCP_REGISTRY/$CI_PROJECT_NAME:web-$CI_COMMIT_REF_NAME"
+    - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GCP"  -f docker/web.docker .
     - docker push "$IMAGE_NAME"
+    - docker push "$IMAGE_NAME_GCP"
 
 docker-package-feat:
   stage: package-manual
@@ -101,6 +106,26 @@ ansible-deploy-prod:
     - cd ..
   script:
     - ansible-playbook --key-file $SSH_KEY playbook.yml
+
+ansible-deploy-prod-gke:
+  stage: deploy
+  image: google/cloud-sdk
+  only:
+    - master
+  before_script:
+    - gcloud auth activate-service-account --key-file ${GCP_AUTH}
+    - gcloud --quiet config set project ${GCP_PROJECT}
+    - gcloud config set compute/zone ${GCP_ZONE}
+    - gcloud container clusters get-credentials ${GCP_KUBE_CLUSTER} --zone ${GCP_ZONE} --project ${GCP_PROJECT}
+    - cd gke
+    - export HOST_DOMAIN=api.eventizer.io
+    - export HOST_ROOT_DOMAIN=*.eventizer.io
+    - apt-get install -qq -y gettext
+  after_script:
+    - cd ..
+  script:
+    - envsubst < deployment-template.yaml > deployment.yaml
+    - kubectl apply -f deployment.yaml
 
 ansible-deploy-dev:
   stage: deploy

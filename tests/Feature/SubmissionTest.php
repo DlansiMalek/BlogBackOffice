@@ -70,6 +70,8 @@ class SubmissionTest extends TestCase
             'is_phone_required' => $this->faker->numberBetween(0, 1),
             'mobile_technical' => $this->faker->phoneNumber,
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
+            'meeting_duration' => $this->faker->numberBetween(0, 60),
+            'pause_duration' => $this->faker->numberBetween(0, 30),
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -105,6 +107,9 @@ class SubmissionTest extends TestCase
             'is_phone_required' => $this->faker->numberBetween(0, 1),
             'mobile_technical' => $this->faker->phoneNumber,
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
+            'meeting_duration' => $this->faker->numberBetween(0, 60),
+            'pause_duration' => $this->faker->numberBetween(0, 30),
+
         ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
@@ -115,6 +120,27 @@ class SubmissionTest extends TestCase
         $configSubmission = ConfigSubmission::where('congress_id', '=', $congress->congress_id)->first();
         // make sure that there isn't any ConfigSubmission
         $this->assertNull($configSubmission);
+    }
+
+    public function testMakeMassSubmissionEligible()
+    {
+        $congress = factory(Congress::class)->create();
+        $user = factory(User::class)->create();
+        $submission = factory(Submission::class)->create([
+            'congress_id' => $congress->congress_id,
+            'user_id' => $user->user_id,
+            'type' => 'Série',
+            'communication_type_id' => 1,
+            'status' => 1,
+            'eligible' => 0
+        ]);
+        $request[] =  $submission->submission_id;
+        $eligibilityFalse = "false";
+        $this->put('/api/submission/make_eligible/' . $congress->congress_id . '/' . $eligibilityFalse, $request)
+            ->assertStatus(200);
+        $eligibilityTrue = "true";
+        $this->put('/api/submission/make_eligible/' . $congress->congress_id . '/' . $eligibilityTrue, $request)
+            ->assertStatus(200);
     }
 
     private function getDataSubmission()
