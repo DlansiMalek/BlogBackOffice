@@ -17,12 +17,6 @@ class ProjectServices
         return Project::find($project_id);
     }
 
-    public function getProjectByIdCategory($category_id)
-    {
-        return Project::with(['admin'])
-            ->where('category_id', '=', $category_id);
-    }
-
     public function deleteProject($Project)
     {
         return $Project->delete();
@@ -41,6 +35,16 @@ class ProjectServices
         $project->category_id = $request['category_id'];
         $project->save();
         return $project;
+    }
+
+    public function getProjectPagination($perPage, $category_id)
+    {
+        $allProject = Project::with(['admin', 'category'])->where(function ($query) use ($category_id) {
+            if ($category_id != 0) {
+                $query->where('category_id', '=', $category_id);
+            }
+        });
+        return $allProject->paginate($perPage);
     }
 
 }

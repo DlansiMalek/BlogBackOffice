@@ -24,8 +24,9 @@ class CategoryController extends Controller
         $this->categoryServices->addCategory($category, $request);
         $categories = $this->categoryServices->getAll();
 
-        return response()->json($categories );
+        return response()->json($categories);
     }
+
     public function getCategories()
     {
 
