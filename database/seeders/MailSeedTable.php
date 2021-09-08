@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -21,11 +22,12 @@ class MailSeedTable extends Seeder
         ]);
 
         DB::table('Mail')->insert([
-            'object'=>'room',
+            'object' => 'room',
             'template' => '<p>Votre room a été créer avec succés, Voici les liens pour y accéder</p><ul><li>lien pour le moderateur <a href="{{$linkModerateur}}" rel="noopener noreferrer" target="_blank">Link</a></li>
             <li>lien pour les invitées <a href="{{$linkInvitees}}" rel="noopener noreferrer" target="_blank">Link</a></li>
             </ul>',
-            'mail_type_id'=>12
+            'mail_type_id' => 12
         ]);
+
     }
 }
