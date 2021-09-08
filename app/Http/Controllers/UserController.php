@@ -960,8 +960,11 @@ class UserController extends Controller
         $emails = [];
         $accessIdTable = [];
         foreach ($users as $e) {
+            if(isset($e['email']))
+            {
             $emails[] = $e["email"];
             $accessIdTable[] = $e["accessIdTable"];
+            }
         }
 
         // Affect All Access Free (To All Users)
@@ -970,7 +973,7 @@ class UserController extends Controller
         $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
 
         foreach ($users as $userData) {
-            if ($userData['email']) {
+            if (isset($userData['email'])) {
 
                 $request->merge(['privilege_id' => $privilegeId,
                     'email' => $userData['email'],
