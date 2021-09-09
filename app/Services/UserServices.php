@@ -1651,14 +1651,18 @@ class UserServices
         $user = new User();
 
         $user->email = $userData['email'];
-        $user->first_name = $userData['first_name'];
-        $user->last_name = $userData['last_name'];
+        $user->first_name = isset($userData['first_name']) ? $userData['first_name'] : '-';
+        $user->last_name = isset($userData['last_name']) ? $userData['last_name'] : '-';
         if(array_key_exists("mobile", $userData))
             $user->mobile = $userData['mobile'];
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
         return $user;
     }
 
@@ -1734,6 +1738,10 @@ class UserServices
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
         return $user;
     }
     public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId, $privilegeId)
