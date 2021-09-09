@@ -45,6 +45,10 @@ class Stand extends Model
     function stand_type() {
         return $this->hasOne(StandType::class,'stand_type_id','stand_type_id');
     }
+
+    function stand_content_config() {
+        return $this->hasOne(StandContentConfig::class,'stand_type_id','stand_type_id');
+    }
 }
 
 

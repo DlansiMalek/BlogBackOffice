@@ -149,7 +149,7 @@ class StandServices
 	
 	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::with(['docs', 'organization', 'faq',
+        $response = Stand::with(['docs', 'organization', 'faq',
             'organization.admin' => function ($query) {
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
@@ -157,6 +157,44 @@ class StandServices
             }, 
             'stand_content_file', 'stand_type'])
             ->where('congress_id', '=', $congress_id)->paginate($perPage);
+            $data = $response->getCollection()->transform(function($stand) {
+                $stand->files = count($stand->stand_content_file) > 0 ? $this->setFilesWithContent($stand) : $this->setFilesNoContent($stand->stand_type_id); 
+                return $stand;
+            });
+            $res = array($response);
+            $res['data'] = $data;
+        return $res[0];
+    }
+    
+    public function setFilesNoContent($stand_type_id)
+    {
+        $configs = StandContentConfig::where('stand_type_id', '=', $stand_type_id)->get();
+        $files = [];
+        foreach ($configs as $config) {
+            $data = [
+                "key" => $config->key,
+                "label" =>$config->label,
+                "accept_file" => $config->accept_file,
+                "file" => $config->default_file ? $config->default_file : $config->default_url
+            ];
+            array_push($files, $data);
+        }
+        return $files;
+    }
+
+    public function setFilesWithContent($stand)
+    {
+        $files = [];
+        foreach($stand->stand_content_file as $file) {
+            $data = [
+                "key" => $file->key,
+                "label" =>$file->label,
+                "accept_file" => $file->accept_file,
+                "file" => $file->pivot->file ? $file->pivot->file : $file->pivot->url
+            ];
+            array_push($files, $data);
+        }
+        return $files;
     }
 
     public function getDocsByStands($stands)
