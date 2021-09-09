@@ -65,12 +65,14 @@ class AdminServices
     public function getAdminWithCurrentCongressFirst($admin_id, $congress_id)
     {
         return Admin::where("admin_id", "=", $admin_id)
-            ->with(['admin_congresses' => function ($query) use ($congress_id) {
-                $query->orderByRaw("FIELD(congress_id,$congress_id) DESC")
-                    ->orderBy('congress_id', 'asc');
-            },
-                'admin_congresses.congress.config' ,
-                'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'])
+            ->with([
+                'admin_congresses' => function ($query) use ($congress_id) {
+                    $query->orderByRaw("FIELD(congress_id,$congress_id) DESC")
+                        ->orderBy('congress_id', 'asc');
+                },
+                'admin_congresses.congress.config',
+                'admin_congresses.congress.form_inputs.values', 'admin_congresses.privilege'
+            ])
             ->first();
     }
 
@@ -82,7 +84,7 @@ class AdminServices
 
     public function getClients()
     {
-        return Admin::where("privilege_id", "=", 1)
+        return Admin::where("privilege_id", "=", config('privilege.Admin'))
             ->with(['offres' => function ($query) {
                 $query->where('status', '=', 1)->with('payment_admin');
             }])
@@ -91,12 +93,12 @@ class AdminServices
 
     public function AddAdmin(Request $request, $admin)
     {
-        $admin->name = $request->input('name');
-        $admin->mobile = $request->input('mobile');
-        $admin->email = $request->input('email');
-        $admin->privilege_id = 1;
+        $admin->name            = $request->input('name');
+        $admin->mobile          = $request->input('mobile');
+        $admin->email           = $request->input('email');
+        $admin->privilege_id    = config('privilege.Admin');
         $admin->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
-        $admin->password = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
+        $admin->password        = app('App\Http\Controllers\SharedController')->encrypt($admin->passwordDecrypt);
         $admin->save();
         return $admin;
     }
@@ -104,7 +106,20 @@ class AdminServices
     public function getAllEvaluators()
     {
 
-        return Admin::where("privilege_id", "=", 11)->get();
+        return Admin::where("privilege_id", "=", config('privilege.Comite_scientifique'))->get();
+    }
+	
+	public function getOrganismAdmins($congress_id)
+    {
+       return Admin::where("admin.privilege_id", "=", config('privilege.Organisme'))->get();
+    }
+
+    public function getAdminsByPrivilege($congress_id, $privilege_id)
+    {
+        return Admin::whereHas('admin_congresses', function ($query) use ($congress_id, $privilege_id) {
+            $query->where('congress_id', '=', $congress_id);
+            $query->where('privilege_id', '=', $privilege_id);
+        })->get();
     }
 
     public function affectUsersToEvaluator($users, $numEvalutors, $admin_id, $congress_id)
@@ -159,7 +174,6 @@ class AdminServices
         return Admin::whereHas('admin_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('privilege_id', '=', $privilegeId);
-
         })
             ->withCount([$relation => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -301,16 +315,15 @@ class AdminServices
         return $newPassword;
     }
 
-    public function addPersonnel($admin, $password, $email=null)
+    public function addPersonnel($admin, $password)
     {
         $personnel = new Admin();
         $personnel->name = $admin["name"];
-        $personnel->email = $email ? $email : $admin["email"];
+        $personnel->email =  $admin["email"];
         $personnel->mobile = $admin["mobile"];
         $personnel->passwordDecrypt = $password;
         $personnel->password = bcrypt($password);
         $personnel->save();
-
         return $personnel;
     }
 
@@ -360,7 +373,6 @@ class AdminServices
             for ($i = sizeof($themesIds); $i < sizeof($themesAdmin); $i++) {
 
                 $themesAdmin[$i]->delete();
-
             }
         } //le cas ou themeadmin < themeIds donc on va affecter des themes à cet admin
         else {
@@ -370,7 +382,6 @@ class AdminServices
                 $themeAdmin->theme_id = $themesIds[$i];
                 $themeAdmin->admin_id = $admin_id;
                 $themeAdmin->save();
-
             }
         }
         return $themesAdmin;
@@ -386,7 +397,7 @@ class AdminServices
         //TODO Fixing with the new Design
         $admin = Admin::where("passwordDecrypt", "=", $QrCode)
             ->first();
-        $admin->admin = $admin->privilege_id == 1;
+        $admin->admin = $admin->privilege_id == config('privilege.Admin');
         return $admin;
     }
 
@@ -463,10 +474,9 @@ class AdminServices
         if ($request->has("valid_date")) {
             $admin->valid_date = $request->input("valid_date");
         }
-        $admin->privilege_id = 1;
+        $admin->privilege_id = config('privilege.Admin');
         $admin->save();
         return $admin;
-
     }
 
     public function affectEvaluatorsToUser($evaluators, $numEvalutors, $congress_id, $user_id)
@@ -489,10 +499,9 @@ class AdminServices
         $evaluation->congress_id = $congress_id;
         $evaluation->user_id = $user_id;
         $evaluation->save();
-
     }
 
-    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null, $paymentLink = null)
+    public function renderMail($template, $admin = null, $user = null, $activationLink = null, $linkBackOffice = null, $paymentLink = null, $contact=null)
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
@@ -500,14 +509,17 @@ class AdminServices
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
         $template = str_replace('{{$user-&gt;gender}}', '{{$user->gender}}', $template);
-
-
-        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink]);
+        $template = str_replace('{{$contact-&gt;message}}', '{{$contact->message}}', $template);
+        $template = str_replace('{{$contact-&gt;subject}}', '{{$contact->subject}}', $template);
+        $template = str_replace('{{$contact-&gt;email}}', '{{$contact->email}}', $template);
+        $template = str_replace('{{$contact-&gt;user_name}}', '{{$contact->user_name}}', $template);
+        $template = str_replace('{{$contact-&gt;mobile}}', '{{$contact->mobile}}', $template);
+        return view(['template' => '<html>' . $template . '</html>'], ['admin' => $admin, 'user' => $user, 'linkBackOffice' => $linkBackOffice, 'activationLink' => $activationLink, 'paymentLink' => $paymentLink,'contact' => $contact]);
     }
 
     public function getClientById($admin_id)
     {
-        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=', 1)
+        return Admin::where('admin_id', '=', $admin_id)->where('privilege_id', '=', config('privilege.Admin'))
             ->with(['offres', 'adminPayment', 'offres.type'])
             ->first();
     }
@@ -546,15 +558,41 @@ class AdminServices
         return $adminPayment;
     }
 
-    public function getAdminOfCongress($congress_id) {
+    public function getAdminOfCongress($congress_id)
+    {
         return AdminCongress::where('congress_id', '=', $congress_id)
-        ->where('privilege_id', '=', 1)->first();
+            ->where('privilege_id', '=', config('privilege.Admin'))->first();
     }
 
     public function getEvaluationInscription($congress_id, $user_id)
     {
         return Evaluation_Inscription::where('congress_id', '=', $congress_id)
-        ->where('user_id', '=', $user_id)->get();
+            ->where('user_id', '=', $user_id)->get();
     }
+    public function addAdminFromExcel($admin,$data)
+    {
+        $password =Str::random(8);
+        if(!$admin) {
+            $admin = new Admin();
+        }
 
+        $admin->name            = $data['admin_name'];
+        $admin->email           =  $data['admin_email'];
+        $admin->mobile          =  isset($data['admin_mobile']) ? $data['admin_mobile'] : "77777777";
+        $admin->passwordDecrypt = $password;
+        $admin->password        = bcrypt($password);
+        $admin->save();
+        return $admin;
+    }
+    public function addAdminCongressFromExcel($adminCongress,$adminId, $congressId, $privilegeId)
+    {
+        if(!$adminCongress) {
+            $adminCongress = new AdminCongress();
+        }
+
+        $adminCongress->admin_id = $adminId;
+        $adminCongress->congress_id = $congressId;
+        $adminCongress->privilege_id = $privilegeId;
+        $adminCongress->save();
+    }
 }

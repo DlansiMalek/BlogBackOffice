@@ -186,3 +186,40 @@ UPDATE Submission SET title = REPLACE(title,'Ť','T');
 UPDATE Submission SET title = REPLACE(title,'Ň','N');
 UPDATE Submission SET title = REPLACE(title,'Ů','U');
 */
+
+
+/*
+Affectation de tous les evaluations inscriptions 
+
+INSERT IGNORE INTO Evaluation_Inscription (`admin_id`, `congress_id`, `user_id`)
+SELECT Admin_Congress.admin_id,  352,  User.user_id
+FROM User
+INNER JOIN `User_Congress` ON `User_Congress`.`user_id` = `User`.`user_id` AND `User_Congress`.`congress_id` = 352
+INNER JOIN `Admin_Congress` ON `Admin_Congress`.`congress_id` = 352 AND `Admin_Congress`.`privilege_id` = 13
+LEFT JOIN `Evaluation_Inscription` ON `Evaluation_Inscription`.`user_id` = `User`.`user_id` AND `Admin_Congress`.`admin_id` = `Evaluation_Inscription`.`admin_id`
+WHERE Evaluation_Inscription.evaluation_inscription_id IS NULL
+
+*/
+
+
+/*  Get code submission incremental
+
+SET @code=0;
+SELECT 
+  submission_id,
+  CONCAT('CA',LPAD(@code:=@code+1, 4, '0')) AS code
+ FROM submission
+ WHERE status =1 AND communication_type_id = 2
+ AND congress_id = 354;
+
+*/ 
+
+// Search for submission with special caracter
+/* SELECT * FROM `Submission` WHERE description Like '%%'*/
+/* UPDATE Submission SET description = REPLACE(description,'','');*/
+
+/* Set random QRCode
+UPDATE User 
+SET `qr_code` = CONCAT(CONV(FLOOR(RAND() * 99999999999999), 10, 36), `user_id`)
+WHERE qr_code IS NULL
+*/

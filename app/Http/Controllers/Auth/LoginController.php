@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
-use Tymon\JWTAuth\Contracts\Providers\Auth;
 
 class LoginController extends Controller
 {
@@ -72,6 +71,19 @@ class LoginController extends Controller
         return response()->json(['admin' => $admin, 'token' => $token], 200);
     }
 
+    public function login3DUser(Request $request) {
+        $credentials = request(['email', 'password']);
+
+        $email = $request->input("email");
+        $user = $this->userServices->getUser3DByEmail($email);
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'invalid credentials'], 401);
+        }
+
+        return response()->json(['user' => $user, 'token' => $token, 'baseUriImg' => UrlUtils::getFilesUrl()], 200);
+    }
+
     public function loginUser(Request $request)
     {
         $credentials = request(['email', 'password']);
@@ -87,7 +99,7 @@ class LoginController extends Controller
         return response()->json(['error' => 'email not verified'], 405);
         }*/
 
-        return response()->json(['user' => $user, 'token' => $token], 200);
+        return response()->json(['user' => $user, 'token' => $token ], 200);
     }
 
     public function forgetPassword(Request $request)
@@ -153,8 +165,10 @@ class LoginController extends Controller
     {
 
         $id = $request->id;
-        Session::put('id', $id);
+        $idCongress = $request->idCongress;
 
+        Session::put('id', $id);
+        Session::put('idCongress', $idCongress);
         return Socialite::driver('google')->with(["prompt" => "select_account"])->redirect();
 
     }
@@ -168,6 +182,8 @@ class LoginController extends Controller
     public function handleGoogleProviderCallback()
     {
         $id = Session::get('id', url('/'));
+        $idCongress = Session::get('idCongress', url('/'));
+        Session::forget('idCongress');
         Session::forget('id');
         try {
             $user = Socialite::with('google')->user();
@@ -184,6 +200,10 @@ class LoginController extends Controller
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
         $token = auth()->login($existingUser, true);
+        if ($idCongress !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
+
+        }
         if ($id !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 
@@ -199,7 +219,9 @@ class LoginController extends Controller
     public function redirectToFacebookProvider(Request $request)
     {
         $id = $request->id;
+        $idCongress = $request->idCongress;
         Session::put('id', $id);
+        Session::put('idCongress', $idCongress);
         return Socialite::driver('facebook')->redirect();
     }
 
@@ -211,6 +233,8 @@ class LoginController extends Controller
     public function handleFacebookProviderCallback()
     {
         $id = Session::get('id', url('/'));
+        $idCongress = Session::get('idCongress', url('/'));
+        Session::forget('idCongress');
         Session::forget('id');
         try {
             $user = Socialite::with('facebook')->user();
@@ -227,7 +251,10 @@ class LoginController extends Controller
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
         $token = auth()->login($existingUser, true);
+        if ($idCongress !== null) {
+            return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 
+        }
         if ($id !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 

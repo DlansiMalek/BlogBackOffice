@@ -5,6 +5,8 @@ namespace App\Services;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use DateTime;
+use DateTimeZone;
 
 
 class Utils
@@ -158,19 +160,19 @@ class Utils
 
     public static function getRoleNameByPrivilege($privilege_id)
     {
-        if ($privilege_id === 7) {
+        if ($privilege_id === config('privilege.Organisme')) {
             return 'MANAGER';
         }
 
-        if ($privilege_id === 3) {
+        if ($privilege_id === config('privilege.Participant')) {
             return 'PARTICIPANT';
         }
 
-        if ($privilege_id === 5 || $privilege_id === 8) {
+        if ($privilege_id === config('privilege.Moderateur') || $privilege_id === config('privilege.Conferencier_Orateur')) {
             return 'MODERATOR';
         }
 
-        if ($privilege_id === 1) {
+        if ($privilege_id === config('privilege.Admin')) {
             return 'ADMIN';
         }
 
@@ -180,14 +182,14 @@ class Utils
     public static function getChannelNameByUser($user)
     {
 
-        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 && sizeof($user->organization) > 0 && sizeof($user->organization[0]->stands) > 0) {
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === config('privilege.Organisme') && sizeof($user->organization) > 0 && sizeof($user->organization[0]->stands) > 0) {
             return $user->organization[0]->stands[0]->name;
         }
 
-        if (sizeof($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id === 5 || $user->user_congresses[0]->privilege_id === 8)) {
-            if ($user->user_congresses[0]->privilege_id === 5 && sizeof($user->chair_access) > 0)
+        if (sizeof($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id === config('privilege.Moderateur') || $user->user_congresses[0]->privilege_id === config('privilege.Conferencier_Orateur'))) {
+            if ($user->user_congresses[0]->privilege_id === config('privilege.Moderateur') && sizeof($user->chair_access) > 0)
                 return $user->chair_access[0]->name;
-            if ($user->user_congresses[0]->privilege_id === 8 && sizeof($user->speaker_access) > 0)
+            if ($user->user_congresses[0]->privilege_id === config('privilege.Conferencier_Orateur') && sizeof($user->speaker_access) > 0)
                 return $user->speaker_access[0]->name;
         }
         return null;
@@ -282,5 +284,17 @@ class Utils
         return $result;
     }
 
+    public static function setAccessName($start_date, $end_date, $user_name)
+    {
+        $sd = substr($start_date, 11, 5);
+        $ed = substr($end_date, 11, 5); 
+        return 'seance ' . $user_name . ' ' . $sd . ' - ' . $ed;          
+    }
+
+    public static function getExpireTime($expireTimeInSeconds) {
+        $currentTimestamp = (new DateTime("now", new DateTimeZone('UTC')))->getTimestamp();
+        $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
+        return $privilegeExpiredTs;
+    }
 
 }

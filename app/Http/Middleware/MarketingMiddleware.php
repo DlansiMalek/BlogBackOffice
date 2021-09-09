@@ -17,7 +17,7 @@ class MarketingMiddleware
     public function handle($request, Closure $next)
     {
         Try {
-            if (JWTAuth::parseToken()->toUser()->privilege_id == 9 || JWTAuth::parseToken()->toUser()->privilege_id == 10)
+            if (JWTAuth::parseToken()->toUser()->privilege_id == config('privilege.Super_Admin') || JWTAuth::parseToken()->toUser()->privilege_id == config('privilege.Marketing'))
                 return $next($request);
             else
                 return response()->json(['error' => 'Permission denied'], 403);

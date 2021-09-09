@@ -40,13 +40,12 @@ class AccessTest extends TestCase
             ->assertStatus(200);
     }
 
-    // TODO à corriger
     public function testGetScoresByCongressIdWithAccess()
     {
         $congress = factory(Congress::class)->create();
         $access = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
-        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => config('privilege.Participant')]);
         $access_game = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 10]);
         $access_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 50]);
         $response = $this->get('api/access/congress/' . $congress->congress_id . '/scores?access_id=' . $access->access_id)
@@ -59,14 +58,14 @@ class AccessTest extends TestCase
         $this->assertEquals($dataResponse[0]['score'], 50);
     }
 
-    
+
     public function testGetScoresByCongressId()
     {
         $congress = factory(Congress::class)->create();
         $access1 = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $access2 = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
-        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => config('privilege.Participant')]);
         $access1_game1 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access1->access_id, 'score' => 10]);
         $access1_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access1->access_id, 'score' => 50]);
         $access2_game1 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access2->access_id, 'score' => 20]);
@@ -98,13 +97,12 @@ class AccessTest extends TestCase
         $this->assertEquals($access->access_id, $access_game->access_id);
     }
 
-    // TODO à corriger
     public function testGetScoresByCongressPeaksourceByAccessName()
     {
         $congress = factory(Congress::class)->create();
         $access = factory(Access::class)->create(['access_type_id' => 4, 'congress_id' => $congress->congress_id]);
         $user = factory(User::class)->create();
-        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
+        $user_congress = factory(UserCongress::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'privilege_id' => config('privilege.Participant')]);
         $access_game = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 10]);
         $access_game2 = factory(AccessGame::class)->create(['user_id' => $user->user_id, 'access_id' => $access->access_id, 'score' => 100]);
         $response = $this->get('api/access/congress/' . $congress->congress_id . '/scores?name=' . $access->name)
@@ -122,15 +120,14 @@ class AccessTest extends TestCase
         $congress = factory(Congress::class)->create();
         $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id, 'status' => 1]);
         $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id, 'status' => 1]);
-        $response = $this->get('api/congress/' . $congress->congress_id . '/access/change-status?all=false&status=0&accessId=' . $access1->access_id)
+     
+        $this->get('api/congress/' . $congress->congress_id . '/access/change-status?all=false&status=0&accessId=' . $access1->access_id)
         ->assertStatus(200);
-
-        $dataResponse = json_decode($response->getContent(), true);
         
-        $savedAccess1 = Access::where('access_id', '=', $dataResponse[0]['access_id'])
+        $savedAccess1 = Access::where('access_id', '=', $access1->access_id)
                     ->first();
 
-        $savedAccess2 = Access::where('access_id', '=', $dataResponse[1]['access_id'])
+        $savedAccess2 = Access::where('access_id', '=', $access2->access_id)
                     ->first();
         // verify that only access1's status was midified to 0
         $this->assertEquals($savedAccess1->status, 0);
@@ -143,18 +140,55 @@ class AccessTest extends TestCase
         $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id, 'status' => 1]);
         $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id, 'status' => 1]);
         $response = $this->get('api/congress/' . $congress->congress_id . '/access/change-status?all=true&status=0&accessId=null')
-        ->assertStatus(200);
+            ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
-        
+
         $savedAccess1 = Access::where('access_id', '=', $dataResponse[0]['access_id'])
-                    ->first();
+            ->first();
 
         $savedAccess2 = Access::where('access_id', '=', $dataResponse[1]['access_id'])
-                    ->first();
+            ->first();
         // verify that both accesses's status was midified to 0
         $this->assertEquals($savedAccess1->status, 0);
         $this->assertEquals($savedAccess2->status, 0);
+    }
+
+    public function testUploadExcelAccess()
+    {
+        $congress = factory(Congress::class)->create();
+        $accessTypeId = $this->faker->numberBetween(1, 3);
+        $data = $this->renderExcelData($accessTypeId);
+        $response = $this->post('api/access/' .$congress->congress_id . '/uploadExcel', $data)
+            ->assertStatus(200);
+    }
+
+    private function renderExcelData($accessTypeId)
+    {
+        return [
+            "accessTypeId" => $accessTypeId,
+            "data" => [
+                [
+                    "email" => $this->faker->email,
+                    "end_date" => $this->faker->date,
+                    "line" => 1,
+                    "start_date" => $this->faker->date
+                ],
+                [
+                    "email" => $this->faker->email,
+                    "end_date" => $this->faker->date,
+                    "line" => 2,
+                    "start_date" => $this->faker->date
+                ],
+                [
+                    "email" => $this->faker->email,
+                    "end_date" => $this->faker->date,
+                    "line" => 3,
+                    "start_date" => $this->faker->date
+                ]
+            ]
+
+        ];
     }
 
     /* public function testEditAccess ()

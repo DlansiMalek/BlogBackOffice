@@ -13,6 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call(StandTypeSeeder::class);
+        $this->call(StandContentConfigSeeder::class);
+        $this->call(CountriesSeedTable::class);
         $this->call(MenuDatabaseSeeder::class);
         $this->call(CongressTypeTableSeeder::class);
         $this->call(CongressSeedTable::class);
@@ -20,7 +23,6 @@ class DatabaseSeeder extends Seeder
         $this->call(PrivilegeTableSeeder::class);
         $this->call(AdminSeedTable::class);
         $this->call(OrganizationSeedTable::class);
-        $this->call(CongressOrganizationSeedTable::class);
         $this->call(AdminCongressSeedTable::class);
         $this->call(BadgeSeedTable::class);
         $this->call(BadgeParamsSeeder::class);
@@ -33,7 +35,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AccessSeedTable::class);
         $this->call(AttestationAccessSeedTable::class);
         $this->call(PackSeedTable::class);
-        $this->call(CountriesSeedTable::class);
         $this->call(PackAdminSeeder::class);
         $this->call(HistoryTableSeeder::class);
         $this->call(UserSeedTable::class);
@@ -54,6 +55,8 @@ class DatabaseSeeder extends Seeder
         $this->call(ConfigMailSeeder::class);
         $this->call(MailTypeSeedTable::class);
         $this->call(MailSeedTable::class);
+        $this->call(MailMeetingTypeSeeder::class);
+        $this->call(MailMeetingSeeder::class);
         $this->call(UserMailSeeder::class);
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
@@ -104,5 +107,6 @@ class DatabaseSeeder extends Seeder
         $this->call(LPSpeakerSeeder::class);
         
         $this->call(AccessGameSeeder::class);
+
     }
 }

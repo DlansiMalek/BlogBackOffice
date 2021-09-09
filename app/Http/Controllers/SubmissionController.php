@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
+use App\Models\User;
+use App\Models\Submission;
+use App\Models\SubmissionComments;
 use App\Services\AdminServices;
 use App\Services\AuthorServices;
 use App\Services\CommunicationTypeService;
@@ -16,11 +20,10 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Exception;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Madnest\Madzipper\Facades\Madzipper;
-use Illuminate\Filesystem\Filesystem;
 
 class SubmissionController extends Controller
 {
@@ -37,7 +40,7 @@ class SubmissionController extends Controller
     protected $communicationTypeService;
     protected $resourcesServices;
 
-    function __construct(
+    public function __construct(
         SubmissionServices $submissionServices,
         AuthorServices $authorServices,
         AdminServices $adminServices,
@@ -49,8 +52,7 @@ class SubmissionController extends Controller
         SharedServices $sharedServices,
         CommunicationTypeService $communicationTypeService,
         ResourcesServices $resourcesServices
-    )
-    {
+    ) {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
         $this->adminServices = $adminServices;
@@ -122,7 +124,7 @@ class SubmissionController extends Controller
                 }
 
                 $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, $submission->title), $user, $congress, $mail->object, null, $userMail
                 );
             }
             return response()->json(['response' => 'Enregistrement avec succes'], 200);
@@ -155,6 +157,9 @@ class SubmissionController extends Controller
             $changedTheme = $submission->theme_id == $request->input('submission.theme_id') ? false : true;
             $user = $this->userServices->retrieveUserFromToken();
             $status = $request->input('addExternalFiles') ? '5' : $submission->status;
+            if ($submission->status == 6) {
+                $status = 2;
+            }
             $name = $request->input('addExternalFiles') ? 'file_submitted' : 'edit_submission';
             $code = $request->input('addExternalFiles') ? null : $submission->upload_file_code;
             $submission = $this->submissionServices->editSubmission(
@@ -226,14 +231,14 @@ class SubmissionController extends Controller
 
         if ($mail)
         {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-            }
+        $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+        if (!$userMail) {
+        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+        }
 
-            $this->userServices->sendMail(
-                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
-            );
+        $this->userServices->sendMail(
+        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
+        );
         }*/
         $upload_file_code = $request->query('code');
         return $this->submissionServices->getSubmission($submission_id, $upload_file_code);
@@ -280,7 +285,8 @@ class SubmissionController extends Controller
             $privilege_id = $adminCongress->privilege_id;
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
-            if ($privilege_id == 11) {
+            $congress = $this->congressServices->getCongressById($congressId);
+            if ($privilege_id == config('privilege.Comite_scientifique')) {
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
                 if ($mail) {
@@ -288,7 +294,7 @@ class SubmissionController extends Controller
                     if (!$userMail) {
                         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                         $this->mailServices->sendMail(
-                            $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
+                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
                         );
                     }
                 }
@@ -320,7 +326,7 @@ class SubmissionController extends Controller
             $right = sizeof($submissions) - 1;
             $index = -1;
             while ($left <= $right) {
-                $midpoint = (int)floor(($left + $right) / 2);
+                $midpoint = (int) floor(($left + $right) / 2);
 
                 if ($submissions[$midpoint]['submission_id'] < $selectedSubmissions[$i]) {
                     $left = $midpoint + 1;
@@ -336,7 +342,6 @@ class SubmissionController extends Controller
                 return response()->json('no submission found', 404);
             }
 
-
         }
         return response()->json('success', 200);
     }
@@ -351,22 +356,22 @@ class SubmissionController extends Controller
         $submission->status = $request->input('status');
         $submission->update();
         $mail_type = $request->input('status') == 1 ?
-            $this->congressServices->getMailType('accept_submission', $this->type) :
-            $this->congressServices->getMailType('refuse_submission', $this->type);
+        $this->congressServices->getMailType('accept_submission', $this->type) :
+        $this->congressServices->getMailType('refuse_submission', $this->type);
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
+        $congress = $this->congressServices->getCongressById($congress_id);
         if ($mail) {
             $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
             if (!$userMail) {
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, null, $user, null, null, null), $user, null, $mail->object, null, $userMail
+                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
                 );
             }
         }
 
         return response()->json(['response' => 'Submission status changed'], 201);
     }
-
 
     public function finalDecisionOnSubmission(Request $request, $submission_id)
     {
@@ -375,30 +380,25 @@ class SubmissionController extends Controller
             return response()->json(['no submission found'], 404);
         }
         // update status,type_id,limit_date
-        $submission->status = $request->input('status');
+        $submission->status = intval($request->input('status')); 
+
+        $comment = $request->input('comment');
 
         $submission->limit_date = $request->input('limit_date');
 
-        // generate code 
+        // generate code
 
         $type = $this->communicationTypeService->getCommunicationTypeById(
             $request->has('communication_type_id') ? $request->input('communication_type_id') :
-                $submission->communication_type_id
+            $submission->communication_type_id
         );
         if ($request->has('communication_type_id')) {
             $submission->communication_type_id = $request->input('communication_type_id');
         }
         if ($type && $request->input('status') == '1' && !$submission->code) {
-            $index = -1;
-            $submissions = $this->submissionServices->getSubmissionsByCongressId($submission->congress_id);
-            foreach ($submissions as $key => $value) {
-                if ($value->submission_id == $submission_id) {
-                    $index = $key + 1;
-                    break;
-                }
-
-            }
-            $code = Utils::generateSubmissionCode($type->abrv, $index);
+            $submissions = $this->submissionServices->getSubmissionsByStatus($submission->congress_id, 1, $type->communication_type_id);
+            $index = sizeof($submissions) + 1;
+            $code = Utils::generateSubmissionCode($type->abrv, $index.'');
             $submission->code = $code;
         }
         $file_upload_code = null;
@@ -407,51 +407,63 @@ class SubmissionController extends Controller
             $submission->upload_file_code = $file_upload_code;
         }
         $submission->update();
+
+        // add review 
+        if ($submission->status === 6 || $comment) {
+            $this->addReviewSubmission($submission, $comment);
+            return response()->json(['Submission reviewed'], 200);
+        }
+
         //send email
         $areFiles = $request->has('areFiles') ? 1 : 0;
-        $mailName = $request->input('status') == 3 ? 'refuse_submission' :
-            ($request->input('status') == 4 ? 'Attente_de_fichier' :
-                ($request->input('status') == 5 ? 'file_submitted' : 'accept_submission'));
+        $mailName = $request->input('status') == 3
+            ? 'refuse_submission' : ($request->input('status') == 4
+            ? 'Attente_de_fichier' : ($request->input('status') == 5
+            ? 'file_submitted' : ($request->input('status') == 1
+            ? 'accept_submission' : '')));
 
-        $mailtype = $this->congressServices->getMailType($mailName, $this->type);
-        $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+        if ($mailName) {
+            $mailtype = $this->congressServices->getMailType($mailName, $this->type);
+            $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
 
-        if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
-            }
-            $link = '';
-            if (($request->input('status') == 4)) {
-                $link = UrlUtils::getBaseUrlFrontOffice()
+            if ($mail) {
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                if (!$userMail) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                }
+                $link = '';
+                if (($request->input('status') == 4)) {
+                    $link = UrlUtils::getBaseUrlFrontOffice()
                     . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
-            }
-            $user = $this->userServices->getUserById($submission->user_id);
-            $this->mailServices->sendMail(
-                $this->congressServices->renderMail(
-                    $mail->template,
-                    null,
+                }
+                $user = $this->userServices->getUserById($submission->user_id);
+                $congress = $this->congressServices->getCongressById($submission->congress_id);
+                $this->mailServices->sendMail(
+                    $this->congressServices->renderMail(
+                        $mail->template,
+                        $congress,
+                        $user,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        $link,
+                        $request->input('status') == '1' ? $submission->code : null,
+                        $submission->title,
+                        $type ? $type->label : null
+
+                    ),
                     $user,
                     null,
+                    $mail->object,
                     null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    $link,
-                    $request->input('status') == '1' ? $submission->code : null,
-                    $submission->title,
-                    $type ? $type->label : null
-
-                ),
-                $user,
-                null,
-                $mail->object,
-                null,
-                $userMail
-            );
+                    $userMail
+                );
+            }
         }
 
         return response()->json(['final decision made successfully'], 200);
@@ -461,10 +473,13 @@ class SubmissionController extends Controller
     public function putEvaluationToSubmission($submissionId, Request $request)
     {
         $note = $request->input('note', -1);
+        $comment = $request->input('comment');
+        $status = $request->input('status');
         if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }
         try {
+            // send evaluation to submission
             $admin = $this->adminServices->retrieveAdminFromToken();
             if (!($evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId))) {
                 return response()->json(['response' => 'bad request'], 400);
@@ -473,24 +488,47 @@ class SubmissionController extends Controller
             $evaluation->communication_type_id = $request->input('communication_type_id');
             $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
 
-            $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
-            $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
-
-            if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
-                if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
-                    $this->mailServices->sendMail(
-                        $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
-                    );
+            // add review 
+            if ($status === 6 || $comment) {
+                $this->addReviewSubmission($submission, $comment);
+            } else {
+                $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
+                $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+                if ($mail) {
+                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                    if (!$userMail) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                        $this->mailServices->sendMail(
+                            $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
+                        );
+                    }
                 }
-
-
             }
             return response()->json($evaluation, 200);
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
         }
+    }
+
+    private function addReviewSubmission($submission, $comment) {
+        $submissionComment = new SubmissionComments();
+        if ($comment)
+            $submissionComment = $this->submissionServices->addSubmissionComments($comment, $submission->submission_id);
+            
+        $this->submissionServices->updateStatusSubmission($submission, 6);
+        $mailtype = $this->congressServices->getMailType('submission_a_reviser', $this->type);
+        $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
+        if ($mail) {
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+            if (!$userMail) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+            }
+            $linkSubmission = UrlUtils::getBaseUrlFrontOffice() . "/user-profile/submission/edit/".$submission->submission_id;
+            $this->mailServices->sendMail(
+                $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null, null, null, null, null, null, null, null, $submission->title, null, [], $submissionComment, $linkSubmission), $submission->user, $submission->congress, $mail->object, null, $userMail
+            );
+        
+        } 
     }
 
     public function getSubmissionByUserId(Request $request)
@@ -518,7 +556,6 @@ class SubmissionController extends Controller
     public function getAllSubmissionsByCongress($congressId, Request $request)
     {
         $search = $request->query('search', '');
-        $status = $request->query('status', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
         $communication_type_id = $request->query('communication_type_id');
@@ -528,13 +565,11 @@ class SubmissionController extends Controller
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsByCongress($congressId, $search, $status, $offset, $perPage, $communication_type_id);
+        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
         return response()->json($submissions, 200);
     }
 
-
     //ATTESTATION SUBMISSION
-
 
     public function getAttestationSubmissionByCongress($congressId)
     {
@@ -751,7 +786,7 @@ class SubmissionController extends Controller
         }
     }
 
-    public function sendMailAttestationAllSubmission($congressId)
+    public function sendMailAttestationAllSubmission($congressId, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response(['error' => "congress not found"], 404);
@@ -761,7 +796,7 @@ class SubmissionController extends Controller
             if (!($adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin))) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
             $mailtype = $this->congressServices->getMailType('attestation_all', 'submission');
@@ -770,20 +805,13 @@ class SubmissionController extends Controller
                 return response()->json(['error' => 'mail attestation submission not found'], 400);
             }
             $mailId = $mail->mail_id;
-            $users = $this->userServices->getUsersSubmissionWithRelations($congressId, ['submissions' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-                $query->where('status', "=", 1);
-                $query->where('eligible', "=", 1);
-                $query->with(['authors']);
-            },
-                'user_mails' => function ($query) use ($mailId) {
-                    $query->where('mail_id', '=', $mailId); // ICI
-                }]);
+            $withAuthors = $request->input('sendCoAuthor');
+            $authors = $this->authorServices->getAuthorsAttestation($congressId, $mailId, $withAuthors);
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
-            foreach ($users as $user) {
+            foreach ($authors as $author) {
                 $request = array();
-                if ($user->email != null && $user->email != "") {
-                    foreach ($user->submissions as $submission) {
+                if ($author->email != null && $author->email != "") {
+                    foreach ($author->submissions as $submission) {
                         $attestationSubmission = null;
                         foreach ($attestationsSubmissions as $attestation) {
                             if ($attestation->communication_type_id === $submission->communication_type_id) {
@@ -793,41 +821,42 @@ class SubmissionController extends Controller
                         if (!$attestationSubmission->attestation_generator_id) {
                             continue;
                         }
+                        
                         $mappedSubmission = $this->sharedServices->submissionMapping($submission->title,
-                            Utils::getFullName($user->first_name, $user->last_name),
                             $submission->authors,
                             $attestationSubmission->attestation_param);
                         $mappedSubmission['badgeIdGenerator'] = $attestationSubmission->attestation_generator_id;
-                        array_push($request, $mappedSubmission
-                        );
+                        array_push($request, $mappedSubmission);
                     }
-                    $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
 
                     if ($mail) {
-                        $userMail = null;
-                        if (sizeof($user->user_mails) == 0) {
-                            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $authorMail = null;
+                        if (sizeof($author->author_mails) == 0) {
+                            $authorMail = $this->authorServices->addingMailAuthor($mail->mail_id, $author->author_id);
                         } else {
-                            $userMail = $user->user_mails[0];
+                            $authorMail = $author->author_mails[0];
                         }
-                        if ($userMail->status != 1) {
+                        if ($authorMail->status != 1) {
+                            $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
                             $fileName = 'attestationsSubmission.zip';
-                            $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, $user->submissions),
-                                $user,
+                            $this->mailServices->sendMail(
+                                $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
+                                $author,
                                 $congress,
                                 $mail->object,
                                 true,
-                                $userMail,
+                                $authorMail,
                                 null,
-                                $fileName);
-                           }
+                                $fileName
+                            );
+                        }
                     }
+               
                 }
             }
-
-            return response()->json(['message' => 'send mail successs']);
+            return response()->json(['message' => 'send mail successs', 'authors' => $authors]);
         } catch (Exception $e) {
-            Log::info($e->getMessage());
+            Log::info($e);
             return response()->json(['response' => $e->getMessage()], 400);
         }
     }
@@ -838,7 +867,9 @@ class SubmissionController extends Controller
             return response(['error' => "congress not found"], 404);
         }
         if (!$submission = $this->submissionServices->getSubmissionByIdWithRelation(
-            ['authors', 'user'], $submissionId)) {
+            ['authors' => function ($query) {
+                $query->orderBy('rank');
+            }, 'user'], $submissionId)) {
             return response(['error' => "submission not found"], 404);
         }
         if ($submission->congress_id != $congressId) {
@@ -853,7 +884,7 @@ class SubmissionController extends Controller
             if (!$adminCongress = $this->congressServices->getAdminByCongressId($congressId, $admin)) {
                 return response()->json(['error' => 'bad request'], 400);
             }
-            if ($adminCongress->privilege_id != 1) {
+            if ($adminCongress->privilege_id != config('privilege.Admin')) {
                 return response()->json(['error' => 'must be admin'], 400);
             }
             $user = $submission['user'];
@@ -875,7 +906,6 @@ class SubmissionController extends Controller
             }
 
             $fill = $this->sharedServices->submissionMapping($submission->title,
-                Utils::getFullName($user->first_name, $user->last_name),
                 $submission->authors,
                 $attestationSubmission->attestation_param);
 
@@ -956,4 +986,23 @@ class SubmissionController extends Controller
         return response()->json($submissions, 200);
     }
 
+    public function makeMassSubmissionEligible($congressId, $eligibility, Request $request)
+    {
+        $subs = $request->all();
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response(['error' => "congress not found"], 404);
+        }
+        foreach ($subs as $submissionId) {
+            $submission = $this->submissionServices->getSubmissionByIdWithRelation([],$submissionId);
+            if ($submission->status === 1) {
+                if ($eligibility == "true") {
+                    $response = $this->submissionServices->makeSubmissionEligible($submission);
+                }
+                if ($eligibility == "false") {
+                    $response = $this->submissionServices->makeSubmissionNotEligible($submission);
+                }
+            }
+        }
+        return response()->json(['Changes done successfully'], 200);
+    }
 }

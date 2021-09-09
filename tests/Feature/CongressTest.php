@@ -7,10 +7,9 @@ use App\Models\ConfigCongress;
 use App\Models\ConfigLP;
 use App\Models\Congress;
 use App\Models\LPSpeaker;
-use stdClass;
-use Tests\TestCase;
 use App\Services\Utils;
 use DateTime;
+use Tests\TestCase;
 
 class CongressTest extends TestCase
 {
@@ -37,7 +36,7 @@ class CongressTest extends TestCase
     {
         // Url : api/admin/me/congress/add
         $data = [
-            'name' => $this->faker->sentence
+            'name' => $this->faker->sentence,
         ];
 
         $this->post('api/admin/me/congress/add', $data)
@@ -103,7 +102,6 @@ class CongressTest extends TestCase
      * @return void
      */
 
-
     /**
      * A basic feature test edit congress
      *
@@ -120,7 +118,7 @@ class CongressTest extends TestCase
         $adminCongressOld = factory(AdminCongress::class)->create([
             'admin_id' => $this->admin->admin_id,
             'congress_id' => $congressOld->congress_id,
-            'privilege_id' => 1
+            'privilege_id' => config('privilege.Admin'),
         ]);
 
         $configCongressOld = factory(ConfigCongress::class)->create(['congress_id' => $congressOld->congress_id]);
@@ -176,20 +174,10 @@ class CongressTest extends TestCase
             ->assertStatus(200);
     }
 
-
-
     public function testGetMailTypeById()
     {
         $congress = factory(Congress::class)->create();
         $this->get('/api/congress/mail/types/' . $congress->congress_id)
-            ->assertStatus(200);
-    }
-
-    public function testGetCongressOrganizations()
-    {
-        //  api/congress/1/organization
-        $congress = factory(Congress::class)->create();
-        $this->get('/api/congress/' . $congress->congress_id . '/organization')
             ->assertStatus(200);
     }
 
@@ -305,7 +293,6 @@ class CongressTest extends TestCase
             ->assertStatus(200);
     }
 
-
     public function testSyncronizeLandingPage2()
     {
         $congress = factory(Congress::class)->create();
@@ -324,6 +311,29 @@ class CongressTest extends TestCase
         $this->assertEquals($congress->description, $configLP->home_description);
         $this->assertEquals($config_congress->banner, $configLP->home_banner_event);
         $this->assertEquals($config_congress->banner, $configLP->prp_banner_event);
+    }
+
+    public function testgetCongressPagination()
+    {
+        $congress = factory(Congress::class)->create(['start_date' => date("Y-m-d")]);
+        $config_congress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
+        $response = $this->get('api/congress/list/pagination?perPage=100')->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+        $data = collect($dataResponse['data'])->sortBy('congress_id')->reverse()->values();
+        $this->assertEquals($data[0]['name'], $congress->name);
+        $this->assertEquals($data[0]['start_date'], $congress->start_date);
+        $this->assertEquals($data[0]['end_date'], $congress->end_date->format('Y-m-d'));
+        $this->assertEquals($data[0]['price'], $congress->price);
+        $this->assertEquals($data[0]['congress_type_id'], $congress->congress_type_id);
+        $this->assertEquals($data[0]['description'], $congress->description);
+        $this->assertEquals($data[0]['config']['free'], $congress['config']->free);
+        $this->assertEquals($data[0]['config']['congress_id'], $congress['config']->congress_id);
+        $this->assertEquals($data[0]['config']['logo'], $congress['config']->logo);
+        $this->assertEquals($data[0]['config']['banner'], $congress['config']->banner);
+        $this->assertEquals($data[0]['config']['status'], $congress['config']->status);
+        $this->assertEquals($data[0]['config']['currency_code'], $congress['config']->currency_code);
+        $this->assertEquals($data[0]['config']['program_link'], $congress['config']->program_link);
+
     }
 
     private function getFakeDataCongress()
@@ -348,7 +358,7 @@ class CongressTest extends TestCase
             ],
             'config_selection' => [
                 'num_evaluators' => $this->faker->numberBetween(1, 20),
-                'selection_type' =>  $this->faker->numberBetween(0, 2),
+                'selection_type' => $this->faker->numberBetween(0, 2),
                 'start_date' => $this->faker->date(),
                 'end_date' => $this->faker->date(),
             ],
@@ -379,7 +389,7 @@ class CongressTest extends TestCase
             'event_link_fb' => $this->faker->url,
             'event_link_instagram' => $this->faker->url,
             'event_link_linkedin' => $this->faker->url,
-            'event_link_twitter' => $this->faker->url
+            'event_link_twitter' => $this->faker->url,
         ];
     }
 
