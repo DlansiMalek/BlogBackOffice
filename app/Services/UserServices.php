@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+
 
 class UserServices
 {
@@ -1754,6 +1756,19 @@ class UserServices
         $userCongress->privilege_id = $privilegeId ;    //privilege Organisme
         $userCongress->save();
 
+    }
+
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$perPage , $search,$user_id )
+    {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId,$search,$user_id) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('user_id', '!=', $user_id);
+
+            if ($search != "") {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+            }      
+        })->paginate($perPage);
+        return  $users;
     }
 
 }
