@@ -46,7 +46,9 @@ class MeetingServices
     }
     public function getMeetingByUserId($user_id)
     {
-        return Meeting::with(['user_meeting'])->whereHas("user_meeting", function ($query) use ($user_id) {
+        return Meeting::with(['user_meeting' => function ($query) {
+            $query->with(['organizer', 'participant']);
+        }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
                 ->orwhere('user_receiver_id', '=', $user_id);
         })->get();
@@ -77,5 +79,19 @@ class MeetingServices
             $query->where('user_sender_id', '=', $user_id)
             ->orwhere('user_receiver_id', '=', $user_id);
         })->first();
+    }
+
+    public function getMeetingConflicts($meet)
+    {
+        return Meeting::where('meeting_id', '!=', $meet->meeting_id)->where('start_date', '=', $meet->start_date)->with('user_meeting')->whereHas("user_meeting", function ($query) {
+            $query->where('status', '=', 1);
+        })->get();
+    }
+
+    public function declineMeeting($user_meeting)
+    {
+        $user_meeting->status = -1;
+        $user_meeting->save();
+        return $user_meeting;
     }
 }
