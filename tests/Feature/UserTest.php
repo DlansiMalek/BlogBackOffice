@@ -3,28 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\Access;
+use App\Models\Admin;
 use App\Models\AdminCongress;
 use App\Models\ConfigCongress;
 use App\Models\ConfigSelection;
 use App\Models\Congress;
 use App\Models\FormInput;
-use App\Models\FormInputResponse;
-use App\Models\FormInputType;
-use App\Models\Mail;
+use App\Models\FormInputValue;
+use App\Models\Organization;
 use App\Models\Pack;
 use App\Models\Payment;
 use App\Models\User;
-use App\Models\UserAccess;
-use App\Models\Admin;
 use App\Models\UserCongress;
-use App\Models\CongressOrganization;
-use App\Models\FormInputValue;
-use App\Models\Organization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Log;
 
 class UserTest extends TestCase
 {
@@ -118,21 +110,21 @@ class UserTest extends TestCase
     /* TODO Verify
     public function testSaveUserInscriptionEventWithPack()
     {
-        $congress = factory(Congress::class)->create();
-        $congressConfig = factory(ConfigCongress::class)
-            ->create(['congress_id' => $congress->congress_id]);
-        $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
-        $user = factory(User::class)->create();
-        $mail = factory(Mail::class)->create(['mail_type_id' => 1, 'congress_id' => $congress->congress_id ]);
-        $evaluator = factory(Admin::class)->create();
-        $adminCongress = factory(AdminCongress::class)->create(['congress_id' => $congress->congress_id, 'admin_id' => $evaluator->admin_id, 'privilege_id' => 13]);
-        $token = JWTAuth::fromUser($user);
-        $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->post('api/user/congress/' . $congress->congress_id . '/registerV2',
-                ['packIds' => [$pack->pack_id]])
-            ->assertStatus(200);
+    $congress = factory(Congress::class)->create();
+    $congressConfig = factory(ConfigCongress::class)
+    ->create(['congress_id' => $congress->congress_id]);
+    $pack = factory(Pack::class)->create(['congress_id' => $congress->congress_id]);
+    $user = factory(User::class)->create();
+    $mail = factory(Mail::class)->create(['mail_type_id' => 1, 'congress_id' => $congress->congress_id ]);
+    $evaluator = factory(Admin::class)->create();
+    $adminCongress = factory(AdminCongress::class)->create(['congress_id' => $congress->congress_id, 'admin_id' => $evaluator->admin_id, 'privilege_id' => 13]);
+    $token = JWTAuth::fromUser($user);
+    $this->withHeader('Authorization', 'Bearer ' . $token)
+    ->post('api/user/congress/' . $congress->congress_id . '/registerV2',
+    ['packIds' => [$pack->pack_id]])
+    ->assertStatus(200);
     }
-    */
+     */
 
     public function testSaveUserInscriptionEventAccessObligated()
     {
@@ -176,12 +168,12 @@ class UserTest extends TestCase
         $user = factory(User::class)->create();
         $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress1->congress_id, 'user_id' => $user->user_id, 'privilege_id' => config('privilege.Participant')]);
         $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress2->congress_id, 'user_id' => $user->user_id, 'privilege_id' => config('privilege.Participant')]);
-        
+
         $response = $this->get('api/user/congress/' . $congress1->congress_id . '/list-pagination')
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(1 ,$dataResponse['data']);
+        $this->assertCount(1, $dataResponse['data']);
     }
 
     public function testGetUsersByCongressPaginationWithSearchPayment()
@@ -191,11 +183,11 @@ class UserTest extends TestCase
         $congress = factory(Congress::class)->create();
         $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
-        
+
         $user1 = factory(User::class)->create();
         $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => config('privilege.Participant')]);
         $payment1 = factory(Payment::class)->create(['user_id' => $user1->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 1]);
-        
+
         $user2 = factory(User::class)->create();
         $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => config('privilege.Participant')]);
         $payment2 = factory(Payment::class)->create(['user_id' => $user2->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 0]);
@@ -204,9 +196,9 @@ class UserTest extends TestCase
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(1 ,$dataResponse['data']);
+        $this->assertCount(1, $dataResponse['data']);
     }
-    
+
     public function testGetUsersByCongressPaginationWithSearchStatus()
     {
         // 2 users are accepted
@@ -214,10 +206,10 @@ class UserTest extends TestCase
         $congress = factory(Congress::class)->create();
         $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
-        
+
         $user1 = factory(User::class)->create();
         $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 1]);
-        
+
         $user2 = factory(User::class)->create();
         $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 1]);
 
@@ -231,7 +223,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(2 ,$dataResponse['data']);
+        $this->assertCount(2, $dataResponse['data']);
     }
 
     public function testGetUsersByCongressPaginationWithSearchCountry()
@@ -241,10 +233,10 @@ class UserTest extends TestCase
         $congress = factory(Congress::class)->create();
         $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
-        
+
         $user1 = factory(User::class)->create(['country_id' => 'TUN']);
         $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user1->user_id, 'privilege_id' => config('privilege.Participant')]);
-        
+
         $user2 = factory(User::class)->create(['country_id' => 'BHS']);
         $userCongress2 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user2->user_id, 'privilege_id' => config('privilege.Participant')]);
 
@@ -255,7 +247,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(1 ,$dataResponse['data']);
+        $this->assertCount(1, $dataResponse['data']);
     }
 
     public function testSaveUserRegistration()
@@ -278,10 +270,9 @@ class UserTest extends TestCase
         $data = $this->getExcelData();
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
-    
+
     }
 
-   
     public function testSaveUsersFromExcelWithOrganization()
     {
         $congress = factory(Congress::class)->create();
@@ -291,9 +282,8 @@ class UserTest extends TestCase
         $data = $this->getExcelData($organization->oraganization_id);
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
-    
+
     }
-   
 
     public function testSaveUsersFromExcelWithAccesses()
     {
@@ -306,10 +296,9 @@ class UserTest extends TestCase
         $data = $this->getExcelData(null, $accessesIds);
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
-    
+
     }
 
- 
     public function testSaveUsersFromExcelWithOrganizationAndAccesses()
     {
         $congress = factory(Congress::class)->create();
@@ -322,9 +311,8 @@ class UserTest extends TestCase
         $data = $this->getExcelData($organization->oraganization_id, $accessesIds);
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
-    
+
     }
- 
 
     public function testSaveUsersFromExcelWithFormInputs()
     {
@@ -346,7 +334,7 @@ class UserTest extends TestCase
         $valueSelect1 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
         $valueSelect2 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
         $valueSelect3 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
-        
+
         $organization = factory(Organization::class)->create();
         $access1 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
         $access2 = factory(Access::class)->create(['congress_id' => $congress->congress_id]);
@@ -354,19 +342,18 @@ class UserTest extends TestCase
         $data = $this->getExcelData($organization->oraganization_id, $accessesIds);
         // add first user responses
         $data['data'][0][$input->key] = $this->faker->word;
-        $data['data'][0][$checkList->key] = $value1->value . ';' .$value2->value;
+        $data['data'][0][$checkList->key] = $value1->value . ';' . $value2->value;
         $data['data'][0][$select->key] = $valueSelect1->value;
-        
+
         // add second user responses
         $data['data'][1][$input->key] = $this->faker->word;
-        $data['data'][1][$checkList->key] = $value3->value . ';' .$value4->value;
+        $data['data'][1][$checkList->key] = $value3->value . ';' . $value4->value;
         $data['data'][1][$select->key] = $valueSelect3->value;
-        
+
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
-    
+
     }
-  
 
     public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
     {
@@ -388,21 +375,56 @@ class UserTest extends TestCase
         $valueSelect1 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
         $valueSelect2 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
         $valueSelect3 = factory(FormInputValue::class)->create(['form_input_id' => $select->form_input_id]);
-        
+
         $data = $this->getExcelData();
         // add first user responses
         $data['data'][0][$input->key] = $this->faker->word;
-        $data['data'][0][$checkList->key] = $value1->value . ';' .$value2->value;
+        $data['data'][0][$checkList->key] = $value1->value . ';' . $value2->value;
         $data['data'][0][$select->key] = $valueSelect1->value;
-        
+
         // add second user responses
         $data['data'][1][$input->key] = $this->faker->word;
-        $data['data'][1][$checkList->key] = $value3->value . ';' .$value4->value;
+        $data['data'][1][$checkList->key] = $value3->value . ';' . $value4->value;
         $data['data'][1][$select->key] = $valueSelect3->value;
-        
+
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
+
+    }
     
+    public function testgetAllUsersByCongressFrontOfficeWithPagination()
+    {
+        //  api/user/congress/congress_id/listUsers'
+        $user1 = factory(User::class)->create();
+        $user2 = factory(User::class)->create();
+        $user3 = factory(User::class)->create();
+        $congress = factory(Congress::class)->create();
+        $userCongress = factory(UserCongress::class)->create(['user_id' => $user1->user_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
+        $userCongress = factory(UserCongress::class)->create(['user_id' => $user2->user_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
+        $userCongress = factory(UserCongress::class)->create(['user_id' => $user3->user_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
+        $token = JWTAuth::fromUser($user1);
+        $response= $this->withHeader('Authorization', 'Bearer ' . $token)->
+        get('api/user/congress/' . $congress->congress_id . '/listUsers')->assertStatus(200);    
+        $dataResponse = json_decode($response->getContent(), true);
+       $userVerification= User::where('user_id', '=', $user3->user_id)->first() ;
+       $this->assertEquals($dataResponse['data'][1]['first_name'], $userVerification->first_name);
+       $this->assertEquals($dataResponse['data'][1]['last_name'], $userVerification->last_name);
+       $this->assertEquals($dataResponse['data'][1]['gender'], $userVerification->gender);
+       $this->assertEquals($dataResponse['data'][1]['mobile'], $userVerification->mobile);
+       $this->assertEquals($dataResponse['data'][1]['email_verified'], $userVerification->email_verified);
+       $this->assertEquals($dataResponse['data'][1]['verification_code'], $userVerification->verification_code);
+       $this->assertEquals($dataResponse['data'][1]['qr_code'], $userVerification->qr_code);
+       $this->assertEquals($dataResponse['data'][1]['rfid'], $userVerification->rfid);
+       $this->assertEquals($dataResponse['data'][1]['path_cv'], $userVerification->path_cv);
+       $this->assertEquals($dataResponse['data'][1]['country_id'], $userVerification->country_id);
+       $this->assertEquals($dataResponse['data'][1]['resource_id'], $userVerification->resource_id);
+       $this->assertEquals($dataResponse['data'][1]['avatar_id'], $userVerification->avatar_id);
+       $this->assertEquals($dataResponse['data'][1]['img_base64'], $userVerification->img_base64);
+       $this->assertCount(2, $dataResponse['data']);      
+
     }
 
     private function getUserData($pack_id, $access_id)
@@ -413,11 +435,11 @@ class UserTest extends TestCase
             'first_name' => $this->faker->name,
             'last_name' => $this->faker->name,
             'packIds' => [
-                $pack_id
+                $pack_id,
             ],
             'accessIds' => [
-                $access_id
-            ]
+                $access_id,
+            ],
         ];
     }
 
@@ -431,59 +453,58 @@ class UserTest extends TestCase
                     "email" => $this->faker->email,
                     "accessIdTable" => $accessesIds,
                     'first_name' => $this->faker->firstName,
-                    'last_name' => $this->faker->lastName
+                    'last_name' => $this->faker->lastName,
                 ],
                 [
                     "email" => $this->faker->email,
                     "accessIdTable" => $accessesIds,
                     'first_name' => $this->faker->firstName,
-                    'last_name' => $this->faker->lastName
-                ]                    
-                
-            ]
+                    'last_name' => $this->faker->lastName,
+                ],
+
+            ],
         ];
-            
-        
+
     }
 
     // TODO Verify
     /*public function testSaveUserInscriptionEventWithQuestionsNotRequired()
     {
-        $congress = factory(Congress::class)->create();
-        $congressConfig = factory(ConfigCongress::class)
-            ->create(['congress_id' => $congress->congress_id]);
-        $formInput = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'required' => 0]);
-        $user = factory(User::class)->create();
-        $token = JWTAuth::fromUser($user);
-        $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->post('api/user/congress/' . $congress->congress_id . '/registerV2')
-            ->assertStatus(200);
+    $congress = factory(Congress::class)->create();
+    $congressConfig = factory(ConfigCongress::class)
+    ->create(['congress_id' => $congress->congress_id]);
+    $formInput = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'required' => 0]);
+    $user = factory(User::class)->create();
+    $token = JWTAuth::fromUser($user);
+    $this->withHeader('Authorization', 'Bearer ' . $token)
+    ->post('api/user/congress/' . $congress->congress_id . '/registerV2')
+    ->assertStatus(200);
     }*/
 
     // TODO Verify
     /*public function testSaveUserInscriptionEventWithQuestionsRequired()
-    {
-        $congress = factory(Congress::class)->create();
-        $congressConfig = factory(ConfigCongress::class)
-            ->create(['congress_id' => $congress->congress_id]);
-        $formInput = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'required' => 0]);
-        $formInputType = FormInputType::where('form_input_type_id', '=', $formInput->form_input_type_id)
-            ->first();
-        $user = factory(User::class)->create();
-        $token = JWTAuth::fromUser($user);
-        $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->post('api/user/congress/' . $congress->congress_id . '/registerV2',
-                ['responses' => ['congress_id' => $congress->congress_id,
-                    'label' => $this->faker->sentence,
-                    'form_input_id' => $formInput->form_input_id,
-                    'form_input_type_id' => $formInput->form_input_type_id,
-                    'response' => $this->faker->sentence,
-                    'required' => $formInput->required,
-                    'type' => ['name' => $formInputType->name,
-                        'form_input_type_id' => $formInput->form_input_type_id],
-                    'values' => []
-                ]
-                ])->assertStatus(200);
-    }*/
+{
+$congress = factory(Congress::class)->create();
+$congressConfig = factory(ConfigCongress::class)
+->create(['congress_id' => $congress->congress_id]);
+$formInput = factory(FormInput::class)->create(['congress_id' => $congress->congress_id, 'required' => 0]);
+$formInputType = FormInputType::where('form_input_type_id', '=', $formInput->form_input_type_id)
+->first();
+$user = factory(User::class)->create();
+$token = JWTAuth::fromUser($user);
+$this->withHeader('Authorization', 'Bearer ' . $token)
+->post('api/user/congress/' . $congress->congress_id . '/registerV2',
+['responses' => ['congress_id' => $congress->congress_id,
+'label' => $this->faker->sentence,
+'form_input_id' => $formInput->form_input_id,
+'form_input_type_id' => $formInput->form_input_type_id,
+'response' => $this->faker->sentence,
+'required' => $formInput->required,
+'type' => ['name' => $formInputType->name,
+'form_input_type_id' => $formInput->form_input_type_id],
+'values' => []
+]
+])->assertStatus(200);
+}*/
 
 }
