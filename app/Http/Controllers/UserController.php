@@ -2056,6 +2056,17 @@ class UserController extends Controller
         return $user;
     }
 
+    public function getAllUsersByCongressFrontOfficeWithPagination($congress_id,Request $request)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = Str::lower($request->query('search', ''));
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
+        }
+
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search,$user->user_id);
+        return response()->json($users);
+    }
     public function checkMeetingRights($congressId, $meetingId )
     {
         $user = $this->userServices->retrieveUserFromToken();
