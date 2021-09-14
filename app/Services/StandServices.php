@@ -9,6 +9,7 @@ use App\Models\StandContentFile;
 use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StandServices
 {
@@ -158,7 +159,7 @@ class StandServices
             'stand_content_file', 'stand_type'])
             ->where('congress_id', '=', $congress_id)->paginate($perPage);
             $data = $response->getCollection()->transform(function($stand) {
-                $stand->files = count($stand->stand_content_file) > 0 ? $this->setFilesWithContent($stand) : $this->setFilesNoContent($stand->stand_type_id); 
+                $stand->files = count($stand->stand_content_file) > 0 ? $this->setFilesWithContent($stand, $stand->stand_type_id) : $this->setFilesNoContent($stand->stand_type_id); 
                 return $stand;
             });
             $res = array($response);
@@ -168,7 +169,7 @@ class StandServices
     
     public function setFilesNoContent($stand_type_id)
     {
-        $configs = StandContentConfig::where('stand_type_id', '=', $stand_type_id)->get();
+        $configs = $this->getStandContentConfigByTypeId($stand_type_id);
         $files = [];
         foreach ($configs as $config) {
             $data = [
@@ -182,19 +183,43 @@ class StandServices
         return $files;
     }
 
-    public function setFilesWithContent($stand)
+    public function setFilesWithContent($stand, $stand_type_id)
     {
+        $configs = $this->getStandContentConfigByTypeId($stand_type_id);
         $files = [];
-        foreach($stand->stand_content_file as $file) {
-            $data = [
-                "key" => $file->key,
-                "label" =>$file->label,
-                "accept_file" => $file->accept_file,
-                "file" => $file->pivot->file ? $file->pivot->file : $file->pivot->url
-            ];
+        foreach ($configs as $config) {
+            $file = $this->getStandContentFileByStandId($stand->stand_id, $config->stand_content_config_id);
+            Log::info($file);
+            if ($file) {
+                $data = [
+                    "key" => $file->key,
+                    "label" => $file->label,
+                    "accept_file" => $file->accept_file,
+                    "file" => $file->file ? $file->file : $file->url
+                ];
+            } else {
+                $data = [
+                    "key" => $config->key,
+                    "label" => $config->label,
+                    "accept_file" => $config->accept_file,
+                    "file" => $config->default_file ? $config->default_file : $config->default_url
+                ];
+            }
             array_push($files, $data);
         }
         return $files;
+    }
+
+    public function getStandContentConfigByTypeId($stand_type_id)
+    {
+        return StandContentConfig::where('stand_type_id', '=', $stand_type_id)->get();
+    }
+
+    public function getStandContentFileByStandId($stand_id, $stand_content_config_id)
+    {
+        return StandContentFile::where('stand_id', '=', $stand_id)
+        ->where('stand_content_config_id', '=', $stand_content_config_id)
+        ->first();
     }
 
     public function getDocsByStands($stands)
