@@ -148,6 +148,5 @@ class MailTypeSeedTable extends Seeder
             'display_name' => "A réviser une soumission",
             'type' => "submission"
         ]);
-
     }
 }
