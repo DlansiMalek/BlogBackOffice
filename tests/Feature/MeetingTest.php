@@ -20,9 +20,9 @@ class MeetingTest extends TestCase
         $congress = factory(Congress::class)->create();
         $userSender = factory(User::class)->create();
         $userReceiver = factory(User::class)->create();
-        $meeting = factory(Meeting::class)->create();
+        $meeting = factory(Meeting::class)->create([ 'congress_id'=> $congress->congress_id]);
         $UserMeeting = factory(UserMeeting::class)->create(['meeting_id' => $meeting->meeting_id, 'user_sender_id' => $userSender->user_id, 'user_receiver_id' => $userReceiver->user_id]);
-        $response = $this->get('api/meetings?user_id=' . $userSender->user_id);
+        $response = $this->get('api/meetings/'.$congress->congress_id.'/?user_id=' . $userSender->user_id);
         $response->assertStatus(200);
     }
 
@@ -44,7 +44,7 @@ class MeetingTest extends TestCase
         $congress = factory(Congress::class)->create();
         $userSender = factory(User::class)->create();
         $userReceiver = factory(User::class)->create();
-        $meeting = factory(Meeting::class)->create();
+        $meeting = factory(Meeting::class)->create([ 'congress_id'=> $congress->congress_id]);
         $UserMeeting = factory(UserMeeting::class)->create(['meeting_id' => $meeting->meeting_id, 'user_sender_id' => $userSender->user_id, 'user_receiver_id' => $userReceiver->user_id]);
         $status =1;
         $token = JWTAuth::fromUser($userSender);
