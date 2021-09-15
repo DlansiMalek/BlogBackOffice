@@ -19,6 +19,7 @@ class MeetingServices
         $meeting->name       = $request->input('name');
         $meeting->start_date = $request->input('start_date');
         $meeting->end_date   = $request->input('end_date');
+        $meeting->congress_id = $request->input('congress_id');
         $meeting->save();
         return $meeting;
     }
@@ -44,14 +45,15 @@ class MeetingServices
             ->with(['user_meeting'])
             ->first();
     }
-    public function getMeetingByUserId($user_id)
+    public function getMeetingByUserId($user_id, $congress_id)
     {
         return Meeting::with(['user_meeting' => function ($query) {
             $query->with(['organizer', 'participant']);
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
                 ->orwhere('user_receiver_id', '=', $user_id);
-        })->get();
+        })->where('congress_id', '=', $congress_id)
+        ->get();
     }
     public function getUserMeetingsByMeetingId($meeting_id)
     {
@@ -64,7 +66,6 @@ class MeetingServices
     
     public function updateMeetingStatus($user_meeting, $request)
     {
-       
         $user_meeting->status = $request->input('status');
         $user_meeting->user_canceler = $request->input('user_canceler')!= 'null' && $request->input('user_canceler')!= null ? $request->input('user_canceler') : null;  
         $user_meeting->save();
@@ -81,11 +82,20 @@ class MeetingServices
         })->first();
     }
 
-    public function getMeetingConflicts($meet)
+    public function getMeetingConflicts($meet, $user_id)
     {
-        return Meeting::where('meeting_id', '!=', $meet->meeting_id)->where('start_date', '=', $meet->start_date)->with('user_meeting')->whereHas("user_meeting", function ($query) {
+        return Meeting::where('meeting_id', '!=', $meet->meeting_id)
+        ->where('congress_id', '=', $meet->congress_id)
+        ->where('start_date', '=', $meet->start_date)
+        ->with('user_meeting')
+        ->whereHas("user_meeting", function ($query) {
             $query->where('status', '=', 1);
-        })->get();
+        })
+        ->whereHas("user_meeting", function ($query) use ($user_id) {
+            $query->where('user_sender_id', '=', $user_id)
+            ->orwhere('user_receiver_id', '=', $user_id);
+        })
+        ->get();
     }
 
     public function declineMeeting($user_meeting)
