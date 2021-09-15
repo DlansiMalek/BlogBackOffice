@@ -463,7 +463,7 @@ Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
     Route::get('get/{offre_id}', 'OffreController@getOffreById');
     Route::put('edit/{offre_id}', 'OffreController@editOffre');
 });
-Route::group(['prefix' => 'Project'], function () {
+Route::group(['prefix' => 'project'], function () {
     Route::group(['middleware' => 'marketing'], function () {
     Route::post('add', 'ProjectController@addProject');
     Route::get('list', 'ProjectController@getProjects');
@@ -474,7 +474,7 @@ Route::group(['prefix' => 'Project'], function () {
 
 });
 
-Route::group(['prefix' => 'Category',], function () {
+Route::group(['prefix' => 'category',], function () {
     Route::group(['middleware' => 'marketing'], function () {
     Route::get('list', 'CategoryController@getCategories');
     Route::post('add', 'CategoryController@addCategory');

@@ -36,6 +36,10 @@ class CreateProjectsTable extends Migration
      */
     public function down()
     {
+        Schema::table('Project', function (Blueprint $table) {
+            $table->dropForeign(['admin_id']);
+            $table->dropForeign(['category_id']);
+        });
         Schema::dropIfExists('Project');
     }
 }
