@@ -39,6 +39,9 @@ class AuthorServices
     public function editAuthor($existingAuthor, $author, $service, $etablissement)
     {
 
+        $existingAuthor->first_name = $author['first_name'];
+        $existingAuthor->last_name = $author['last_name'];
+        $existingAuthor->email = $author['email'];
         $existingAuthor->rank = $author['rank'];
         $existingAuthor->service_id = $author['service_id'] == -1 ? $service : $author['service_id'];
         $existingAuthor->etablissement_id = $author['etablissement_id'] == -1 ? $etablissement : $author['etablissement_id'];
