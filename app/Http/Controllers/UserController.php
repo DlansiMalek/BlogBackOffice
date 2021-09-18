@@ -960,8 +960,11 @@ class UserController extends Controller
         $emails = [];
         $accessIdTable = [];
         foreach ($users as $e) {
+            if(isset($e['email']))
+            {
             $emails[] = $e["email"];
             $accessIdTable[] = $e["accessIdTable"];
+            }
         }
 
         // Affect All Access Free (To All Users)
@@ -970,7 +973,7 @@ class UserController extends Controller
         $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
 
         foreach ($users as $userData) {
-            if ($userData['email']) {
+            if (isset($userData['email'])) {
 
                 $request->merge(['privilege_id' => $privilegeId,
                     'email' => $userData['email'],
@@ -2053,6 +2056,17 @@ class UserController extends Controller
         return $user;
     }
 
+    public function getAllUsersByCongressFrontOfficeWithPagination($congress_id,Request $request)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = Str::lower($request->query('search', ''));
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
+        }
+
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search,$user->user_id);
+        return response()->json($users);
+    }
     public function checkMeetingRights($congressId, $meetingId )
     {
         $user = $this->userServices->retrieveUserFromToken();
