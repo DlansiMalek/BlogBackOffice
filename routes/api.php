@@ -49,7 +49,7 @@ Route::group(['prefix' => 'contact-us'], function () {
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
     Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
-    Route::get('', 'MeetingController@getUserMeetingById');
+    Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
 });
 
 //SMS API
@@ -333,6 +333,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('status-presence', 'UserController@getUserStatusPresences');
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
+            Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
