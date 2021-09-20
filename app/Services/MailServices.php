@@ -261,6 +261,7 @@ class MailServices
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
+            Log::info($exception);
             if ($userMail) {
                 $userMail->status = -1;
                 $userMail->update();
