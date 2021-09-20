@@ -12,7 +12,6 @@ use App\Models\Offre;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -261,7 +260,6 @@ class MailServices
                 $message->to($email)->subject($objectMail);
             });
         } catch (\Exception $exception) {
-            Log::info($exception);
             if ($userMail) {
                 $userMail->status = -1;
                 $userMail->update();
