@@ -354,13 +354,17 @@ class CongressController extends Controller
         $startDate = $request->query('startDate', '');
         $endDate = $request->query('endDate', '');
         $status = $request->query('status', '');
+        $minPrice = $request->query('minPrice', '');
+        $maxPrice = $request->query('maxPrice', '');
+        $type = $request->query('type', '');
 
-        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status;
+
+        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
         } else {
-            $events = $this->congressServices->getCongressPagination($page, $perPage, $search, $startDate, $endDate, $status);
+            $events = $this->congressServices->getCongressPagination($page, $perPage, $search, $startDate, $endDate, $status,$minPrice,$maxPrice,$type);
             Cache::put($cacheKey, $events, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
 
