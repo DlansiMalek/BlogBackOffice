@@ -9,7 +9,6 @@ use App\Models\StandContentFile;
 use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class StandServices
 {
@@ -189,7 +188,6 @@ class StandServices
         $files = [];
         foreach ($configs as $config) {
             $file = $this->getStandContentFileByStandId($stand->stand_id, $config->stand_content_config_id);
-            Log::info($file);
             if ($file) {
                 $data = [
                     "key" => $file->key,
