@@ -15,4 +15,13 @@ class UserMeeting extends Model
     function meeting() {
         return $this->belongsTo(Meeting::class,'meeting_id','meeting_id');
     }
+
+    function organizer()
+    {
+        return $this->hasOne(User::class, 'user_id', 'user_sender_id');
+    }
+    function participant()
+    {
+        return $this->hasOne(User::class, 'user_id', 'user_receiver_id');
+    }
 }
