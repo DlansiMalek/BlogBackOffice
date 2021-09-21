@@ -14,7 +14,6 @@ class MenuChildrenSeed02 extends Seeder
     public function run()
     {
       DB::table('Menu_Children')->insert([
-            'menu_children_id' => 40,
             'key' => 'Chat',
             'url' => '/manage-chat',
             'menu_id' => 10,
