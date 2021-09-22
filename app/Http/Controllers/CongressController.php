@@ -510,7 +510,8 @@ class CongressController extends Controller
                         $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                             $user,
                             $user->qr_code,
-                            $user->user_congresses[0]->privilege_id);
+                            $user->user_congresses[0]->privilege_id,
+                            $congress->congress_id);
                     }
 
                     $userMail = null;
