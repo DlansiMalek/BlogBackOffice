@@ -149,13 +149,75 @@ class StandServices
 	
 	public function getStandsPagination($congress_id, $perPage)
     {
-        return Stand::with(['docs', 'organization', 'faq',
+        $response = Stand::with(['docs', 'organization', 'faq',
             'organization.admin' => function ($query) {
                 $query->join('User','User.email', '=' ,'Admin.email')
                 ->leftJoin('Resource','Resource.resource_id','User.resource_id')
                 ->select('Admin.admin_id', 'User.user_id', 'User.gender', 'User.first_name', 'User.last_name', 'User.mobile','Resource.resource_id','Resource.path as img_user');
-            }])
+            }, 
+            'stand_content_file', 'stand_type'])
             ->where('congress_id', '=', $congress_id)->paginate($perPage);
+            $data = $response->getCollection()->transform(function($stand) {
+                $stand->files = count($stand->stand_content_file) > 0 ? $this->setFilesWithContent($stand, $stand->stand_type_id) : $this->setFilesNoContent($stand->stand_type_id); 
+                return $stand;
+            });
+            $res = array($response);
+            $res['data'] = $data;
+        return $res[0];
+    }
+    
+    public function setFilesNoContent($stand_type_id)
+    {
+        $configs = $this->getStandContentConfigByTypeId($stand_type_id);
+        $files = [];
+        foreach ($configs as $config) {
+            $data = [
+                "key" => $config->key,
+                "label" =>$config->label,
+                "accept_file" => $config->accept_file,
+                "file" => $config->default_file ? $config->default_file : $config->default_url
+            ];
+            array_push($files, $data);
+        }
+        return $files;
+    }
+
+    public function setFilesWithContent($stand, $stand_type_id)
+    {
+        $configs = $this->getStandContentConfigByTypeId($stand_type_id);
+        $files = [];
+        foreach ($configs as $config) {
+            $file = $this->getStandContentFileByStandId($stand->stand_id, $config->stand_content_config_id);
+            if ($file) {
+                $data = [
+                    "key" => $file->key,
+                    "label" => $file->label,
+                    "accept_file" => $file->accept_file,
+                    "file" => $file->file ? $file->file : $file->url
+                ];
+            } else {
+                $data = [
+                    "key" => $config->key,
+                    "label" => $config->label,
+                    "accept_file" => $config->accept_file,
+                    "file" => $config->default_file ? $config->default_file : $config->default_url
+                ];
+            }
+            array_push($files, $data);
+        }
+        return $files;
+    }
+
+    public function getStandContentConfigByTypeId($stand_type_id)
+    {
+        return StandContentConfig::where('stand_type_id', '=', $stand_type_id)->get();
+    }
+
+    public function getStandContentFileByStandId($stand_id, $stand_content_config_id)
+    {
+        return StandContentFile::where('stand_id', '=', $stand_id)
+        ->where('stand_content_config_id', '=', $stand_content_config_id)
+        ->first();
     }
 
     public function getDocsByStands($stands)

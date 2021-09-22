@@ -13,4 +13,9 @@ class StandContentFile extends Model
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['file','url', 'stand_id' ,'stand_content_config_id'];
 
+    function stand_content_config()
+    {
+        return $this->belongsToMany(StandContentConfig::class,'stand_content_config_id','stand_content_config_id');
+    }
+
 }

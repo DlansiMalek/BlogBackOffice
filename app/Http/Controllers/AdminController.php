@@ -507,7 +507,8 @@ class AdminController extends Controller
                     $badge,
                     $admin,
                     $admin->passwordDecrypt,
-                    $privilegeId
+                    $privilegeId,
+                    $congress->congress_id
                 );
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
@@ -626,7 +627,8 @@ class AdminController extends Controller
                     $badge,
                     $admin,
                     $admin->passwordDecrypt,
-                    $admin_congress->privilege_id
+                    $admin_congress->privilege_id,
+                    $congress->congress_id
                 );
             }
             $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
