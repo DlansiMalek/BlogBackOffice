@@ -125,8 +125,8 @@ class SharedServices
     public function textMapping($badge, $user, $qrCode, $congress_id)
     {
         $user_responses = $this->getQuestionResponsesForBadge($congress_id, $user->user_id);
-        if ($user->first_name) {
-            $mappingList = ['first_name' => $user->first_name,
+        if ($user->name) {
+            $mappingList = ['first_name' => $user->name,
                 'last_name' => '',
                 'email' => $user->email,
                 'country' => '',
@@ -135,7 +135,7 @@ class SharedServices
             $mappingList = ['first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'email' => $user->email,
-                'country' => $user->country->name,
+                'country' => $user->country ? $user->country->name : '',
                 'mobile' => $user->mobile];
         }
         if ($user_responses != null) {
