@@ -216,7 +216,9 @@ class SharedServices
         ->get();
         $user_responses = [];
         foreach ($responses as $param) {
-            if ($param['response'] != "") {
+            if ($param['response'] == null) {
+                $user_responses [$param['form_input']['key']] = "";
+            } else if ($param['response'] != "") {
                 $user_responses [$param['form_input']['key']] = $param['response'] ;
             } else {
                 $user_responses [$param['form_input']['key']] = $param['values'][0]['val']['value'] ;
