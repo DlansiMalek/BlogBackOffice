@@ -90,7 +90,8 @@ class PaymentController extends Controller
                     $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                         $user,
                         $user->qr_code,
-                        $userCongress->privilege_id);
+                        $userCongress->privilege_id,
+                        $congress->congress_id);
 
                 }
 

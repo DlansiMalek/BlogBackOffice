@@ -19,4 +19,8 @@ class ResponseValue extends Model
     protected $fillable = ['response', 'form_input_response_id', 'form_input_value_id'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
+    public function val()
+    {
+        return $this->belongsTo("App\Models\FormInputValue", "form_input_value_id", "form_input_value_id");
+    }
 }

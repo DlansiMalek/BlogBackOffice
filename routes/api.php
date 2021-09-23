@@ -49,7 +49,7 @@ Route::group(['prefix' => 'contact-us'], function () {
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
     Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
-    Route::get('', 'MeetingController@getUserMeetingById');
+    Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
 });
 
 //SMS API
@@ -463,6 +463,24 @@ Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
     Route::post('add', 'OffreController@addOffre');
     Route::get('get/{offre_id}', 'OffreController@getOffreById');
     Route::put('edit/{offre_id}', 'OffreController@editOffre');
+});
+Route::group(['prefix' => 'project'], function () {
+    Route::group(['middleware' => 'marketing'], function () {
+    Route::post('add', 'ProjectController@addProject');
+    Route::get('list', 'ProjectController@getProjects');
+     Route::get('get/{project_id}', 'ProjectController@getProjectWithId');
+     Route::delete('delete/{project_id}', 'ProjectController@deleteProject');
+    });
+    Route::get('listWithPagination', 'ProjectController@getProjectPagination');
+
+});
+
+Route::group(['prefix' => 'category',], function () {
+    Route::group(['middleware' => 'marketing'], function () {
+    Route::get('list', 'CategoryController@getCategories');
+    Route::post('add', 'CategoryController@addCategory');
+    });
+    Route::get('list', 'CategoryController@getCategories');
 });
 
 Route::group(['prefix' => 'menu', 'middleware' => 'marketing'], function () {
