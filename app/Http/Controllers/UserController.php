@@ -704,7 +704,7 @@ class UserController extends Controller
             //$accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
             $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
             $accessDiffAdded = array_diff($accessIds, $userAccessIds);
-            $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
+            $this->userServices->affectAccess($user->user_id, $accessDiffAdded, []);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
         } else if ($userAccessIds && array_count_values($userAccessIds)) {
             $this->userServices->deleteAccess($user->user_id, $userAccessIds);
