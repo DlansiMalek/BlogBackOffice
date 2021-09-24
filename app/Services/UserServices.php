@@ -311,8 +311,8 @@ class UserServices
 
     public function affectAccess($user_id, $accessIds, $packAccesses)
     {
-        for ($i = 0; $i < sizeof($accessIds); $i++) {
-            $this->affectAccessById($user_id, $accessIds[$i]);
+        foreach ($accessIds as $item) {
+            $this->affectAccessById($user_id, $item);
         }
 
         foreach ($packAccesses as $access) {
