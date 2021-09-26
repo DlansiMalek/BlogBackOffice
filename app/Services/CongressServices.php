@@ -518,6 +518,8 @@ class CongressServices
         $configCongress->meeting_duration = $configCongressRequest['meeting_duration'];
         $configCongress->pause_duration = $configCongressRequest['pause_duration'];
         $configCongress->default_country = $configCongressRequest['default_country'];
+        $configCongress->agora_primary_background = $configCongressRequest['agora_primary_background'];
+        $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
         $configCongress->update();
 
         return $configCongress;
