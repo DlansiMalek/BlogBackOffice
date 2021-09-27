@@ -441,7 +441,12 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'responses' => function ($query) use ($congressId) {
+                $query->whereHas('form_input', function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                });
+            }
+            , 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
