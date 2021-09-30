@@ -12,7 +12,6 @@ use App\Models\Offre;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 

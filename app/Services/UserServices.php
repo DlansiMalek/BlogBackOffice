@@ -401,7 +401,7 @@ class UserServices
             if ($privilegeId != null) {
                 $query->where('privilege_id', '=', $privilegeId);
             }
-        })->with(['profile_img', 'user_congresses'])->get();
+        })->with(['profile_img', 'user_congresses', 'responses.form_input', 'responses.values', 'responses.values.val'])->get();
     }
     // public function getUsersCongress($congress_id,$privilegeIds = null){
     //     return User::whereHas('user_congresses', function ($query) use ($congress_id,$privilegeIds) {
@@ -445,7 +445,12 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'responses' => function ($query) use ($congressId) {
+                $query->whereHas('form_input', function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                });
+            }
+            , 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
