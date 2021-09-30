@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
+use App\Models\UserCongress;
 use App\Models\Meeting;
+use App\Models\FormInput;
+use App\Models\ConfigCongress;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -498,6 +501,7 @@ class UserController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
+        $chat_info=$request->input("chat_info");
         $user = $this->userServices->addParticipant($request, $congressId);
         $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
@@ -543,6 +547,7 @@ class UserController extends Controller
         $packId = $request->input('packIds', []);
         $accessesIds = $request->input('accessesId', []);
         $privilegeId = config('privilege.Participant');
+        $chat_info=$request->input('chat_info');
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
             return response()->json(['response' => 'No user found'], 404);
@@ -558,7 +563,7 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null , $chat_info);
 
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
 
@@ -599,7 +604,7 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id') ,  $request->input('chat_info'));
 
         $packId = $request->input('packIds', []);
         $accessesIds = $request->has('accessIds') ? $request->input('accessIds', []) : $request->input('accessesId', []);
@@ -858,6 +863,7 @@ class UserController extends Controller
             return response()->json($userCongress);
         }
     }
+    
 
     public function changePaiement($paymentId, Request $request)
     {
@@ -1176,6 +1182,8 @@ class UserController extends Controller
         }
 
     }
+
+    
 
     public function redirectToLinkFormSondage($userId, $congressId)
     {
@@ -2055,7 +2063,7 @@ class UserController extends Controller
         $user->update();
         return $user;
     }
-
+    
     public function getAllUsersByCongressFrontOfficeWithPagination($congress_id,Request $request)
     {
         $perPage = $request->query('perPage', 10);
@@ -2063,10 +2071,13 @@ class UserController extends Controller
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
         }
-
+        
         $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search,$user->user_id);
+       
         return response()->json($users);
     }
+    
+
     public function checkMeetingRights($congressId, $meetingId )
     {
         $user = $this->userServices->retrieveUserFromToken();
@@ -2115,5 +2126,6 @@ class UserController extends Controller
             ],
             200
         );
+      
     }
 }

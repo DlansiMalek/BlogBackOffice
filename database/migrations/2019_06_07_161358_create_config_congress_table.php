@@ -30,6 +30,8 @@ class CreateConfigCongressTable extends Migration
 
             $table->tinyInteger('nb_ob_access')->nullable()->default(null);
 
+            $table->string('show_in_chat')->nullable()->default(null);
+
             $table->unsignedTinyInteger('prise_charge_option')->nullable()->default(0);
             $table->unsignedTinyInteger('auto_presence')->default(0);
 

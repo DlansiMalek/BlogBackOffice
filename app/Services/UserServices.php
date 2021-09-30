@@ -8,12 +8,14 @@ use App\Models\Admin;
 use App\Models\AttestationRequest;
 use App\Models\Evaluation_Inscription;
 use App\Models\FormInputResponse;
+use App\Models\FormInput;
 use App\Models\Payment;
 use App\Models\ResponseValue;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
+use App\Models\ConfigCongress;
 use App\Models\UserMail;
 use App\Models\UserPack;
 use App\Models\WhiteList;
@@ -24,6 +26,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 
 class UserServices
@@ -274,7 +278,7 @@ class UserServices
         $user = new User();
         $user->first_name = $request->input("first_name");
         $user->last_name = $request->input("last_name");
-
+        $user->chat_info = $request->input("chat_info");
         if ($request->has('email'))
             $user->email = $request->input('email');
         if ($request->has('mobile'))
@@ -1154,17 +1158,52 @@ class UserServices
             ->get();
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id)
+    public function getQuestionByKey($key,$congress_id)
+    {
+        return FormInput::where('key', '=', $key)
+                        ->where('congress_id','=',$congress_id)
+                        ->get('form_input_id');
+                        
+    }
+   
+
+    public function getResponseFormInput($user_id,$form_input_id)
+    {
+        return FormInputResponse::where('user_id', '=', $user_id)
+                        ->where('form_input_id','=',$form_input_id)
+                        ->get('response');
+    }
+
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id ,$chat_info )
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
         $user_congress->privilege_id = $privilege_id;
-
+        
+       
         if ($organization_id)
             $user_congress->organization_id = $organization_id;
         if ($pack_id)
             $user_congress->pack_id = $pack_id;
+
+             $show_in_chat=ConfigCongress::where('congress_id','=',$congress_id)
+            ->get('show_in_chat'); 
+            $user=User::where('user_id','=',$user_id)
+            ->get();
+           
+            
+            if ( Schema::hasColumn('User', $show_in_chat)) {
+                $user_congress->chat_info= $user['show_in_chat'];
+               
+                 }else{
+                  $form_input_id = $this->getQuestionByKey($show_in_chat,$congress_id) ; 
+                 // Log::warning( $form_input_id); 
+                    $chat_info =  $this->getResponseFormInput($user_id,$form_input_id);
+
+                    $user_congress->chat_info=$chat_info ;
+                 }
+
 
         $user_congress->save();
         return $user_congress;
@@ -1681,6 +1720,7 @@ class UserServices
         return FormInputValue::where('form_input_id', '=', $form_input_id)
                         ->get();
     }
+    
 
     public function isUserModeratorStand($userCongress)
     {
@@ -1761,13 +1801,21 @@ class UserServices
     public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$perPage , $search,$user_id )
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId,$search,$user_id) {
+           
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
+            
+           
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }      
-        })->paginate($perPage);
+        })
+        ->with(['user_congresses'])
+        ->paginate($perPage);
+       
+        
+       
         return  $users;
     }
 

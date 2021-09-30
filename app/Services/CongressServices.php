@@ -518,6 +518,7 @@ class CongressServices
         $configCongress->meeting_duration = $configCongressRequest['meeting_duration'];
         $configCongress->pause_duration = $configCongressRequest['pause_duration'];
         $configCongress->default_country = $configCongressRequest['default_country'];
+        $configCongress->show_in_chat = $configCongressRequest['show_in_chat'];
         $configCongress->update();
 
         return $configCongress;
