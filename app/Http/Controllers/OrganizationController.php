@@ -156,7 +156,8 @@ class OrganizationController extends Controller
             $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                 $user,
                 $user->qr_code,
-                $user->privilege_id);
+                $user->privilege_id,
+                $congress->congress_id);
         }
 
         if ($mailtype = $this->congressServices->getMailType('subvention')) {
