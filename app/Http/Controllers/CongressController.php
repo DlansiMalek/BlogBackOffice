@@ -123,7 +123,7 @@ class CongressController extends Controller
         if ($status == 0)
             $execute = $this->trackingServices->executePolicy($congressId);
 
-        return response()->json(['message' => 'auto presence updating', 'execute' => $execute]);
+        return response()->json(['message' => 'auto presence updating']);
     }
 
     public function switchUsersRoom($congressId, Request $request)
