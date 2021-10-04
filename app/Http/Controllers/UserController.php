@@ -1,13 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
-use App\Models\UserCongress;
 use App\Models\Meeting;
-use App\Models\FormInput;
-use App\Models\ConfigCongress;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -501,7 +497,7 @@ class UserController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
-        $chat_info=$request->input("chat_info");
+        
         $user = $this->userServices->addParticipant($request, $congressId);
         $this->userServices->affectAccess($user->user_id, $accessIds, $user->pack->accesses);
 
@@ -547,7 +543,6 @@ class UserController extends Controller
         $packId = $request->input('packIds', []);
         $accessesIds = $request->input('accessesId', []);
         $privilegeId = config('privilege.Participant');
-        $chat_info=$request->input('chat_info');
         $user = $this->userServices->retrieveUserFromToken();
         if (!$user) {
             return response()->json(['response' => 'No user found'], 404);
@@ -1809,6 +1804,8 @@ class UserController extends Controller
         $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
 
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
+        
+
     }
 
     public function trackingUser(Request $request)

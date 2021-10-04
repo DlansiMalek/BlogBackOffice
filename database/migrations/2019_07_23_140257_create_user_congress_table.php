@@ -17,7 +17,7 @@ class CreateUserCongressTable extends Migration
             $table->increments('user_congress_id');
             $table->unsignedTinyInteger('isPresent')->default(0);
             $table->unsignedTinyInteger('organization_accepted')->default(0);
-            $table->string('chat_info')->nullable()->default(null);
+           
 
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');

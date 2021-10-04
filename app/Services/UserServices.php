@@ -26,8 +26,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
+
 
 
 class UserServices
@@ -1174,7 +1173,7 @@ class UserServices
                         ->get('response');
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id ,$chat_info )
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id )
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
@@ -1189,10 +1188,7 @@ class UserServices
 
              $show_in_chat=ConfigCongress::where('congress_id','=',$congress_id)
             ->get('show_in_chat'); 
-            $user=User::where('user_id','=',$user_id)
-            ->get();
-           
-            
+                       
             if ( Schema::hasColumn('User', $show_in_chat)) {
                 $user_congress->chat_info= $user['show_in_chat'];
                
@@ -1200,7 +1196,6 @@ class UserServices
                   $form_input_id = $this->getQuestionByKey($show_in_chat,$congress_id) ; 
                  // Log::warning( $form_input_id); 
                     $chat_info =  $this->getResponseFormInput($user_id,$form_input_id);
-
                     $user_congress->chat_info=$chat_info ;
                  }
 
