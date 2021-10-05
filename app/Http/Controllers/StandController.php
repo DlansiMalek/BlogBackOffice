@@ -8,6 +8,7 @@ use App\Services\StandServices;
 use App\Services\VotingServices;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
+use App\Services\STagServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -17,19 +18,22 @@ class StandController extends Controller
     protected $congressServices;
     protected $votingServices;
     protected $adminServices;
+    protected $stagServices;
 
     function __construct(
         StandServices $standServices,
         CongressServices $congressServices,
         VotingServices $votingServices,
         AccessServices $accessServices,
-        AdminServices $adminServices
+        AdminServices $adminServices,
+        STagServices $stagServices
     ) {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
         $this->accessServices = $accessServices;
         $this->adminServices = $adminServices;
+        $this->stagServices = $stagServices;
     }
 
 
@@ -56,6 +60,7 @@ class StandController extends Controller
             $stand = $this->standServices->getStandById($request->input('stand_id'));
         }
         $stand = $this->standServices->addStand($stand, $congressId, $request);
+        $this->stagServices->addAllStandTags($request->input('stags'), $stand->stand_id);
         $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id);
         return response()->json($stand, 200);
     }

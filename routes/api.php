@@ -229,6 +229,11 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::post('add', 'TagController@addTag');
         });
 
+        Route::group(['prefix' => 'stags'], function () {
+            Route::get('', 'STagController@getSTags');
+            Route::post('add', 'STagController@addSTag');
+        });
+
         Route::group(['prefix' => 'product'], function () {
             Route::get('{product_id}', 'StandProductController@getStandProductById');
         });
