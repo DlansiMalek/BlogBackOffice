@@ -359,7 +359,8 @@ class SubmissionServices
                 $query->orderBy('rank');
             },
         ])->where('status', '=', 1)
-        ->where('congress_id', '=', $congressId);
+        ->where('congress_id', '=', $congressId)
+        ->orderBy('code');
 
         if ($communication_type_id != 'null' && $communication_type_id != '') {
             $submissions->where('communication_type_id', '=', $communication_type_id);
