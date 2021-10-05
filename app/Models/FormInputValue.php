@@ -18,4 +18,5 @@ class FormInputValue extends Model
     protected $fillable = ['value','form_input_id'];
     protected $dates = ['created_at', 'updated_at','deleted_at'];
 
+
 }

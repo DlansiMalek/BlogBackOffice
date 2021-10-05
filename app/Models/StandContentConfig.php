@@ -17,4 +17,8 @@ class StandContentConfig extends Model
     {
         return $this->belongsToMany(Stand::class,'Stand_Content_File','stand_content_config_id','stand_id');
     }
+
+    function stand_type() {
+        return $this->hasOne(StandType::class,'stand_type_id','stand_type_id');
+    }
 }

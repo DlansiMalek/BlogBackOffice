@@ -17,5 +17,6 @@ class MenuDatabaseSeeder extends Seeder
         $this->call(MenuChildSeed00::class);
         $this->call(MenuSeed00::class);
         $this->call(MenuChildrenSeed01::class);
+        $this->call(MenuChildrenSeed02::class);
     }
 }

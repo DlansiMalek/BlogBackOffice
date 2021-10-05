@@ -123,7 +123,7 @@ class StandTest extends TestCase
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/stands')
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(2, $dataResponse);
+        $this->assertCount(2, $dataResponse['data']);
     }
 
     public function testGetStands()
@@ -146,7 +146,7 @@ class StandTest extends TestCase
         $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
         $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id, 'status' => 1]);
         $user = factory(User::class)->create();
-        $userCongress = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user->user_id, 'privilege_id' => 3, 'isSelected' => 1]);
+        $userCongress = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 1]);
         $payment = factory(Payment::class)->create(['user_id' => $user->user_id, 'congress_id' => $congress->congress_id, 'isPaid' => 1]);
         $token = JWTAuth::fromUser($user);
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
