@@ -116,11 +116,14 @@ class StandServices
         return $stand;
     }
 
-    public function getStands($congress_id,  $name = null, $status = null,$perPage = null)
+    public function getStands($congress_id,  $name = null, $status = null,$perPage = null,$search=null)
     {
-        $allStand = Stand::where(function ($query) use ($name, $status) {
+        $allStand = Stand::where(function ($query) use ($name, $status,$search) {
             if ($name) {
                 $query->where('name', '=', $name);
+            }
+            if ($search) {
+                $query->where('name','LIKE', '%' . $search . '%');
             }
             if ($status) {
                 $query->where('status', '=', $status);
@@ -134,15 +137,15 @@ class StandServices
 
     }
 
-    public function getCachedStands($congress_id, $page, $perPage)
+    public function getCachedStands($congress_id, $page, $perPage,$search)
     {
-        $cacheKey = 'stands-' . $congress_id . $page . $perPage;
+        $cacheKey = 'stands-' . $congress_id . $page . $perPage.$search;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
-        $stands = $this->getStands($congress_id, null,null, $perPage);
+        $stands = $this->getStands($congress_id, null,null, $perPage,$search);
         Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
         return $stands;

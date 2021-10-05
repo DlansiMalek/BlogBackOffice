@@ -160,7 +160,8 @@ class StandController extends Controller
         }
         $perPage = $request->query('perPage', 10);
         $page = $request->query('page', 1);
-        $stands = $this->standServices->getCachedStands($congress_id,$page,$perPage);
+        $search = $request->query('search', '');
+        $stands = $this->standServices->getCachedStands($congress_id,$page,$perPage,$search);
         return response()->json($stands, 200);
     }
 
