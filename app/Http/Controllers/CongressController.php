@@ -986,10 +986,6 @@ class CongressController extends Controller
 
     public function getListTrackingByCongress($congressId, Request $request)
     {
-      //  if (!$congress = $this->congressServices->getById($congressId)) {
-        //    return response()->json(['response' => 'congress not found'], 404);
-      //  }
-
         return response()->json($this->trackingServices->getTrackings($congressId, $request));
 
     }
