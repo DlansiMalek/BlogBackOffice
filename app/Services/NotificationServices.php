@@ -34,7 +34,7 @@ class NotificationServices
             ->first();
     }
 
-    public function saveKeyByCongress($congressId, ?string $firebaseKey, $userId = null, $source)
+    public function saveKeyByCongress($congressId, ?string $firebaseKey, $userId , $source)
     {
         $userNotifCongress = new UserNotifCongress();
         $userNotifCongress->congress_id = $congressId;
