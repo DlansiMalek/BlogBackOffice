@@ -12,7 +12,6 @@ use App\Models\Offre;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -26,7 +25,7 @@ class MailServices
 {
     protected $maxRequest = 0;
 
-    public function getAllMailTypes($congressId = null, $type)
+    public function getAllMailTypes($congressId , $type)
     {
         return MailType::where('type', '=', $type)
             ->with(['mails' => function ($query) use ($congressId) {
