@@ -12,8 +12,7 @@ class STag extends Model
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['label', 'congress_id'];
 
-    function congresses()
-    {
-        return $this->belongsTo(Congress::class);
+    function stands() {
+        return $this->belongsToMany(Stand::class ,'Stand_Tag');
     }
 }

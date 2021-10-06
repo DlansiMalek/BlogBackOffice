@@ -33,7 +33,7 @@ class Stand extends Model
         return $this->hasMany(StandProduct::class,'stand_id','stand_id');
     }
     function stags() {
-        return $this->hasMany(StandTag::class,'stand_id','stand_id');
+        return $this->belongsToMany(STag::class, 'Stand_Tag', 'stand_id', 'stag_id');
     }
 
     function faq() {

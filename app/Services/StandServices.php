@@ -129,7 +129,7 @@ class StandServices
                 $query->where('status', '=', $status);
             }
         })
-            ->with(['docs', 'products' , 'organization', 'faq'])
+            ->with(['docs', 'products' , 'organization', 'faq','stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id)->get();
     }
