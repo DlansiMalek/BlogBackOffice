@@ -571,6 +571,7 @@ class CongressServices
         $configSubmission->num_evaluators = $submissionData['num_evaluators'];
         $configSubmission->start_submission_date = $submissionData['start_submission_date'];
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
+        $configSubmission->show_file_upload = $submissionData['show_file_upload'];
         $configSubmission->save();
         return $configSubmission;
 
@@ -783,6 +784,7 @@ class CongressServices
         $template = str_replace('{{$user_sender-&gt;last_name}}', '{{$user_sender->last_name}}', $template);
         $template = str_replace('{{$user_sender-&gt;first_name}}', '{{$user_sender->first_name}}', $template);
         $template = str_replace('{{$meeting-&gt;start_date}}', '{{$meeting->start_date}}', $template);
+        $template = str_replace('{{$meeting-&gt;name}}', '{{$meeting->name}}', $template);
         $template = str_replace('{{%24linkSubmission}}', '{{$linkSubmission}}', $template);
 
         $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
