@@ -36,7 +36,14 @@ class StandController extends Controller
         $this->stagServices = $stagServices;
     }
 
-
+    public function getStandsByTags($congress_id, $label)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $stands = $this->standServices->getStandsByTags($congress_id,$label);
+        return response()->json($stands, 200);
+    }
     public function getStands($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {

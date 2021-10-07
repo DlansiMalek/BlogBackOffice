@@ -206,6 +206,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
         Route::group(['prefix' => 'stand'], function () {
             Route::get('', 'StandController@getStands');
+            Route::get('/getStandsByTags/{label}', 'StandController@getStandsByTags');
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
             Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
@@ -230,7 +231,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         });
 
         Route::group(['prefix' => 'stags'], function () {
-            Route::get('', 'STagController@getSTags');
+            Route::get('standTagList', 'STagController@getSTags');
             Route::post('add', 'STagController@addSTag');
         });
 

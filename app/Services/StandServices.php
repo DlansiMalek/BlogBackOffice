@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Stand;
+use App\Models\STag;
 use App\Models\ResourceStand;
 use App\Models\StandContentConfig;
 use App\Models\StandContentFile;
@@ -133,6 +134,16 @@ class StandServices
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id)->get();
     }
+
+    public function  getStandsByTags($congress_id,$label)
+    {
+        return STag::where('congress_id', '=', $congress_id)
+            ->where('label', '=', $label)
+            ->with(['stand'])
+            ->get();
+    }
+
+   
 
     public function getCachedStands($congress_id) {
         $cacheKey = 'stands-' . $congress_id;
