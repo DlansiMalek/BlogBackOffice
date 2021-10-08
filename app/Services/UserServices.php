@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\DB;
 
 
 
+
 class UserServices
 {
 
@@ -1190,20 +1191,6 @@ class UserServices
             $user_congress->organization_id = $organization_id;
         if ($pack_id)
             $user_congress->pack_id = $pack_id;
-
-             $show_in_chat=ConfigCongress::where('congress_id','=',$congress_id)
-            ->get('show_in_chat'); 
-                       
-            if ( Schema::hasColumn('User', $show_in_chat)) {
-                $user_congress->chat_info= $user['show_in_chat'];
-               
-                 }else{
-                  $form_input_id = $this->getQuestionByKey($show_in_chat,$congress_id) ; 
-                 // Log::warning( $form_input_id); 
-                    $chat_info =  $this->getResponseFormInput($user_id,$form_input_id);
-                    $user_congress->chat_info=$chat_info ;
-                 }
-
 
         $user_congress->save();
         return $user_congress;

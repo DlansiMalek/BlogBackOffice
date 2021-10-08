@@ -25,7 +25,7 @@ class MailServices
 {
     protected $maxRequest = 0;
 
-    public function getAllMailTypes($congressId , $type)
+    public function getAllMailTypes($congressId= null, $type)
     {
         return MailType::where('type', '=', $type)
             ->with(['mails' => function ($query) use ($congressId) {
@@ -180,7 +180,7 @@ class MailServices
     }
 
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail , $toSendEmail , $fileName )
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null )
     {
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;
