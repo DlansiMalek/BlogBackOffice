@@ -76,8 +76,14 @@ class UserServices
         $newUser->last_name = $last_name;
         $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->verification_code = Str::random(40);
         $newUser->save();
 
+        if (!$newUser->qr_code) {
+            $newUser->qr_code = Utils::generateCode($newUser->user_id);
+            $newUser->update();
+        }
+        
         return $newUser;
     }
 
