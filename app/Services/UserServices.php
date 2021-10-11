@@ -1087,8 +1087,9 @@ class UserServices
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) { 
             $user->resource_id = $request->input('resource_id');
-            if($resource)
-                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);
+            /** TODO fix data too long */
+            /*if($resource)
+                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);*/
         }
         $user->verification_code = Str::random(40);
         $user->save();
