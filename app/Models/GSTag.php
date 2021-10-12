@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class STag extends Model
+class GSTag extends Model
 {
-    protected $table = 'STag';
-    protected $primaryKey = 'stag_id';
+    protected $table = 'GSTag';
+    protected $primaryKey = 'gstag_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['label', 'congress_id'];
 
-    function stand() {
-        return $this->belongsToMany(Stand::class ,'Stand_Tag' , 'stag_id', 'stand_id');
-    }
 
-    
+    function tags() {
+        return $this->hasMany(STag::class,'stag_id','stag_id');
+    }
 }
