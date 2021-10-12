@@ -184,7 +184,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::delete('/delete-badge/{badgeId}', 'BadgeController@deleteBadge');
-        Route::get('/tracking', 'CongressController@getListTrackingByCongress');
+        Route::post('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
         Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
