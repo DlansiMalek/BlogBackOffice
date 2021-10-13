@@ -836,7 +836,7 @@ class SubmissionController extends Controller
                         } else {
                             $authorMail = $author->author_mails[0];
                         }
-                        if ($authorMail->status != 1) {
+                        if (Utils::isValidStatus($authorMail)) {
                             $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
                             $fileName = 'attestationsSubmission.zip';
                             $this->mailServices->sendMail(

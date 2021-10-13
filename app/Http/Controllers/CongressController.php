@@ -7,7 +7,6 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
 use App\Models\ConfigCongress;
-use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\User;
 use App\Models\UserCongress;
@@ -531,7 +530,7 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    if ($userMail->status != 1) {
+                    if (Utils::isValidStatus($userMail)) {
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congressId.'/event-room';
                         $this->mailServices->sendMail($this->congressServices
@@ -594,7 +593,7 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    if ($userMail->status != 1) {
+                    if (Utils::isValidStatus($userMail)) {
                         $linkSondage = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
                             $user, $congress, $mail->object, false, $userMail);
@@ -683,7 +682,7 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    if ($userMail->status != 1) {
+                    if (Utils::isValidStatus($userMail)) {
                         $fileName = 'attestations.zip';
                         $this->badgeServices->saveAttestationsInPublic($request);
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
@@ -737,7 +736,7 @@ class CongressController extends Controller
                     $userMail = $user->user_mails[0];
                 }
 
-                if ($userMail->status != 1) {
+                if (Utils::isValidStatus($userMail)) {
                     $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
                         , $user, $congress, $mail->object, false, $userMail);
                 }
