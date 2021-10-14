@@ -9,12 +9,13 @@ use App\Models\StandContentFile;
 use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StandServices
 {
 
     public function addStand($stand, $congressId, $request)
-    {
+    { 
         if (!$stand) {
             $stand = new Stand();
         }
@@ -364,4 +365,15 @@ class StandServices
             ->first();
     }
 
+    public function addOrganizationStand($standOrganization, $congressId, $standData)
+    {
+        if (!$standOrganization) {
+            $standOrganization = new Stand();
+        }
+        $standOrganization->name = $standData['name'];
+        $standOrganization->organization_id = $standData['organization_id'];
+        $standOrganization->congress_id = $congressId;
+        $standOrganization->save();
+        return $standOrganization;
+    }
 }
