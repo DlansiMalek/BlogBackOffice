@@ -534,6 +534,7 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'user_congresses.privilege', 'country'])
             ->with(['accesses'])
+            ->with(['profile_img'])
             ->get();
         return $users;
     }
