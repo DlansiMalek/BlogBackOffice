@@ -60,6 +60,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserMailSeeder::class);
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
+        $this->call(MailContactUsSeeder::class);
         $this->call(UserMailAdminSeeder::class);
 
         $this->call(LikeSeedTable::class);
@@ -107,6 +108,8 @@ class DatabaseSeeder extends Seeder
         $this->call(LPSpeakerSeeder::class);
         
         $this->call(AccessGameSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(ProjectSeeder::class);
 
     }
 }

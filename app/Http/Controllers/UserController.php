@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
-use App\Models\Meeting;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -29,9 +28,7 @@ use App\Services\PrivilegeServices;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Exception;
 use App\Services\MeetingServices;
-use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -1261,7 +1258,7 @@ class UserController extends Controller
                 } else {
                     $userMail = $user->user_mails[0];
                 }
-                if ($userMail->status != 1) {
+                if (Utils::isValidStatus($userMail)) {
                     $fileName = 'attestations.zip';
                     $this->badgeServices->saveAttestationsInPublic($request);
                     $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),

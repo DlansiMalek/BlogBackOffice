@@ -123,7 +123,7 @@ class StandTest extends TestCase
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/stands')
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(2, $dataResponse);
+        $this->assertCount(2, $dataResponse['data']);
     }
 
     public function testGetStands()
