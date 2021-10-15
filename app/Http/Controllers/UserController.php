@@ -956,7 +956,6 @@ class UserController extends Controller
         //PrivilegeId = 3
         $sum = 0;
         $privilegeId = $request->input("privilegeId");
-        $organizationId = $request->input("organisationId");
         $emails = [];
         $accessIdTable = [];
         foreach ($users as $e) {
@@ -998,11 +997,17 @@ class UserController extends Controller
                     ]);
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
+                    $organizationExist=null;
+                    if ( isset($userData['organisme'])) {
+                        $organizationExist = $this->organizationServices->getOrganizationByNameAndCongress($userData['organisme'], $congressId);
+
+                    }
+                    $organizationId = !$organizationExist ? $request->input("organisationId") : $organizationExist->organization_id;
                     if (!$user_congress) {
                         if ($accessNotInRegister) {
                             $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
                         }
-                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $organizationId, $request->input('pack_id'));
                         if ($congress->congress_type_id == 1) { // If event type payed affect payment user
                             $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
                         }
