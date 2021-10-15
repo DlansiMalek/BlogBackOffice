@@ -89,6 +89,7 @@ class OrganizationController extends Controller
         $admin->email =  $request->input('email');
         $admin->mobile = $request->input('mobile');
         $privilegeId = 7;
+        $admin->privilege_id =  $privilegeId;
         $password = Str::random(8);
 
         if (!($fetched = $this->adminServices->getAdminByLogin($request->input('email')))) {

@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -326,8 +327,12 @@ class AdminController extends Controller
             if (count($admin->admin_congresses) > 0) {
                 $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
                 if (count($menus) == 0) {
+                    if ($admin->privilege_id == 7) {
+                        $menus = $this->offreServices->getMenusByPrivilegeByCongress(null, $admin->privilege_id);
+                    } else {
                     $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
                     $menus = $this->getAdminMenus($admin_congress->admin_id);
+                    }
                 }
             }
         }
