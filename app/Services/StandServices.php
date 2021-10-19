@@ -120,7 +120,7 @@ class StandServices
         return $stand;
     }
 
-    public function getStands($congress_id, $name = null, $status = null)
+    public function getStands($congress_id, $name = null, $status = null , $stag_id = null )
     {
         return Stand::where(function ($query) use ($name, $status) {
             if ($name) {
@@ -129,22 +129,18 @@ class StandServices
             if ($status) {
                 $query->where('status', '=', $status);
             }
+            
         })
             ->with(['docs', 'products' , 'organization', 'faq','stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
+            ->where("stags",function($query)use ($stag_id){
+                if ($stag_id) {
+                    $query->where('stag_id', '=', $stag_id);
+                }
+            })
             ->where('congress_id', '=', $congress_id)->get();
     }
-
-    public function  getStandsByTags($congress_id,$label)
-    {
-        return STag::where('congress_id', '=', $congress_id)
-            ->where('label', '=', $label)
-            ->with(['stand'])
-            ->get();
-    }
-
-   
-
+  
     public function getCachedStands($congress_id) {
         $cacheKey = 'stands-' . $congress_id;
 

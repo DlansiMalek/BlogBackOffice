@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\StandTag;
-use App\Models\Stand;
+
 use App\Models\STag;
-use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
+use App\Models\StandTag;
+
+
 
 class STagServices
 {
@@ -29,7 +28,7 @@ class STagServices
         if (sizeof($stags) > 0)
         {
             foreach ($stags as $stag) {
-                $this->addStandTag($tag, $stand_id);
+                $this->addStandTag($stag, $stand_id);
             }
         }
     }

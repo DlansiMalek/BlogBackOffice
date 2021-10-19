@@ -35,7 +35,10 @@ class CreateStandTagTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stag_id');
-        $table->dropForeign(['stand_id']);
+        Schema::table('Stand_Tag', function (Blueprint $table) {
+            $table->dropForeign(['stag_id']);
+            $table->dropForeign(['stand_id']);
+        });
+        Schema::dropIfExists('Stand_Tag');
     }
 }
