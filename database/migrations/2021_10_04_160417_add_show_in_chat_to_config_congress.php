@@ -27,7 +27,7 @@ class AddShowInChatToConfigCongress extends Migration
     public function down()
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
-            //
+            $table->removeColumn('show_in_chat');
         });
     }
 }

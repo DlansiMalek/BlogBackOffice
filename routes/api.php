@@ -318,7 +318,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     Route::post('/register', 'UserController@registerUser');
 
     Route::group(['prefix' => 'congress'], function () {
-
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::post('{user_id}/changeScore', 'UserController@affectScoreToUser');
@@ -411,7 +410,6 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
             Route::post('add', 'CongressController@addCongress');
         });
     });
-    
     Route::group(['prefix' => 'qrcode'], function () {
         Route::post('scan', 'AdminController@scanParticipatorQrCode');
     });

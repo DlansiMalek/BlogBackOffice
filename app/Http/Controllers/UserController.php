@@ -560,7 +560,7 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null , $chat_info);
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
 
         $this->handleCongressInscription($request, $privilegeId, $user, $congress, $congress_id, $packId, $accessesIds, $user_congress);
 
@@ -601,7 +601,7 @@ class UserController extends Controller
         }
 
         // Affect User to Congress
-        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id') ,  $request->input('chat_info'));
+        $user_congress = $this->userServices->saveUserCongress($congress_id, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
 
         $packId = $request->input('packIds', []);
         $accessesIds = $request->has('accessIds') ? $request->input('accessIds', []) : $request->input('accessesId', []);
@@ -861,7 +861,6 @@ class UserController extends Controller
         }
     }
     
-
     public function changePaiement($paymentId, Request $request)
     {
         $isPaid = $request->input('status');
@@ -1180,8 +1179,6 @@ class UserController extends Controller
         }
 
     }
-
-    
 
     public function redirectToLinkFormSondage($userId, $congressId)
     {
