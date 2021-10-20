@@ -365,15 +365,4 @@ class StandServices
             ->first();
     }
 
-    public function addOrganizationStand($standOrganization, $congressId, $standData)
-    {
-        if (!$standOrganization) {
-            $standOrganization = new Stand();
-        }
-        $standOrganization->name = $standData['name'];
-        $standOrganization->organization_id = $standData['organization_id'];
-        $standOrganization->congress_id = $congressId;
-        $standOrganization->save();
-        return $standOrganization;
-    }
 }

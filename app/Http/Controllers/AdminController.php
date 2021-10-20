@@ -327,8 +327,8 @@ class AdminController extends Controller
             if (count($admin->admin_congresses) > 0) {
                 $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
                 if (count($menus) == 0) {
-                    if ($admin->privilege_id == 7) {
-                        $menus = $this->offreServices->getMenusByPrivilegeByCongress(null, $admin->privilege_id);
+                    if ($admin->admin_congresses[0]->privilege_id == config('privilege.Organisme')) {
+                        $menus = $this->offreServices->getMenusByPrivilegeByCongress(null, $admin->admin_congresses[0]->privilege_id);
                     } else {
                     $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
                     $menus = $this->getAdminMenus($admin_congress->admin_id);
@@ -448,7 +448,7 @@ class AdminController extends Controller
 
         // Add User if not exist
         if (!$user = $this->userServices->getUserByEmail($admin['email'])) {
-            $name = explode(" ", $admin['name']);
+            $name = Utils::explodeString($admin['name']);
             $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
             $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
             $user = $this->userServices->addUserFromExcel($admin, $password);
@@ -541,7 +541,7 @@ class AdminController extends Controller
         $newAdmin = $this->adminServices->getAdminById($admin_id);
         //message d'erreur à revoir
         $user = $this->userServices->getUserByEmail($admin['email']);
-        $name = explode(" ", $admin['name']);
+        $name = Utils::explodeString($admin['name']) ;
         $admin['first_name'] = strpos($admin['name'], ' ')?$name[0]:$name;
         $admin['last_name'] =  strpos($admin['name'], ' ')?$name[1]:'';
         if (!$user) {

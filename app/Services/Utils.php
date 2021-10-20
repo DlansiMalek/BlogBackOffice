@@ -300,4 +300,9 @@ class Utils
     public static function isValidStatus ($userMail) {
         return $userMail->status != 1 && $userMail->status != 2;
     }
+
+    public static function explodeString($string)
+    {
+        return explode(" ", $string);
+    }
 }
