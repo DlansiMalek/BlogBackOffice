@@ -1142,7 +1142,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) 
             return response()->json(["message" => "congress not found"], 404);
         
-        $participants = $this->congressServices->getParticipantsCount($congress_id, null, null);
+        $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }
 
