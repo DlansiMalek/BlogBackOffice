@@ -5,21 +5,25 @@ namespace App\Services;
 use App\Models\StandTag;
 use App\Models\Stand;
 use App\Models\STag;
+use App\Models\GSTag;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class STagServices
 {
-    public function getSTags($congress_id)
+    public function getSTags($congress_id )
     {
-        return STag::where('congress_id', '=', $congress_id)->get();
-    }
+        return STag::where('congress_id', '=', $congress_id)
+        ->with(['gtag'])
+        ->get();
+    } 
 
     public function addSTag($request, $congress_id)
     {
         $stag = new STag();
         $stag->label = $request->input('label');
+        $stag->gstag_id = $request->input('gstag_id');
         $stag->congress_id = $congress_id;
         $stag->save();
     }
@@ -43,5 +47,15 @@ class STagServices
     }
 
    
+    public function getGSTags($congress_id , $gstag_id )
+    {
+       
+            return STag::where('congress_id', '=', $congress_id)  
+            ->where ('gstag_id' , '=', $gstag_id)
+            ->get();  
+        
+        
+    }
+
 
 }

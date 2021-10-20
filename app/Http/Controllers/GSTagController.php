@@ -26,7 +26,7 @@ class GSTagController extends Controller
         }
         $this->gstagServices->addGSTag($request, $congress_id);
         $gstags = $this->gstagServices->getGSTags($congress_id);
-        return response()->json($stags);
+        return response()->json($gstags);
     }
 
     public function getGSTags($congress_id)
