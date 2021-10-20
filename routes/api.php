@@ -50,6 +50,11 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
     Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
+    Route::put('{meeting_id}/statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
+    Route::put('{meeting_id}/statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
+    Route::get('{congress_id}/NumberOfMeetings', 'MeetingController@getNumberOfMeetings');
+
+
 });
 
 //SMS API

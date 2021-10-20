@@ -146,4 +146,27 @@ class MeetingController extends Controller
       }
     }
   }
+
+  public function makeOrganizerPresent ($meeting_id , Request $request )
+  {
+    $meeting= $this->meetingServices->getMeetingById($meeting_id);
+    $this->meetingServices->makeOrganizerPresent($meeting, $request->input('is_organizer_present') );
+  }
+
+  public function makeParticipantPresent ($meeting_id , Request $request)
+  {
+    $user_meeting=$this->meetingServices->getUserMeetingsById($meeting_id,$request->input('user_id'));
+    $this->meetingServices->makeParticipantPresent($user_meeting, $request->input('is_participant_present'));
+  }
+
+  public function getNumberOfMeetings($congress_id, Request $request)
+  {
+    $status = $request->query('status','1');
+    $start_date = $request->query('start_date','');
+    $end_date = $request->query('end_date','');
+
+      $nombre=$this->meetingServices->getNumberOfMeetings($congress_id,$status,$start_date,$end_date);
+      return response()->json($nombre, 200);
+
+  }
 }

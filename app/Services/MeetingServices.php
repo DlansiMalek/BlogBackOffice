@@ -104,4 +104,32 @@ class MeetingServices
         $user_meeting->save();
         return $user_meeting;
     }
+    public function makeOrganizerPresent ($meeting , $is_organizer_present )
+    {
+      $meeting->is_organizer_present =$is_organizer_present ;
+      $meeting->update();
+  
+    }
+    public function makeParticipantPresent ($user_meeting , $is_participant_present)
+    {
+      $user_meeting->is_participant_present =$is_participant_present ;
+      $user_meeting->update();
+    }
+
+    public function getNumberOfMeetings($congress_id, $status = null,$start_date = null,$end_date = null)
+    {
+        return Meeting::whereHas("user_meeting", function ($query) use ($status) {
+            $query->where('status', '=', $status);
+        })->where('congress_id', '=', $congress_id)
+        ->where(function ($query) use ($start_date, $end_date) {
+            if ($start_date != '' && $start_date != 'null'){
+            $query->whereDate('start_date', '>=',date( $start_date));
+        }
+        if ($end_date != '' && $end_date != 'null'){
+            $query->whereDate('end_date', '<=', date($end_date));
+        }
+        })
+       
+        ->count();
+    }
 }
