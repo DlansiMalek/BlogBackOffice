@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
 use App\Services\AccessServices;
@@ -482,7 +484,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
+            return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -1441,7 +1443,7 @@ class UserController extends Controller
 
         return $price;
     }
-
+    
     public function sendCustomMail($user_id, $mail_id, $congress_id)
     {
         if (!$user = $this->userServices->getParticipatorById($user_id)) {
@@ -1728,7 +1730,7 @@ class UserController extends Controller
             }
         }
         // Sending Mail
-        $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+        $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
 

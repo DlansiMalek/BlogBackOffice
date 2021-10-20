@@ -533,7 +533,7 @@ class UserServices
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'user_congresses.privilege', 'country'])
-            ->with(['accesses'])
+            ->with(['accesses', 'profile_img'])
             ->get();
         return $users;
     }
@@ -1296,6 +1296,7 @@ class UserServices
     public function getPaymentById($paymentId)
     {
         return Payment::where('payment_id', '=', $paymentId)
+            ->with(['congress'])
             ->first();
     }
 
