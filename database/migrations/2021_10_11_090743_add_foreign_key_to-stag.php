@@ -14,7 +14,7 @@ class AddForeignKeyToStag extends Migration
     public function up()
     {
         Schema::table('STag', function (Blueprint $table) {
-            $table->unsignedInteger("gstag_id")->unsigned()->nullable()->default(null);;
+            $table->unsignedInteger("gstag_id");
             $table->foreign("gstag_id")->references('gstag_id')->on('GSTag')
                 ->onDelete('cascade');
         });
