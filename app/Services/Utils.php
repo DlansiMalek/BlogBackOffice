@@ -301,8 +301,11 @@ class Utils
         return $userMail->status != 1 && $userMail->status != 2;
     }
 
-    public static function explodeString($string)
+    public static function explodeString($object)
     {
-        return explode(" ", $string);
+        $name = explode(" ", $object['name']);
+        $object['first_name'] = isset($name[0]) ? $name[0] : '-';
+        $object['last_name']  = isset($name[1]) ? $name[1] : '-';
+        return $object;
     }
 }

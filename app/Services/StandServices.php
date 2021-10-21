@@ -9,7 +9,6 @@ use App\Models\StandContentFile;
 use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class StandServices
 {

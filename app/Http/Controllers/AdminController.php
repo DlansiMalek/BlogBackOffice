@@ -21,7 +21,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Exception;
-use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -448,9 +447,7 @@ class AdminController extends Controller
 
         // Add User if not exist
         if (!$user = $this->userServices->getUserByEmail($admin['email'])) {
-            $name = Utils::explodeString($admin['name']);
-            $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
-            $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
+            $admin= Utils::explodeString($admin);
             $user = $this->userServices->addUserFromExcel($admin, $password);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
         } else {
@@ -541,7 +538,7 @@ class AdminController extends Controller
         $newAdmin = $this->adminServices->getAdminById($admin_id);
         //message d'erreur à revoir
         $user = $this->userServices->getUserByEmail($admin['email']);
-        $name = Utils::explodeString($admin['name']) ;
+        $name = explode(" ", $admin['name']);
         $admin['first_name'] = strpos($admin['name'], ' ')?$name[0]:$name;
         $admin['last_name'] =  strpos($admin['name'], ' ')?$name[1]:'';
         if (!$user) {

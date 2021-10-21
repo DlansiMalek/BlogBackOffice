@@ -19,7 +19,6 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 
 class OrganizationController extends Controller
 {
@@ -66,6 +65,9 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
+        if ($organization = $this->organizationServices->getOrganizationByNameAndEmailInCongress($request->input('name'), $request->input('email'), $congress_id)) {
+            return response()->json(["message" => "organisation already exist"], 404);
+        }
         $organization = null;
         if ($request->has('organization_id')) {
             $organization = $this->organizationServices->getOrganizationById($request->input('organization_id'));
@@ -74,7 +76,9 @@ class OrganizationController extends Controller
         $stand = null;
         if ($request->has('stand')) {
             $request['organization_id'] = $organization->organization_id;
-            $stand = $this->standServices->addStand(null, $congress_id, $request);
+            if (!$stand = $this->standServices->getStandById($request->input('stand')['stand_id'])) {
+                $stand = $this->standServices->addStand(null, $congress_id, $request);
+            }
             if ($stand) {
                 $standDocs = $request->input('stand')['docs'];
                 $this->standServices->saveResourceStand($standDocs, $stand->stand_id);
@@ -82,7 +86,7 @@ class OrganizationController extends Controller
         }
         $privilegeId = 7;
         $password = Str::random(8);
-        if (!($fetched = $this->adminServices->getAdminByLogin($organization->email))) {
+        if (!($admin = $this->adminServices->getAdminByLogin($organization->email))) {
             $admin = $this->adminServices->addPersonnel($request, $password);
             $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
                 $privilegeId,
@@ -90,12 +94,10 @@ class OrganizationController extends Controller
                 $congress_id
             );
         } else {
-            $admin = $this->adminServices->editPersonnel($fetched);
+            $admin = $this->adminServices->editPersonnel($admin, $request);
         }
         if (!$user = $this->userServices->getUserByEmail($organization->email)) {
-            $name = Utils::explodeString($organization->name);
-            $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
-            $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
+            $admin= Utils::explodeString($admin);
             $user = $this->userServices->addUserFromExcel($admin, $password);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
         } else {
@@ -105,7 +107,7 @@ class OrganizationController extends Controller
         }
         if ($mailtype = $this->congressServices->getMailType('organization')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                if (!$fetched) {
+                if (!$request->has('organization_id')) {
                     $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization, null), $congress, $mail->object, $admin, null);
                 }
             }
@@ -123,13 +125,13 @@ class OrganizationController extends Controller
         return response()->json(['response' => 'organization deleted'], 200);
     }
 
-    public function getCongressOrganizations($congress_id)
+    public function getCongressOrganizations($congress_id , Request $request)
     {
+        $admin_email = $request->input('email');
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
-
-        $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id);
+        $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id, $admin_email);
 
         return response()->json($organizations);
     }

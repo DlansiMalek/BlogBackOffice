@@ -23,7 +23,7 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id, $congress_id = null)
     {
-        return Organization::with(['admin'])
+        return Organization::with(['admin','stands'])
             ->find($organization_id);
     }
 
@@ -73,10 +73,26 @@ class OrganizationServices
             ->first();
     }
 
-    public function getOrganizationsByCongressId($congressId)
+    public function getOrganizationByNameAndEmailInCongress($name, $email, $congressId)
     {
-        return Organization::with(['admin'])->where('congress_id', '=', $congressId)
-            ->get();
+        $email = strtolower($name);
+        return Organization::whereRaw('lower(name) like (?)', ["{$name}"])
+        ->whereRaw('lower(email) like (?)', ["{$email}"])->where('congress_id', '=', $congressId)->first();
+    }
+
+    public function getOrganizationsByCongressId($congressId, $admin_email = null)
+    {
+        if ($admin_email) {
+            return  Organization::where(
+                function ($query) use ($admin_email, $congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                    $query->where('email', '=', $admin_email);
+                }
+            )->with(['admin'])->get();
+        } else {
+            return   Organization::with(['admin'])->where('congress_id', '=', $congressId)
+                ->get();
+        }
     }
 
     public function getAllUserByOrganizationId($organizationId, $congressId)

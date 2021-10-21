@@ -327,8 +327,16 @@ class AdminServices
         return $personnel;
     }
 
-    public function editPersonnel($admin)
+    public function editPersonnel($admin, $request = null)
     {
+        if ($request) {
+            return  Admin::where("admin_id", "=", $admin['admin_id'])
+            ->update([
+                'name' => $request->input('name'),
+                'email' =>  $request->input('email'),
+                'mobile' => $request->input('mobile')
+            ]);
+        }
         return Admin::where("admin_id", "=", $admin['admin_id'])
             ->update([
                 'name' => $admin["name"],
