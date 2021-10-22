@@ -10,6 +10,9 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
+use DateTime;
+
+
 
 
 class MeetingController extends Controller
@@ -159,14 +162,31 @@ class MeetingController extends Controller
     $this->meetingServices->makeParticipantPresent($user_meeting, $request->input('is_participant_present'));
   }
 
-  public function getNumberOfMeetings($congress_id, Request $request)
+  public function getNumberOfMeetingsPerDay($congress_id, Request $request)
   {
     $status = $request->query('status','1');
-    $start_date = $request->query('start_date','');
-    $end_date = $request->query('end_date','');
+   
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json('no congress found', 404);
+  }
+  $datetime1 = new DateTime($congress->start_date);
+$datetime2 = new DateTime($congress->end_date);
+$interval = $datetime2->diff($datetime1);
+$days = $interval->format('%a');
+$nombres = array();
 
-      $nombre=$this->meetingServices->getNumberOfMeetings($congress_id,$status,$start_date,$end_date);
-      return response()->json($nombre, 200);
+for ($i = 0; $i <=  $days ; $i++)
+{
+
+  $nombre=$this->meetingServices->getNumberOfMeetings($congress_id,$status,$datetime1->modify('+'.$i.' day'),null);
+  array_push($nombres,(object)[
+    'date' => $datetime1->modify('+'.$i.'day')->format('Y-m-d'),
+    'count' => $nombre
+]);
+  //  array_sum($nombres)
+}
+return response()->json($nombres, 200);
+
 
   }
 }
