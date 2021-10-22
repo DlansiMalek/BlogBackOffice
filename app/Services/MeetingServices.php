@@ -149,4 +149,19 @@ class MeetingServices
         return Meeting::whereHas("user_meeting")->where('congress_id', '=', $congress_id)       
         ->count(); 
     }
+
+    public function getMeetingsDone($congress_id,$is_participant_present,$is_organizer_present)
+    {
+        $count=Meeting::where('is_organizer_present', '=', $is_organizer_present)
+        ->where('end_date','<',date('Y-m-d H:i:s'))
+        ->where('congress_id', '=', $congress_id)       
+        ->count(); 
+      return  $count = $count==0 ? Meeting::whereHas("user_meeting", function ($query) use ($is_participant_present) {
+                                 $query->where('is_participant_present', '=', $is_participant_present);
+                             })->where('end_date','<',date('Y-m-d H:i:s'))
+                             -> where('congress_id', '=', $congress_id)
+                             ->count() : $count; 
+                         
+       
+    }
 }

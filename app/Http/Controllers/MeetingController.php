@@ -194,8 +194,11 @@ return response()->json($nombres, 200);
 {
   $nombre_total=$this->meetingServices->getTotalNumberOfMeetings($congress_id);
   $nombre_meetings_accpeted=$this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congress_id,1);
-  $pourcentage=($nombre_meetings_accpeted/$nombre_total);
-  return response()->json($pourcentage, 200);
+  $nombre_meetings_done= $this->meetingServices->getMeetingsDone($congress_id,1,1);
+  $pourcentage_meetings_accpeted=($nombre_meetings_accpeted/$nombre_total);
+  $pourcentage_meetings_done=($nombre_meetings_done/$nombre_meetings_accpeted);
+  return response()->json(["pourcentage_meetings_accpeted"=>$pourcentage_meetings_accpeted
+                          ,"pourcentage_meetings_done"=>$pourcentage_meetings_done], 200);
 
 }
 }
