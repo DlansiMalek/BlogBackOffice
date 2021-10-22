@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\Stand;
 use App\Models\STag;
+use App\Models\STandTag;
 use App\Models\ResourceStand;
 use App\Models\StandContentConfig;
 use App\Models\StandContentFile;
 use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StandServices
 {
@@ -120,22 +122,27 @@ class StandServices
         return $stand;
     }
 
-    public function getStands($congress_id, $name = null, $status = null , $stag_id = null )
+    public function getStands($congress_id  ,  $name = null, $status = null ,$stag_id=null )
     {
-        return Stand::where(function ($query) use ($name, $status,$stag_id) {
+    
+        return Stand::where(function ($query) use ($name, $status) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
             if ($status) {
                 $query->where('status', '=', $status);
             }
-            if ($stag_id) {
-                $query->whereHas('stags', function ($q) use ($stag_id){
-                    $q->where('stag_id', '=', $stag_id);
-                });
-               
-            }      
+             
         })
+             ->join('Stand_Tag.stand_id', '=','Stand.stand_id')
+            ->join('Stand_Tag.stag_id', '=',$stag_id)  
+          /*   ->whereHas('stags',function ($query) use ($stag_id){
+                if ($stag_id) {
+                    $query->where('stag_id', '=', $stag_id);
+                }
+            }) 
+            */
+            
             ->with(['docs', 'products' , 'organization', 'faq','stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id)
