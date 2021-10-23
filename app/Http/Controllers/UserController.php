@@ -1013,6 +1013,7 @@ class UserController extends Controller
                         }
                     } else {
                         $user_congress->privilege_id = $privilegeId;
+                        $user_congress->organization_id = $organizationId;
                         $user_congress->update();
                     }
 
