@@ -532,8 +532,8 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.values', 'user_congresses.privilege', 'country'])
-            ->with(['accesses'])
+            }, 'responses.values', 'user_congresses.privilege', 'country','user_congresses.organization'])
+            ->with(['accesses', 'profile_img'])
             ->get();
         return $users;
     }
@@ -1087,8 +1087,9 @@ class UserServices
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) { 
             $user->resource_id = $request->input('resource_id');
-            if($resource)
-                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);
+            /** TODO fix data too long */
+            /*if($resource)
+                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);*/
         }
         $user->verification_code = Str::random(40);
         $user->save();
@@ -1295,6 +1296,7 @@ class UserServices
     public function getPaymentById($paymentId)
     {
         return Payment::where('payment_id', '=', $paymentId)
+            ->with(['congress'])
             ->first();
     }
 

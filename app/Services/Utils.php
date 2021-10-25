@@ -297,4 +297,7 @@ class Utils
         return $privilegeExpiredTs;
     }
 
+    public static function isValidStatus ($userMail) {
+        return $userMail->status != 1 && $userMail->status != 2;
+    }
 }
