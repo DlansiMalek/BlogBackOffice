@@ -131,10 +131,11 @@ class StandServices
         })
             ->with(['docs', 'products', 'organization', 'faq'])
             ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
-            ->where('congress_id', '=', $congress_id)
             ->orWhereHas("organization", function ($query) use ($search) {
                 $query->where('name','LIKE', '%' . $search . '%');
-                });
+                })
+             ->where('congress_id', '=', $congress_id);
+
 
         return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
 
