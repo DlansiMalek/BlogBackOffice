@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
-use App\Models\Meeting;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
@@ -29,9 +30,7 @@ use App\Services\PrivilegeServices;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Exception;
 use App\Services\MeetingServices;
-use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -426,7 +425,7 @@ class UserController extends Controller
             $fileAttached = false;
             $fileName = "badge.png";
             if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge, $user, $user->qr_code, $user_congress->privilege_id);
+                $fileAttached = $this->sharedServices->saveBadgeInPublic($badge, $user, $user->qr_code, $user_congress->privilege_id, $congress->congress_id);
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
                 $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/login';
@@ -485,7 +484,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId);
+            return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -888,7 +887,8 @@ class UserController extends Controller
                     $badge,
                     $user,
                     $user->qr_code,
-                    $userCongress->privilege_id
+                    $userCongress->privilege_id,
+                    $congress->congress_id
                 );
             }
 
@@ -1260,7 +1260,7 @@ class UserController extends Controller
                 } else {
                     $userMail = $user->user_mails[0];
                 }
-                if ($userMail->status != 1) {
+                if (Utils::isValidStatus($userMail)) {
                     $fileName = 'attestations.zip';
                     $this->badgeServices->saveAttestationsInPublic($request);
                     $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
@@ -1443,7 +1443,7 @@ class UserController extends Controller
 
         return $price;
     }
-
+    
     public function sendCustomMail($user_id, $mail_id, $congress_id)
     {
         if (!$user = $this->userServices->getParticipatorById($user_id)) {
@@ -1730,7 +1730,7 @@ class UserController extends Controller
             }
         }
         // Sending Mail
-        $link = $request->root() . "/api/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+        $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
 
@@ -1753,7 +1753,8 @@ class UserController extends Controller
                     $badge,
                     $user,
                     $user->qr_code,
-                    $privilegeId
+                    $privilegeId,
+                    $congress->congress_id
                 );
             }
             if ($mailtype = $this->congressServices->getMailType('confirmation')) {
@@ -1761,7 +1762,7 @@ class UserController extends Controller
                 $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . '/room/'.$congress_id.'/event-room';
                 if ($mail = $this->congressServices->getMail($congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, $linkFrontOffice,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail, null, 'badge.png');
                 }
             }
             $this->smsServices->sendSmsToUsers($user, null, $congress_id, $congress);

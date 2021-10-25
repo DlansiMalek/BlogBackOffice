@@ -3,7 +3,6 @@
 
 namespace App\Services;
 
-use App\Models\Congress;
 use App\Models\Mail;
 use App\Models\MailAdmin;
 use App\Models\MailType;
@@ -12,7 +11,6 @@ use App\Models\Offre;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -194,7 +192,11 @@ class MailServices
         if ($congress != null) {
             $offre = $this->getOffreByCongressId($congress->congress_id);
         }
-
+        // waiting sending mail
+        if ($userMail) {
+            $userMail->status = 2;
+            $userMail->update();
+        }
         if ($offre != null && $offre->is_mail_pro == 1) {
             $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
         } else {

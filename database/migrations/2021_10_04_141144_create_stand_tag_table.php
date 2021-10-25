@@ -16,11 +16,11 @@ class CreateStandTagTable extends Migration
         Schema::create('Stand_Tag', function (Blueprint $table) {
             $table->increments("stand_tag_id");
 
-            $table->unsignedInteger("stag_id");
+            $table->unsignedInteger("stag_id")->nullable()->default(null);
             $table->foreign("stag_id")->references('stag_id')->on('STag')
                 ->onDelete('cascade');
 
-            $table->unsignedInteger("stand_id")->nullable()->default(null);;
+            $table->unsignedInteger("stand_id")->nullable()->default(null);
             $table->foreign("stand_id")->references('stand_id')->on('Stand')
                 ->onDelete('cascade');
 

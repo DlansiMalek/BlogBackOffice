@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by IntelliJ IDEA.
  * User: ABBES
@@ -9,7 +10,6 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property \GuzzleHttp\Client client
@@ -156,6 +156,116 @@ class TrackingServices
         foreach ($trackings as $tracking) {
             $this->sendTracking($tracking);
         }
+    }
 
+    public function getTrackings($congress_id, $request)
+    {
+        $env = env('APP_ENV');
+        $res = $this->client->post('/eventizer-tracking-tracks-' . $env . '-' . $congress_id . '/_search', [
+            'body' => json_encode($request->all())
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+
+    public function createIndexByCongress($congress_id)
+    {
+        $env = env('APP_ENV');
+
+        $data = array(
+            'mappings' => array (
+                'properties' => array (
+                    'user_id' => array(
+                        'type' => 'text',
+                        'fields' => array (
+                            'keyword' => array (
+                                'type' => 'keyword',
+                                'ignore_above' => 256
+                            )
+                        )
+                    )
+                )
+            )
+        );
+
+        $res = $this->client->put('/eventizer-tracking-users-' . $env . '-' . $congress_id, [
+            'body' => json_encode($data, true)
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function enrichPolicyByCongress($congress_id)
+    {
+        $env = env('APP_ENV');
+
+        $data = array(
+            'match' => array(
+                'indices' => 'eventizer-tracking-users-' . $env . '-' . $congress_id,
+                'match_field' => 'user_id',
+                'enrich_fields' => [
+                    '*'
+                ],
+                'query' => array(
+                    'bool' => array(
+                        'must' => array(
+                            array(
+                                'match' => array(
+                                    'congress_id' => $congress_id
+                                )
+                            ),
+                            array(
+                                'match' => array(
+                                    'env' => $env
+                                )
+                            )
+                        )
+                    )
+                )
+
+            )
+        );
+
+        $res = $this->client->put('/_enrich/policy/eventizer-tracking-users-' . $env . '-' . $congress_id, [
+            'body' => json_encode($data, true)
+        ]);
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function executePolicy($congress_id)
+    {
+        $env = env('APP_ENV');
+        $res = $this->client->post('/_enrich/policy/eventizer-tracking-users-' . $env . '-' . $congress_id .'/_execute');
+        return json_decode($res->getBody(), true);
+    }
+
+    public function enrichPolicyByUserDetails($congress_id)
+    {
+        $env = env('APP_ENV');
+        $data = array(
+            'processors' => array(
+                array(
+                    'enrich' => array(
+                        'policy_name' => 'eventizer-tracking-users-' . $env . '-' . $congress_id,
+                        'field' => 'user_id',
+                        'target_field' => 'user',
+                        'max_matches' => '1'
+                    )
+                ),
+                array(
+                    'script' => array(
+                        'lang' => 'painless',
+                        'source' =>  "\n      if (!ctx.containsKey('date')) {\n        ctx.date = ctx.date_entry;\n      }\n    ",
+                    )
+                )
+            )
+        );
+        $res = $this->client->put('/_ingest/pipeline/eventizer-tracking-user-lookup-' . $env . '-' . $congress_id, [
+            'body' => json_encode($data, true)
+        ]);
+
+        return json_decode($res->getBody(), true);
     }
 }
