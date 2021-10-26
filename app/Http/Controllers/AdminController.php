@@ -425,8 +425,8 @@ class AdminController extends Controller
         $password = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin, $password);
-            $admin_id = $admin->admin_id;
+            $new_admin = $this->adminServices->addPersonnel($admin, $password);
+            $admin_id = $new_admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress
@@ -436,7 +436,7 @@ class AdminController extends Controller
             }
             // else edit changed infos while creating
             $admin['admin_id'] = $admin_id;
-            $this->adminServices->editPersonnel($admin);
+            $new_admin = $this->adminServices->editPersonnel($admin, $fetched);
         }
 
         $congress = $this->congressService->getById($congress_id);
@@ -513,11 +513,11 @@ class AdminController extends Controller
             }
         
             if ($mail->template == "") {
-                $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
-                $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;        
+                $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $new_admin->email;
+                $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $new_admin->passwordDecrypt;        
             }
            
-            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, $user, null, null, null), $congress, $mail->object, $admin, $fileAttached);
+            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, $new_admin->passwordDecrypt), $congress, $mail->object, $admin, $fileAttached);
         }
 
         return response()->json($admin_congress);
@@ -530,13 +530,13 @@ class AdminController extends Controller
         }
         $admin = $request->input('admin');
         $privilegeId = (int)$request->input('privilege_id');
-        $this->adminServices->editPersonnel($admin);
+        $oldAdmin = $this->adminServices->getAdminById($admin_id);
+        $newAdmin = $this->adminServices->editPersonnel($admin, $oldAdmin);
         $this->privilegeServices->editPrivilege(
             $privilegeId,
             $admin_id,
             $congress_id
         );
-        $newAdmin = $this->adminServices->getAdminById($admin_id);
         //message d'erreur à revoir
         $user = $this->userServices->getUserByEmail($admin['email']);
         $name = explode(" ", $admin['name']);
