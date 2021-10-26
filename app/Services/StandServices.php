@@ -128,25 +128,17 @@ class StandServices
             }
             if ($status) {
                 $query->where('status', '=', $status);
-            }
-
-             
+            }  
         })
-          
-         
-            
-            ->join('Stand_Tag',function ($join) use ($stag_id) {
-                if($stag_id){
-                    $join->on('Stand_Tag.stand_id', '=','Stand.stand_id')
-                    ->where('Stand_Tag.stag_id', '=',$stag_id)  ; 
-                }
-            })
+        ->when('stags', function ($query) use ($stag_id) {
+            if ($stag_id) {
+                $query->join('Stand_Tag','Stand_Tag.stand_id', '=','Stand.stand_id')
+                ->where('Stand_Tag.stag_id', '=',$stag_id); 
+            }
+        })
             ->with(['docs', 'products' , 'organization', 'faq','stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
             ->where('congress_id', '=', $congress_id);
-            /* ->join('Stand_Tag','Stand_Tag.stand_id', '=','Stand.stand_id')
-            ->where('Stand_Tag.stag_id', '=',$stag_id)  ; 
- */
             return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
     }
   
