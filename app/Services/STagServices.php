@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\StandTag;
-use App\Models\Stand;
+
 use App\Models\STag;
 use App\Models\GSTag;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\StandTag;
+
+
 
 class STagServices
 {
@@ -42,7 +44,7 @@ class STagServices
     {
         $stand_tag = new StandTag();
         $stand_tag->stag_id = $stag_id;
-        $stand_tag->stand_tag_id = $stand_id;
+        $stand_tag->stand_id = $stand_id;
         $stand_tag->save();
     }
 

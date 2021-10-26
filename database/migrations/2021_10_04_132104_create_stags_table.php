@@ -32,7 +32,10 @@ class CreateStagsTable extends Migration
      */
     public function down()
     {
+        Schema::table('STag', function (Blueprint $table) {
+            $table->dropForeign(['congress_id']);
+           
+        });
         Schema::dropIfExists('STag');
-        $table->dropForeign(['congress_id']);
     }
 }

@@ -16,11 +16,15 @@ class CreateStandTagTable extends Migration
         Schema::create('Stand_Tag', function (Blueprint $table) {
             $table->increments("stand_tag_id");
 
-            $table->unsignedInteger("stag_id");
+            $table->unsignedInteger("stag_id")->nullable()->default(null);
             $table->foreign("stag_id")->references('stag_id')->on('STag')
                 ->onDelete('cascade');
 
+<<<<<<< HEAD
             $table->unsignedInteger("stand_id")->nullable()->default(null);;
+=======
+            $table->unsignedInteger("stand_id")->nullable()->default(null);
+>>>>>>> 5c3c401348d10c5ec82e196f33684e6bef5f2df5
             $table->foreign("stand_id")->references('stand_id')->on('Stand')
                 ->onDelete('cascade');
 
@@ -35,7 +39,10 @@ class CreateStandTagTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stag_id');
-        $table->dropForeign(['stand_id']);
+        Schema::table('Stand_Tag', function (Blueprint $table) {
+            $table->dropForeign(['stag_id']);
+            $table->dropForeign(['stand_id']);
+        });
+        Schema::dropIfExists('Stand_Tag');
     }
 }

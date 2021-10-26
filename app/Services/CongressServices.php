@@ -518,6 +518,8 @@ class CongressServices
         $configCongress->meeting_duration = $configCongressRequest['meeting_duration'];
         $configCongress->pause_duration = $configCongressRequest['pause_duration'];
         $configCongress->default_country = $configCongressRequest['default_country'];
+        $configCongress->agora_primary_background = $configCongressRequest['agora_primary_background'];
+        $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
         $configCongress->update();
 
         return $configCongress;
@@ -569,6 +571,7 @@ class CongressServices
         $configSubmission->num_evaluators = $submissionData['num_evaluators'];
         $configSubmission->start_submission_date = $submissionData['start_submission_date'];
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
+        $configSubmission->show_file_upload = $submissionData['show_file_upload'];
         $configSubmission->save();
         return $configSubmission;
 
@@ -781,7 +784,9 @@ class CongressServices
         $template = str_replace('{{$user_sender-&gt;last_name}}', '{{$user_sender->last_name}}', $template);
         $template = str_replace('{{$user_sender-&gt;first_name}}', '{{$user_sender->first_name}}', $template);
         $template = str_replace('{{$meeting-&gt;start_date}}', '{{$meeting->start_date}}', $template);
+        $template = str_replace('{{$meeting-&gt;name}}', '{{$meeting->name}}', $template);
         $template = str_replace('{{%24linkSubmission}}', '{{$linkSubmission}}', $template);
+
         $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
         $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;
         $template = str_replace('{{$submissionParams}}', $submissionsParms, $template);
@@ -795,7 +800,7 @@ class CongressServices
                                                   <a href="{{$linkRefuseMeeting}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting]);
+        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting]);
 
     }
 

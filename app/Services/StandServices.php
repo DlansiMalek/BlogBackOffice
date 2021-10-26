@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Stand;
-use App\Models\STag;
+
+
+
 use App\Models\ResourceStand;
+use App\Models\Stand;
 use App\Models\StandContentConfig;
 use App\Models\StandContentFile;
 use App\Models\StandType;
@@ -14,23 +16,22 @@ use Illuminate\Support\Facades\DB;
 class StandServices
 {
 
-
     public function addStand($stand, $congressId, $request)
     {
         if (!$stand) {
             $stand = new Stand();
         }
 
-        $stand->name            = $request->input('name');
+        $stand->name = $request->input('name');
         $stand->organization_id = $request->input('organization_id');
-        $stand->congress_id     = $congressId;
-        $stand->url_streaming   = $request->input("url_streaming");
-        $stand->booth_size      = $request->input("booth_size") ;
-        $stand->priority        = $request->input("priority");
-        $stand->primary_color   = $request->input("primary_color");
+        $stand->congress_id = $congressId;
+        $stand->url_streaming = $request->input("url_streaming");
+        $stand->booth_size = $request->input("booth_size");
+        $stand->priority = $request->input("priority");
+        $stand->primary_color = $request->input("primary_color");
         $stand->secondary_color = $request->input("secondary_color");
-        $stand->floor_color     = $request->input("floor_color");
-        $stand->with_products   = $request->input('with_products');           
+        $stand->floor_color = $request->input("floor_color");
+        $stand->with_products = $request->input('with_products');
         $stand->save();
         return $stand;
     }
@@ -69,13 +70,11 @@ class StandServices
 
     public function getAllStandByCongressId($congressId)
     {
-        $stands =  Stand::where("congress_id", "=", $congressId)
+        $stands = Stand::where("congress_id", "=", $congressId)
             ->select('stand_id', 'name', 'status')
             ->get();
         return $stands;
     }
-
-
 
     public function addResourceStand($resourceId, $stand_id, $file_name)
     {
@@ -98,7 +97,7 @@ class StandServices
     public function getStandById($stand_id)
     {
         return Stand::where('stand_id', '=', $stand_id)
-            ->with(['docs' => function($query) {
+            ->with(['docs' => function ($query) {
                 $query->select('Resource.*', 'Resource_Stand.file_name');
             },'products', 'organization.membres' => function ($query) {
                     $query->where('privilege_id', '=', config('privilege.Organisme'));
@@ -120,45 +119,43 @@ class StandServices
         return $stand;
     }
 
-    public function getStands($congress_id, $name = null, $status = null)
+    public function getStands($congress_id,  $name = null, $status = null,$perPage = null, $stag_id=null)
     {
-        return Stand::where(function ($query) use ($name, $status) {
+        $allStand = Stand::where(function ($query) use ($name, $status) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
             if ($status) {
                 $query->where('status', '=', $status);
+            }  
+        })
+        ->when('stags', function ($query) use ($stag_id) {
+            if ($stag_id) {
+                $query->join('Stand_Tag','Stand_Tag.stand_id', '=','Stand.stand_id')
+                ->where('Stand_Tag.stag_id', '=',$stag_id); 
             }
         })
             ->with(['docs', 'products' , 'organization', 'faq','stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
-            ->where('congress_id', '=', $congress_id)->get();
+            ->where('congress_id', '=', $congress_id);
+            return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
     }
-
-    public function  getStandsByTags($congress_id,$label)
+  
+    public function getCachedStands($congress_id, $page, $perPage , $stag_id)
     {
-        return STag::where('congress_id', '=', $congress_id)
-            ->where('label', '=', $label)
-            ->with(['stand'])
-            ->get();
-    }
-
-   
-
-    public function getCachedStands($congress_id) {
-        $cacheKey = 'stands-' . $congress_id;
+        $cacheKey = 'stands-' . $congress_id . $page . $perPage . $stag_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
-        $stands = $this->getStands($congress_id);
+        $stands = $this->getStands($congress_id, null,null, $perPage,$stag_id);
         Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
         return $stands;
     }
-	
-	public function getStandsPagination($congress_id, $perPage)
+
+    public function getStandsPagination($congress_id, $perPage)
     {
         $response = Stand::with(['docs', 'organization', 'faq',
             'organization.admin' => function ($query) {
@@ -243,7 +240,7 @@ class StandServices
                         "stand" => $stand->name,
                         "path" => UrlUtils::getFilesUrl() . $doc->path,
                         "filename" => $doc->pivot->file_name,
-                        "version" => $doc->pivot->version
+                        "version" => $doc->pivot->version,
                     )
                 );
             }
@@ -260,7 +257,7 @@ class StandServices
                 $res,
                 array(
                     "channel_name" => $stand->name,
-                    "url" => $stand->url_streaming
+                    "url" => $stand->url_streaming,
                 )
             );
         }
@@ -271,7 +268,7 @@ class StandServices
                 array(
                     "channel_name" => $access->name,
                     "url" => $access->url_streaming,
-                    "quizs" => $access->quizs
+                    "quizs" => $access->quizs,
                 )
             );
         }
@@ -299,21 +296,21 @@ class StandServices
         return Stand::where('stand_id', '=', $stand_id)
             ->update(['status' => $status]);
     }
-    public function addStandFromExcel($stand,$name,$congressId,$organizationId)
+    public function addStandFromExcel($stand, $name, $congressId, $organizationId)
     {
-        if(!$stand) {
+        if (!$stand) {
             $stand = new Stand();
         }
-        $stand->name            = $name;
+        $stand->name = $name;
         $stand->organization_id = $organizationId;
-        $stand->congress_id     = $congressId;
+        $stand->congress_id = $congressId;
         $stand->save();
     }
     public function getStandByCongressIdOrgizantionIdAndName($name, $congressId, $organizationId)
     {
         return Stand::whereRaw('lower(name) like (?)', ["{$name}"])
-        ->where('congress_id', '=', $congressId)
-        ->where('organization_id', '=', $organizationId) ->first();
+            ->where('congress_id', '=', $congressId)
+            ->where('organization_id', '=', $organizationId)->first();
     }
 
     public function getAllStandTypes()
@@ -329,10 +326,10 @@ class StandServices
     public function getContentConfigByStandType($stand_id, $stand_type_id)
     {
         return StandContentConfig::where('stand_type_id', '=', $stand_type_id)
-        ->with(['stand_content_file'  => function ($query) use ($stand_id) {
-            $query->where('Stand_Content_File.stand_id', '=', $stand_id)
-            ->select('Stand_Content_File.*');
-        },])->get();
+            ->with(['stand_content_file' => function ($query) use ($stand_id) {
+                $query->where('Stand_Content_File.stand_id', '=', $stand_id)
+                    ->select('Stand_Content_File.*');
+            }])->get();
     }
 
     public function editStandType($stand_type_id, $stand)
@@ -354,7 +351,7 @@ class StandServices
 
     public function editStandContentFile($file, $data, $stand_id)
     {
-        $contentFile = $file!=null ? $file : new StandContentFile();
+        $contentFile = $file != null ? $file : new StandContentFile();
         $contentFile->url = $data['stand_content_file'][0]['url'];
         $contentFile->file = $data['stand_content_file'][0]['file'];
         $contentFile->stand_id = $stand_id;
@@ -373,5 +370,5 @@ class StandServices
         return StandContentFile::where('stand_content_file_id', '=', $stand_content_file_id)
             ->first();
     }
-    
+
 }

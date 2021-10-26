@@ -36,14 +36,7 @@ class StandController extends Controller
         $this->stagServices = $stagServices;
     }
 
-    public function getStandsByTags($congress_id, $label)
-    {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
-            return response()->json(['response' => 'Congress not found', 404]);
-        }
-        $stands = $this->standServices->getStandsByTags($congress_id,$label);
-        return response()->json($stands, 200);
-    }
+    
     public function getStands($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
@@ -165,12 +158,15 @@ class StandController extends Controller
         return response()->json(['stands' => $stands, 'accesses' => $accesses]);
     }
 
-    public function getStandsByCongress($congress_id)
+    public function getStandsByCongress($congress_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $stands = $this->standServices->getCachedStands($congress_id);
+        $perPage = $request->query('perPage', 10);
+        $page = $request->query('page', 1);
+        $stag_id = $request->query('stag_id','');
+        $stands = $this->standServices->getCachedStands($congress_id,$page,$perPage,$stag_id);
         return response()->json($stands, 200);
     }
 

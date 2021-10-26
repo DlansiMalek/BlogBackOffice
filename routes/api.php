@@ -121,6 +121,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('tracking', 'UserController@trackingUser')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
+    Route::get('payments','PaymentController@getPaymentsPagination')->middleware('assign.guard:users');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::delete('deleteUserOutOfCongress', 'UserController@delete');
         Route::get('', 'UserController@getUserById');
@@ -184,7 +185,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::delete('/delete-badge/{badgeId}', 'BadgeController@deleteBadge');
-        Route::get('/tracking', 'CongressController@getListTrackingByCongress');
+        Route::post('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
         Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
@@ -206,7 +207,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
         Route::group(['prefix' => 'stand'], function () {
             Route::get('', 'StandController@getStands');
-            Route::get('/getStandsByTags/{label}', 'StandController@getStandsByTags');
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
             Route::post('/add', 'StandController@addStand');
             Route::get('docs', 'StandController@getDocsByCongress');
@@ -237,7 +237,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         });
 
         Route::group(['prefix' => 'gstags'], function () {
-            Route::get('standGTagList', 'GSTagController@getGSTags');
+            Route::get('stand-Gtag-list', 'GSTagController@getGSTags');
             Route::post('add', 'GSTagController@addGSTag');
         });
 
@@ -361,7 +361,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });
-
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
         ->middleware('assign.guard:users');
     Route::post('access/presence/{userId}', 'AdminController@makeUserPresentAccess');
@@ -541,6 +540,8 @@ Route::group(['prefix' => 'payment'], function () {
     Route::post('success', 'PaymentController@successPayment');
     Route::get('echec', 'PaymentController@echecPayment');
     Route::post('notification-post', 'PaymentController@notification');
+    Route::get('{id}','PaymentController@getPaymentByID');
+    Route::get('{congressID}/{userID}', 'PaymentController@getPaymentByUserAndCongressID');
 });
 
 Route::group(['prefix' => 'payement'], function () {
