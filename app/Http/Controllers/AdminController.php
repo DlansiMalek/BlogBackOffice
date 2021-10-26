@@ -511,10 +511,13 @@ class AdminController extends Controller
                     $congress->congress_id
                 );
             }
-            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
-            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
-
-            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
+        
+            if ($mail->template == "") {
+                $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
+                $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;        
+            }
+           
+            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, $user, null, null, null), $congress, $mail->object, $admin, $fileAttached);
         }
 
         return response()->json($admin_congress);
