@@ -264,7 +264,7 @@ class CongressController extends Controller
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
-        if (sizeof($submissionData) > 0) {
+        if (sizeof($submissionData) > 1) {
             $this->congressServices->addCongressSubmission(
                 $configSubmission,
                 $submissionData,
