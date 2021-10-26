@@ -33,7 +33,7 @@ class STagServices
         if (sizeof($stags) > 0)
         {
             foreach ($stags as $stag) {
-                $this->addStandTag($tag, $stand_id);
+                $this->addStandTag($stag, $stand_id);
             }
         }
     }

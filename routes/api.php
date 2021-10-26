@@ -232,7 +232,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
 
         Route::group(['prefix' => 'stags'], function () {
             Route::get('stand-groupe-tags/{gstag_id}', 'STagController@getGSTags');
-            Route::get('standTagList', 'STagController@getSTags');
+            Route::get('stand-tag-list', 'STagController@getSTags');
             Route::post('add', 'STagController@addSTag');
         });
 

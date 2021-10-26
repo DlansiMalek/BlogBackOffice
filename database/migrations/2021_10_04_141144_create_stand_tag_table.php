@@ -20,7 +20,7 @@ class CreateStandTagTable extends Migration
             $table->foreign("stag_id")->references('stag_id')->on('STag')
                 ->onDelete('cascade');
 
-            $table->unsignedInteger("stand_id");
+            $table->unsignedInteger("stand_id")->nullable()->default(null);;
             $table->foreign("stand_id")->references('stand_id')->on('Stand')
                 ->onDelete('cascade');
 
