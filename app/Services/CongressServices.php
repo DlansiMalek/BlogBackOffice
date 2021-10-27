@@ -1133,7 +1133,7 @@ class CongressServices
 
     public function getParticipantsCachedCount($congress_id)
     {
-        $cacheKey = 'users-' . $congress_id;
+        $cacheKey = config('cachedKeys.UsersCount') . $congress_id;
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }

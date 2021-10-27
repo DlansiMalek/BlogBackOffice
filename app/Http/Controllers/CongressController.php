@@ -369,7 +369,7 @@ class CongressController extends Controller
         $type = $request->query('type', '');
 
 
-        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
+        $cacheKey = config('cachedKeys.EventPagination') . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
@@ -414,7 +414,7 @@ class CongressController extends Controller
 
     public function getCongressDetailsById($congress_id)
     {
-        $cacheKey = 'congress-' . $congress_id;
+        $cacheKey = config('cachedKeys.Congress') . $congress_id;
 
         if (Cache::has($cacheKey)) {
             $congress = Cache::get($cacheKey);
@@ -960,7 +960,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-        $cacheKey = 'congress-' . $congressId . '-users';
+        $cacheKey = config('cachedKeys.PeacksourceUsers') . $congressId;
         
         if (Cache::has($cacheKey)) {
             $results = Cache::get($cacheKey);
