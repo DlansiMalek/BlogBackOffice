@@ -19,6 +19,7 @@ class CreateTableFMenu extends Migration
             $table->string('fr_label');
             $table->string('en_label');
             $table->tinyInteger('is_visible')->default(1);
+            $table->unsignedTinyInteger('rank')->nullable()->default(0);
             $table->unsignedInteger('congress_id')->nullable()->default(null);
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
             $table->timestamps();
