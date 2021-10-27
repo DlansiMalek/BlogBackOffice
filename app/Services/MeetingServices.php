@@ -123,7 +123,7 @@ class MeetingServices
         })->where('congress_id', '=', $congress_id)
         ->where(function ($query) use ($start_date, $end_date) {
             if ($start_date != '' && $start_date != 'null'){
-            $query->whereDate('start_date', '=', $start_date->format('Y-m-d'));
+            $query->where('start_date', '=', $start_date);
         }
         if ($end_date != '' && $end_date != 'null'){
             $query->whereDate('end_date', '<=', date($end_date));
@@ -146,7 +146,8 @@ class MeetingServices
 
     public function getTotalNumberOfMeetings($congress_id)
     {
-        return Meeting::whereHas("user_meeting")->where('congress_id', '=', $congress_id)       
+        return Meeting::whereHas("user_meeting")
+        ->where('congress_id', '=', $congress_id)       
         ->count(); 
     }
 
@@ -163,5 +164,15 @@ class MeetingServices
                              ->count() : $count; 
                          
        
+    }
+
+    public function getRequestDetailsPagination($congress_id, $per_page){
+ 
+        return Meeting::with(['user_meeting' => function ($query) {
+            $query->with(['organizer', 'participant'=> function ($query) {
+                $query->with(['user_mails']);
+            }]);
+        }])->where('congress_id', '=', $congress_id)
+        ->paginate($per_page);
     }
 }
