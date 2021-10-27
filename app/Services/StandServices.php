@@ -118,25 +118,25 @@ class StandServices
 
     public function getStands($congress_id,  $name = null, $status = null,$perPage = null,$search=null)
     {
-        $allStand = Stand::where(function ($query) use ($name, $status,$search) {
+        $allStand = Stand::where(function ($query) use ($name, $status) {
             if ($name) {
                 $query->where('name', '=', $name);
-            }
-            if ($search) {
-                $query->where('name','LIKE', '%' . $search . '%');
             }
             if ($status) {
                 $query->where('status', '=', $status);
             }
-        })
-            ->with(['docs', 'products', 'organization', 'faq'])
-            ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
-            ->orWhereHas("organization", function ($query) use ($search) {
-                $query->where('name','LIKE', '%' . $search . '%');
-                })
-             ->where('congress_id', '=', $congress_id);
-
-
+        })->with(['docs', 'products', 'organization', 'faq'])
+        ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
+         ->where('congress_id', '=', $congress_id);   
+         if ($search != "null" && $search!='') {
+            $allStand->Where(function($q) use ($search) {
+                $q->where('name','LIKE', '%' . $search . '%') ;
+                     } )
+           ->orWhereHas("organization", function ($query) use ($search,$congress_id) {
+                $query->where('Stand.congress_id', '=', $congress_id)->where('name','LIKE', '%' . $search . '%');
+                });
+            }
+          
         return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
 
     }
