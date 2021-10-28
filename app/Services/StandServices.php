@@ -99,7 +99,7 @@ class StandServices
         return Stand::where('stand_id', '=', $stand_id)
             ->with(['docs' => function ($query) {
                 $query->select('Resource.*', 'Resource_Stand.file_name');
-            },'products', 'organization.membres' => function ($query) {
+            },'products','stags', 'organization.membres' => function ($query) {
                     $query->where('privilege_id', '=', config('privilege.Organisme'));
                 }, 'organization.membres.profile_img', 'faq'])
             ->first();
@@ -118,6 +118,8 @@ class StandServices
 
         return $stand;
     }
+
+   
 
     public function getStands($congress_id,  $name = null, $status = null,$perPage = null, $stag_id=null)
     {

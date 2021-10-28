@@ -10,6 +10,7 @@ use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\STagServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class StandController extends Controller
 {
@@ -60,8 +61,10 @@ class StandController extends Controller
             $stand = $this->standServices->getStandById($request->input('stand_id'));
         }
         $stand = $this->standServices->addStand($stand, $congressId, $request);
-        $this->stagServices->addAllStandTags($request->input('stags'), $stand->stand_id);
-        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id);
+        $this->stagServices->deleteOldSTags($stand->stand_id);
+        $this->stagServices->addAllStandTags($request->input('tag_id_selected'), $stand->stand_id);
+        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id); 
+        Log::warning($request);
         return response()->json($stand, 200);
     }
 

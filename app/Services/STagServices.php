@@ -22,11 +22,10 @@ class STagServices
         $stag->congress_id = $congress_id;
         $stag->save();
     }
-    
+
     public function addAllStandTags($stags, $stand_id)
     {
-        if (sizeof($stags) > 0)
-        {
+        if (sizeof($stags) > 0) {
             foreach ($stags as $stag) {
                 $this->addStandTag($stag, $stand_id);
             }
@@ -41,6 +40,8 @@ class STagServices
         $stand_tag->save();
     }
 
-   
-
+    public function deleteOldSTags($stand_id)
+    {
+        return StandTag::where('stand_id', '=', $stand_id)->delete();
+    }
 }

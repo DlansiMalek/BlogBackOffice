@@ -37,4 +37,7 @@ class STagController extends Controller
         $stags = $this->stagServices->getSTags($congress_id);
         return response()->json($stags);
     }
+
+
+   
 }
