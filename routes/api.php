@@ -121,6 +121,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('tracking', 'UserController@trackingUser')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
+    Route::get('payments','PaymentController@getPaymentsPagination')->middleware('assign.guard:users');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::delete('deleteUserOutOfCongress', 'UserController@delete');
         Route::get('', 'UserController@getUserById');
@@ -349,7 +350,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });
-
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
         ->middleware('assign.guard:users');
     Route::post('access/presence/{userId}', 'AdminController@makeUserPresentAccess');
@@ -530,6 +530,8 @@ Route::group(['prefix' => 'payment'], function () {
     Route::post('success', 'PaymentController@successPayment');
     Route::get('echec', 'PaymentController@echecPayment');
     Route::post('notification-post', 'PaymentController@notification');
+    Route::get('{id}','PaymentController@getPaymentByID');
+    Route::get('{congressID}/{userID}', 'PaymentController@getPaymentByUserAndCongressID');
 });
 
 Route::group(['prefix' => 'payement'], function () {
