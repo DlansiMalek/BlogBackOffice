@@ -119,8 +119,6 @@ class StandServices
         return $stand;
     }
 
-   
-
     public function getStands($congress_id,  $name = null, $status = null,$perPage = null, $stag_id=null)
     {
         $allStand = Stand::where(function ($query) use ($name, $status) {
