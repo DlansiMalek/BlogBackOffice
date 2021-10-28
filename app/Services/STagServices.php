@@ -4,6 +4,10 @@ namespace App\Services;
 
 
 use App\Models\STag;
+use App\Models\GSTag;
+use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Models\StandTag;
 
 
@@ -20,6 +24,7 @@ class STagServices
     {
         $stag = new STag();
         $stag->label = $request->input('label');
+        $stag->gstag_id = $request->input('gstag_id');
         $stag->congress_id = $congress_id;
         $stag->save();
     }
