@@ -231,10 +231,15 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         });
 
         Route::group(['prefix' => 'stags'], function () {
+            Route::get('stand-groupe-tags/{gstag_id}', 'STagController@getGSTags');
             Route::get('stand-tag-list', 'STagController@getSTags');
             Route::post('add', 'STagController@addSTag');
         });
 
+        Route::group(['prefix' => 'gstags'], function () {
+            Route::get('stand-Gtag-list', 'GSTagController@getGSTags');
+            Route::post('add', 'GSTagController@addGSTag');
+        });
         Route::group(['prefix' => 'product'], function () {
             Route::get('{product_id}', 'StandProductController@getStandProductById');
         });

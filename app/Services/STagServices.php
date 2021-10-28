@@ -7,12 +7,13 @@ use App\Models\STag;
 use App\Models\StandTag;
 
 
-
 class STagServices
 {
     public function getSTags($congress_id)
     {
-        return STag::where('congress_id', '=', $congress_id)->get();
+        return STag::where('congress_id', '=', $congress_id)
+            ->with(['gtag'])
+            ->get();
     }
 
     public function addSTag($request, $congress_id)
@@ -43,5 +44,13 @@ class STagServices
     public function deleteOldSTags($stand_id)
     {
         return StandTag::where('stand_id', '=', $stand_id)->delete();
+    }
+
+    public function getGSTags($congress_id, $gstag_id)
+    {
+
+        return STag::where('congress_id', '=', $congress_id)
+            ->where('gstag_id', '=', $gstag_id)
+            ->get();
     }
 }
