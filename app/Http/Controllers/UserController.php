@@ -703,7 +703,7 @@ class UserController extends Controller
             //$accessIds = array_merge($accessIds, array_diff($accessIdsIntutive, $accessIds));
             $accessDiffDeleted = array_diff($userAccessIds, $accessIds);
             $accessDiffAdded = array_diff($accessIds, $userAccessIds);
-            $this->userServices->affectAccessIds($user->user_id, $accessDiffAdded);
+            $this->userServices->affectAccess($user->user_id, $accessDiffAdded, []);
             $this->userServices->deleteAccess($user->user_id, $accessDiffDeleted);
         } else if ($userAccessIds && array_count_values($userAccessIds)) {
             $this->userServices->deleteAccess($user->user_id, $userAccessIds);
@@ -956,7 +956,6 @@ class UserController extends Controller
         //PrivilegeId = 3
         $sum = 0;
         $privilegeId = $request->input("privilegeId");
-        $organizationId = $request->input("organisationId");
         $emails = [];
         $accessIdTable = [];
         foreach ($users as $e) {
@@ -998,16 +997,23 @@ class UserController extends Controller
                     ]);
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
+                    $organizationExist=null;
+                    if ( isset($userData['organisme'])) {
+                        $organizationExist = $this->organizationServices->getOrganizationByNameAndCongress($userData['organisme'], $congressId);
+
+                    }
+                    $organizationId = !$organizationExist ? $request->input("organisationId") : $organizationExist->organization_id;
                     if (!$user_congress) {
                         if ($accessNotInRegister) {
                             $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
                         }
-                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $request->input('organization_id'), $request->input('pack_id'));
+                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $organizationId, $request->input('pack_id'));
                         if ($congress->congress_type_id == 1) { // If event type payed affect payment user
                             $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false);
                         }
                     } else {
                         $user_congress->privilege_id = $privilegeId;
+                        $user_congress->organization_id = $organizationId;
                         $user_congress->update();
                     }
 
@@ -1971,9 +1977,6 @@ class UserController extends Controller
             return response()->json(['response' => 'No user found'], 401);
         }
         $stand = $this->standServices->getStandById($standId);
-        if (!$stand) {
-            return response()->json(['response' => 'No stand found'], 401);
-        }
 
         $userId = $user->user_id;
         $congress = $this->congressServices->getCongressById($congressId);
@@ -1991,13 +1994,19 @@ class UserController extends Controller
             return response()->json(['response' => 'not authorized'], 401);
         }
         
-        $isModerator = $organizerId ? $this->userServices->isUserOrganizer($user->user_congresses[0]) : $this->userServices->isUserModeratorStand($user->user_congresses[0]);
-        $urlStreaming = !$isModerator && $stand->url_streaming ? $stand->url_streaming : null;
-        $allowed = $isModerator || !$stand->url_streaming;
-
+        $urlStreaming = null;
+        if ($stand) { //checkStandRights
+            $isModerator = $this->userServices->isUserModeratorStand($user->user_congresses[0]);
+            $urlStreaming = !$isModerator && $stand->url_streaming ? $stand->url_streaming : null;
+            $allowed  = $isModerator || !$stand->url_streaming;
+            $roomName = 'eventizer_room_' . $congressId . 's' . $standId;
+        } else { //checkSupportRights
+            $isModerator = $this->userServices->isUserOrganizer($user->user_congresses[0]);
+            $allowed     = true;
+            $roomName    = 'eventizer_room_' . $congressId . 'support' . $organizerId;
+        }
+        
         $userToUpdate = $user->user_congresses[0];
-        $roomName = $organizerId ?  'eventizer_room_' . $congressId . 'support' . $organizerId : 'eventizer_room_' . $congressId . 's' . $standId ;
-       
         if ($congress->config && $congress->config->is_agora) {
             $token = $this->roomServices->createTokenAgora($user->user_id . '_' .$user->first_name . '_' . $user->last_name, $roomName, $isModerator);
         } else {
