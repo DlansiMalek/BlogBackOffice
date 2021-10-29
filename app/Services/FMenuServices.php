@@ -22,7 +22,7 @@ class FMenuServices
         $fetched->is_visible = $fmenu['is_visible'];
         $fetched->rank = $fmenu['rank'];
         $fetched->url = $fmenu['url'];
-        $fetched->logo = $fmenu['url'];
+        $fetched->logo = $fmenu['logo'];
         $fetched->congress_id =  $congress_id;
         $fetched->save();
         return $fetched;
