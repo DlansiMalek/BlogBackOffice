@@ -16,13 +16,11 @@ class FMenu extends Model
         'is_visible',
         'congress_id',
         'rank',
+        'logo',
+        'url',
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
 
-    function confingLP()
-    {
-        return $this->belongsTo(confingLP::class, 'congress_id', 'congress_id');
-    }
 }

@@ -12,24 +12,20 @@ class FMenuServices
 
     public function editFMenu($fmenu, $congress_id, $fetched = null)
     {
-        if ($fetched) {
-            $fetched->key = $fmenu['key'];
-            $fetched->fr_label = $fmenu['fr_label'];
-            $fetched->en_label = $fmenu['en_label'];
-            $fetched->is_visible = $fmenu['is_visible'];
-            $fetched->rank = $fmenu['rank'];
-            $fetched->save();
-            return $fetched;
+        if (!$fetched) {
+            $fetched = new FMenu();
         }
-        $newfmenu = new FMenu();
-        $newfmenu->key = $fmenu['key'];
-        $newfmenu->fr_label = $fmenu['fr_label'];
-        $newfmenu->en_label = $fmenu['en_label'];
-        $newfmenu->is_visible = $fmenu['is_visible'];
-        $newfmenu->rank = $fmenu['rank'];
-        $newfmenu->congress_id =  $congress_id;
-        $newfmenu->save();
-        return $newfmenu;
+
+        $fetched->key = $fmenu['key'];
+        $fetched->fr_label = $fmenu['fr_label'];
+        $fetched->en_label = $fmenu['en_label'];
+        $fetched->is_visible = $fmenu['is_visible'];
+        $fetched->rank = $fmenu['rank'];
+        $fetched->url = $fmenu['url'];
+        $fetched->logo = $fmenu['url'];
+        $fetched->congress_id =  $congress_id;
+        $fetched->save();
+        return $fetched;
     }
 
     public function getFMenuById($fmenu_id, $congress_id)

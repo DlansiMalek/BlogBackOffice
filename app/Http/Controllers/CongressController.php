@@ -1047,11 +1047,29 @@ class CongressController extends Controller
 
     public function getGenericFmenus($congress_id)
     {
+        $FMenu = $this->congressServices->getGenericFmenus($congress_id);
+        return response()->json($FMenu, 200);
+    }
+
+    public function editFmenus($congress_id, Request $request)
+    {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $FMenu = $this->congressServices->getGenericFmenus();
-        return response()->json($FMenu, 200);
+        $fmenus = $request->all();
+
+        if ($fmenus) {
+            foreach ($fmenus as $fmenu) {
+                if ($fetched = $this->fmenuServices->getFMenuById($fmenu['FMenu_id'], $congress_id)) {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id, $fetched);
+                } else {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id);
+                }
+            }
+            $fmenus = $this->congressServices->getGenericFmenus($congress_id);
+        }
+
+        return response()->json($fmenus, 200);
     }
 
     public function editConfigLandingPage($congress_id, Request $request)
@@ -1066,18 +1084,6 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         // Config Location
         $eventLocation = $request->input("eventLocation");
-
-        $fmenus = $request->input("f_menu");
-
-        if ($fmenus) {
-            foreach ($fmenus as $fmenu) {
-                if ($fetched = $this->fmenuServices->getFMenuById($fmenu['FMenu_id'], $congress_id)) {
-                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id, $fetched);
-                } else {
-                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id);
-                }
-            }
-        }
         
         if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
 
