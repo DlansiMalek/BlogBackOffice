@@ -17,7 +17,7 @@ class FMenuSeeder extends Seeder
         DB::table('FMenu')->insert([
             'key' => 'Reception',
             'fr_label' => 'Réception',
-            'en_label' => 'Réception',
+            'en_label' => 'Reception',
             'is_visible' => '1',
             'rank' => '1',
             'url' => '',
@@ -26,7 +26,7 @@ class FMenuSeeder extends Seeder
         DB::table('FMenu')->insert([
             'key' => 'Scene',
             'fr_label' => 'Scéne',
-            'en_label' => 'Scéne',
+            'en_label' => 'Scene',
             'is_visible' => '1',
             'rank' => '2',
             'url' => 'event-room',
@@ -61,7 +61,7 @@ class FMenuSeeder extends Seeder
           ]);
         DB::table('FMenu')->insert([
             'key' => 'Travaux',
-            'fr_label' => 'Abstracts',
+            'fr_label' => 'Travaux',
             'en_label' => 'Abstracts',
             'is_visible' => '1',
             'rank' => '6',
