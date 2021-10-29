@@ -28,13 +28,5 @@ class MenuSeed00 extends Seeder
             'menu_id' => 17,
             'index' => 1
         ]);
-
-        DB::table('Menu_Children')->insert([
-            'menu_children_id' => 41,
-            'key' => 'ManageMenus',
-            'url' => '/manage-menus',
-            'menu_id' => 17,
-            'index' => 2
-        ]);
     }
 }
