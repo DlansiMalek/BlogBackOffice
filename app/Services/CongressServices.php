@@ -25,6 +25,7 @@ use App\Models\UserCongress;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property OrganizationServices $organizationServices
@@ -1129,5 +1130,17 @@ class CongressServices
 
         return $config_landing_page;
 
+    }
+
+    public function getParticipantsCachedCount($congress_id)
+    {
+        $cacheKey = config('cachedKeys.UsersCount') . $congress_id;
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        $participants = $this->getParticipantsCount($congress_id, null, null);
+        Cache::put($cacheKey, $participants, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        
+        return $participants;
     }
 }
