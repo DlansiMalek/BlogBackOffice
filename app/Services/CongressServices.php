@@ -1012,7 +1012,7 @@ class CongressServices
 
     public function getConfigLandingPageById($congress_id)
     {
-        return ConfigLP::where('congress_id', '=', $congress_id);
+        return ConfigLP::where('congress_id', '=', $congress_id)->first();
     }
 
     public function getGenericFmenus($congress_id)
