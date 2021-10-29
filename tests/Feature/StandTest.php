@@ -14,6 +14,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Models\Payment;
+use App\Models\STag;
 use App\Models\StandContentFile;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
@@ -42,7 +43,8 @@ class StandTest extends TestCase
         $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
         $resource = factory(Resource::class)->create();
         $resource2 = factory(Resource::class)->create();
-        $stand = $this->getFakeStand($congress->congress_id, $organization->organization_id, $resource->resource_id, $resource2->resource_id);
+        $sTag = factory(STag::class)->create(['congress_id' => $congress->congress_id]);
+        $stand = $this->getFakeStand($congress->congress_id, $organization->organization_id, $resource->resource_id, $resource2->resource_id, $sTag);
         $this->post('api/congress/' . $congress->congress_id . '/stand/add', $stand)
             ->assertStatus(200);
     }
@@ -56,6 +58,8 @@ class StandTest extends TestCase
         $resource_stand = factory(ResourceStand::class)->create(['stand_id' => $stand->stand_id, 'resource_id' => $resource->resource_id]);
         $resource2 = factory(Resource::class)->create();
         $stand->docs = $this->getFakeDocs($resource2->resource_id, $resource_stand->file_name);
+        $sTag = factory(STag::class)->create(['congress_id' => $congress->congress_id]);
+        $stand->tag_id_selected = [$sTag->stag_id];
         $response = $this->post('api/congress/' . $congress->congress_id . '/stand/add', $stand->toArray())
             ->assertStatus(200);
 
@@ -229,7 +233,7 @@ class StandTest extends TestCase
     }
 
 
-    private function getFakeStand($congress_id, $organization_id, $resource_id1, $resource_id2)
+    private function getFakeStand($congress_id, $organization_id, $resource_id1, $resource_id2, $sTag)
     {
         return [
             'name' => $this->faker->word,
@@ -248,6 +252,9 @@ class StandTest extends TestCase
                         'file_name' => $this->faker->word
                     ]
                 ]
+            ],
+            'tag_id_selected' => [
+                     $sTag->stag_id   
             ]
         ];
     }
