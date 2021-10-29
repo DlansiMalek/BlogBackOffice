@@ -255,9 +255,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-            'config_landing' => function ($q) use ($congressId) {
-                $q->with(['FMenu']);
-            },
+            'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -1015,12 +1013,17 @@ class CongressServices
 
     public function getConfigLandingPageById($congress_id)
     {
-        return ConfigLP::where('congress_id', '=', $congress_id)->with(['FMenu'])->first();
+        return ConfigLP::where('congress_id', '=', $congress_id)->first();
     }
 
-    public function getGenericFmenus()
+    public function getGenericFmenus($congress_id)
     {
-        return FMenu::whereNull('congress_id')->get();
+        $fmenus = FMenu::where('congress_id', '=', $congress_id)->orderBy('rank', 'ASC')->get();
+
+        if (count($fmenus) == 0) {
+            $fmenus =  FMenu::whereNull('congress_id')->orderBy('rank', 'ASC')->get();
+        }
+        return  $fmenus;
     }
     
     public function editConfigLandingPage($config_landing_page, $request, $congress_id)

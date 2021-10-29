@@ -22,6 +22,8 @@ class CreateTableFMenu extends Migration
             $table->unsignedTinyInteger('rank')->nullable()->default(0);
             $table->unsignedInteger('congress_id')->nullable()->default(null);
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
+            $table->string('url')->nullable();
+            $table->text('logo')->nullable();
             $table->timestamps();
         });
     }
