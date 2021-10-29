@@ -12,7 +12,7 @@ use App\Models\AdminCongress;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+
 
 class OrganizationServices
 {
@@ -75,24 +75,15 @@ class OrganizationServices
 
     public function getOrganizationByNameAndEmailInCongress($name, $email, $congressId)
     {
-        $email = strtolower($name);
-        return Organization::whereRaw('lower(name) like (?)', ["{$name}"])
-        ->whereRaw('lower(email) like (?)', ["{$email}"])->where('congress_id', '=', $congressId)->first();
+        $email = strtolower($email);
+        return Organization::whereRaw('lower(name) like (?)', ["{$name}"])->whereRaw('lower(email) like (?)', ["{$email}"])->where('congress_id', '=', $congressId)->first();
     }
 
-    public function getOrganizationsByCongressId($congressId, $admin_email = null)
+    public function getOrganizationsByCongressId($congressId, $admin_email = null, $privilege_id = null)
     {
-        if ($admin_email) {
-            return  Organization::where(
-                function ($query) use ($admin_email, $congressId) {
-                    $query->where('congress_id', '=', $congressId);
-                    $query->where('email', '=', $admin_email);
-                }
-            )->with(['admin'])->get();
-        } else {
-            return   Organization::with(['admin'])->where('congress_id', '=', $congressId)
-                ->get();
-        }
+      return  Organization::where('congress_id', '=', $congressId)->where(function ($query) use ($admin_email, $privilege_id) {
+            if ($admin_email && $privilege_id == 7) $query->where('email', '=', $admin_email);
+        })->get();
     }
 
     public function getAllUserByOrganizationId($organizationId, $congressId)
