@@ -2,9 +2,6 @@
 
 namespace App\Services;
 
-
-
-
 use App\Models\ResourceStand;
 use App\Models\Stand;
 use App\Models\StandContentConfig;
@@ -130,7 +127,7 @@ class StandServices
             }  
         })
         ->when('stags', function ($query) use ($stag_id) {
-            if ($stag_id) {
+            if ($stag_id!= '' && $stag_id!= null && $stag_id!= 'null') {
                 $query->join('Stand_Tag','Stand_Tag.stand_id', '=','Stand.stand_id')
                 ->where('Stand_Tag.stag_id', '=',$stag_id); 
             }
