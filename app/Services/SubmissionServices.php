@@ -391,7 +391,7 @@ class SubmissionServices
 
     public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
     {
-        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id;
+        $cacheKey = config('cachedKeys.Submissions') . $congressId.$search.$offset.$perPage.$communication_type_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);

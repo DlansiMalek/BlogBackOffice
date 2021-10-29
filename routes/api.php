@@ -347,6 +347,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
                 Route::delete('{white_list_id}', 'UserController@deleteWhiteList');
             });
             Route::get('stands', 'StandController@getStandsByCongress');
+            Route::get('participants-number', 'CongressController@getNumberOfParticipants');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });

@@ -373,7 +373,7 @@ class CongressController extends Controller
         $type = $request->query('type', '');
 
 
-        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
+        $cacheKey = config('cachedKeys.EventPagination') . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
@@ -418,7 +418,7 @@ class CongressController extends Controller
 
     public function getCongressDetailsById($congress_id)
     {
-        $cacheKey = 'congress-' . $congress_id;
+        $cacheKey = config('cachedKeys.Congress') . $congress_id;
 
         if (Cache::has($cacheKey)) {
             $congress = Cache::get($cacheKey);
@@ -964,7 +964,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-        $cacheKey = 'congress-' . $congressId . '-users';
+        $cacheKey = config('cachedKeys.PeacksourceUsers') . $congressId;
         
         if (Cache::has($cacheKey)) {
             $results = Cache::get($cacheKey);
@@ -1158,16 +1158,23 @@ class CongressController extends Controller
     }
     public function getConfigLandingPageToFrontOffice($congress_id)
     {
-    
         $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
     public function getLandingPageSpeakersToFrontOffice($congress_id)
     {
-        
         $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
         return response()->json($speakers, 200);
+    }
+
+    public function getNumberOfParticipants($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+            return response()->json(["message" => "congress not found"], 404);
+        
+        $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
+        return response()->json($participants, 200);
     }
 
 }
