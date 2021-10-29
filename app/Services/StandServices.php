@@ -104,7 +104,7 @@ class StandServices
 
     public function getStandCachedById($stand_id)
     {
-        $cacheKey = 'stand-' . $stand_id;
+        $cacheKey = config('cachedKeys.Stand') . $stand_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
