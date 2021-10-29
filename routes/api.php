@@ -347,6 +347,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
                 Route::delete('{white_list_id}', 'UserController@deleteWhiteList');
             });
             Route::get('stands', 'StandController@getStandsByCongress');
+            Route::get('participants-number', 'CongressController@getNumberOfParticipants');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });
@@ -398,6 +399,8 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::get('edit-status/{status}', 'CongressController@editStatus');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
+                Route::get('get-fmenus', 'CongressController@getGenericFmenus');
+                Route::post('edit-fmenus', 'CongressController@editFmenus');
 
                 Route::group(['prefix' => 'landing-page'], function () {
                     Route::post('edit-config', 'CongressController@editConfigLandingPage');

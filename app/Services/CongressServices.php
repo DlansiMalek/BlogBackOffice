@@ -11,6 +11,7 @@ use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
 use App\Models\Congress;
 use App\Models\CongressTheme;
+use App\Models\FMenu;
 use App\Models\ItemEvaluation;
 use App\Models\ItemNote;
 use App\Models\Location;
@@ -25,6 +26,7 @@ use App\Models\UserCongress;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property OrganizationServices $organizationServices
@@ -254,7 +256,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-                'config_landing',
+            'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -1012,10 +1014,27 @@ class CongressServices
 
     public function getConfigLandingPageById($congress_id)
     {
-        return ConfigLP::where('congress_id', '=', $congress_id)
-            ->first();
+        return ConfigLP::where('congress_id', '=', $congress_id)->first();
     }
 
+    public function getGenericFmenus($congress_id)
+    {
+        $cacheKey = config('cachedKeys.GenericMenus') . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $fmenus = Cache::get($cacheKey);
+        } else {
+            $fmenus = FMenu::where('congress_id', '=', $congress_id)->orderBy('rank', 'ASC')->get();
+
+            if (count($fmenus) == 0) {
+                $fmenus =  FMenu::whereNull('congress_id')->orderBy('rank', 'ASC')->get();
+            }
+            Cache::put($cacheKey, $fmenus, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
+
+        return  $fmenus;
+    }
+    
     public function editConfigLandingPage($config_landing_page, $request, $congress_id)
     {
         $no_config = false;
@@ -1129,5 +1148,17 @@ class CongressServices
 
         return $config_landing_page;
 
+    }
+
+    public function getParticipantsCachedCount($congress_id)
+    {
+        $cacheKey = config('cachedKeys.UsersCount') . $congress_id;
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        $participants = $this->getParticipantsCount($congress_id, null, null);
+        Cache::put($cacheKey, $participants, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        
+        return $participants;
     }
 }
