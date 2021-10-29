@@ -1182,7 +1182,6 @@ class UserController extends Controller
 
     public function redirectToLinkFormSondage($userId, $congressId)
     {
-
         $congress = $this->congressServices->getCongressById($congressId);
         $mailtype = $this->congressServices->getMailType('attestation');
         $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
