@@ -1019,11 +1019,19 @@ class CongressServices
 
     public function getGenericFmenus($congress_id)
     {
-        $fmenus = FMenu::where('congress_id', '=', $congress_id)->orderBy('rank', 'ASC')->get();
+        $cacheKey = config('cachedKeys.GenericMenus') . $congress_id;
 
-        if (count($fmenus) == 0) {
-            $fmenus =  FMenu::whereNull('congress_id')->orderBy('rank', 'ASC')->get();
+        if (Cache::has($cacheKey)) {
+            $fmenus = Cache::get($cacheKey);
+        } else {
+            $fmenus = FMenu::where('congress_id', '=', $congress_id)->orderBy('rank', 'ASC')->get();
+
+            if (count($fmenus) == 0) {
+                $fmenus =  FMenu::whereNull('congress_id')->orderBy('rank', 'ASC')->get();
+            }
+            Cache::put($cacheKey, $fmenus, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
+
         return  $fmenus;
     }
     
