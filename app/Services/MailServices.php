@@ -25,7 +25,7 @@ class MailServices
 {
     protected $maxRequest = 0;
 
-    public function getAllMailTypes($congressId= null, $type)
+    public function getAllMailTypes($congressId, $type)
     {
         return MailType::where('type', '=', $type)
             ->with(['mails' => function ($query) use ($congressId) {

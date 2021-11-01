@@ -27,8 +27,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Submission::class, "user_id", "user_id");
     }
 
-   
-
     function inscription_evaluation()
     {
         return $this->hasMany(Evaluation_Inscription::class, 'user_id', 'user_id');
