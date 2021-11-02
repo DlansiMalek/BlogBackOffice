@@ -11,6 +11,7 @@ use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
 use App\Models\Congress;
 use App\Models\CongressTheme;
+use App\Models\FMenu;
 use App\Models\ItemEvaluation;
 use App\Models\ItemNote;
 use App\Models\Location;
@@ -255,7 +256,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-                'config_landing',
+            'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -1013,10 +1014,27 @@ class CongressServices
 
     public function getConfigLandingPageById($congress_id)
     {
-        return ConfigLP::where('congress_id', '=', $congress_id)
-            ->first();
+        return ConfigLP::where('congress_id', '=', $congress_id)->first();
     }
 
+    public function getGenericFmenus($congress_id)
+    {
+        $cacheKey = config('cachedKeys.GenericMenus') . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $fmenus = Cache::get($cacheKey);
+        } else {
+            $fmenus = FMenu::where('congress_id', '=', $congress_id)->orderBy('rank', 'ASC')->get();
+
+            if (count($fmenus) == 0) {
+                $fmenus =  FMenu::whereNull('congress_id')->orderBy('rank', 'ASC')->get();
+            }
+            Cache::put($cacheKey, $fmenus, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
+
+        return  $fmenus;
+    }
+    
     public function editConfigLandingPage($config_landing_page, $request, $congress_id)
     {
         $no_config = false;

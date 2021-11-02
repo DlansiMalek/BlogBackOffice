@@ -28,6 +28,7 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use App\Services\TrackingServices;
+use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -51,6 +52,7 @@ class CongressController extends Controller
     protected $roomServices;
     protected $standServices;
     protected $trackingServices;
+    protected $fmenuServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -66,7 +68,8 @@ class CongressController extends Controller
                          NotificationServices $notificationService,
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices,
-                         TrackingServices $trackingServices)
+                         TrackingServices $trackingServices,
+                         FMenuServices $fmenuServices )
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -84,6 +87,7 @@ class CongressController extends Controller
         $this->paymentServices = $paymentServices;
         $this->standServices = $standServices;
         $this->trackingServices = $trackingServices;
+        $this->fmenuServices = $fmenuServices;
     }
 
 
@@ -1041,6 +1045,33 @@ class CongressController extends Controller
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
 
+    public function getGenericFmenus($congress_id)
+    {
+        $FMenu = $this->congressServices->getGenericFmenus($congress_id);
+        return response()->json($FMenu, 200);
+    }
+
+    public function editFmenus($congress_id, Request $request)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $fmenus = $request->all();
+
+        if ($fmenus) {
+            foreach ($fmenus as $fmenu) {
+                if ($fetched = $this->fmenuServices->getFMenuById($fmenu['FMenu_id'], $congress_id)) {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id, $fetched);
+                } else {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id);
+                }
+            }
+            $fmenus = $this->congressServices->getGenericFmenus($congress_id);
+        }
+
+        return response()->json($fmenus, 200);
+    }
+
     public function editConfigLandingPage($congress_id, Request $request)
     {
         if (!$this->adminServices->retrieveAdminFromToken()) {
@@ -1053,7 +1084,7 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         // Config Location
         $eventLocation = $request->input("eventLocation");
-
+        
         if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
 
             $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);

@@ -404,6 +404,8 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::get('edit-status/{status}', 'CongressController@editStatus');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
+                Route::get('get-fmenus', 'CongressController@getGenericFmenus');
+                Route::post('edit-fmenus', 'CongressController@editFmenus');
 
                 Route::group(['prefix' => 'landing-page'], function () {
                     Route::post('edit-config', 'CongressController@editConfigLandingPage');

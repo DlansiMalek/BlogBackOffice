@@ -6,5 +6,6 @@ return [
     'UsersCount' => 'users-count-',
     'Stand' => 'stand-',
     'Stands' => 'stands-',
-    'Submissions' => 'submissions-'
+    'Submissions' => 'submissions-',
+    'GenericMenus' => 'generic-menus-'
 ];
