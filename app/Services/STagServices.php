@@ -51,7 +51,7 @@ class STagServices
         return StandTag::where('stand_id', '=', $stand_id)->delete();
     }
 
-    public function getGSTags($congress_id, $gstag_id)
+    public function getStagByGSTagId($congress_id, $gstag_id)
     {
 
         return STag::where('congress_id', '=', $congress_id)

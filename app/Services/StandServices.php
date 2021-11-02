@@ -116,7 +116,8 @@ class StandServices
         return $stand;
     }
 
-    public function getStands($congress_id,  $name = null, $status = null,$perPage = null, $stag_id=null)
+
+    public function getStands($congress_id,  $name = null, $status = null,$perPage = null,$search=null ,$stag_id=null)
     {
         $allStand = Stand::where(function ($query) use ($name, $status) {
             if ($name) {
@@ -133,20 +134,29 @@ class StandServices
             }
         })
             ->with(['docs', 'products' , 'organization', 'faq','stags'])
-            ->orderBy(DB::raw('ISNULL(priority), priority'),'ASC')
-            ->where('congress_id', '=', $congress_id);
-            return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
+            ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
+            ->where('congress_id', '=', $congress_id);   
+            if ($search != "null" && $search!='') {
+               $allStand->Where(function($q) use ($search) {
+                   $q->where('name','LIKE', '%' . $search . '%') ;
+                        } )
+              ->orWhereHas("organization", function ($query) use ($search,$congress_id) {
+                   $query->where('Stand.congress_id', '=', $congress_id)->where('name','LIKE', '%' . $search . '%');
+                   });
+               }
+             
+           return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
     }
   
-    public function getCachedStands($congress_id, $page, $perPage , $stag_id)
+    public function getCachedStands($congress_id, $page, $perPage ,$search, $stag_id)
     {
-        $cacheKey = 'stands-' . $congress_id . $page . $perPage . $stag_id;
+        $cacheKey = 'stands-' . $congress_id . $page . $perPage . $search . $stag_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
-        $stands = $this->getStands($congress_id, null,null, $perPage,$stag_id);
+        $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
         Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
         return $stands;

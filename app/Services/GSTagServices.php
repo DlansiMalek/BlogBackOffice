@@ -3,10 +3,6 @@
 namespace App\Services;
 
 use App\Models\GSTag;
-use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 
 class GSTagServices
 {
@@ -17,17 +13,11 @@ class GSTagServices
 
     public function addGSTag($request, $congress_id)
     {
-      
-           if (!$request->gstag_id){
-               $gstag = new GSTag();
-            }
+        if (!$request->gstag_id) {
+            $gstag = new GSTag();
+        }
         $gstag->label = $request->input('label');
         $gstag->congress_id = $congress_id;
         $gstag->save();
-    
-}
-    
-  
-   
-
+    }
 }

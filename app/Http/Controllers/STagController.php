@@ -44,7 +44,7 @@ class STagController extends Controller
         if (!$this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $gstags = $this->stagServices->getGSTags($congress_id, $gstag_id);
+        $gstags = $this->stagServices->getStagByGSTagId($congress_id, $gstag_id);
         return response()->json($gstags);
     }
 }
