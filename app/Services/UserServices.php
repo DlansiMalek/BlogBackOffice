@@ -76,8 +76,14 @@ class UserServices
         $newUser->last_name = $last_name;
         $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->verification_code = Str::random(40);
         $newUser->save();
 
+        if (!$newUser->qr_code) {
+            $newUser->qr_code = Utils::generateCode($newUser->user_id);
+            $newUser->update();
+        }
+        
         return $newUser;
     }
 
@@ -311,8 +317,8 @@ class UserServices
 
     public function affectAccess($user_id, $accessIds, $packAccesses)
     {
-        for ($i = 0; $i < sizeof($accessIds); $i++) {
-            $this->affectAccessById($user_id, $accessIds[$i]);
+        foreach ($accessIds as $item) {
+            $this->affectAccessById($user_id, $item);
         }
 
         foreach ($packAccesses as $access) {
@@ -532,8 +538,8 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.values', 'user_congresses.privilege', 'country'])
-            ->with(['accesses'])
+            }, 'responses.values', 'user_congresses.privilege', 'country','user_congresses.organization'])
+            ->with(['accesses', 'profile_img'])
             ->get();
         return $users;
     }
@@ -1296,6 +1302,7 @@ class UserServices
     public function getPaymentById($paymentId)
     {
         return Payment::where('payment_id', '=', $paymentId)
+            ->with(['congress'])
             ->first();
     }
 

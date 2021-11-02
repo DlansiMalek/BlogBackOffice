@@ -227,6 +227,19 @@ class StandTest extends TestCase
         $response = $this->delete('api/stand/delete-content-file/' . $standContentFile->stand_content_file_id)
             ->assertStatus(200);
     }
+    public function testGetStandByCongressWithSearch()
+    {
+   
+        $congress = factory(Congress::class)->create();
+        $organization = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
+        $stand = factory(Stand::class)->create(['congress_id' => $congress->congress_id, 'organization_id' => $organization->organization_id]);
+        $search=$stand->name;
+        $response = $this->get('api/user/congress/' . $congress->congress_id . '/stands?perPage=1&search=' . $search)
+            ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertEquals($dataResponse["data"][0]["name"], $search);
+
+    }
 
 
     private function getFakeStand($congress_id, $organization_id, $resource_id1, $resource_id2)
