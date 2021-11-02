@@ -28,6 +28,7 @@ use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
 use App\Services\TrackingServices;
+use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -51,6 +52,7 @@ class CongressController extends Controller
     protected $roomServices;
     protected $standServices;
     protected $trackingServices;
+    protected $fmenuServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -66,7 +68,8 @@ class CongressController extends Controller
                          NotificationServices $notificationService,
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices,
-                         TrackingServices $trackingServices)
+                         TrackingServices $trackingServices,
+                         FMenuServices $fmenuServices )
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -84,6 +87,7 @@ class CongressController extends Controller
         $this->paymentServices = $paymentServices;
         $this->standServices = $standServices;
         $this->trackingServices = $trackingServices;
+        $this->fmenuServices = $fmenuServices;
     }
 
 
@@ -369,7 +373,7 @@ class CongressController extends Controller
         $type = $request->query('type', '');
 
 
-        $cacheKey = "eventspagination-" . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
+        $cacheKey = config('cachedKeys.EventPagination') . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
@@ -414,7 +418,7 @@ class CongressController extends Controller
 
     public function getCongressDetailsById($congress_id)
     {
-        $cacheKey = 'congress-' . $congress_id;
+        $cacheKey = config('cachedKeys.Congress') . $congress_id;
 
         if (Cache::has($cacheKey)) {
             $congress = Cache::get($cacheKey);
@@ -960,7 +964,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-        $cacheKey = 'congress-' . $congressId . '-users';
+        $cacheKey = config('cachedKeys.PeacksourceUsers') . $congressId;
         
         if (Cache::has($cacheKey)) {
             $results = Cache::get($cacheKey);
@@ -1041,6 +1045,33 @@ class CongressController extends Controller
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
 
+    public function getGenericFmenus($congress_id)
+    {
+        $FMenu = $this->congressServices->getGenericFmenus($congress_id);
+        return response()->json($FMenu, 200);
+    }
+
+    public function editFmenus($congress_id, Request $request)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $fmenus = $request->all();
+
+        if ($fmenus) {
+            foreach ($fmenus as $fmenu) {
+                if ($fetched = $this->fmenuServices->getFMenuById($fmenu['FMenu_id'], $congress_id)) {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id, $fetched);
+                } else {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id);
+                }
+            }
+            $fmenus = $this->congressServices->getGenericFmenus($congress_id);
+        }
+
+        return response()->json($fmenus, 200);
+    }
+
     public function editConfigLandingPage($congress_id, Request $request)
     {
         if (!$this->adminServices->retrieveAdminFromToken()) {
@@ -1053,7 +1084,7 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         // Config Location
         $eventLocation = $request->input("eventLocation");
-
+        
         if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
 
             $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);
@@ -1127,16 +1158,23 @@ class CongressController extends Controller
     }
     public function getConfigLandingPageToFrontOffice($congress_id)
     {
-    
         $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
     public function getLandingPageSpeakersToFrontOffice($congress_id)
     {
-        
         $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
         return response()->json($speakers, 200);
+    }
+
+    public function getNumberOfParticipants($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+            return response()->json(["message" => "congress not found"], 404);
+        
+        $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
+        return response()->json($participants, 200);
     }
 
 }

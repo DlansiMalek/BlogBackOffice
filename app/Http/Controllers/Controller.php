@@ -223,3 +223,9 @@ UPDATE User
 SET `qr_code` = CONCAT(CONV(FLOOR(RAND() * 99999999999999), 10, 36), `user_id`)
 WHERE qr_code IS NULL
 */
+
+/* Generate data user for congressId
+SELECT User.user_id, first_name, last_name, passwordDecrypt from User
+INNER JOIN User_Congress ON User_Congress.user_id = User.user_id
+WHERE User_Congress.congress_id = 397
+*/

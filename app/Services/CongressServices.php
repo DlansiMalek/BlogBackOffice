@@ -11,6 +11,7 @@ use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
 use App\Models\Congress;
 use App\Models\CongressTheme;
+use App\Models\FMenu;
 use App\Models\ItemEvaluation;
 use App\Models\ItemNote;
 use App\Models\Location;
@@ -25,6 +26,7 @@ use App\Models\UserCongress;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property OrganizationServices $organizationServices
@@ -254,7 +256,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-                'config_landing',
+            'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -711,7 +713,7 @@ class CongressServices
     }
     
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null)
+                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null, $password= null)
     {
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
@@ -786,6 +788,7 @@ class CongressServices
         $template = str_replace('{{$meeting-&gt;start_date}}', '{{$meeting->start_date}}', $template);
         $template = str_replace('{{$meeting-&gt;name}}', '{{$meeting->name}}', $template);
         $template = str_replace('{{%24linkSubmission}}', '{{$linkSubmission}}', $template);
+        $template = str_replace('{{$admin-&gt;password}}', '{{$password}}', $template);
 
         $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
         $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;
@@ -800,7 +803,7 @@ class CongressServices
                                                   <a href="{{$linkRefuseMeeting}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting]);
+        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting, 'password' => $password]);
 
     }
 
@@ -1011,10 +1014,27 @@ class CongressServices
 
     public function getConfigLandingPageById($congress_id)
     {
-        return ConfigLP::where('congress_id', '=', $congress_id)
-            ->first();
+        return ConfigLP::where('congress_id', '=', $congress_id)->first();
     }
 
+    public function getGenericFmenus($congress_id)
+    {
+        $cacheKey = config('cachedKeys.GenericMenus') . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $fmenus = Cache::get($cacheKey);
+        } else {
+            $fmenus = FMenu::where('congress_id', '=', $congress_id)->orderBy('rank', 'ASC')->get();
+
+            if (count($fmenus) == 0) {
+                $fmenus =  FMenu::whereNull('congress_id')->orderBy('rank', 'ASC')->get();
+            }
+            Cache::put($cacheKey, $fmenus, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        }
+
+        return  $fmenus;
+    }
+    
     public function editConfigLandingPage($config_landing_page, $request, $congress_id)
     {
         $no_config = false;
@@ -1128,5 +1148,17 @@ class CongressServices
 
         return $config_landing_page;
 
+    }
+
+    public function getParticipantsCachedCount($congress_id)
+    {
+        $cacheKey = config('cachedKeys.UsersCount') . $congress_id;
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        $participants = $this->getParticipantsCount($congress_id, null, null);
+        Cache::put($cacheKey, $participants, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        
+        return $participants;
     }
 }
