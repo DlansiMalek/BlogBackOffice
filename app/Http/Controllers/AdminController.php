@@ -447,9 +447,12 @@ class AdminController extends Controller
 
         // Add User if not exist
         if (!$user = $this->userServices->getUserByEmail($admin['email'])) {
-            $admin= Utils::explodeString($admin);
+            if($request->has('organizationId')){$organisationId = $request->input('organizationId');}
+            $name = explode(" ", $admin['name']);
+            $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
+            $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
             $user = $this->userServices->addUserFromExcel($admin, $password);
-            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, $organisationId, null);
         } else {
             // Add user to congress if not affected
             if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
