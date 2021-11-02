@@ -15,7 +15,7 @@ use App\Services\PrivilegeServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class OrganizationController extends Controller
 {
@@ -53,7 +53,7 @@ class OrganizationController extends Controller
     }
 
     public function addOrganization($congress_id, Request $request)
-    {Log::warning($request);
+    {;
         if (!$request->has(['name'])) {
             return response()->json(["message" => "invalid request", "required inputs" => ['name']], 404);
         }
@@ -62,24 +62,24 @@ class OrganizationController extends Controller
             return response()->json(["message" => "congress not found"], 404);
         }
 
-
         $organization = null;
         if ($request->has('organization_id')) {
             $organization = $this->organizationServices->getOrganizationById($request->input('organization_id'));
         }
         $organization = $this->organizationServices->addOrganization($organization, $congress_id, $request);
         $stand = null;
+        $request['organization_id'] = $organization->organization_id;
         if ($request->has('stand')) {
-            $request['organization_id'] = $organization->organization_id;
-            if (!$stand = $this->standServices->getStandById($request->input('stand')['stand_id'])) {
+            if ($request->input('stands')['0']['stand_id']) {
+                $stand = $this->standServices->getStandById($request->input('stands')['0']['stand_id']);
+            } else {
                 $stand = $this->standServices->addStand(null, $congress_id, $request);
-                
-            }
+            } 
             if ($stand) {
                 $standDocs = $request->input('stand')['docs'];
                 $this->standServices->saveResourceStand($standDocs, $stand->stand_id);
             }
-        }
+        } 
         $privilegeId = 7;
         $password = Str::random(8);
         if (!($admin = $this->adminServices->getAdminByLogin($organization->email))) {
@@ -122,7 +122,7 @@ class OrganizationController extends Controller
     }
 
     public function getCongressOrganizations($congress_id , Request $request)
-    {Log::warning($request);
+    {
         $admin_email = $request->input('email');
         $admin_privilege = null;
         if ( $adminByEmail = $this->adminServices->getAdminByMail($admin_email)) {
