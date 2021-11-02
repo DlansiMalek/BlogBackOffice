@@ -1709,15 +1709,15 @@ class UserController extends Controller
         }
 
         $show_in_chat = $this->userServices->getShowInChat($congress_id);
-
-        if (Schema::hasColumn('User', $show_in_chat)&&($show_in_chat)) {
-            $user_congress->chat_info = $user['show_in_chat'];
+        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat'])) {
+            $user_congress->chat_info = $user[$show_in_chat[0]['show_in_chat']];
+           
         } else {
-            $form_input_id = $this->userServices->getQuestionByKey($show_in_chat, $congress_id);
-            $chat_info =  $this->userServices->getResponseFormInput($user->user_id, $form_input_id);
-            $user_congress->chat_info = $chat_info;
+            $form_input_id = $this->userServices->getQuestionByKey($congress_id, $show_in_chat[0]['show_in_chat']);
+            $chat_info =  $this->userServices->getResponseFormInput($user->user_id, $form_input_id[0]['form_input_id']);
+            $user_congress->chat_info = $chat_info[0]['response'];
         }
-
+        $user_congress->save();
 
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
@@ -2100,8 +2100,7 @@ class UserController extends Controller
 
         return response()->json($users);
     }
-
-
+   
     public function checkMeetingRights($congressId, $meetingId)
     {
         $user = $this->userServices->retrieveUserFromToken();
@@ -2150,5 +2149,8 @@ class UserController extends Controller
             ],
             200
         );
+
+        
     }
+  
 }

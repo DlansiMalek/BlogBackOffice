@@ -276,7 +276,6 @@ class UserServices
         $user = new User();
         $user->first_name = $request->input("first_name");
         $user->last_name = $request->input("last_name");
-        $user->chat_info = $request->input("chat_info");
         if ($request->has('email'))
             $user->email = $request->input('email');
         if ($request->has('mobile'))
@@ -1161,11 +1160,11 @@ class UserServices
             ->get();
     }
 
-    public function getQuestionByKey($key, $congress_id)
+    public function getQuestionByKey($congress_id,$key)
     {
-        return FormInput::where('key', '=', $key)
-            ->where('congress_id', '=', $congress_id)
-            ->get('form_input_id');
+        return FormInput::where('congress_id', '=', $congress_id)
+         ->where('key','=',$key)
+         ->get('form_input_id');
     }
 
     public function getResponseFormInput($user_id, $form_input_id)
@@ -1175,7 +1174,7 @@ class UserServices
             ->get('response');
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id)
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id )
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
@@ -1788,7 +1787,9 @@ class UserServices
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }
         })
-            ->with(['user_congresses'])
+            ->with(['user_congresses'=> function ($query) use ($congressId){
+                $query->where('congress_id', '=', $congressId);
+            }])
             ->paginate($perPage);
         return  $users;
     }
