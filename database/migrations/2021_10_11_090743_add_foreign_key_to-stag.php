@@ -28,7 +28,8 @@ class AddForeignKeyToStag extends Migration
     public function down()
     {
         Schema::table('STag', function (Blueprint $table) {
-            //
+            $table->dropForeign('gstag_id'); 
+            $table->removeColumn('gstag_id');
         });
     }
 }
