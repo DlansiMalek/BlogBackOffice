@@ -29,11 +29,9 @@ use App\Services\PrivilegeServices;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Exception;
-use App\Models\ConfigCongress;
 use Illuminate\Support\Facades\Schema;
 use App\Services\MeetingServices;
-use Illuminate\Support\Facades\Log;
+
 
 class UserController extends Controller
 {
@@ -1707,9 +1705,8 @@ class UserController extends Controller
         if ($request->has('responses')) {
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
         }
-
         $show_in_chat = $this->userServices->getShowInChat($congress_id);
-        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat'])) {
+        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat']&&$show_in_chat[0]['show_in_chat']!=='null')) {
             $user_congress->chat_info = $user[$show_in_chat[0]['show_in_chat']];
            
         } else {
@@ -2152,5 +2149,4 @@ class UserController extends Controller
 
         
     }
-  
 }

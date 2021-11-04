@@ -1171,6 +1171,11 @@ class UserServices
     {
         return FormInputResponse::where('user_id', '=', $user_id)
             ->where('form_input_id', '=', $form_input_id)
+            ->when($form_input_id == '', function ($query) use ($form_input_id){
+                $query->with(['values'=> function ($q) use ($form_input_id){
+                    $q->where('form_input_id', '=', $form_input_id);
+                }]);
+            })    
             ->get('response');
     }
 
