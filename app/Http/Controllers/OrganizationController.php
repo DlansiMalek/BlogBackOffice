@@ -15,7 +15,7 @@ use App\Services\PrivilegeServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Str;use Illuminate\Support\Facades\Log;
 
 class OrganizationController extends Controller
 {
@@ -124,10 +124,10 @@ class OrganizationController extends Controller
     public function getCongressOrganizations($congress_id , Request $request)
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
-        $admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id);
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
+        $admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id);
         $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id, $admin->email,  $admin_congress->privilege_id);
         return response()->json($organizations);
     }
