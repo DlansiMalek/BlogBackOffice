@@ -31,6 +31,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 use App\Services\MeetingServices;
+use Illuminate\Support\Facades\Log;
 
 
 class UserController extends Controller
@@ -1706,13 +1707,19 @@ class UserController extends Controller
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
         }
         $show_in_chat = $this->userServices->getShowInChat($congress_id);
-        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat']&&$show_in_chat[0]['show_in_chat']!=='null')) {
+        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat'] && $show_in_chat[0]['show_in_chat']!=='null')) {
             $user_congress->chat_info = $user[$show_in_chat[0]['show_in_chat']];
-           
         } else {
-            $form_input_id = $this->userServices->getQuestionByKey($congress_id, $show_in_chat[0]['show_in_chat']);
-            $chat_info =  $this->userServices->getResponseFormInput($user->user_id, $form_input_id[0]['form_input_id']);
-            $user_congress->chat_info = $chat_info[0]['response'];
+            $form_input = $this->userServices->getQuestionByKey($congress_id, $show_in_chat[0]['show_in_chat']);
+            if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 6){
+                $chat_info = $this->userServices->getValueResponse($user->user_id, $form_input->form_input_id);
+                Log::warning($chat_info);
+                $user_congress->chat_info = $chat_info[0]['value'];
+            } else {
+                $chat_info = $this->userServices->getResponseFormInput($user->user_id, $form_input->form_input_id);
+                $user_congress->chat_info = $chat_info[0]['response'];
+            }
+          
         }
         $user_congress->save();
 

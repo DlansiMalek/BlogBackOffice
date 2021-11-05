@@ -1164,18 +1164,24 @@ class UserServices
     {
         return FormInput::where('congress_id', '=', $congress_id)
          ->where('key','=',$key)
-         ->get('form_input_id');
+         ->first();
+    }
+
+    public function getValueResponse($user_id, $form_input_id)
+    {
+        return FormInputResponse::where('user_id', '=', $user_id)
+            ->where('form_input_id', '=', $form_input_id) 
+            ->with(['values' => function ($query) use ($form_input_id){
+                $query ->where('form_input_id', '=', $form_input_id);
+               
+            }]) 
+            ->get();
     }
 
     public function getResponseFormInput($user_id, $form_input_id)
     {
         return FormInputResponse::where('user_id', '=', $user_id)
-            ->where('form_input_id', '=', $form_input_id)
-            ->when($form_input_id == '', function ($query) use ($form_input_id){
-                $query->with(['values'=> function ($q) use ($form_input_id){
-                    $q->where('form_input_id', '=', $form_input_id);
-                }]);
-            })    
+            ->where('form_input_id', '=', $form_input_id)   
             ->get('response');
     }
 
