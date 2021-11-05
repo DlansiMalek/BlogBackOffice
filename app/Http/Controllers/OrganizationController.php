@@ -123,16 +123,12 @@ class OrganizationController extends Controller
 
     public function getCongressOrganizations($congress_id , Request $request)
     {
-        $admin_email = $request->input('email');
-        $admin_privilege = null;
-        if ( $adminByEmail = $this->adminServices->getAdminByMail($admin_email)) {
-          $admin_privilege =  $adminByEmail->privilege_id;
-        }
+        $admin = $this->adminServices->retrieveAdminFromToken();
+        $admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id);
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
-        $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id, $admin_email ,  $admin_privilege );
-
+        $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id, $admin->email,  $admin_congress->privilege_id);
         return response()->json($organizations);
     }
 
