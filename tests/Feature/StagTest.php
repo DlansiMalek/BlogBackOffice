@@ -20,6 +20,7 @@ class StagTest extends TestCase
     public function testgetSTags()
     {
         $congress = factory(Congress::class)->create();
+        $gtag = factory(GSTag::class)->create(['congress_id' => $congress->congress_id]);
         $stag = factory(STag::class)->create(['congress_id' => $congress->congress_id]);
         $response = $this->get('api/congress/' . $congress->congress_id . '/stags/stand-tag-list')
         ->assertStatus(200);
