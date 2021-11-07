@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Congress;
 use App\Models\STag;
+use App\Models\GSTag;
 use Illuminate\Support\Facades\Log;
 
 class StagTest extends TestCase
@@ -29,7 +30,8 @@ class StagTest extends TestCase
     public function testAddTag()
     {
         $congress = factory(Congress::class)->create();
-        $stag = $this->getFakeDataSTag($congress->congress_id);
+        $gtag = factory(GSTag::class)->create(['congress_id' => $congress->congress_id]);
+        $stag = $this->getFakeDataSTag($congress->congress_id, $gtag->gstag_id);
         $response = $this->post('api/congress/' . $congress->congress_id . '/stags/add', $stag)
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
@@ -41,12 +43,13 @@ class StagTest extends TestCase
         $this->assertEquals($stag['congress_id'], $congress->congress_id);
     }
 
-    private function getFakeDataSTag($congress_id)
+    private function getFakeDataSTag($congress_id ,$gstag_id)
     {
         return [
             'congress_id' => $congress_id,
             'label' => $this->faker->word,
-            'gstag_id' => $this->faker->numberBetween(1, 20)
+            'gstag_id' => $gstag_id   
+      
         ];
     }
 
