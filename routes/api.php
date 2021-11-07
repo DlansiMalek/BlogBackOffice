@@ -236,7 +236,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         });
 
         Route::group(['prefix' => 'gstags'], function () {
-            Route::get('stand-groupe-tags/{gstag_id}', 'STagController@getGSTags');
+            Route::get('stand-groupe-tags/{gstag_id}', 'GSTagController@getGTags');
             Route::get('stand-gtag-list', 'GSTagController@getGSTags');
             Route::post('add', 'GSTagController@addGSTag');
         });

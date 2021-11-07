@@ -29,7 +29,7 @@ class STagController extends Controller
         return response()->json($stags);
     }
 
- public function getSTags($congress_id)
+    public function getSTags($congress_id)
     {
         if (!$this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
@@ -38,13 +38,4 @@ class STagController extends Controller
         return response()->json($stags);
     }
 
-
-    public function getGSTags($congress_id , $gstag_id)
-    {
-        if (!$this->congressServices->getCongressById($congress_id)) {
-            return response()->json(['response' => 'Congress not found', 404]);
-        }
-        $gstags = $this->stagServices->getStagByGSTagId($congress_id, $gstag_id);
-        return response()->json($gstags);
-    }
 }

@@ -37,4 +37,13 @@ class GSTagController extends Controller
         $gstags = $this->gstagServices->getGSTags($congress_id);
         return response()->json($gstags);
     }
+
+    public function getGTags($congress_id, $gstag_id)
+    {
+        if (!$this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        $gstags = $this->gstagServices->getStagByGSTagId($congress_id, $gstag_id);
+        return response()->json($gstags);
+    }
 }

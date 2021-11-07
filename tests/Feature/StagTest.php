@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Congress;
 use App\Models\STag;
+use Illuminate\Support\Facades\Log;
 
 class StagTest extends TestCase
 {
@@ -18,8 +19,8 @@ class StagTest extends TestCase
     public function testgetSTags()
     {
         $congress = factory(Congress::class)->create();
-        $stag = factory(STag::class)->create(['congress_id' =>$congress->congress_id]);
-        $response = $this->get('api/congress/' . $congress->congress_id .'/stags/stand-tag-list')
+        $stag = factory(STag::class)->create(['congress_id' => $congress->congress_id]);
+        $response = $this->get('api/congress/' . $congress->congress_id . '/stags/stand-tag-list')
         ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(1, $dataResponse);
@@ -28,18 +29,26 @@ class StagTest extends TestCase
     public function testAddTag()
     {
         $congress = factory(Congress::class)->create();
-        $stag = $this->getStag();
-        $response = $this->post('api/congress/' . $congress->congress_id .'/stags/add', $stag)
-        ->assertStatus(200);
+        $stag = $this->getFakeDataSTag($congress->congress_id);
+        $response = $this->post('api/congress/' . $congress->congress_id . '/stags/add', $stag)
+            ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertEquals($dataResponse[0]['label'], $stag['label']);
-        $this->assertEquals($dataResponse[0]['congress_id'], $congress->congress_id);
+        $sTag = STag::where('stag_id', '=', $dataResponse[0]['stag_id'])
+        ->with(['gtag'])
+        ->first();
+        $this->assertEquals($stag['label'], $sTag->label);
+        $this->assertEquals($stag['gstag_id'], $sTag->gstag_id);
+        $this->assertEquals($stag['congress_id'], $congress->congress_id);
     }
 
-    private function getStag()
+    private function getFakeDataSTag($congress_id)
     {
         return [
-            'label' => $this->faker->word
+            'congress_id' => $congress_id,
+            'label' => $this->faker->word,
+            'gstag_id' => $this->faker->numberBetween(1, 20)
         ];
     }
+
+   
 }
