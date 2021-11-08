@@ -127,27 +127,32 @@ class StandServices
                 $query->where('status', '=', $status);
             }  
         })
-        ->when('stags', function ($query) use ($stag_id) {
-            if ($stag_id!= '' && $stag_id!= null && $stag_id!= 'null') {
-                $query->join('Stand_Tag','Stand_Tag.stand_id', '=','Stand.stand_id')
-                ->where('Stand_Tag.stag_id', '=',$stag_id); 
-            }
-        })
-            ->with(['docs', 'products' , 'organization', 'faq','stags'])
+
+        
+
+            ->with(['docs', 'products', 'organization', 'faq', 'stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
-            ->where('congress_id', '=', $congress_id);   
-            if ($search != "null" && $search!='') {
-               $allStand->Where(function($q) use ($search) {
-                   $q->where('name','LIKE', '%' . $search . '%') ;
-                        } )
-              ->orWhereHas("organization", function ($query) use ($search,$congress_id) {
-                   $query->where('Stand.congress_id', '=', $congress_id)->where('name','LIKE', '%' . $search . '%');
-                   });
-               }
-             
+            ->where('congress_id', '=', $congress_id);
+        if ($search != "null" && $search != '') {
+            $allStand->Where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', '%' . $search . '%');
+            })
+                ->orWhereHas("organization", function ($query) use ($search, $congress_id  ,$stag_id) {
+                    $query->where('Stand.congress_id', '=', $congress_id)-> where('name', 'LIKE', '%' . $search . '%')
+                        ->whereHas("stands", function ($q) use ($stag_id) {
+
+                               $q ->when('stags', function ($qt) use ($stag_id) {
+                                if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
+                                    $qt->join('Stand_Tag', 'Stand_Tag.stand_id', '=', 'Stand.stand_id')
+                                    ->where('Stand_Tag.stag_id', '=', $stag_id);
+                                }
+                            });
+                        });
+                });
+            }     
            return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
     }
-  
+
     public function getCachedStands($congress_id, $page, $perPage ,$search, $stag_id)
     {
         $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
