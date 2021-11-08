@@ -150,7 +150,7 @@ class StandServices
   
     public function getCachedStands($congress_id, $page, $perPage ,$search, $stag_id)
     {
-        $cacheKey = 'stands-' . $congress_id . $page . $perPage . $search . $stag_id;
+        $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);

@@ -15,7 +15,7 @@ class StagTest extends TestCase
      *
      * @return void
      */
-    public function testgetSTags()
+    public function testGetSTags()
     {
         $congress = factory(Congress::class)->create();
         $stag = factory(STag::class)->create(['congress_id' =>$congress->congress_id]);
@@ -32,8 +32,9 @@ class StagTest extends TestCase
         $response = $this->post('api/congress/' . $congress->congress_id .'/stags/add', $stag)
         ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertEquals($dataResponse[0]['label'], $stag['label']);
-        $this->assertEquals($dataResponse[0]['congress_id'], $congress->congress_id);
+        $stagResp = STag::where('stag_id', '=', $dataResponse['0']['stag_id'])->first();
+        $this->assertEquals($stagResp->label, $stag['label']);
+        $this->assertEquals($stagResp->congress_id, $congress->congress_id);
     }
 
     private function getStag()
