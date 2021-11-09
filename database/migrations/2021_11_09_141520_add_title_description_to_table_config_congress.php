@@ -25,7 +25,7 @@ class AddTitleDescriptionToTableConfigCongress extends Migration
      */
     public function down()
     {
-        Schema::table('table_config_congress', function (Blueprint $table) {
+        Schema::table('Config_Congress', function (Blueprint $table) {
             $table->removeColumn('title_description');
         });
     }
