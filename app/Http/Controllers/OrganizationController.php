@@ -15,7 +15,7 @@ use App\Services\PrivilegeServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class OrganizationController extends Controller
 {
@@ -53,11 +53,13 @@ class OrganizationController extends Controller
     }
 
     public function addOrganization($congress_id, Request $request)
-    {;
+    {
         if (!$request->has(['name'])) {
             return response()->json(["message" => "invalid request", "required inputs" => ['name']], 404);
         }
-
+        if ($org = $this->organizationServices->getOrganizationByNameAndCongressAndEmail($request->input('name'), $request->input('email'), $congress_id)) {
+            return response()->json(["message" => "organization already exist"], 404);
+        }
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }

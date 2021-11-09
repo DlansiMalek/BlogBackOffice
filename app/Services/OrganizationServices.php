@@ -133,4 +133,12 @@ class OrganizationServices
             ->whereRaw('lower(name) like (?)', ["{$organization_name}"])
             ->first();
     }
+    public function getOrganizationByNameAndCongressAndEmail($organization_name, $organization_email, $congress_id)
+    {
+        return Organization::with(['admin'])
+        ->where('congress_id', '=', $congress_id)
+            ->whereRaw('lower(name) like (?)', ["{$organization_name}"])
+            ->whereRaw('lower(email) like (?)', ["{$organization_email}"])
+            ->first();
+    }
 }
