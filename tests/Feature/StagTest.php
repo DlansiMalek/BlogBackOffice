@@ -17,7 +17,7 @@ class StagTest extends TestCase
      *
      * @return void
      */
-    public function testgetSTags()
+    public function testGetSTags()
     {
         $congress = factory(Congress::class)->create();
         $gtag = factory(GSTag::class)->create(['congress_id' => $congress->congress_id]);
@@ -36,12 +36,10 @@ class StagTest extends TestCase
         $response = $this->post('api/congress/' . $congress->congress_id . '/stags/add', $stag)
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $sTag = STag::where('stag_id', '=', $dataResponse[0]['stag_id'])
-        ->with(['gtag'])
-        ->first();
-        $this->assertEquals($stag['label'], $sTag->label);
-        $this->assertEquals($stag['gstag_id'], $sTag->gstag_id);
-        $this->assertEquals($stag['congress_id'], $congress->congress_id);
+        $stagResp = STag::where('stag_id', '=', $dataResponse['0']['stag_id'])->with(['gtag'])->first();
+        $this->assertEquals($stagResp->label, $stag['label']);
+        $this->assertEquals($stagResp->gstag_id, $gtag->gstag_id);
+        $this->assertEquals($stagResp->congress_id, $congress->congress_id);
     }
 
     private function getFakeDataSTag($congress_id ,$gstag_id)
