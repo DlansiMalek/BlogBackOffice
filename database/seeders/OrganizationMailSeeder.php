@@ -26,8 +26,8 @@ class OrganizationMailSeeder extends Seeder
             <li>
             Lien:{{$linkBackOffice}}
             </li>
-            <li>Login:{{$admin-&gt;email}} </li>
-            <li>Password:{{$admin-&gt;passwordDecrypt}}</li>
+            <li>Login: {{$admin-&gt;email}} </li>
+            <li>Password: {{$admin-&gt;passwordDecrypt}}</li>
             </ul>
             <p><br></p>
             <p>En cas de besoin, vous pouvez joindre le support technique de la plateforme Eventizer par email:</p>

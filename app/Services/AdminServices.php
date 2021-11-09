@@ -327,23 +327,15 @@ class AdminServices
         return $personnel;
     }
 
-    public function editPersonnel($admin, $request = null)
+    public function editPersonnel($admin, $oldAdmin)
     {
-        if ($request) {
-            return  Admin::where("admin_id", "=", $admin['admin_id'])
-            ->update([
-                'name' => $request->input('name'),
-                'email' =>  $request->input('email'),
-                'mobile' => $request->input('mobile')
-            ]);
-        }
-        return Admin::where("admin_id", "=", $admin['admin_id'])
-        ->update([
-            'name' => $admin["name"],
-            'email' => $admin["email"],
-            'mobile' => $admin["mobile"]
-        ]);
+        $oldAdmin->name = $admin["name"];
+        $oldAdmin->email = $admin["email"];
+        $oldAdmin->mobile = $admin["mobile"];
+        $oldAdmin->update();
+        return $oldAdmin;
     }
+
 
     public function deleteAdminById($admin)
     {

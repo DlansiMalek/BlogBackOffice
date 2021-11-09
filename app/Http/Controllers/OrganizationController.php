@@ -57,9 +57,6 @@ class OrganizationController extends Controller
         if (!$request->has(['name'])) {
             return response()->json(["message" => "invalid request", "required inputs" => ['name']], 404);
         }
-        if ($org = $this->organizationServices->getOrganizationByNameAndCongressAndEmail($request->input('name'), $request->input('email'), $congress_id)) {
-            return response()->json(["message" => "organization already exist"], 404);
-        }
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
@@ -84,29 +81,31 @@ class OrganizationController extends Controller
         } 
         $privilegeId = 7;
         $password = Str::random(8);
-        if (!($admin = $this->adminServices->getAdminByLogin($organization->email))) {
+        if (!($old_admin = $this->adminServices->getAdminByLogin($organization->email))) {
             $admin = $this->adminServices->addPersonnel($request, $password);
-            $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin(
-                $privilegeId,
-                $admin->admin_id,
-                $congress_id
-            );
+            $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
         } else {
-            $admin = $this->adminServices->editPersonnel($admin, $request);
+            $admin = $this->adminServices->editPersonnel($request, $old_admin);
+            if (!$admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin->admin_id, $congress_id)) {
+                $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
+            }
         }
         if (!$user = $this->userServices->getUserByEmail($organization->email)) {
             $admin= Utils::explodeString($admin);
             $user = $this->userServices->addUserFromExcel($admin, $password);
-            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, $organization->organization_id, null);
         } else {
             if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
-                $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+                $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, $organization->organization_id, null);
             }
         }
+        $linkBackOffice = UrlUtils::getUrlEventizerWeb();
         if ($mailtype = $this->congressServices->getMailType('organization')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                if (!$request->has('organization_id')) {
-                    $this->adminServices->sendMail($this->congressServices->renderMail($mail->template, $congress, null, null, $organization, null), $congress, $mail->object, $admin, null);
+                $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
+            } else {
+                if ($mail = $this->congressServices->getMailOutOfCongress($mailtype->mail_type_id)) {
+                    $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
                 }
             }
         }
