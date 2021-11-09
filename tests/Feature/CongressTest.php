@@ -323,8 +323,8 @@ class CongressTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $data = collect($dataResponse['data'])->sortBy('congress_id')->reverse()->values();
         $this->assertEquals($data[0]['name'], $congress->name);
-        $this->assertEquals($data[0]['start_date'], $congress->start_date);
-        $this->assertEquals($data[0]['end_date'], $congress->end_date->format('Y-m-d'));
+        $this->assertEquals($data[0]['start_date'], new DateTime($congress->start_date));
+        $this->assertEquals($data[0]['end_date'],new DateTime($congress->end_date));
         $this->assertEquals($data[0]['price'], $congress->price);
         $this->assertEquals($data[0]['congress_type_id'], $congress->congress_type_id);
         $this->assertEquals($data[0]['description'], $congress->description);
