@@ -62,6 +62,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MailAdminSeedTable::class);
         $this->call(MailContactUsSeeder::class);
         $this->call(UserMailAdminSeeder::class);
+        $this->call(OrganizationMailSeeder::class);
 
         $this->call(LikeSeedTable::class);
         $this->call(ResourceSeeder::class);

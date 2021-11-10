@@ -82,7 +82,7 @@ class OrganizationServices
     public function getOrganizationsByCongressId($congressId, $admin_email = null, $privilege_id = null)
     {
         return  Organization::with(['admin'])->where('congress_id', '=', $congressId)->where(function ($query) use ($admin_email, $privilege_id) {
-            if ($admin_email && $privilege_id == 7) $query->where('email', '=', $admin_email);
+            if ($admin_email && $privilege_id == config('privilege.Organisme')) $query->where('email', '=', $admin_email);
         })->get();
     }
 

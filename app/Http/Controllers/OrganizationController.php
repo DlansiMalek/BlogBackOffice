@@ -81,6 +81,7 @@ class OrganizationController extends Controller
         } 
         $privilegeId = 7;
         $password = Str::random(8);
+        if ($request->has('email')) {
         if (!($old_admin = $this->adminServices->getAdminByLogin($organization->email))) {
             $admin = $this->adminServices->addPersonnel($request, $password);
             $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
@@ -108,6 +109,7 @@ class OrganizationController extends Controller
                     $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
                 }
             }
+        }
         }
         return response()->json($this->organizationServices->getOrganizationById($organization->organization_id));
     }
