@@ -65,12 +65,12 @@ docker-package:
     - IMAGE_NAME_GCP="$GCP_REGISTRY/$CI_PROJECT_NAME:app-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GCP" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
-    - docker push "$IMAGE_NAME_GCP"
+    #- docker push "$IMAGE_NAME_GCP"
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
     - IMAGE_NAME_GCP="$GCP_REGISTRY/$CI_PROJECT_NAME:web-$CI_COMMIT_REF_NAME"
     - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GCP"  -f docker/web.docker .
     - docker push "$IMAGE_NAME"
-    - docker push "$IMAGE_NAME_GCP"
+    #- docker push "$IMAGE_NAME_GCP"
 
 docker-package-feat:
   stage: package-manual
@@ -111,7 +111,7 @@ ansible-deploy-prod-gke:
   stage: deploy
   image: google/cloud-sdk
   only:
-    - master
+    - master_ignore
   before_script:
     - gcloud auth activate-service-account --key-file ${GCP_AUTH}
     - gcloud --quiet config set project ${GCP_PROJECT}
