@@ -1003,8 +1003,11 @@ class UserController extends Controller
 
                     }
                     $organizationId = !$organizationExist ? $request->input("organisationId") : $organizationExist->organization_id;
-                    $payment_status = strtolower($userData['paiement']);
-                    $isPaid = $payment_status == 'oui' ? 1 : 0;
+                    $isPaid = 0;
+                    if (isset($userData['paiement'])) {
+                        $payment_status = strtolower($userData['paiement']);
+                        $isPaid = $payment_status == 'oui' ? 1 : 0;
+                    }                    
                     if (!$user_congress) {
                         if ($accessNotInRegister) {
                             $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
