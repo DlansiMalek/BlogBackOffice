@@ -4,6 +4,7 @@ namespace App\Services;
 
 
 use App\Models\Meeting;
+use App\Models\MeetingTab;
 use App\Models\UserMeeting;
 use Illuminate\Support\Facades\Log;
 
@@ -103,5 +104,13 @@ class MeetingServices
         $user_meeting->status = -1;
         $user_meeting->save();
         return $user_meeting;
+    }
+
+    public function addMeetingTable($meetingtable, $label)
+    {
+          
+        $meetingtable->label       = $label;
+        $meetingtable->save();
+        return $meetingtable;
     }
 }

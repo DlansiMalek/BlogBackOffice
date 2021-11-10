@@ -522,6 +522,7 @@ class CongressServices
         $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->agora_primary_background = $configCongressRequest['agora_primary_background'];
         $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
+        $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->update();
 
         return $configCongress;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\MeetingTab;
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
@@ -31,7 +31,8 @@ use App\Services\TrackingServices;
 use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage;use Illuminate\Support\Facades\Log;
+use App\Services\MeetingServices;
 
 class CongressController extends Controller
 {
@@ -53,6 +54,7 @@ class CongressController extends Controller
     protected $standServices;
     protected $trackingServices;
     protected $fmenuServices;
+    protected $meetingServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -69,7 +71,8 @@ class CongressController extends Controller
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices,
                          TrackingServices $trackingServices,
-                         FMenuServices $fmenuServices )
+                         FMenuServices $fmenuServices,
+                         MeetingServices $meetingServices )
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -88,6 +91,7 @@ class CongressController extends Controller
         $this->standServices = $standServices;
         $this->trackingServices = $trackingServices;
         $this->fmenuServices = $fmenuServices;
+        $this->meetingServices = $meetingServices;
     }
 
 
@@ -274,7 +278,16 @@ class CongressController extends Controller
         }
 
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
-
+        if ($request->input("congress")['nb_meeting_table'] != 0) {
+            Log::warning($request);
+            $i = 0;
+            do {
+                $meetingtable = new MeetingTab();
+                $label="Table ".$i;
+                $MeetTable = $this->meetingServices->addMeetingTable($meetingtable, $label);
+                $i++;
+            } while ($i < $request->input("congress")['nb_meeting_table']);
+        }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
