@@ -317,14 +317,14 @@ class CongressTest extends TestCase
 
     public function testgetCongressPagination()
     {
-        $congress = factory(Congress::class)->create(['start_date' => date("Y-m-d")]);
+        $congress = factory(Congress::class)->create();
         $config_congress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
         $response = $this->get('api/congress/list/pagination?perPage=100')->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
         $data = collect($dataResponse['data'])->sortBy('congress_id')->reverse()->values();
         $this->assertEquals($data[0]['name'], $congress->name);
-        $this->assertEquals($data[0]['start_date'], new DateTime($congress->start_date));
-        $this->assertEquals($data[0]['end_date'],new DateTime($congress->end_date));
+        $this->assertEquals($data[0]['start_date'], $congress->start_date);
+        $this->assertEquals($data[0]['end_date'],$congress->end_date);
         $this->assertEquals($data[0]['price'], $congress->price);
         $this->assertEquals($data[0]['congress_type_id'], $congress->congress_type_id);
         $this->assertEquals($data[0]['description'], $congress->description);
