@@ -1007,29 +1007,33 @@ class UserController extends Controller
                     if (isset($userData['paiement'])) {
                         $payment_status = strtolower($userData['paiement']);
                         $isPaid = $payment_status == 'oui' ? 1 : 0;
+                    } 
+                    $isSelected = 0;
+                    if (isset($userData['statut'])) {
+                        $status = strtolower($userData['statut']);
+                        if ($status == 'accepted')
+                            $isSelected = 1;
+                        if ($status == 'refused')
+                            $isSelected = -1;
                     }                    
                     if (!$user_congress) {
                         if ($accessNotInRegister) {
                             $this->userServices->affectAccessIds($user->user_id, $accessNotInRegister);
                         }
-                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $organizationId, $request->input('pack_id'));
+                        $user_congress = $this->userServices->saveUserCongress($congressId, $user->user_id, $request->input('privilege_id'), $organizationId, $request->input('pack_id'), $isSelected);
                         if ($congress->congress_type_id == 1) { // If event type payed affect payment user
                             $payment = $this->paymentServices->affectPaymentToUser($user->user_id, $congressId, 0, false, $isPaid);
-                            if ($payment->isPaid == 1) {
-                                $user_congress->isSelected = 1;
-                                $user_congress->update();
-                            }
                         }
                     } else {
                         if ($isPaid == 1) {
                             if ($userPayment = $this->userServices->getPaymentByUserId($congressId, $user->user_id)) {
                                 $userPayment->isPaid = 1;
                                 $userPayment->update();
-                                $user_congress->isSelected = 1;
                             }
                         }
                         $user_congress->privilege_id = $privilegeId;
                         $user_congress->organization_id = $organizationId;
+                        $user_congress->isSelected = $isSelected;
                         $user_congress->update();
                     }
 
