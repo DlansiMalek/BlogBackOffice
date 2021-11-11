@@ -68,6 +68,11 @@ class Congress extends Model
         return $this->belongsToMany('App\Models\Admin', 'Admin_Congress', 'congress_id', 'admin_id');
     }
 
+    public function stags()
+    {
+        return $this->hasMany('App\Models\STag',  'stag_id', 'congress_id');
+    }
+
     public function payments()
     {
         return $this->hasMany('App\Models\Payment', 'congress_id', 'congress_id');
