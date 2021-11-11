@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 
-class MeetingTab extends Model
+class MeetingTable extends Model
 {
 
     protected $table = 'Meeting_Table';
@@ -15,5 +15,8 @@ class MeetingTab extends Model
     public $timestamps = true;
     protected $dates = ['created_at', 'updated_at'];
 
+    function meetings() {
+        return $this->hasMany(Meeting::class,'meeting_table_id','meeting_table_id');
+    }
 
 }

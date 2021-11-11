@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MeetingTab;
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
@@ -279,14 +278,14 @@ class CongressController extends Controller
 
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
         if ($request->input("congress")['nb_meeting_table'] != 0) {
-            Log::warning($request);
-            $i = 0;
-            do {
-                $meetingtable = new MeetingTab();
-                $label="Table ".$i;
-                $MeetTable = $this->meetingServices->addMeetingTable($meetingtable, $label);
-                $i++;
-            } while ($i < $request->input("congress")['nb_meeting_table']);
+            $meetingtables = $this->meetingServices->deleteMeetingTablesWithNoMeeting($congressId);
+            for ($i = 1; $i <= $request->input("congress")['nb_meeting_table']; $i++) {
+                $label = "Table " . $i;
+                $MeetTable = $this->meetingServices->addMeetingTable($label, $congressId);
+            }
+            foreach ($meetingtables as $table) {
+                $meetingtables = $this->meetingServices->removeDuplicatesMeetingTable($table->label, $congressId);
+            } 
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");

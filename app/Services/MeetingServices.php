@@ -4,7 +4,7 @@ namespace App\Services;
 
 
 use App\Models\Meeting;
-use App\Models\MeetingTab;
+use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use Illuminate\Support\Facades\Log;
 
@@ -106,11 +106,33 @@ class MeetingServices
         return $user_meeting;
     }
 
-    public function addMeetingTable($meetingtable, $label)
+    public function addMeetingTable($label, $congress_id)
     {
-          
-        $meetingtable->label       = $label;
+        $meetingtable = new MeetingTable();
+        $meetingtable->label = $label;
+        $meetingtable->congress_id = $congress_id; 
         $meetingtable->save();
         return $meetingtable;
+    }
+
+    public function getMeetingTablesByCongressId($congress_id)
+    {
+        return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function deleteMeetingTablesWithNoMeeting($congress_id)
+    {
+        $deleteMeetings = MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->delete();
+        return $this->getMeetingTablesByCongressId($congress_id);
+    }
+
+    public function getAvailableMeetingTable($congress_id)
+    {
+        return MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->first();
+    }
+
+    public function removeDuplicatesMeetingTable($label, $congress_id)
+    {
+        return MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->where('label', '=', $label)->delete();
     }
 }
