@@ -80,7 +80,7 @@ class MeetingController extends Controller
   }
 
   function modiyStatus(Request $request)
-  {
+  { 
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
     $user_receiver = $this->userServices->getUserById($request->input('user_received_id'));
 
@@ -101,6 +101,16 @@ class MeetingController extends Controller
       $verification_code = $request->input('verification_code');
       if (!$user_sender->verification_code == $verification_code) {
         return response()->json(['response' => 'No verification code found'], 401);
+      }
+    }
+    if ($status == 1) {
+      $date =  $meeting->start_date;
+      $meetingtable = $this->meetingServices->getAvailableMeetingTable($date, $request->input('congress_id'));
+      if ($meetingtable) {
+        $meeting = $this->meetingServices->addTableToMeeting($meeting, $meetingtable->meeting_table_id);
+      } else {
+        $status = -1;
+        $request['status'] = -1;
       }
     }
     $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request);

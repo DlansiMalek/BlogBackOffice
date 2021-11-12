@@ -6,7 +6,6 @@ namespace App\Services;
 use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
-use Illuminate\Support\Facades\Log;
 
 
 
@@ -126,13 +125,21 @@ class MeetingServices
         return $this->getMeetingTablesByCongressId($congress_id);
     }
 
-    public function getAvailableMeetingTable($congress_id)
+    public function getAvailableMeetingTable($date, $congress_id)
     {
-        return MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->first();
+        return MeetingTable::whereDoesntHave('meetings', function ($query) use ($date) {
+            $query->where('start_date', '=', $date);
+        })->where('congress_id', '=', $congress_id)->first();
     }
-
+ 
     public function removeDuplicatesMeetingTable($label, $congress_id)
     {
         return MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->where('label', '=', $label)->delete();
+    }
+
+    public function addTableToMeeting($meeting, $meetingtable_id){
+        $meeting->meeting_table_id = $meetingtable_id;
+        $meeting->save();
+        return $meeting;
     }
 }

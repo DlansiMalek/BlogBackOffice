@@ -14,7 +14,7 @@ class AddColumnMeetingTableNumberToConfigCongressTable extends Migration
     public function up()
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
-            $table->integer('nb_meeting_table')->default(10);
+            $table->integer('nb_meeting_table')->default(0)->nullable();;
         });
     }
 
