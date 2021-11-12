@@ -13,7 +13,7 @@ class AddColumnMeetingTableIdToMeetingTable extends Migration
      */
     public function up()
     {
-        Schema::table('meeting', function (Blueprint $table) {
+        Schema::table('Meeting', function (Blueprint $table) {
             $table->unsignedInteger('meeting_table_id')->nullable()->default(null);
             $table->foreign('meeting_table_id')->references('meeting_table_id')->on('Meeting_Table');
         });
@@ -26,7 +26,7 @@ class AddColumnMeetingTableIdToMeetingTable extends Migration
      */
     public function down()
     {
-        Schema::table('meeting', function (Blueprint $table) {
+        Schema::table('Meeting', function (Blueprint $table) {
             $table->dropForeign(['meeting_table_id']);
             $table->removeColumn('meeting_table_id');
         });
