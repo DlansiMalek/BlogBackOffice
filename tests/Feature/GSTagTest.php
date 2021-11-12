@@ -33,8 +33,9 @@ class GSTagTest extends TestCase
         $response = $this->post('api/congress/' . $congress->congress_id . '/gstags/add', $gstag)
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertEquals($dataResponse[0]['label'], $gstag['label']);
-        $this->assertEquals($dataResponse[0]['congress_id'], $congress->congress_id);
+        $gstagResp = GSTag::where('gstag_id', '=', $dataResponse['0']['gstag_id'])->first();
+        $this->assertEquals($gstagResp->label, $gstag['label']);
+        $this->assertEquals($gstagResp->congress_id, $congress->congress_id);
     }
 
     private function getGStag()

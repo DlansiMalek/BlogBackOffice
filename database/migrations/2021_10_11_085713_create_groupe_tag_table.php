@@ -30,6 +30,8 @@ class CreateGroupeTagTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('GSTag');
+        Schema::table('GSTag', function (Blueprint $table) { 
+            $table->dropForeign('congress_id');
+         });
     }
 }
