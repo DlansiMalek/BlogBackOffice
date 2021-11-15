@@ -821,7 +821,7 @@ class CongressServices
 
     public function getMailOutOfCongress($mail_type_id)
     {
-        return Mail::where('mail_type_id', '=', $mail_type_id)->first();
+        return Mail::where('mail_type_id', '=', $mail_type_id)->whereNull('congress_id')->first();
     }
 
     public function getMailById($id)
