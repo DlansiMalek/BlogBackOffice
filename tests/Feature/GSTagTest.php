@@ -45,13 +45,4 @@ class GSTagTest extends TestCase
         ];
     }
 
-    public function testGetStagByGTagId()
-    {
-        $congress = factory(Congress::class)->create();
-        $gstag = factory(GSTag::class)->create(['congress_id' => $congress->congress_id]);
-        $stag = factory(STag::class)->create(['congress_id' => $congress->congress_id ,'gstag_id' => $gstag->gstag_id  ]);
-        $response = $this->get('api/congress/' . $congress->congress_id . '/gstags/stand-groupe-tags/' . $gstag->gstag_id)
-        ->assertStatus(200);
-    }
-
 }

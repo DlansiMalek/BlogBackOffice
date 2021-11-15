@@ -16,7 +16,6 @@ class STagServices
     public function getSTags($congress_id)
     {
         return STag::where('congress_id', '=', $congress_id)
-            ->with(['gtag'])
             ->get();
     }
 
