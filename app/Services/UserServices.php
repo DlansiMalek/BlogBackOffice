@@ -1166,12 +1166,13 @@ class UserServices
             ->get();
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id)
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id, $isSelected = 0)
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
         $user_congress->privilege_id = $privilege_id;
+        $user_congress->isSelected = $isSelected;
 
         if ($organization_id)
             $user_congress->organization_id = $organization_id;
