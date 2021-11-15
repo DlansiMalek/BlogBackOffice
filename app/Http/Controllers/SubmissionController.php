@@ -361,13 +361,12 @@ class SubmissionController extends Controller
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
         $congress = $this->congressServices->getCongressById($congress_id);
         if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
-                );
-            }
+            // TODO verify existance mail per submission
+            // $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+            $this->mailServices->sendMail(
+                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
+            );
         }
 
         return response()->json(['response' => 'Submission status changed'], 201);

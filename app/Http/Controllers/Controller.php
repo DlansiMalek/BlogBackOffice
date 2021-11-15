@@ -229,3 +229,14 @@ SELECT User.user_id, first_name, last_name, passwordDecrypt from User
 INNER JOIN User_Congress ON User_Congress.user_id = User.user_id
 WHERE User_Congress.congress_id = 397
 */
+
+/*
+
+Get credentiels admin for specefic congress
+
+SELECT `email` , `passwordDecrypt` 
+FROM `Admin`
+INNER JOIN Admin_Congress ON Admin_Congress.admin_id = Admin.admin_id
+WHERE congress_id = 384
+
+*/
