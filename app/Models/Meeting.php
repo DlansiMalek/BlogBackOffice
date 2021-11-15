@@ -19,4 +19,9 @@ class Meeting extends Model
     {
         return $this->hasMany(UserMeeting::class, 'meeting_id', 'meeting_id');
     }
+
+    public function meetingtable()
+    {
+        return $this->hasOne(MeetingTable::class, 'meeting_table_id', 'meeting_table_id');
+    }
 }

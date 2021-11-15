@@ -47,7 +47,7 @@ class MeetingServices
     }
     public function getMeetingByUserId($user_id, $congress_id)
     {
-        return Meeting::with(['user_meeting' => function ($query) {
+        return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
             $query->with(['organizer', 'participant']);
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
