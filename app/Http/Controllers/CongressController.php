@@ -30,7 +30,7 @@ use App\Services\TrackingServices;
 use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Services\MeetingServices;
 
 class CongressController extends Controller
@@ -275,7 +275,10 @@ class CongressController extends Controller
                 $loggedadmin->name
             );
         }
-
+        $reservedMeetingTables = $this->meetingServices->countUsedMeetingTablesByCongressId($congressId);
+        if ($reservedMeetingTables  > $request->input("congress")['nb_meeting_table']) {
+            return response()->json(['error' => 'Insufficient tables'], 405);
+        }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
         if ($request->input("congress")['nb_meeting_table'] != 0) {
             $meetingtables = $this->meetingServices->deleteMeetingTablesWithNoMeeting($congressId);
@@ -283,9 +286,11 @@ class CongressController extends Controller
                 $label = "Table " . $i;
                 $MeetTable = $this->meetingServices->addMeetingTable($label, $congressId);
             }
+            if (count($meetingtables) != 0) {
             foreach ($meetingtables as $table) {
                 $meetingtables = $this->meetingServices->removeDuplicatesMeetingTable($table->label, $congressId);
-            } 
+                }
+            }
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");

@@ -16,7 +16,7 @@ class CreateTableMeetingTable extends Migration
         Schema::create('Meeting_Table', function (Blueprint $table) {
             $table->increments('meeting_table_id');
             $table->string('label');
-            $table->unsignedInteger('congress_id')->nullable()->default(null);
+            $table->unsignedInteger('congress_id');
             $table->foreign('congress_id')->references('congress_id')->on('Congress')->onDelete('cascade');
             $table->timestamps();
         });

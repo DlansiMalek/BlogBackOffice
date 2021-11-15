@@ -135,6 +135,7 @@ class MeetingController extends Controller
         }
       }
     } else {
+      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);  
       if ($mailtype = $this->congressServices->getMailType('decline_meeting')) {
         $this->sendDeclineMail($congress, $mailtype, $user_sender, $meeting, $user_receiver);
       }
@@ -142,6 +143,9 @@ class MeetingController extends Controller
     if ($request->has('verification_code')) {
       $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
       return redirect($linkFrontOffice);
+    }
+    if ($status == -1) {
+      return response()->json(['error' => 'Insufficient tables'], 405);
     }
     return response()->json($meeting, 200);
   }

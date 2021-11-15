@@ -114,6 +114,11 @@ class MeetingServices
         return $meetingtable;
     }
 
+    public function countUsedMeetingTablesByCongressId($congress_id)
+    {
+        return MeetingTable::whereHas('meetings')->where('congress_id', '=', $congress_id)->count();
+    }
+
     public function getMeetingTablesByCongressId($congress_id)
     {
         return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->get();
@@ -139,6 +144,12 @@ class MeetingServices
 
     public function addTableToMeeting($meeting, $meetingtable_id){
         $meeting->meeting_table_id = $meetingtable_id;
+        $meeting->save();
+        return $meeting;
+    }
+
+    public function removeTableFromMeeting($meeting){
+        $meeting->meeting_table_id = null;
         $meeting->save();
         return $meeting;
     }
