@@ -317,7 +317,7 @@ class CongressTest extends TestCase
 
     public function testgetCongressPagination()
     {
-        $congress = factory(Congress::class)->create();
+        $congress = factory(Congress::class)->create(['start_date' => date("Y-m-d")]);
         $config_congress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
         $response = $this->get('api/congress/list/pagination?perPage=100')->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
