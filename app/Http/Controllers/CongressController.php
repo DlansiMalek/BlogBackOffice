@@ -1177,4 +1177,45 @@ class CongressController extends Controller
         return response()->json($participants, 200);
     }
 
+    public function sendSpecificMailToAllParticipants($congressId, $mailId)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+            return response()->json(['error' => 'congress not found'], 404);
+        }
+        if (!$mail = $this->congressServices->getMailById($mailId)) {
+            return response()->json(['error' => 'mail not found'], 404);
+        }
+        $mailId = $mail->mail_id;
+        $users = $this->userServices->getUsersWithRelations(
+            $congressId,
+            [
+                'accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }, 'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }
+            ],
+            null
+        );
+        foreach ($users as $user) {
+            $userMail = null;
+            if (sizeof($user->user_mails) == 0) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+            } else {
+                $userMail = $user->user_mails[0];
+            }
+            if (Utils::isValidStatus($userMail)) {
+                $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/validate/' . $user->verification_code;
+                $this->mailServices->sendMail(
+                    $this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false, $userMail
+                );
+            }
+        }
+        return response()->json(['message' => 'send mail successs']);
+    }   
 }
