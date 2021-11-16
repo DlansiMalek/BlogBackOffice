@@ -31,7 +31,6 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Services\MeetingServices;
-use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
