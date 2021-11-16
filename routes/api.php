@@ -394,7 +394,6 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                     Route::get('send-mail-all-attestations', 'CongressController@sendMailAllParticipantsAttestation');
                     Route::get('send-mails-all-attestations-submissions', 'SubmissionController@sendMailAttestationAllSubmission');
                     Route::get('send-mail-all-sondage', 'CongressController@sendMailAllParticipantsSondage');
-                    Route::get('send-mail-all-specific/{mailId}', 'CongressController@sendSpecificMailToAllParticipants');
                 });
                 Route::post('edit-config', 'CongressController@editConfigCongress');
                 Route::get('edit-status/{status}', 'CongressController@editStatus');

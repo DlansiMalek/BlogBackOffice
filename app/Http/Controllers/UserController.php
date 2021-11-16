@@ -485,7 +485,7 @@ class UserController extends Controller
             $user->email_verified = 1;
             $user->update();
 
-            $url = $source == 'frontoffice' ? UrlUtils::getBaseUrlFrontOffice() . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId : UrlUtils::getUrlEventizerWeb() . "/#/auth/user/" . $user->user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId;            
+            $url = $source == 'frontoffice' ? UrlUtils::getPaymentLinkFrontoffice(UrlUtils::getBaseUrlFrontOffice(), $token, $congressId) : UrlUtils::getPaymentLinkBackoffice(UrlUtils::getUrlEventizerWeb(), $user->user_id, $token, $congressId);            
             return  response()->redirectTo($url);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
