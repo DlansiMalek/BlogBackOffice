@@ -474,17 +474,19 @@ class UserController extends Controller
 
     }
 
-    public function validateUserAccount($userId = null, $congressId = null, $token = null)
+    public function validateUserAccount($userId = null, $congressId = null, $token = null, Request $request)
     {
         $user = $this->userServices->getUserById($userId);
         if (!$user) {
             return response()->json(['response' => 'Votre compte à été supprimé'], 404);
         }
+        $source = $request->query('source', '');
         if ($token == $user->verification_code) {
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId);
+            $url = $source == 'frontoffice' ? UrlUtils::getPaymentLinkFrontoffice(UrlUtils::getBaseUrlFrontOffice(), $token, $congressId) : UrlUtils::getPaymentLinkBackoffice(UrlUtils::getUrlEventizerWeb(), $user->user_id, $token, $congressId);            
+            return  response()->redirectTo($url);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -1756,7 +1758,8 @@ class UserController extends Controller
             }
         }
         // Sending Mail
-        $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+        $source = $request->query('source', '');
+        $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code . '?source=' . $source;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
 
