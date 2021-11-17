@@ -24,7 +24,7 @@ class OrganizationMailSeeder extends Seeder
             Vous trouverez ci-dessous le lien d’accès ainsi que vos informations d’authentification :</p>
             <ul>
             <li>
-            Lien:{{$linkBackOffice}}
+            Lien: <a href="{{$linkBackOffice}}" rel="noopener noreferrer" target="_blank">{{$linkBackOffice}}</a>
             </li>
             <li>Login: {{$admin-&gt;email}} </li>
             <li>Password: {{$admin-&gt;passwordDecrypt}}</li>

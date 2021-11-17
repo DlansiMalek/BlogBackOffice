@@ -505,6 +505,7 @@ class AdminServices
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+        $template = str_replace('{{$admin-&gt;password}}', '{{$admin->passwordDecrypt}}', $template);
         $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);
