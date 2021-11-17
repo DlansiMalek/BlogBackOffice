@@ -27,8 +27,8 @@ class UpdateCongressTable extends Migration
     public function down()
     {
         Schema::table('Congress', function (Blueprint $table) {
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->date('start_date')->change();
+            $table->date('start_date')->change();
         });
     }
 }
