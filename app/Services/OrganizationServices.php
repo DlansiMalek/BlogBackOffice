@@ -12,7 +12,7 @@ use App\Models\AdminCongress;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+
 
 class OrganizationServices
 {
@@ -23,7 +23,7 @@ class OrganizationServices
 
     public function getOrganizationById($organization_id, $congress_id = null)
     {
-        return Organization::with(['admin'])
+        return Organization::with(['admin','stands'])
             ->find($organization_id);
     }
 
@@ -73,10 +73,17 @@ class OrganizationServices
             ->first();
     }
 
-    public function getOrganizationsByCongressId($congressId)
+    public function getOrganizationByNameAndEmailInCongress($name, $email, $congressId)
     {
-        return Organization::with(['admin'])->where('congress_id', '=', $congressId)
-            ->get();
+        $email = strtolower($email);
+        return Organization::whereRaw('lower(name) like (?)', ["{$name}"])->whereRaw('lower(email) like (?)', ["{$email}"])->where('congress_id', '=', $congressId)->first();
+    }
+
+    public function getOrganizationsByCongressId($congressId, $admin_email = null, $privilege_id = null)
+    {
+        return  Organization::with(['admin'])->where('congress_id', '=', $congressId)->where(function ($query) use ($admin_email, $privilege_id) {
+            if ($admin_email && $privilege_id == config('privilege.Organisme')) $query->where('email', '=', $admin_email);
+        })->get();
     }
 
     public function getAllUserByOrganizationId($organizationId, $congressId)
