@@ -32,5 +32,6 @@ class UpdateStagTable extends Migration
             $table->dropForeign(['gstag_id']);
             $table->removeColumn(['gstag_id']);
         });
+        Schema::dropIfExists('GSTag');
     }
 }
