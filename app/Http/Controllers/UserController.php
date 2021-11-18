@@ -2126,4 +2126,14 @@ class UserController extends Controller
             200
         );
     }
+
+    public function getAllUsersByCongressPWAWithPagination($congress_id,Request $request)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = Str::lower($request->query('search', ''));
+        $user = $this->userServices->retrieveUserFromToken();         
+
+        $users = !$user ? $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, null) : $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $user->user_id);
+        return response()->json($users);
+    }
 }
