@@ -107,11 +107,11 @@ class MeetingServices
 
     public function addMeetingTable($label, $congress_id)
     {
-        $meetingtable = new MeetingTable();
-        $meetingtable->label = $label;
-        $meetingtable->congress_id = $congress_id; 
-        $meetingtable->save();
-        return $meetingtable;
+        $meeting_table = new MeetingTable();
+        $meeting_table->label = $label;
+        $meeting_table->congress_id = $congress_id;
+        $meeting_table->save();
+        return $meeting_table;
     }
 
     public function countUsedMeetingTablesByCongressId($congress_id)
@@ -126,7 +126,7 @@ class MeetingServices
 
     public function deleteMeetingTablesWithNoMeeting($congress_id)
     {
-        $deleteMeetings = MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->delete();
+        $delete_meetings = MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->delete();
         return $this->getMeetingTablesByCongressId($congress_id);
     }
 

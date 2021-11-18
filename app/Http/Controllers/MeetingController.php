@@ -103,12 +103,14 @@ class MeetingController extends Controller
         return response()->json(['response' => 'No verification code found'], 401);
       }
     }
+    $no_tables = 0;
     if ($status == 1) {
       $date =  $meeting->start_date;
       $meetingtable = $this->meetingServices->getAvailableMeetingTable($date, $request->input('congress_id'));
       if ($meetingtable) {
         $meeting = $this->meetingServices->addTableToMeeting($meeting, $meetingtable->meeting_table_id);
       } else {
+        $no_tables = 1;
         $status = -1;
         $request['status'] = -1;
       }
@@ -144,7 +146,7 @@ class MeetingController extends Controller
       $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
       return redirect($linkFrontOffice);
     }
-    if ($status == -1) {
+    if ($no_tables == 1) {
       return response()->json(['error' => 'Insufficient tables'], 405);
     }
     return response()->json($meeting, 200);
