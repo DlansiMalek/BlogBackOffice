@@ -51,7 +51,9 @@ class MeetingServices
             $query->with([
                 'organizer' => function ($q) {
                     $q->with(['profile_img']);
-                }, 'participant'
+                }, 'participant' => function ($q) {
+                    $q->with(['profile_img']);
+                }
             ]);
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
