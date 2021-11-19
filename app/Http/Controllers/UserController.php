@@ -2171,7 +2171,10 @@ class UserController extends Controller
                 $query->where('congress_id', '=', $congressId);
             }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.form_input', 'responses.values' => function ($query) {
+            }, 'responses' => function ($query) use ($congressId) { 
+                $query->whereHas('form_input', function ($query) use ($congressId) { 
+                $query->where('congress_id', '=', $congressId); }); 
+            },'responses.form_input', 'responses.values' => function ($query) {
                 $query->with(['val']);
             }, 'responses.form_input.values',
             'responses.form_input.type', 'profile_img',
