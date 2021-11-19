@@ -2156,4 +2156,27 @@ class UserController extends Controller
         $users = !$user ? $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, null) : $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $user->user_id);
         return response()->json($users);
     }
+
+    public function getResponseUserInformations($congressId,$user_id)
+    {
+        if (!$user = $this->userServices->getUserById($user_id)) {
+            return response()->json(['response' => 'user not found'], 404);
+        } 
+        $congress = $this->congressServices->getCongressById($congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
+        $user = $this->userServices->getUserByIdWithRelations($user_id, [
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input', 'responses.values' => function ($query) {
+                $query->with(['val']);
+            }, 'responses.form_input.values',
+            'responses.form_input.type', 'profile_img',
+        ]);
+
+        return response()->json($user);
+    }
 }
