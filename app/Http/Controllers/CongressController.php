@@ -277,7 +277,7 @@ class CongressController extends Controller
         }
         $reservedMeetingTables = $this->meetingServices->countUsedMeetingTablesByCongressId($congressId);
         if ($reservedMeetingTables  > $request->input("congress")['nb_meeting_table']) {
-            return response()->json(['error' => 'Insufficient tables'], 405);
+            return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
         }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
         if ($request->input("congress")['nb_meeting_table'] != 0) {
