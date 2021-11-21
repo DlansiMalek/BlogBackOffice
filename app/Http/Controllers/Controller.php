@@ -216,7 +216,8 @@ SELECT
 
 // Search for submission with special caracter
 /* SELECT * FROM `Submission` WHERE description Like '%%'*/
-/* UPDATE Submission SET description = REPLACE(description,'','');*/
+/* SELECT * FROM `Submission` WHERE description Like '%%'*/
+/* UPDATE Submission SET description = REPLACE(description,'','');*/
 
 /* Set random QRCode
 UPDATE User 
