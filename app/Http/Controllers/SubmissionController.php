@@ -836,18 +836,19 @@ class SubmissionController extends Controller
                             $authorMail = $author->author_mails[0];
                         }
                         if (Utils::isValidStatus($authorMail)) {
-                            $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
-                            $fileName = 'attestationsSubmission.zip';
-                            $this->mailServices->sendMail(
-                                $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
-                                $author,
-                                $congress,
-                                $mail->object,
-                                true,
-                                $authorMail,
-                                null,
-                                $fileName
-                            );
+                            $fileName = $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
+                            if ($fileName) {
+                                $this->mailServices->sendMail(
+                                    $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
+                                    $author,
+                                    $congress,
+                                    $mail->object,
+                                    true,
+                                    $authorMail,
+                                    null,
+                                    $fileName
+                                );
+                            }
                         }
                     }
                
