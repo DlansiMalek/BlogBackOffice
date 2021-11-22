@@ -474,6 +474,7 @@ class SubmissionController extends Controller
         $note = $request->input('note', -1);
         $comment = $request->input('comment');
         $status = $request->input('status');
+        $theme = $request->input('theme');
         if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }
@@ -485,7 +486,7 @@ class SubmissionController extends Controller
             }
             $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
             $evaluation->communication_type_id = $request->input('communication_type_id');
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme);
 
             // add review 
             if ($status === 6 || $comment) {
