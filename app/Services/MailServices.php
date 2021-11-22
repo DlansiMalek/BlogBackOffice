@@ -318,7 +318,9 @@ class MailServices
             'to' => array(
                 array(
                     'email' => $email,
-                ),
+                )
+            ),
+            'bcc' => array(
                 array('email' => $logMail)
             ),
             'tags' => array(strval($congress->congress_id))
