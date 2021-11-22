@@ -70,6 +70,8 @@ class SubmissionTest extends TestCase
             'is_phone_required' => $this->faker->numberBetween(0, 1),
             'mobile_technical' => $this->faker->phoneNumber,
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
+            'meeting_duration' => $this->faker->numberBetween(0, 60),
+            'pause_duration' => $this->faker->numberBetween(0, 30),
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -105,6 +107,9 @@ class SubmissionTest extends TestCase
             'is_phone_required' => $this->faker->numberBetween(0, 1),
             'mobile_technical' => $this->faker->phoneNumber,
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
+            'meeting_duration' => $this->faker->numberBetween(0, 60),
+            'pause_duration' => $this->faker->numberBetween(0, 30),
+
         ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
@@ -145,6 +150,7 @@ class SubmissionTest extends TestCase
             'start_submission_date' => $this->faker->date(),
             'max_words' => $this->faker->numberBetween(100, 500),
             'num_evaluators' => $this->faker->numberBetween(1, 5),
+            'show_file_upload' => $this->faker->numberBetween(0, 1),
         ];
     }
 }

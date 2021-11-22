@@ -38,11 +38,11 @@ class AdminTest extends TestCase
 
     public function testEditClientPayment()
     {
-        $admin = factory(Admin::class)->create(['privilege_id'=> 1]);
+        $admin = factory(Admin::class)->create(['privilege_id'=> config('privilege.Admin')]);
         $offre = factory(Offre::class)->create(['admin_id'=> $admin->admin_id, 'status' => 1]);
         $paymentAdmin = factory(PaymentAdmin::class)->create(['admin_id'=> $admin->admin_id, 'offre_id' => $offre->offre_id, 'isPaid' => -1]);
         $request = ['isPaid' => $this->faker->numberBetween(0,1)];
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => 9]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
         $token = JWTAuth::fromUser($superAdmin);
         $this->withHeader('Authorization', 'Bearer ' . $token)
             ->put('api/admin/' .$admin->admin_id .'/offre/' .$offre->offre_id, $request)

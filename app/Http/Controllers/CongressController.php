@@ -7,7 +7,6 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
 use App\Models\ConfigCongress;
-use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\User;
 use App\Models\UserCongress;
@@ -28,6 +27,8 @@ use App\Services\StandServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\TrackingServices;
+use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -50,6 +51,8 @@ class CongressController extends Controller
     protected $notificationService;
     protected $roomServices;
     protected $standServices;
+    protected $trackingServices;
+    protected $fmenuServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -64,7 +67,9 @@ class CongressController extends Controller
                          RoomServices $roomServices,
                          NotificationServices $notificationService,
                          ResourcesServices $resourceService,
-                         PaymentServices $paymentServices)
+                         PaymentServices $paymentServices,
+                         TrackingServices $trackingServices,
+                         FMenuServices $fmenuServices )
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -81,6 +86,8 @@ class CongressController extends Controller
         $this->mailServices = $mailServices;
         $this->paymentServices = $paymentServices;
         $this->standServices = $standServices;
+        $this->trackingServices = $trackingServices;
+        $this->fmenuServices = $fmenuServices;
     }
 
 
@@ -89,12 +96,17 @@ class CongressController extends Controller
         if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
-        return $this->congressServices->addCongress(
+        $congress = $this->congressServices->addCongress(
             $request,
             $request->input('config'),
             $admin->admin_id,
             $request->input('config_selection')
         );
+        $tack1 = $this->trackingServices->createIndexByCongress($congress->congress_id);
+        $tack2 = $this->trackingServices->enrichPolicyByCongress($congress->congress_id);
+        $tack4 = $this->trackingServices->executePolicy($congress->congress_id);
+        $tack3 = $this->trackingServices->enrichPolicyByUserDetails($congress->congress_id);
+        return $congress;
     }
 
     public function editStatus(Request $request, $congressId, $status)
@@ -111,6 +123,8 @@ class CongressController extends Controller
             $configCongress->status = $status;
         }
         $configCongress->update();
+        if ($status == 0)
+            $execute = $this->trackingServices->executePolicy($congressId);
 
         return response()->json(['message' => 'auto presence updating']);
     }
@@ -264,7 +278,7 @@ class CongressController extends Controller
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
-        if (sizeof($submissionData) > 0) {
+        if (sizeof($submissionData) > 1) {
             $this->congressServices->addCongressSubmission(
                 $configSubmission,
                 $submissionData,
@@ -348,19 +362,23 @@ class CongressController extends Controller
 
     public function getCongressPagination(Request $request)
     {
-        $offset = $request->query('offset', 0);
+        $page = $request->query('page', 1);
         $perPage = $request->query('perPage', 6);
         $search = $request->query('search', '');
         $startDate = $request->query('startDate', '');
         $endDate = $request->query('endDate', '');
         $status = $request->query('status', '');
+        $minPrice = $request->query('minPrice', '');
+        $maxPrice = $request->query('maxPrice', '');
+        $type = $request->query('type', '');
 
-        $cacheKey = "eventspagination-" . $offset . $perPage . $search . $startDate . $endDate . $status;
+
+        $cacheKey = config('cachedKeys.EventPagination') . $page . $perPage . $search . $startDate . $endDate . $status.$minPrice.$maxPrice.$type;
 
         if (Cache::has($cacheKey)) {
             $events = Cache::get($cacheKey);
         } else {
-            $events = $this->congressServices->getCongressPagination($offset, $perPage, $search, $startDate, $endDate, $status);
+            $events = $this->congressServices->getCongressPagination($page, $perPage, $search, $startDate, $endDate, $status,$minPrice,$maxPrice,$type);
             Cache::put($cacheKey, $events, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         }
 
@@ -400,7 +418,7 @@ class CongressController extends Controller
 
     public function getCongressDetailsById($congress_id)
     {
-        $cacheKey = 'congress-' . $congress_id;
+        $cacheKey = config('cachedKeys.Congress') . $congress_id;
 
         if (Cache::has($cacheKey)) {
             $congress = Cache::get($cacheKey);
@@ -436,12 +454,12 @@ class CongressController extends Controller
             'users.responses.form_input',
             'users.responses.values',
             "users" => function ($query) use ($congressId) {
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             },
             "form_inputs.type",
             "form_inputs.values",
             "accesss.participants.user_congresses" => function ($query) {
-                $query->where('privilege_id', '=', 3);
+                $query->where('privilege_id', '=', config('privilege.Participant'));
             },
             "tracking",
             "stand"
@@ -506,7 +524,8 @@ class CongressController extends Controller
                         $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                             $user,
                             $user->qr_code,
-                            $user->user_congresses[0]->privilege_id);
+                            $user->user_congresses[0]->privilege_id,
+                            $congress->congress_id);
                     }
 
                     $userMail = null;
@@ -515,7 +534,7 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    if ($userMail->status != 1) {
+                    if (Utils::isValidStatus($userMail)) {
                         $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . "/login";
                         $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/".$congressId.'/event-room';
                         $this->mailServices->sendMail($this->congressServices
@@ -578,7 +597,7 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    if ($userMail->status != 1) {
+                    if (Utils::isValidStatus($userMail)) {
                         $linkSondage = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/sondage';
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, $linkSondage),
                             $user, $congress, $mail->object, false, $userMail);
@@ -625,7 +644,7 @@ class CongressController extends Controller
                 foreach ($user->accesses as $access) {
                     if ($strict == 0 || $access->pivot->isPresent == 1) {
                         if (sizeof($access->attestations) > 0) {
-                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, 3);
+                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
                             if ($attestationId) {
                                 array_push($request,
                                     array(
@@ -641,11 +660,11 @@ class CongressController extends Controller
                     $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $user->user_id);
                     $privilegeId = null;
                     if ($chairPerson) {
-                        $privilegeId = 5;
+                        $privilegeId = config('privilege.Moderateur');
                     }
                     $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $user->user_id);
                     if ($speakerPerson) {
-                        $privilegeId = 8;
+                        $privilegeId = config('privilege.Conferencier_Orateur');
                     }
                     $attestationId = null;
                     if ($privilegeId)
@@ -667,7 +686,7 @@ class CongressController extends Controller
                     } else {
                         $userMail = $user->user_mails[0];
                     }
-                    if ($userMail->status != 1) {
+                    if (Utils::isValidStatus($userMail)) {
                         $fileName = 'attestations.zip';
                         $this->badgeServices->saveAttestationsInPublic($request);
                         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
@@ -694,6 +713,7 @@ class CongressController extends Controller
         $mailId = $mail->mail_id;
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         $privilege_ids = $request->input('privilege_ids');
+        $to_all = $request->query('toAll', 0);
 
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
@@ -713,16 +733,16 @@ class CongressController extends Controller
 
 
         foreach ($users as $user) {
-            if (Utils::isValidSendMail($congress, $user)) {
+            if (Utils::isValidSendMail($congress, $user, $to_all)) {
                 $userMail = null;
                 if (sizeof($user->user_mails) == 0) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 } else {
                     $userMail = $user->user_mails[0];
                 }
-
-                if ($userMail->status != 1) {
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
+                $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/validate/' . $user->verification_code;
+                if (Utils::isValidStatus($userMail)) {
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null)
                         , $user, $congress, $mail->object, false, $userMail);
                 }
             }
@@ -783,14 +803,14 @@ class CongressController extends Controller
             $userCongress = new UserCongress();
             $userCongress->congress_id = $congress->congress_id;
             $userCongress->user_id = $user->user_id;
-            $userCongress->privilege_id = 3;    //privilege particiapant
+            $userCongress->privilege_id = config('privilege.Participant');    //privilege particiapant
             $userCongress->save();
         }
 
         //add badges
         $badge = new Badge();
         $badge->badge_id_generator = "5c6dbd67d2cb3900015d7a65";
-        $badge->privilege_id = 3;
+        $badge->privilege_id = config('privilege.Participant');
         $badge->congress_id = $congress->congress_id;
         $badge->save();
 
@@ -823,17 +843,17 @@ class CongressController extends Controller
             return response()->json('no congress found', 404);
         }
         $totalUsers = $this->congressServices->getParticipantsCount($congressId, null, null);
-        $participantUsers = $this->congressServices->getParticipantsCount($congressId, 3, null);
+        $participantUsers = $this->congressServices->getParticipantsCount($congressId, config('privilege.Participant'), null);
         $revenue = $this->congressServices->getRevenuCongress($congressId);
         $gratuitNb = $this->paymentServices->getFreeUserByCongressId($congressId);
         $totalPresenceUsers = $this->congressServices->getParticipantsCount($congressId, null, 1);
-        $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, 3, 1);
-        $users = $this->userServices->getUsersTracking($congressId, [1, 2, 3, 4], 3);
+        $totalParPresenceUsers = $this->congressServices->getParticipantsCount($congressId, config('privilege.Participant'), 1);
+        $users = $this->userServices->getUsersTracking($congressId, [1, 2, 3, 4], config('privilege.Participant'));
         $access = $this->accessServices->getAllAccessByCongress($congressId, null,
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                    $query->where('privilege_id', '=', 3);
+                    $query->where('privilege_id', '=', config('privilege.Participant'));
                 },
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
@@ -866,7 +886,7 @@ class CongressController extends Controller
             [
                 'participants.user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                    $query->where('privilege_id', '=', 3);
+                    $query->where('privilege_id', '=', config('privilege.Participant'));
                 },
                 'participants.payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
@@ -909,7 +929,7 @@ class CongressController extends Controller
             return response()->json(['error' => 'user is not registered in congress'], 404);
         }
         if (!($adminCongress = (AdminCongress::where('congress_id', '=', $congress_id)
-            ->where('privilege_id', '=', 1)->first()))) {
+            ->where('privilege_id', '=', config('privilege.Admin'))->first()))) {
             return response()->json(['error' => 'bad request'], 400);
         }
         $user_congress = $this->congressServices->confirmPresence($congress_id, $user_id, $present);
@@ -945,7 +965,7 @@ class CongressController extends Controller
         if (!$congress = $this->congressServices->getById($congressId)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
-        $cacheKey = 'congress-' . $congressId . '-users';
+        $cacheKey = config('cachedKeys.PeacksourceUsers') . $congressId;
         
         if (Cache::has($cacheKey)) {
             $results = Cache::get($cacheKey);
@@ -975,17 +995,7 @@ class CongressController extends Controller
 
     public function getListTrackingByCongress($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getById($congressId)) {
-            return response()->json(['response' => 'congress not found'], 404);
-        }
-
-        $perPage = $request->query('perPage', 10);
-        $search = $request->query('search', '');
-        $accessId = $request->query('access_id', -1);
-        $standId = $request->query('stand_id', -1);
-        $actionId = $request->query('action_id', -1);
-
-        return response()->json($this->congressServices->getListTrackingByCongress($congressId, $perPage, $search, $actionId, $accessId, $standId));
+        return response()->json($this->trackingServices->getTrackings($congressId, $request));
 
     }
 
@@ -1036,6 +1046,33 @@ class CongressController extends Controller
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
 
+    public function getGenericFmenus($congress_id)
+    {
+        $FMenu = $this->congressServices->getGenericFmenus($congress_id);
+        return response()->json($FMenu, 200);
+    }
+
+    public function editFmenus($congress_id, Request $request)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $fmenus = $request->all();
+
+        if ($fmenus) {
+            foreach ($fmenus as $fmenu) {
+                if ($fetched = $this->fmenuServices->getFMenuById($fmenu['FMenu_id'], $congress_id)) {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id, $fetched);
+                } else {
+                    $fmenu = $this->fmenuServices->editFMenu($fmenu, $congress_id);
+                }
+            }
+            $fmenus = $this->congressServices->getGenericFmenus($congress_id);
+        }
+
+        return response()->json($fmenus, 200);
+    }
+
     public function editConfigLandingPage($congress_id, Request $request)
     {
         if (!$this->adminServices->retrieveAdminFromToken()) {
@@ -1048,7 +1085,7 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         // Config Location
         $eventLocation = $request->input("eventLocation");
-
+        
         if ($eventLocation && $eventLocation['countryCode'] && $eventLocation['cityName']) {
 
             $city = $this->geoServices->getCity($eventLocation['countryCode'], $eventLocation['cityName']);
@@ -1122,16 +1159,22 @@ class CongressController extends Controller
     }
     public function getConfigLandingPageToFrontOffice($congress_id)
     {
-    
         $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
     public function getLandingPageSpeakersToFrontOffice($congress_id)
     {
-        
         $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
         return response()->json($speakers, 200);
     }
 
+    public function getNumberOfParticipants($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+            return response()->json(["message" => "congress not found"], 404);
+        
+        $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
+        return response()->json($participants, 200);
+    }   
 }

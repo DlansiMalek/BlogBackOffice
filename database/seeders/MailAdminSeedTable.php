@@ -44,5 +44,6 @@ class MailAdminSeedTable extends Seeder
             'template' => '<p>Veuillez cliquer sur ce lien afin de valider votre paiement: <a href="{{$paymentLink}}">Lien</a></p>',
             'mail_type_admin_id' => 7
         ]);
+        
     }
 }

@@ -3,7 +3,6 @@
 
 namespace App\Services;
 
-use App\Models\Congress;
 use App\Models\Mail;
 use App\Models\MailAdmin;
 use App\Models\MailType;
@@ -12,7 +11,6 @@ use App\Models\Offre;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -26,7 +24,7 @@ class MailServices
 {
     protected $maxRequest = 0;
 
-    public function getAllMailTypes($congressId = null, $type)
+    public function getAllMailTypes($congressId , $type)
     {
         return MailType::where('type', '=', $type)
             ->with(['mails' => function ($query) use ($congressId) {
@@ -194,7 +192,11 @@ class MailServices
         if ($congress != null) {
             $offre = $this->getOffreByCongressId($congress->congress_id);
         }
-
+        // waiting sending mail
+        if ($userMail) {
+            $userMail->status = 2;
+            $userMail->update();
+        }
         if ($offre != null && $offre->is_mail_pro == 1) {
             $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
         } else {
@@ -288,7 +290,7 @@ class MailServices
             ->join('Admin_Congress', function ($join) use ($congress_id) {
                 $join->on('Admin_Congress.admin_id', '=', 'Offre.admin_id')
                     ->where('congress_id', '=', $congress_id)
-                    ->where('privilege_id', '=', 1);
+                    ->where('privilege_id', '=', config('privilege.Admin'));
             })->first();
     }
 

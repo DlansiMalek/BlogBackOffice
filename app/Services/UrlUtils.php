@@ -181,4 +181,14 @@ class UrlUtils
 
         return "https://".env('DIGITALOCEAN_SPACES_BUCKET').".fra1.cdn.digitaloceanspaces.com/";
     }
+
+    public static function getPaymentLinkFrontoffice($url_frontoffice, $token, $congressId) 
+    {
+        return $url_frontoffice . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId;
+    }
+
+    public static function getPaymentLinkBackoffice($url_backoffice, $user_id, $token, $congressId)  
+    {
+        return $url_backoffice . "/#/auth/user/" . $user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId; 
+    }
 }
