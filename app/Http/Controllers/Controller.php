@@ -216,7 +216,8 @@ SELECT
 
 // Search for submission with special caracter
 /* SELECT * FROM `Submission` WHERE description Like '%%'*/
-/* UPDATE Submission SET description = REPLACE(description,'','');*/
+/* SELECT * FROM `Submission` WHERE description Like '%%'*/
+/* UPDATE Submission SET description = REPLACE(description,'','');*/
 
 /* Set random QRCode
 UPDATE User 
@@ -235,4 +236,15 @@ WHERE User_Congress.congress_id = 384
 SELECT DISTINCT User.user_id, first_name, last_name, email, passwordDecrypt FROM `Submission`
 INNER JOIN `User` ON `User`.`user_id` = Submission.user_id
 WHERE Submission.congress_id = 384
+*/
+
+/*
+
+Get credentiels admin for specefic congress
+
+SELECT `email` , `passwordDecrypt` 
+FROM `Admin`
+INNER JOIN Admin_Congress ON Admin_Congress.admin_id = Admin.admin_id
+WHERE congress_id = 384
+
 */

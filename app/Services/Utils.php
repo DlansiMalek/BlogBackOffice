@@ -221,9 +221,13 @@ class Utils
         return $res;
     }
 
-    public static function isValidSendMail($congress, $user)
+    public static function isValidSendMail($congress, $user, $to_all = 0)
     {
-        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        if ($to_all == 1) {
+            $isUserValid = true;
+        } else {
+            $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        }
         return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
     }
 
