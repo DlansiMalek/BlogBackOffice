@@ -162,7 +162,7 @@ class SubmissionServices
             },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
-                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                     ->with(['evaluator:admin_id,name,email']);
             },
         ]);
@@ -170,7 +170,7 @@ class SubmissionServices
 
     public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id, $status, $perPage = null, $search = null, $tri = null, $order = null)
     {
-        if ($privilege_id == 1 || $privilege_id == 12) {
+        if ($privilege_id == config('privilege.Admin') || $privilege_id == config('privilege.Comite_d_organisation')) {
             $allSubmission = $this->renderSubmissionForAdmin()
                 ->when($status !== 'null', function ($query) use ($status) {
                     $query->where('status', '=', $status);
@@ -196,7 +196,7 @@ class SubmissionServices
             $allSubmission = $perPage ? $allSubmission->paginate($perPage) : $allSubmission->get();
 
             return $allSubmission;
-        } elseif ($privilege_id == 11) {
+        } elseif ($privilege_id == config('privilege.Comite_scientifique')) {
             $allSubmission = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
                 $query->where('admin_id', '=', $admin->admin_id);
             })
@@ -236,19 +236,19 @@ class SubmissionServices
 
     public function getSubmissionDetailById($admin, $submission_id, $privilege_id)
     {
-        if ($privilege_id == 1 || $privilege_id == 12) {
+        if ($privilege_id == config('privilege.Admin') || $privilege_id == config('privilege.Comite_d_organisation')) {
             $submissionById = $this->renderSubmissionForAdmin()
                 ->where('submission_id', '=', $submission_id)->first();
             if ($submissionById) {
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type', 'communication_type_id', 'limit_date',
                         'prez_type', 'description', 'global_note', 'communicationType',
-                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
+                        'status', 'theme', 'user', 'authors','submissions_evaluations',
                         'congress_id', 'created_at', 'congress', 'resources','comments']);
                 return $submissionToRender;
             }
 
-        } elseif ($privilege_id == 11) {
+        } elseif ($privilege_id == config('privilege.Comite_scientifique')) {
             $submissionById = Submission::whereHas('submissions_evaluations', function ($query) use ($admin) {
                 $query->where('admin_id', '=', $admin->admin_id);
             })
@@ -259,7 +259,7 @@ class SubmissionServices
                     'theme:theme_id,label',
                     'communicationType:communication_type_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
-                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     },
                 ])->where('submission_id', '=', $submission_id)->first();
@@ -298,9 +298,10 @@ class SubmissionServices
 
     }
 
-    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation)
+    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme_id)
     {
         $evaluation->note = $note;
+        $evaluation->theme_id = $theme_id;
         $evaluation->save();
         // supposons seulement un seul utilisateur a fait la correction
         // dans ce cas on doit pas faire la moyenne
@@ -360,7 +361,8 @@ class SubmissionServices
                 $query->orderBy('rank');
             },
         ])->where('status', '=', 1)
-        ->where('congress_id', '=', $congressId);
+        ->where('congress_id', '=', $congressId)
+        ->orderBy('code');
 
         if ($communication_type_id != 'null' && $communication_type_id != '') {
             $submissions->where('communication_type_id', '=', $communication_type_id);  
@@ -397,7 +399,7 @@ class SubmissionServices
 
     public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id)
     {
-        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id.$theme_id;
+        $cacheKey = config('cachedKeys.Submissions') . $congressId.$search.$offset.$perPage.$communication_type_id.$theme_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);

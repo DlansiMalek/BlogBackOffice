@@ -564,7 +564,7 @@ class AccessServices
                 ->whereHas('user.user_congresses', function($query) use ($congress_id, $exclureInvitee) {
                     if($exclureInvitee){
                         $query->where('congress_id', '=', $congress_id);
-                        $query->where('privilege_id', '<>', 6);
+                        $query->where('privilege_id', '<>', config('privilege.Invite'));
                     }
                 })
                 ->orderBy('score','desc')->with(['access' => function ($query) {
@@ -667,7 +667,7 @@ class AccessServices
             
         })
         ->where(function ($query) use ($isOnline, $user_id, $myAccesses) {
-            if ($isOnline != '')
+            if ($isOnline != ''&& $isOnline != 'null')
                 $query->where('is_online', '=', $isOnline);
             if ($myAccesses == 1) {
                 $query->whereHas('user_accesss' , function ($q) use ($user_id) {
@@ -675,8 +675,8 @@ class AccessServices
             });
             } 
         })
-        ->offset($offset)->limit($perPage)
-        ->get();
+        ->offset($offset)->paginate($perPage);
+        
         return $accesses;
     }
 }

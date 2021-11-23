@@ -320,14 +320,18 @@ class AdminController extends Controller
             return response()->json(['error' => 'admin_not_found'], 404);
         }
         $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
-        if ($admin->privilege_id == 1) {
+        if ($admin->privilege_id == config('privilege.Admin')) {
             $menus = $this->getAdminMenus($admin->admin_id);
         } else {
             if (count($admin->admin_congresses) > 0) {
                 $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
                 if (count($menus) == 0) {
+                    if ($admin->admin_congresses[0]->privilege_id == config('privilege.Organisme')) {
+                        $menus = $this->offreServices->getMenusByPrivilegeByCongress(null, $admin->admin_congresses[0]->privilege_id);
+                    } else {
                     $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
                     $menus = $this->getAdminMenus($admin_congress->admin_id);
+                    }
                 }
             }
         }
@@ -425,8 +429,8 @@ class AdminController extends Controller
         $password = Str::random(8);
         // if exists then update or create admin in DB
         if (!($fetched = $this->adminServices->getAdminByLogin($admin['email']))) {
-            $admin = $this->adminServices->addPersonnel($admin, $password);
-            $admin_id = $admin->admin_id;
+            $new_admin = $this->adminServices->addPersonnel($admin, $password);
+            $admin_id = $new_admin->admin_id;
         } else {
             $admin_id = $fetched->admin_id;
             // check if he has already privilege to congress
@@ -436,18 +440,19 @@ class AdminController extends Controller
             }
             // else edit changed infos while creating
             $admin['admin_id'] = $admin_id;
-            $this->adminServices->editPersonnel($admin);
+            $new_admin = $this->adminServices->editPersonnel($admin, $fetched);
         }
 
         $congress = $this->congressService->getById($congress_id);
 
         // Add User if not exist
         if (!$user = $this->userServices->getUserByEmail($admin['email'])) {
+            if($request->has('organizationId')){$organisationId = $request->input('organizationId');}
             $name = explode(" ", $admin['name']);
             $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
             $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
             $user = $this->userServices->addUserFromExcel($admin, $password);
-            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
+            $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, $organisationId, null);
         } else {
             // Add user to congress if not affected
             if (!$user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id)) {
@@ -457,7 +462,7 @@ class AdminController extends Controller
 
         //create themeAdmin if privilege is "comité Scientifique"
 
-        if ($privilegeId == 11) {
+        if ($privilegeId == config('privilege.Comite_scientifique')) {
             $this->adminServices->affectThemesToAdmin($request->input("themesSelected"), $admin_id);
             $submissions = $this->submissionServices->getSubmissionsByCongressId($congress_id);
             if (sizeof($submissions) > 0) {
@@ -471,7 +476,7 @@ class AdminController extends Controller
         }
         $evalutors = $this->adminServices->getEvaluatorsByCongress($congress_id, 13, 'evaluations');
         if (
-            $privilegeId == 13 &&
+            $privilegeId == config('privilege.Comite_de_selection') &&
             $congress->config_selection && ($congress->congress_type_id == 2 || $congress->congress_type_id == 1) &&
             sizeof($evalutors) < $congress->config_selection->num_evaluators
         ) {
@@ -507,13 +512,18 @@ class AdminController extends Controller
                     $badge,
                     $admin,
                     $admin->passwordDecrypt,
-                    $privilegeId
+                    $privilegeId,
+                    $congress->congress_id
                 );
             }
-            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->email;
-            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $admin->passwordDecrypt;
-
-            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
+        
+            if ($mail->template == "") {
+                $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $new_admin->email;
+                $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://organizer.eventizer.io'>Eventizer</a>: " . $new_admin->passwordDecrypt;        
+            }
+           
+            $linkBackOffice = UrlUtils::getUrlEventizerWeb();
+            $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
         }
 
         return response()->json($admin_congress);
@@ -526,28 +536,27 @@ class AdminController extends Controller
         }
         $admin = $request->input('admin');
         $privilegeId = (int)$request->input('privilege_id');
-        $this->adminServices->editPersonnel($admin);
+        $oldAdmin = $this->adminServices->getAdminById($admin_id);
+        $newAdmin = $this->adminServices->editPersonnel($admin, $oldAdmin);
         $this->privilegeServices->editPrivilege(
             $privilegeId,
             $admin_id,
             $congress_id
         );
-        $newAdmin = $this->adminServices->getAdminById($admin_id);
         //message d'erreur à revoir
         $user = $this->userServices->getUserByEmail($admin['email']);
         $name = explode(" ", $admin['name']);
-        $admin['first_name'] = $name[0];
-        $admin['last_name'] = $name[1];
+        $admin['first_name'] = strpos($admin['name'], ' ')?$name[0]:$name;
+        $admin['last_name'] =  strpos($admin['name'], ' ')?$name[1]:'';
         if (!$user) {
             $user = $this->userServices->addUserFromExcel($admin, $newAdmin->passwordDecrypt);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, null, null);
         } else {
-            $this->userServices->editUserData($user, $admin);
             $user_congress = $this->userServices->getUserCongress($congress_id, $user->user_id);
             $this->userServices->editUserPrivilege($user_congress, $privilegeId);
         }
 
-        if ($privilegeId == 11) {
+        if ($privilegeId == config('privilege.Comite_scientifique')) {
             $themesAdmin = $this->adminServices->getThemeAdmin($admin['admin_id']);
             $this->adminServices->modifyAdminThemes($themesAdmin, $admin['admin_id'], $request->input('themesSelected'));
         }
@@ -606,34 +615,28 @@ class AdminController extends Controller
             return response()->json(["error" => "admin not found"]);
         }
 
-
         $admin_congress = $this->privilegeServices->checkIfAdminOfCongress(
             $adminId,
             $congressId
         );
 
         if ($mailtype = $this->congressService->getMailType('organizer_creation')) {
-            if (!$mail = $this->congressService->getMail($congressId, $mailtype->mail_type_id)) {
-                $mail = new Mail();
-                $mail->template = "";
-                $mail->object = "Coordonnées pour l'accès à la plateforme Eventizer";
+            if ($mail = $this->congressService->getMail($congressId, $mailtype->mail_type_id)) {
+                $badge = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
+                $badgeIdGenerator = $badge['badge_id_generator'];
+                $fileAttached = false;
+                if ($badgeIdGenerator != null) {
+                    $fileAttached = $this->sharedServices->saveBadgeInPublic(
+                        $badge,
+                        $admin,
+                        $admin->passwordDecrypt,
+                        $admin_congress->privilege_id,
+                        $congress->congress_id
+                    );
+                }
+                $linkBackOffice = UrlUtils::getUrlEventizerWeb();
+                $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, $fileAttached);
             }
-
-            $badge = $this->congressService->getBadgeByPrivilegeId($congress, $admin_congress->privilege_id);
-            $badgeIdGenerator = $badge['badge_id_generator'];
-            $fileAttached = false;
-            if ($badgeIdGenerator != null) {
-                $fileAttached = $this->sharedServices->saveBadgeInPublic(
-                    $badge,
-                    $admin,
-                    $admin->passwordDecrypt,
-                    $admin_congress->privilege_id
-                );
-            }
-            $mail->template = $mail->template . "<br>Votre Email pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->email;
-            $mail->template = $mail->template . "<br>Votre mot de passe pour accéder à la plateforme <a href='https://eventizer.vayetek.com'>Eventizer</a>: " . $admin->passwordDecrypt;
-
-            $this->adminServices->sendMail($this->congressService->renderMail($mail->template, $congress, null, null, null, null), $congress, $mail->object, $admin, $fileAttached);
         }
         return response()->json(['message' => 'sending credentials mails']);
     }

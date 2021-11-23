@@ -160,19 +160,19 @@ class Utils
 
     public static function getRoleNameByPrivilege($privilege_id)
     {
-        if ($privilege_id === 7) {
+        if ($privilege_id === config('privilege.Organisme')) {
             return 'MANAGER';
         }
 
-        if ($privilege_id === 3) {
+        if ($privilege_id === config('privilege.Participant')) {
             return 'PARTICIPANT';
         }
 
-        if ($privilege_id === 5 || $privilege_id === 8) {
+        if ($privilege_id === config('privilege.Moderateur') || $privilege_id === config('privilege.Conferencier_Orateur')) {
             return 'MODERATOR';
         }
 
-        if ($privilege_id === 1) {
+        if ($privilege_id === config('privilege.Admin')) {
             return 'ADMIN';
         }
 
@@ -182,14 +182,14 @@ class Utils
     public static function getChannelNameByUser($user)
     {
 
-        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 && sizeof($user->organization) > 0 && sizeof($user->organization[0]->stands) > 0) {
+        if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === config('privilege.Organisme') && sizeof($user->organization) > 0 && sizeof($user->organization[0]->stands) > 0) {
             return $user->organization[0]->stands[0]->name;
         }
 
-        if (sizeof($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id === 5 || $user->user_congresses[0]->privilege_id === 8)) {
-            if ($user->user_congresses[0]->privilege_id === 5 && sizeof($user->chair_access) > 0)
+        if (sizeof($user->user_congresses) > 0 && ($user->user_congresses[0]->privilege_id === config('privilege.Moderateur') || $user->user_congresses[0]->privilege_id === config('privilege.Conferencier_Orateur'))) {
+            if ($user->user_congresses[0]->privilege_id === config('privilege.Moderateur') && sizeof($user->chair_access) > 0)
                 return $user->chair_access[0]->name;
-            if ($user->user_congresses[0]->privilege_id === 8 && sizeof($user->speaker_access) > 0)
+            if ($user->user_congresses[0]->privilege_id === config('privilege.Conferencier_Orateur') && sizeof($user->speaker_access) > 0)
                 return $user->speaker_access[0]->name;
         }
         return null;
@@ -221,9 +221,13 @@ class Utils
         return $res;
     }
 
-    public static function isValidSendMail($congress, $user)
+    public static function isValidSendMail($congress, $user, $to_all = 0)
     {
-        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        if ($to_all == 1) {
+            $isUserValid = true;
+        } else {
+            $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        }
         return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
     }
 
@@ -297,4 +301,15 @@ class Utils
         return $privilegeExpiredTs;
     }
 
+    public static function isValidStatus ($userMail) {
+        return $userMail->status != 1 && $userMail->status != 2;
+    }
+
+    public static function explodeString($object)
+    {
+        $name = explode(" ", $object['name']);
+        $object['first_name'] = isset($name[0]) ? $name[0] : '-';
+        $object['last_name']  = isset($name[1]) ? $name[1] : '-';
+        return $object;
+    }
 }

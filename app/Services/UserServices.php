@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+
 
 class UserServices
 {
@@ -74,8 +76,14 @@ class UserServices
         $newUser->last_name = $last_name;
         $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->verification_code = Str::random(40);
         $newUser->save();
 
+        if (!$newUser->qr_code) {
+            $newUser->qr_code = Utils::generateCode($newUser->user_id);
+            $newUser->update();
+        }
+        
         return $newUser;
     }
 
@@ -141,7 +149,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $newUser->privilege_id = $request->input('privilege_id');
         } else {
-            $newUser->privilege_id = 3;
+            $newUser->privilege_id = config('privilege.Participant');
         }
 
         $newUser->email = $email;
@@ -287,7 +295,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $user->privilege_id = $request->input('privilege_id');
         } else {
-            $user->privilege_id = 3;
+            $user->privilege_id = config('privilege.Participant');
         }
 
 
@@ -309,8 +317,8 @@ class UserServices
 
     public function affectAccess($user_id, $accessIds, $packAccesses)
     {
-        for ($i = 0; $i < sizeof($accessIds); $i++) {
-            $this->affectAccessById($user_id, $accessIds[$i]);
+        foreach ($accessIds as $item) {
+            $this->affectAccessById($user_id, $item);
         }
 
         foreach ($packAccesses as $access) {
@@ -395,7 +403,7 @@ class UserServices
             if ($privilegeId != null) {
                 $query->where('privilege_id', '=', $privilegeId);
             }
-        })->with(['profile_img', 'user_congresses'])->get();
+        })->with(['profile_img', 'user_congresses', 'responses.form_input', 'responses.values', 'responses.values.val'])->get();
     }
     // public function getUsersCongress($congress_id,$privilegeIds = null){
     //     return User::whereHas('user_congresses', function ($query) use ($congress_id,$privilegeIds) {
@@ -439,7 +447,12 @@ class UserServices
                 if ($withAttestation != null) {
                     $query->where("with_attestation", "=", $withAttestation);
                 }
-            }, 'accesses.attestations', 'responses.values', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+            }, 'accesses.attestations', 'responses' => function ($query) use ($congressId) {
+                $query->whereHas('form_input', function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                });
+            }
+            , 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
                 $query->where('congress_id', '=', $congressId);
                 if ($tri == 'isPaid')
                     $query->orderBy($tri, $order);
@@ -525,8 +538,8 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.values', 'user_congresses.privilege', 'country'])
-            ->with(['accesses'])
+            }, 'responses.values', 'user_congresses.privilege', 'country','user_congresses.organization'])
+            ->with(['accesses', 'profile_img'])
             ->get();
         return $users;
     }
@@ -687,8 +700,8 @@ class UserServices
                     "is_valid" => $this->checkValidUser($congress, $user),
                     "role" => sizeof($user->user_congresses) > 0 ? Utils::getRoleNameByPrivilege($user->user_congresses[0]->privilege_id) : 'PARTICIPANT',
                     "channel_name" => $channelName,
-                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 7 ? $user->avatar_id : null,
-                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === 3 ? Utils::mapDataByKey($user->accesses, 'name') : []
+                    "avatar_id" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === config('privilege.Organisme') ? $user->avatar_id : null,
+                    "authorized_channels" => sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->privilege_id === config('privilege.Participant') ? Utils::mapDataByKey($user->accesses, 'name') : []
                 )
             );
 
@@ -744,9 +757,12 @@ class UserServices
         return $this->createOrUpdateUser($email, $firstName, $lastName, $gender, $mobile, $countryId);
     }
 
-    public function isUserModerator($userCongress)
+    public function isUserModerator($privilege)
     {
-        return $userCongress->privilege_id == 5 || $userCongress->privilege_id == 8;
+        return $privilege->privilege_id   == config('privilege.Moderateur')
+            || $privilege->privilege_id   == config('privilege.Conferencier_Orateur')
+            || $privilege->priv_reference == config('privilege.Moderateur')
+            || $privilege->priv_reference == config('privilege.Conferencier_Orateur');
     }
 
     private function sendingRTAccess($user, $accessId)
@@ -849,7 +865,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $newUser->privilege_id = $request->input('privilege_id');
         } else {
-            $newUser->privilege_id = 3;
+            $newUser->privilege_id = config('privilege.Participant');
         }
 
         if ($request->has('email') && $request->input('email') != "")
@@ -895,7 +911,7 @@ class UserServices
         if ($request->has('privilege_id')) {
             $newUser->privilege_id = $request->input('privilege_id');
         } else {
-            $newUser->privilege_id = 3;
+            $newUser->privilege_id = config('privilege.Participant');
         }
 
         $newUser->update();
@@ -930,7 +946,7 @@ class UserServices
     public function getFastUsersByCongressId($congressId)
     {
         return User::where('congress_id', '=', $congressId)
-            ->where('privilege_id', '=', 3)
+            ->where('privilege_id', '=', config('privilege.Participant'))
             ->get();
     }
 
@@ -1077,8 +1093,9 @@ class UserServices
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) { 
             $user->resource_id = $request->input('resource_id');
-            if($resource)
-                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);
+            /** TODO fix data too long */
+            /*if($resource)
+                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);*/
         }
         $user->verification_code = Str::random(40);
         $user->save();
@@ -1149,12 +1166,13 @@ class UserServices
             ->get();
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id)
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id, $isSelected = 0)
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
         $user_congress->privilege_id = $privilege_id;
+        $user_congress->isSelected = $isSelected;
 
         if ($organization_id)
             $user_congress->organization_id = $organization_id;
@@ -1285,6 +1303,7 @@ class UserServices
     public function getPaymentById($paymentId)
     {
         return Payment::where('payment_id', '=', $paymentId)
+            ->with(['congress'])
             ->first();
     }
 
@@ -1522,7 +1541,7 @@ class UserServices
     {
         //users id who are registred in the congress
         $accepted_user_id_array = UserCongress::select('user_id')->where('congress_id', '=', $congressId)
-            ->where('privilege_id', '=', 3);
+            ->where('privilege_id', '=', config('privilege.Participant'));
         //users who got refused with mails refused
         return User::with(['user_congresses' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
@@ -1648,14 +1667,18 @@ class UserServices
         $user = new User();
 
         $user->email = $userData['email'];
-        $user->first_name = $userData['first_name'];
-        $user->last_name = $userData['last_name'];
+        $user->first_name = isset($userData['first_name']) ? $userData['first_name'] : '-';
+        $user->last_name = isset($userData['last_name']) ? $userData['last_name'] : '-';
         if(array_key_exists("mobile", $userData))
             $user->mobile = $userData['mobile'];
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
         return $user;
     }
 
@@ -1675,7 +1698,7 @@ class UserServices
 
     public function isUserModeratorStand($userCongress)
     {
-        return $userCongress->privilege_id == 7;
+        return $userCongress->privilege_id == config('privilege.Organisme');
     }
     
     public function deleteFormInputUserByKey($userId, $congressId, $key)
@@ -1688,7 +1711,7 @@ class UserServices
 
     public function isUserOrganizer($userCongress)
     {
-        return $userCongress->privilege_id == 2;
+        return $userCongress->privilege_id == config('privilege.Organisateur');
     }
 
     public function getUser3DByEmail($email) {
@@ -1708,9 +1731,9 @@ class UserServices
 
         return $user;
     }
-    public function editUserPrivilege($userCongress, $data)
+    public function editUserPrivilege($userCongress, $privilege_id)
     {
-        $userCongress->privilege_id = $data["privilege_id"];
+        $userCongress->privilege_id = $privilege_id;
         $userCongress->update();
     }
 
@@ -1731,6 +1754,10 @@ class UserServices
         $user->password = bcrypt($password);
         $user->email_verified = 1;
         $user->save();
+        if (!$user->qr_code) {
+            $user->qr_code = Utils::generateCode($user->user_id);
+            $user->update();
+        }
         return $user;
     }
     public function addUserCongressFromExcelOrgnization($userCongress,$user_id, $congressId, $privilegeId)
@@ -1743,6 +1770,20 @@ class UserServices
         $userCongress->privilege_id = $privilegeId ;    //privilege Organisme
         $userCongress->save();
 
+    }
+
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$perPage , $search,$user_id )
+    {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId,$search,$user_id) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('user_id', '!=', $user_id);
+
+            if ($search != "") {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+            }      
+        })->with('profile_img')
+        ->paginate($perPage);
+        return  $users;
     }
 
 }

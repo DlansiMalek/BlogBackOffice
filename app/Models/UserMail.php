@@ -26,3 +26,11 @@ class UserMail extends Model
         return $this->belongsTo('App\Models\Mail','mail_id','mail_id');
     }
 }
+
+/*
+--> status:
+0 : creation
+1 : success
+2 : waiting
+-1: error
+*/
