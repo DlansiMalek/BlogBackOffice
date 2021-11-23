@@ -21,12 +21,4 @@ class GSTagServices
         $gstag->congress_id = $congress_id;
         $gstag->save();
     }
-
-    public function getStagByGSTagId($congress_id, $gstag_id)
-    {
-
-        return STag::where('congress_id', '=', $congress_id)
-            ->where('gstag_id', '=', $gstag_id)
-            ->get();
-    }
 }

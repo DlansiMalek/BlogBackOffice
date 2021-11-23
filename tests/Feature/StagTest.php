@@ -8,7 +8,6 @@ use Tests\TestCase;
 use App\Models\Congress;
 use App\Models\STag;
 use App\Models\GSTag;
-use Illuminate\Support\Facades\Log;
 
 class StagTest extends TestCase
 {
@@ -50,7 +49,5 @@ class StagTest extends TestCase
             'gstag_id' => $gstag_id   
       
         ];
-    }
-
-   
+    }  
 }
