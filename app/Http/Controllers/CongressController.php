@@ -280,17 +280,9 @@ class CongressController extends Controller
             return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
         }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
-        if ($request->input("congress")['nb_meeting_table'] != 0) {
-            $meetingtables = $this->meetingServices->deleteMeetingTablesWithNoMeeting($congressId);
-            for ($i = 1; $i <= $request->input("congress")['nb_meeting_table']; $i++) {
-                $label = "Table " . $i;
-                $MeetTable = $this->meetingServices->addMeetingTable($label, $congressId);
-            }
-            if (count($meetingtables) != 0) {
-            foreach ($meetingtables as $table) {
-                $meetingtables = $this->meetingServices->removeDuplicatesMeetingTable($table->label, $congressId);
-                }
-            }
+        $nbMeetingTable = $configCongress['nb_meeting_table'];
+        if ($nbMeetingTable != 0) {
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId,);
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");

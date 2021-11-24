@@ -63,10 +63,10 @@ class MeetingServices
     {
         return UserMeeting::where('user_meeting_id', '=', $user_meeting_id)->first();
     }
-    
-    public function updateMeetingStatus($user_meeting, $request)
+
+    public function updateMeetingStatus($user_meeting, $request, $status)
     {
-        $user_meeting->status = $request->input('status');
+        $user_meeting->status = $status;
         $user_meeting->user_canceler = $request->input('user_canceler')!= 'null' && $request->input('user_canceler')!= null ? $request->input('user_canceler') : null;  
         $user_meeting->save();
         return $user_meeting;
@@ -152,5 +152,19 @@ class MeetingServices
         $meeting->meeting_table_id = null;
         $meeting->save();
         return $meeting;
+    }
+
+    public function InsertMeetingTable($nbMeetingTable, $congressId)
+    {
+        $meetingtables = $this->deleteMeetingTablesWithNoMeeting($congressId);
+        for ($i = 1; $i <= $nbMeetingTable; $i++) {
+            $label = "Table " . $i;
+            $MeetTable = $this->addMeetingTable($label, $congressId);
+        }
+        if (count($meetingtables) != 0) {
+            foreach ($meetingtables as $table) {
+                $meetingtables = $this->removeDuplicatesMeetingTable($table->label, $congressId);
+            }
+        }
     }
 }
