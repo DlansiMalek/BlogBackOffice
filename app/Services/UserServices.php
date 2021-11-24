@@ -1785,5 +1785,4 @@ class UserServices
         ->paginate($perPage);
         return  $users;
     }
-
 }
