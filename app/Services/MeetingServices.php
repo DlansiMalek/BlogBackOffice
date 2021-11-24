@@ -72,7 +72,7 @@ class MeetingServices
         return $user_meeting;
     }
 
-    public function getUserMeetingsById($meeting_id, $user_id = null)
+    public function getUserMeetingsById($meeting_id, $user_id )
     {
         return UserMeeting::where('meeting_id', '=', $meeting_id)
         ->where(function ($query) use ($user_id) {

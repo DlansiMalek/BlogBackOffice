@@ -10,6 +10,8 @@ use App\Models\LPSpeaker;
 use App\Services\Utils;
 use DateTime;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Log;
+
 
 class CongressTest extends TestCase
 {
@@ -63,8 +65,8 @@ class CongressTest extends TestCase
             ->first();
 
         $this->assertEquals($data['name'], $congress->name);
-        $this->assertEquals($data['start_date'], $congress->start_date);
-        $this->assertEquals($data['end_date'], $congress->end_date);
+        $this->assertEquals($data['start_date'], new DateTime($congress->start_date));
+        $this->assertEquals($data['end_date'], new DateTime($congress->end_date));
         $this->assertEquals($data['congress_type_id'] == '1' ? $data['price'] : 0, $congress->price);
         $this->assertEquals($data['congress_type_id'], $congress->congress_type_id);
         $this->assertEquals($data['description'], $congress->description);
@@ -134,8 +136,8 @@ class CongressTest extends TestCase
 
         $this->assertEquals($congressOld->congress_id, $dataResponse['congress_id']);
         $this->assertEquals($data['name'], $congress->name);
-        $this->assertEquals($data['start_date'], $congress->start_date);
-        $this->assertEquals($data['end_date'], $congress->end_date);
+        $this->assertEquals($data['start_date'],  new DateTime($congress->start_date));
+        $this->assertEquals($data['end_date'],  new DateTime($congress->end_date));
         $this->assertEquals($data['congress_type_id'] == '1' ? $data['price'] : 0, $congress->price);
         $this->assertEquals($data['congress_type_id'], $congress->congress_type_id);
         $this->assertEquals($data['description'], $congress->description);
@@ -321,8 +323,8 @@ class CongressTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $data = collect($dataResponse['data'])->sortBy('congress_id')->reverse()->values();
         $this->assertEquals($data[0]['name'], $congress->name);
-        $this->assertEquals($data[0]['start_date'], $congress->start_date);
-        $this->assertEquals($data[0]['end_date'], $congress->end_date->format('Y-m-d'));
+        $this->assertEquals( new DateTime($data[0]['start_date']), new DateTime($congress->start_date));
+        $this->assertEquals( new DateTime($data[0]['end_date']),$congress->end_date);
         $this->assertEquals($data[0]['price'], $congress->price);
         $this->assertEquals($data[0]['congress_type_id'], $congress->congress_type_id);
         $this->assertEquals($data[0]['description'], $congress->description);
@@ -340,8 +342,8 @@ class CongressTest extends TestCase
     {
         return [
             'name' => $this->faker->sentence,
-            'start_date' => $this->faker->date(),
-            'end_date' => $this->faker->date(),
+            'start_date' => $this->faker->dateTime(),
+            'end_date' => $this->faker->dateTime(),
             'price' => $this->faker->randomFloat(2, 0, 5000),
             'congress_type_id' => strval($this->faker->numberBetween(1, 3)),
             'private' => $this->faker->numberBetween(0, 1),
