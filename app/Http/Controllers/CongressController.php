@@ -722,6 +722,7 @@ class CongressController extends Controller
         $mailId = $mail->mail_id;
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         $privilege_ids = $request->input('privilege_ids');
+        $to_all = $request->query('toAll', 0);
 
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
@@ -741,16 +742,16 @@ class CongressController extends Controller
 
 
         foreach ($users as $user) {
-            if (Utils::isValidSendMail($congress, $user)) {
+            if (Utils::isValidSendMail($congress, $user, $to_all)) {
                 $userMail = null;
                 if (sizeof($user->user_mails) == 0) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
                 } else {
                     $userMail = $user->user_mails[0];
                 }
-
+                $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/validate/' . $user->verification_code;
                 if (Utils::isValidStatus($userMail)) {
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null)
                         , $user, $congress, $mail->object, false, $userMail);
                 }
             }
@@ -1184,6 +1185,5 @@ class CongressController extends Controller
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
-    }
-
+    }   
 }

@@ -14,7 +14,7 @@ class StandServices
 {
 
     public function addStand($stand, $congressId, $request)
-    {
+    { 
         if (!$stand) {
             $stand = new Stand();
         }

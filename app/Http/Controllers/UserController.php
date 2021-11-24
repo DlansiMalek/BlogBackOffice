@@ -474,17 +474,19 @@ class UserController extends Controller
 
     }
 
-    public function validateUserAccount($userId = null, $congressId = null, $token = null)
+    public function validateUserAccount($userId = null, $congressId = null, $token = null, Request $request)
     {
         $user = $this->userServices->getUserById($userId);
         if (!$user) {
             return response()->json(['response' => 'Votre compte à été supprimé'], 404);
         }
+        $source = $request->query('source', '');
         if ($token == $user->verification_code) {
             $user->email_verified = 1;
             $user->update();
 
-            return response()->redirectTo(UrlUtils::getBaseUrlFrontOffice() . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId);
+            $url = $source == 'frontoffice' ? UrlUtils::getPaymentLinkFrontoffice(UrlUtils::getBaseUrlFrontOffice(), $token, $congressId) : UrlUtils::getPaymentLinkBackoffice(UrlUtils::getUrlEventizerWeb(), $user->user_id, $token, $congressId);            
+            return  response()->redirectTo($url);
         } else {
             return response()->json(['response' => 'Token not match'], 400);
         }
@@ -1472,7 +1474,7 @@ class UserController extends Controller
     
     public function sendCustomMail($user_id, $mail_id, $congress_id)
     {
-        if (!$user = $this->userServices->getParticipatorById($user_id)) {
+        if (!$user = $this->userServices->getUserIdAndByCongressId($user_id, $congress_id)) {
             return response()->json(['response' => 'user not found'], 404);
         }
 
@@ -1480,7 +1482,8 @@ class UserController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         }
         $congress = $this->congressServices->getCongressById($congress_id);
-        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, false);
+        $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
 
@@ -1756,7 +1759,8 @@ class UserController extends Controller
             }
         }
         // Sending Mail
-        $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+        $source = $request->query('source', '');
+        $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code . '?source=' . $source;
         $user = $this->userServices->getUserIdAndByCongressId($user->user_id, $congress_id);
         $userPayment = null;
 
@@ -2145,5 +2149,41 @@ class UserController extends Controller
             ],
             200
         );
+    }
+
+    public function getAllUsersByCongressPWAWithPagination($congress_id,Request $request)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = Str::lower($request->query('search', ''));
+        $user = $this->userServices->retrieveUserFromToken(); 
+        $userId = $user ? $user->user_id : null;
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId);        
+        return response()->json($users);
+    }
+
+    public function getResponseUserInformations($congressId,$user_id)
+    {
+        if (!$user = $this->userServices->getUserById($user_id)) {
+            return response()->json(['response' => 'user not found'], 404);
+        } 
+        $congress = $this->congressServices->getCongressById($congressId);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
+        $user = $this->userServices->getUserByIdWithRelations($user_id, [
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'user_congresses.congress.config' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses' => function ($query) use ($congressId) { 
+                $query->whereHas('form_input', function ($query) use ($congressId) { 
+                $query->where('congress_id', '=', $congressId); }); 
+            },'responses.form_input', 'responses.values' => function ($query) {
+                $query->with(['val']);
+            }, 'responses.form_input.values',
+            'responses.form_input.type', 'profile_img',
+        ]);
+
+        return response()->json($user);
     }
 }

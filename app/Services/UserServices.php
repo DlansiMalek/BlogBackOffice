@@ -1781,8 +1781,8 @@ class UserServices
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }      
-        })->paginate($perPage);
+        })->with('profile_img')
+        ->paginate($perPage);
         return  $users;
     }
-
 }
