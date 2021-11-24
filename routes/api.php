@@ -323,6 +323,13 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 
     Route::post('/register', 'UserController@registerUser');
 
+    Route::group(['prefix' => 'network', "middleware" => ["assign.guard:users"]], function () {
+        Route::post('add', 'UserController@addUserNetwork');
+        Route::get('list', 'UserController@getAllUserNetwork');
+        Route::delete('delete/{user_network_id}', 'UserController@deleteUserNetwork');
+    });
+    
+
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
