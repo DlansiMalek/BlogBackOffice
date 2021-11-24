@@ -23,7 +23,6 @@ use App\Models\FormInputValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -1094,14 +1093,9 @@ class UserServices
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) {
             $user->resource_id = $request->input('resource_id');
-<<<<<<< HEAD
-            if ($resource)
-                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);
-=======
             /** TODO fix data too long */
             /*if($resource)
                 $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);*/
->>>>>>> d9195f5fa38f1059f62528c2bd67b397deba421c
         }
         $user->verification_code = Str::random(40);
         $user->save();
@@ -1172,7 +1166,6 @@ class UserServices
             ->get();
     }
 
-<<<<<<< HEAD
     public function getQuestionByKey($congress_id,$key)
     {
         return FormInput::where('congress_id', '=', $congress_id)
@@ -1183,12 +1176,11 @@ class UserServices
     public function getValueResponse($user_id, $form_input_id)
     {
         return FormInputResponse::where('user_id', '=', $user_id)
-            ->where('form_input_id', '=', $form_input_id) 
-            ->with(['values' => function ($query) use ($form_input_id){
-                $query ->where('form_input_id', '=', $form_input_id);
-               
-            }])  
-            ->get();
+        ->where('form_input_id', '=', $form_input_id) 
+        ->with(['values'  => function ($query) {
+            $query->with(['val']);
+        }]) 
+        ->get();
     }
 
     public function getResponseFormInput($user_id, $form_input_id)
@@ -1198,10 +1190,8 @@ class UserServices
             ->get('response');
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id )
-=======
+
     public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id, $isSelected = 0)
->>>>>>> d9195f5fa38f1059f62528c2bd67b397deba421c
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
@@ -1814,12 +1804,11 @@ class UserServices
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
-<<<<<<< HEAD
             }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
-            }])
+            }])->with('profile_img')
             ->paginate($perPage);
         return  $users;
     }
@@ -1829,11 +1818,4 @@ class UserServices
         return ConfigCongress::where('congress_id', '=', $congress_id)
             ->get('show_in_chat');
     }
-=======
-            }      
-        })->with('profile_img')
-        ->paginate($perPage);
-        return  $users;
-    }
->>>>>>> d9195f5fa38f1059f62528c2bd67b397deba421c
 }
