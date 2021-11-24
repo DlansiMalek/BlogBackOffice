@@ -1707,11 +1707,13 @@ class UserController extends Controller
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
         }
         $show_in_chat = $this->userServices->getShowInChat($congress_id);
-        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat'] && $show_in_chat[0]['show_in_chat']!=='null')) {
+        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat'])) {
             $user_congress->chat_info = $user[$show_in_chat[0]['show_in_chat']];
         } else {
             $form_input = $this->userServices->getQuestionByKey($congress_id, $show_in_chat[0]['show_in_chat']);
-            if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 6){
+            Log::warning($form_input);
+            if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9){
+                Log::warning($form_input->form_input_id);
                 $chat_info = $this->userServices->getValueResponse($user->user_id, $form_input->form_input_id);
                 Log::warning($chat_info);
                 $user_congress->chat_info = $chat_info[0]['value'];

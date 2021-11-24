@@ -1174,7 +1174,7 @@ class UserServices
             ->with(['values' => function ($query) use ($form_input_id){
                 $query ->where('form_input_id', '=', $form_input_id);
                
-            }]) 
+            }])  
             ->get();
     }
 
