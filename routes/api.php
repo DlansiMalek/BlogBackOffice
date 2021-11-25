@@ -48,7 +48,8 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
-    Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
 });
 

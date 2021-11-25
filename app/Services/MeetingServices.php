@@ -4,8 +4,8 @@ namespace App\Services;
 
 
 use App\Models\Meeting;
+use App\Models\MeetingTable;
 use App\Models\UserMeeting;
-use Illuminate\Support\Facades\Log;
 
 
 
@@ -63,10 +63,10 @@ class MeetingServices
     {
         return UserMeeting::where('user_meeting_id', '=', $user_meeting_id)->first();
     }
-    
-    public function updateMeetingStatus($user_meeting, $request)
+
+    public function updateMeetingStatus($user_meeting, $request, $status)
     {
-        $user_meeting->status = $request->input('status');
+        $user_meeting->status = $status;
         $user_meeting->user_canceler = $request->input('user_canceler')!= 'null' && $request->input('user_canceler')!= null ? $request->input('user_canceler') : null;  
         $user_meeting->save();
         return $user_meeting;
@@ -103,5 +103,68 @@ class MeetingServices
         $user_meeting->status = -1;
         $user_meeting->save();
         return $user_meeting;
+    }
+
+    public function addMeetingTable($label, $congress_id)
+    {
+        $meeting_table = new MeetingTable();
+        $meeting_table->label = $label;
+        $meeting_table->congress_id = $congress_id;
+        $meeting_table->save();
+        return $meeting_table;
+    }
+
+    public function countUsedMeetingTablesByCongressId($congress_id)
+    {
+        return MeetingTable::whereHas('meetings')->where('congress_id', '=', $congress_id)->count();
+    }
+
+    public function getMeetingTablesByCongressId($congress_id)
+    {
+        return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->get();
+    }
+
+    public function deleteMeetingTablesWithNoMeeting($congress_id)
+    {
+        $delete_meetings = MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->delete();
+        return $this->getMeetingTablesByCongressId($congress_id);
+    }
+
+    public function getAvailableMeetingTable($date, $congress_id)
+    {
+        return MeetingTable::whereDoesntHave('meetings', function ($query) use ($date) {
+            $query->where('start_date', '=', $date);
+        })->where('congress_id', '=', $congress_id)->first();
+    }
+ 
+    public function removeDuplicatesMeetingTable($label, $congress_id)
+    {
+        return MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->where('label', '=', $label)->delete();
+    }
+
+    public function addTableToMeeting($meeting, $meetingtable_id){
+        $meeting->meeting_table_id = $meetingtable_id;
+        $meeting->save();
+        return $meeting;
+    }
+
+    public function removeTableFromMeeting($meeting){
+        $meeting->meeting_table_id = null;
+        $meeting->save();
+        return $meeting;
+    }
+
+    public function InsertMeetingTable($nbMeetingTable, $congressId)
+    {
+        $meetingtables = $this->deleteMeetingTablesWithNoMeeting($congressId);
+        for ($i = 1; $i <= $nbMeetingTable; $i++) {
+            $label = "Table " . $i;
+            $MeetTable = $this->addMeetingTable($label, $congressId);
+        }
+        if (count($meetingtables) != 0) {
+            foreach ($meetingtables as $table) {
+                $meetingtables = $this->removeDuplicatesMeetingTable($table->label, $congressId);
+            }
+        }
     }
 }
