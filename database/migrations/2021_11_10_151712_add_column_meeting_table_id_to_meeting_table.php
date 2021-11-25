@@ -15,7 +15,10 @@ class AddColumnMeetingTableIdToMeetingTable extends Migration
     {
         Schema::table('Meeting', function (Blueprint $table) {
             $table->unsignedInteger('meeting_table_id')->nullable()->default(null);
-            $table->foreign('meeting_table_id')->references('meeting_table_id')->on('Meeting_Table');
+            $table->foreign('meeting_table_id')
+                    ->references('meeting_table_id')
+                    ->on('Meeting_Table')
+                    ->onDelete('cascade');
         });
     }
 
