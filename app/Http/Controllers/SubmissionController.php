@@ -361,13 +361,12 @@ class SubmissionController extends Controller
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
         $congress = $this->congressServices->getCongressById($congress_id);
         if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
-                );
-            }
+            // TODO verify existance mail per submission
+            // $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+            $this->mailServices->sendMail(
+                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
+            );
         }
 
         return response()->json(['response' => 'Submission status changed'], 201);
@@ -475,6 +474,7 @@ class SubmissionController extends Controller
         $note = $request->input('note', -1);
         $comment = $request->input('comment');
         $status = $request->input('status');
+        $theme = $request->input('theme');
         if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }
@@ -486,7 +486,7 @@ class SubmissionController extends Controller
             }
             $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
             $evaluation->communication_type_id = $request->input('communication_type_id');
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme);
 
             // add review 
             if ($status === 6 || $comment) {
