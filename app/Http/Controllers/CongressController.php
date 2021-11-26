@@ -1186,4 +1186,31 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
+
+    public function SendCustomMailByPersonnalizedQuestion($mail_id, Request $request)
+    {
+        if (!$mail = $this->congressServices->getEmailById($mail_id)) {
+            return response()->json(['response' => 'mail not found'], 404);
+        }    
+        $congress = $this->congressServices->getCongressById($mail->congress_id);
+        $questionId = $request->input('question_id');
+        $responseId = $request->input('response_id');
+        $users = $this->userServices->getAllUsersByCongressWithSameResponse($questionId, $responseId,$mail_id);
+        foreach ($users as $user) {
+            if (Utils::isValidSendMail($congress, $user)) {
+                $userMail = null;
+                if (sizeof($user->user_mails) == 0) {
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                } else {
+                    $userMail = $user->user_mails[0];
+                }
+                if ($userMail->status != 1) {
+                $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, null)
+                    , $user, $congress, $mail->object, false, $userMail);
+                }
+            }
+        }
+        return response()->json(["status" => "success"], 200);
+    }
+
 }

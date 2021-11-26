@@ -1785,4 +1785,20 @@ class UserServices
         ->paginate($perPage);
         return  $users;
     }
+
+    public function getAllUsersByCongressWithSameResponse($form_input_response_id, $form_input_value_id,$mail_id)
+    {
+         $users = User::whereHas(
+            'responses.values', function ($query) use ($form_input_response_id, $form_input_value_id) {
+                $query->where('form_input_id', '=', $form_input_response_id);
+                if (count($form_input_value_id) > 0) {
+                    $query->whereIn('form_input_value_id', $form_input_value_id);
+                }
+            }
+        )->with(['user_mails' => function ($query) use ($mail_id) {
+            $query->where('mail_id', '=', $mail_id);
+        }])->get();
+        return $users;
+    }
+
 }
