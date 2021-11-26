@@ -76,15 +76,15 @@ docker-package:
     - docker logout "$CI_REGISTRY"
   script:
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:app-$CI_COMMIT_REF_NAME"
-    - IMAGE_NAME_GKE="$AWS_DOCKER_REGISTRY/$CI_PROJECT_NAME:app-$CI_COMMIT_REF_NAME"
-    - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GKE" -f docker/app.docker .
+    - IMAGE_NAME_AWS="$AWS_DOCKER_REGISTRY/eventizer/$CI_PROJECT_NAME:app-$CI_COMMIT_REF_NAME"
+    - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_AWS" -f docker/app.docker .
     - docker push "$IMAGE_NAME"
-    - docker push "$IMAGE_NAME_GKE"
+    - docker push "$IMAGE_NAME_AWS"
     - IMAGE_NAME="$CI_REGISTRY_IMAGE:web-$CI_COMMIT_REF_NAME"
-    - IMAGE_NAME_GKE="$AWS_DOCKER_REGISTRY/$CI_PROJECT_NAME:web-$CI_COMMIT_REF_NAME"
-    - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_GKE"  -f docker/web.docker .
+    - IMAGE_NAME_AWS="$AWS_DOCKER_REGISTRY/eventizer/$CI_PROJECT_NAME:web-$CI_COMMIT_REF_NAME"
+    - docker build --pull -t "$IMAGE_NAME" -t "$IMAGE_NAME_AWS"  -f docker/web.docker .
     - docker push "$IMAGE_NAME"
-    - docker push "$IMAGE_NAME_GKE"
+    - docker push "$IMAGE_NAME_AWS"
 
 docker-package-feat:
   stage: package-manual
