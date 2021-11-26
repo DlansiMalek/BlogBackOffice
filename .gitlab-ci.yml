@@ -145,7 +145,7 @@ ansible-deploy-prod-gke:
 
 ansible-deploy-prod-aws:
   stage: deploy
-  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  image: registry.gitlab.master.ssd.vps.vayetek.com/vayetek/devops/aws-eks:master
   only:
     - master
   before_script:
