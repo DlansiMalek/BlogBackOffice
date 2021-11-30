@@ -45,11 +45,19 @@ class MeetingController extends Controller
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
     $user_sender  = $this->userServices->retrieveUserFromToken();
     $user_receiver = $this->userServices->getUserById($request->input('user_received_id'));
+    if (!$request->has('start_date')) {
+      return response()->json(['response' => 'Meeting date not found'], 401);
+    }
+    $meeting_date = $request->input('start_date');
     if (!$user_sender) {
       return response()->json(['response' => 'No user found'], 401);
     }
     if (!$user_receiver) {
       return response()->json(['response' => 'No user found'], 401);
+    }
+    $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id, $user_receiver->user_id);
+    if ($duplicated_meeting > 0) {
+      return response()->json(['response' => 'Meeting on the same date found'], 401);
     }
     $user_receiver->verification_code = Str::random(40);
     $user_receiver->save();
@@ -79,16 +87,15 @@ class MeetingController extends Controller
     return response()->json($meeting, 200);
   }
 
-  function modiyStatus($MeetingId, Request $request)
+  function modiyStatus($meetingId, Request $request)
   {
-    if (!$MeetingId) {
+    if (!$meetingId) {
       return response()->json(['required value' => ['meeting_id']], 400);
     }
     if (!$request->has('status')) {
       return response()->json(['required value' => ['status']], 400);
     }
     $status = $request->input('status');
-    $meetingId = $MeetingId;
     $meeting = null;
     if (!$meeting = $this->meetingServices->getMeetingById($meetingId)) {
       return response()->json(['response' => 'Meeting not found'], 401);
@@ -163,6 +170,8 @@ class MeetingController extends Controller
 
   public function sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver)
   {
+    $meeting = $this->meetingServices->getMeetingById($meeting->meeting_id);
+    Log::warning($meeting->meeting_table->label);
     if ($mailtype = $this->congressServices->getMailType('accept_meeting')) {
       if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
