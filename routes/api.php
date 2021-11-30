@@ -48,7 +48,8 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
-    Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
 });
 
@@ -340,6 +341,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
+            Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');           
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
