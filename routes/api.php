@@ -166,7 +166,6 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('{congress_id}', 'RegistrationFormController@setForm')->middleware('admin');
     });
     Route::post('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers');
-    Route::post('/custom-mail/send-personnalized-question/{mail_id}', 'CongressController@SendCustomMailByPersonnalizedQuestion');
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'CongressController@getCongressById');
         Route::get('/details', 'CongressController@getCongressDetailsById');
