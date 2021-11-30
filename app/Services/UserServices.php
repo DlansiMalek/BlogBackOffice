@@ -1786,7 +1786,7 @@ class UserServices
         return  $users;
     }
 
-    public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$mailId)
+    public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$privilege_ids = [],$mailId)
     {
          $users = User::whereHas(
             'responses.values', function ($query) use ($formInputResponseId, $formInputValueId) {
@@ -1795,13 +1795,16 @@ class UserServices
                     $query->whereIn('form_input_value_id', $formInputValueId);
                 }
             }
-        )->with(['user_mails' => function ($query) use ($mailId) {
+        )
+        ->with(['user_mails' => function ($query) use ($mailId) {
             $query->where('mail_id', '=', $mailId);
         },  'accesses' => function ($query) use ($congressId) {
             $query->where("congress_id", "=", $congressId);
         },
-        'user_congresses' => function ($query) use ($congressId) {
+        'user_congresses' => function ($query) use ($congressId,$privilege_ids) {
             $query->where('congress_id', '=', $congressId);
+            if (count($privilege_ids) > 0 )
+                $query->whereIn('privilege_id', $privilege_ids);
         },
         'payments' => function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);

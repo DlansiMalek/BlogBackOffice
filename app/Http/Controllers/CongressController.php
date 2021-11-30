@@ -727,9 +727,10 @@ class CongressController extends Controller
         $responseId = $request->input('response_id');
 
         if ($questionId != null &&  $responseId != null) {
-            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId, $mailId);
+            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId,$privilege_ids, $mailId);
         }
-
+        else
+        {
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
                 'accesses' => function ($query) use ($congressId) {
@@ -745,6 +746,8 @@ class CongressController extends Controller
                     $query->where('mail_id', '=', $mailId);
                 }
             ], null, $privilege_ids);
+
+        }
 
         foreach ($users as $user) {
             if (Utils::isValidSendMail($congress, $user, $to_all)) {
