@@ -425,6 +425,7 @@ class AdminController extends Controller
         }
 
         $admin = $request->input('admin');
+        $resourceId = $request->input('resourceId');
         $privilegeId = (int)$request->input('privilege_id');
         $password = Str::random(8);
         // if exists then update or create admin in DB
@@ -451,7 +452,7 @@ class AdminController extends Controller
             $name = explode(" ", $admin['name']);
             $admin['first_name'] = isset($name[0]) ? $name[0] : '-';
             $admin['last_name']  = isset($name[1]) ? $name[1] : '-';
-            $user = $this->userServices->addUserFromExcel($admin, $password);
+            $user = $this->userServices->addUserFromExcel($admin, $password, $resourceId);
             $this->userServices->saveUserCongress($congress_id, $user->user_id, $privilegeId, $organisationId, null);
         } else {
             // Add user to congress if not affected
