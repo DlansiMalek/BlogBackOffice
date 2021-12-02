@@ -31,7 +31,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Services\MeetingServices;
-use Illuminate\Support\Facades\Log;
+
 
 class UserController extends Controller
 {
@@ -1647,7 +1647,7 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserById($user_id)) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($user->verification_code !== $verification_code) {
+        if ($user->password_code !== $verification_code) {
             return response()->json('bad request', 400);
         }
 
