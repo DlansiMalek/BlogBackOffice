@@ -42,7 +42,7 @@ class MeetingServices
     public function getMeetingById($meeting_id)
     {
         return Meeting::where('meeting_id', '=', $meeting_id)
-            ->with(['user_meeting','meeting_table'])
+            ->with(['user_meeting', 'meetingtable'])
             ->first();
     }
     public function getMeetingByUserId($user_id, $congress_id)

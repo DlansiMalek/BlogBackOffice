@@ -10,7 +10,7 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
-use Illuminate\Support\Facades\Log;
+
 
 class MeetingController extends Controller
 {
@@ -171,13 +171,13 @@ class MeetingController extends Controller
   public function sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver)
   {
     $meeting = $this->meetingServices->getMeetingById($meeting->meeting_id);
-    Log::warning($meeting->meeting_table->label);
+    $meetingtable = $meeting['meetingtable'];
     if ($mailtype = $this->congressServices->getMailType('accept_meeting')) {
       if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, null, $meetingtable['label']), $user_sender, $congress, $mail->object, null, null, null, null);
       } else {
         if ($mail = $this->congressServices->getMailOutOfCongress(25)) {
-          $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress,  $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null,  $meeting, $user_receiver, $user_sender),  $user_sender, $congress, $mail->object, null, null, null, null);
+          $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress,  $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null,  $meeting, $user_receiver, $user_sender, null, $meetingtable['label']),  $user_sender, $congress, $mail->object, null, null, null, null);
         }
       }
     }
