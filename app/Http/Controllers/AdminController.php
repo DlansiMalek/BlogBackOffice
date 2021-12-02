@@ -580,6 +580,8 @@ class AdminController extends Controller
             return response()->json(["message" => "admin not found"], 404);
         }
         $result = $this->adminServices->getPersonelsByIdAndCongressId($congress_id, $admin_id);
+        $user = $this->userServices->getUserByEmail($result->email);
+        $result['profile_img'] = $user->profile_img;
         return response()->json($result);
     }
 

@@ -811,7 +811,7 @@ class UserServices
             if ($congress_id) {
                 $query->where('congress_id', '=', $congress_id);
             }
-        }])
+        }, 'profile_img'])
             ->first();
     }
 
