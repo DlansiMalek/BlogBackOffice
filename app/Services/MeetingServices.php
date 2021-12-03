@@ -42,7 +42,7 @@ class MeetingServices
     public function getMeetingById($meeting_id)
     {
         return Meeting::where('meeting_id', '=', $meeting_id)
-            ->with(['user_meeting'])
+            ->with(['user_meeting', 'meetingtable'])
             ->first();
     }
     public function getMeetingByUserId($user_id, $congress_id)
@@ -172,5 +172,12 @@ class MeetingServices
                 $meetingtables = $this->removeDuplicatesMeetingTable($table->label, $congressId);
             }
         }
+    }
+
+    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id, $user_reveiver_id)
+    {
+        return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id) {
+            $query->where('user_sender_id', '=', $user_sender_id)->where('user_receiver_id','=',$user_reveiver_id);
+        })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
     }
 }

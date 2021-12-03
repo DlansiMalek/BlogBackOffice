@@ -715,8 +715,8 @@ class CongressServices
     }
     
     function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
-                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null)
-    {
+                        $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null, $meetingtable = null)
+    { 
         $accesses = "";
         if ($participant && $participant->accesses && sizeof($participant->accesses) > 0) {
             $accesses = "<ul>";
@@ -804,7 +804,7 @@ class CongressServices
                                                   <a href="{{$linkRefuseMeeting}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting]);
+        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting, 'meetingtable' => $meetingtable]);
 
     }
 
