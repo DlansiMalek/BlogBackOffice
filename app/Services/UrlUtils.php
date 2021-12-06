@@ -198,10 +198,10 @@ class UrlUtils
             return "http://localhost:4200/#";
         }
         if (App::environment() == 'prod') {
-            return 'https://participant.eventizer.io/#/';
+            return 'https://participant.eventizer.io/#';
         }
         if (App::environment() == 'dev') {
-            return 'https://dev.participant.eventizer.io/';
+            return 'https://dev.participant.eventizer.io/#';
         }
 
         return "http://localhost:4200/#";
