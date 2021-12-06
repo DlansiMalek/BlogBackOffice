@@ -1787,6 +1787,32 @@ class UserServices
         return  $users;
     }
 
+    public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$privilegIds = [],$mailId)
+    {
+         $users = User::whereHas(
+            'responses.values', function ($query) use ($formInputResponseId, $formInputValueId) {
+                $query->where('form_input_id', '=', $formInputResponseId);
+                if (count($formInputValueId) > 0) {
+                    $query->whereIn('form_input_value_id', $formInputValueId);
+                }
+            }
+        )
+        ->with(['user_mails' => function ($query) use ($mailId) {
+            $query->where('mail_id', '=', $mailId);
+        },  'accesses' => function ($query) use ($congressId) {
+            $query->where("congress_id", "=", $congressId);
+        },
+        'user_congresses' => function ($query) use ($congressId,$privilegIds) {
+            $query->where('congress_id', '=', $congressId);
+            if (count($privilegIds) > 0 )
+                $query->whereIn('privilege_id', $privilegIds);
+        },
+        'payments' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        } ])->get();
+        return $users;
+    }
+
     public function addUserNetwork($user_id, $fav_id) 
     {
         $user_network = new UserNetwork();
