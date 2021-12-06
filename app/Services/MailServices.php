@@ -82,18 +82,26 @@ class MailServices
             ->first();
     }
 
-    public function getMailByUserIdAndMailId($mailId, $userId)
+    public function getMailByUserIdAndMailId($mailId, $userId, $submissionId = null)
     {
         return UserMail::where('user_id', '=', $userId)
             ->where('mail_id', '=', $mailId)
+            ->where(function ($query) use ($submissionId) {
+                if ($submissionId != null) {
+                    $query->where('submission_id', '=', $submissionId);
+                }
+            })
             ->first();
     }
 
-    public function addingMailUser($mailId, $userId)
+    public function addingMailUser($mailId, $userId, $submissionId = null)
     {
         $mailUser = new UserMail();
         $mailUser->user_id = $userId;
         $mailUser->mail_id = $mailId;
+        if ($submissionId) {
+            $mailUser->submission_id = $submissionId;
+        }
         $mailUser->save();
 
         return $mailUser;

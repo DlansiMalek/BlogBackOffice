@@ -118,9 +118,9 @@ class SubmissionController extends Controller
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission->submission_id);
                 if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission->submission_id);
                 }
 
                 $this->mailServices->sendMail(
@@ -207,9 +207,9 @@ class SubmissionController extends Controller
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission->submission_id);
                 if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission->submission_id);
                 }
 
                 $this->mailServices->sendMail(
@@ -290,9 +290,9 @@ class SubmissionController extends Controller
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
                 if ($mail) {
-                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission->submission_id);
                     if (!$userMail) {
-                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission->submission_id);
                         $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
                         );
@@ -361,12 +361,13 @@ class SubmissionController extends Controller
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
         $congress = $this->congressServices->getCongressById($congress_id);
         if ($mail) {
-            // TODO verify existance mail per submission
-            // $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+          $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission_id);
+          if (!$userMail) {
+            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission_id);
             $this->mailServices->sendMail(
                 $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
             );
+          }
         }
 
         return response()->json(['response' => 'Submission status changed'], 201);
@@ -426,9 +427,9 @@ class SubmissionController extends Controller
             $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id, $submission_id);
                 if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id, $submission_id);
                 }
                 $link = '';
                 if (($request->input('status') == 4)) {
@@ -495,9 +496,9 @@ class SubmissionController extends Controller
                 $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
                 if ($mail) {
-                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id, $submission->submission_id);
                     if (!$userMail) {
-                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id, $submission->submission_id);
                         $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
                         );
@@ -519,9 +520,9 @@ class SubmissionController extends Controller
         $mailtype = $this->congressServices->getMailType('submission_a_reviser', $this->type);
         $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
         if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id, $submission->submission_id);
             if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id, $submission->submission_id);
             }
             $linkSubmission = UrlUtils::getBaseUrlFrontOffice() . "/user-profile/submission/edit/".$submission->submission_id;
             $this->mailServices->sendMail(
@@ -893,7 +894,10 @@ class SubmissionController extends Controller
                 return response()->json(['error' => 'mail attestation submission not found'], 400);
             }
             $userMail = null;
-
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submissionId);
+            if (!$userMail) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submissionId);
+            }
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             $attestationSubmission = null;
             foreach ($attestationsSubmissions as $attestation) {
