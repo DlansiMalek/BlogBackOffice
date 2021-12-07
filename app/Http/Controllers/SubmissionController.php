@@ -454,8 +454,8 @@ class SubmissionController extends Controller
                         $link,
                         $request->input('status') == '1' ? $submission->code : null,
                         $submission->title,
-                        $type ? $type->label : null
-
+                        $type ? $type->label : null,
+                        [], null, null, null, null, null, null, null, null, $submission->theme->label
                     ),
                     $user,
                     null,
