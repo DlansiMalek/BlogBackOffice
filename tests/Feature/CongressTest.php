@@ -87,7 +87,6 @@ class CongressTest extends TestCase
         $this->assertEquals('Workshop', $configCongress->access_system);
         $this->assertEquals(1, $configCongress->status);
         $this->assertEquals($dataResponse['congress_id'], $configCongress->congress_id);
-        $this->assertNull($configCongress->chat_info);
 
         // *** Verify Adding Admin Congress ***
         $adminCongress = AdminCongress::where('congress_id', '=', $dataResponse['congress_id'])
