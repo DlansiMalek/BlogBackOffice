@@ -23,7 +23,6 @@ use App\Models\FormInputValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -78,8 +77,14 @@ class UserServices
         $newUser->last_name = $last_name;
         $newUser->passwordDecrypt = app('App\Http\Controllers\SharedController')->randomPassword();
         $newUser->password = app('App\Http\Controllers\SharedController')->encrypt($newUser->passwordDecrypt);
+        $newUser->verification_code = Str::random(40);
         $newUser->save();
 
+        if (!$newUser->qr_code) {
+            $newUser->qr_code = Utils::generateCode($newUser->user_id);
+            $newUser->update();
+        }
+        
         return $newUser;
     }
 
@@ -312,8 +317,8 @@ class UserServices
 
     public function affectAccess($user_id, $accessIds, $packAccesses)
     {
-        for ($i = 0; $i < sizeof($accessIds); $i++) {
-            $this->affectAccessById($user_id, $accessIds[$i]);
+        foreach ($accessIds as $item) {
+            $this->affectAccessById($user_id, $item);
         }
 
         foreach ($packAccesses as $access) {
@@ -530,8 +535,8 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.values', 'user_congresses.privilege', 'country'])
-            ->with(['accesses'])
+            }, 'responses.values', 'user_congresses.privilege', 'country','user_congresses.organization'])
+            ->with(['accesses', 'profile_img'])
             ->get();
         return $users;
     }
@@ -1088,8 +1093,9 @@ class UserServices
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) {
             $user->resource_id = $request->input('resource_id');
-            if ($resource)
-                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);
+            /** TODO fix data too long */
+            /*if($resource)
+                $user->img_base64 = Utils::getBase64Img(UrlUtils::getFilesUrl() . $resource->path);*/
         }
         $user->verification_code = Str::random(40);
         $user->save();
@@ -1170,12 +1176,11 @@ class UserServices
     public function getValueResponse($user_id, $form_input_id)
     {
         return FormInputResponse::where('user_id', '=', $user_id)
-            ->where('form_input_id', '=', $form_input_id) 
-            ->with(['values' => function ($query) use ($form_input_id){
-                $query ->where('form_input_id', '=', $form_input_id);
-               
-            }]) 
-            ->get();
+        ->where('form_input_id', '=', $form_input_id) 
+        ->with(['values'  => function ($query) {
+            $query->with(['val']);
+        }]) 
+        ->get();
     }
 
     public function getResponseFormInput($user_id, $form_input_id)
@@ -1185,12 +1190,14 @@ class UserServices
             ->get('response');
     }
 
-    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id )
+
+    public function saveUserCongress($congress_id, $user_id, $privilege_id, $organization_id, $pack_id, $isSelected = 0)
     {
         $user_congress = new UserCongress();
         $user_congress->user_id = $user_id;
         $user_congress->congress_id = $congress_id;
         $user_congress->privilege_id = $privilege_id;
+        $user_congress->isSelected = $isSelected;
 
         if ($organization_id)
             $user_congress->organization_id = $organization_id;
@@ -1320,6 +1327,7 @@ class UserServices
     public function getPaymentById($paymentId)
     {
         return Payment::where('payment_id', '=', $paymentId)
+            ->with(['congress'])
             ->first();
     }
 
@@ -1800,7 +1808,7 @@ class UserServices
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
-            }])
+            }])->with('profile_img')
             ->paginate($perPage);
         return  $users;
     }

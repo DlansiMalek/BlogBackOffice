@@ -121,6 +121,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('tracking', 'UserController@trackingUser')
         ->middleware('assign.guard:users');
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
+    Route::get('payments','PaymentController@getPaymentsPagination')->middleware('assign.guard:users');
     Route::group(['prefix' => '{user_id}'], function () {
         Route::delete('deleteUserOutOfCongress', 'UserController@delete');
         Route::get('', 'UserController@getUserById');
@@ -184,7 +185,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::get('/banner', 'CongressController@getBanner');
         Route::post('badge/affect', 'BadgeController@affectBadgeToCongress');
         Route::delete('/delete-badge/{badgeId}', 'BadgeController@deleteBadge');
-        Route::get('/tracking', 'CongressController@getListTrackingByCongress');
+        Route::post('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
         Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
@@ -227,6 +228,11 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::group(['prefix' => 'tags'], function () {
             Route::get('', 'TagController@getTags');
             Route::post('add', 'TagController@addTag');
+        });
+
+        Route::group(['prefix' => 'stags'], function () {
+            Route::get('stand-tag-list', 'STagController@getSTags');
+            Route::post('add', 'STagController@addSTag');
         });
 
         Route::group(['prefix' => 'product'], function () {
@@ -334,6 +340,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
+            Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');           
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
@@ -346,10 +354,10 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
                 Route::delete('{white_list_id}', 'UserController@deleteWhiteList');
             });
             Route::get('stands', 'StandController@getStandsByCongress');
+            Route::get('participants-number', 'CongressController@getNumberOfParticipants');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });
-
     Route::post('access/presence', 'AdminController@makeUserPresentAccess')
         ->middleware('assign.guard:users');
     Route::post('access/presence/{userId}', 'AdminController@makeUserPresentAccess');
@@ -398,6 +406,8 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::get('edit-status/{status}', 'CongressController@editStatus');
                 Route::post('edit', 'CongressController@editCongress');
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
+                Route::get('get-fmenus', 'CongressController@getGenericFmenus');
+                Route::post('edit-fmenus', 'CongressController@editFmenus');
 
                 Route::group(['prefix' => 'landing-page'], function () {
                     Route::post('edit-config', 'CongressController@editConfigLandingPage');
@@ -529,6 +539,8 @@ Route::group(['prefix' => 'payment'], function () {
     Route::post('success', 'PaymentController@successPayment');
     Route::get('echec', 'PaymentController@echecPayment');
     Route::post('notification-post', 'PaymentController@notification');
+    Route::get('{id}','PaymentController@getPaymentByID');
+    Route::get('{congressID}/{userID}', 'PaymentController@getPaymentByUserAndCongressID');
 });
 
 Route::group(['prefix' => 'payement'], function () {

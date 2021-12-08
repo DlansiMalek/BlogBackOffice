@@ -3,7 +3,6 @@
 
 namespace App\Services;
 
-use App\Models\Congress;
 use App\Models\Mail;
 use App\Models\MailAdmin;
 use App\Models\MailType;
@@ -25,7 +24,7 @@ class MailServices
 {
     protected $maxRequest = 0;
 
-    public function getAllMailTypes($congressId, $type)
+    public function getAllMailTypes($congressId , $type)
     {
         return MailType::where('type', '=', $type)
             ->with(['mails' => function ($query) use ($congressId) {
@@ -193,7 +192,11 @@ class MailServices
         if ($congress != null) {
             $offre = $this->getOffreByCongressId($congress->congress_id);
         }
-
+        // waiting sending mail
+        if ($userMail) {
+            $userMail->status = 2;
+            $userMail->update();
+        }
         if ($offre != null && $offre->is_mail_pro == 1) {
             $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
         } else {
