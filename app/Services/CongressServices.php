@@ -1075,6 +1075,19 @@ class CongressServices
         $config_landing_page->show_date = $request->has("show_date") ? $request->input('show_date') : null;
         $config_landing_page->background_color = $request->has("background_color") ? $request->input('background_color') : null;
         $config_landing_page->opacity_color = $request->has("opacity_color") ? $request->input('opacity_color') : null;
+        
+        $config_landing_page->home_title_en = $request->has("home_title_en") ? $request->input('home_title_en') : null;
+        $config_landing_page->home_description_en = $request->has("home_description_en") ? $request->input('home_description_en') : null;
+        $config_landing_page->prp_title_en = $request->has("prp_title_en") ? $request->input('prp_title_en') : null;
+        $config_landing_page->prp_description_en = $request->has("prp_description_en") ? $request->input('prp_description_en') : null;
+        $config_landing_page->speaker_title_en = $request->has("speaker_title_en") ? $request->input('speaker_title_en') : null;
+        $config_landing_page->speaker_description_en = $request->has("speaker_description_en") ? $request->input('speaker_description_en') : null;
+        $config_landing_page->sponsor_title_en = $request->has("sponsor_title_en") ? $request->input('sponsor_title_en') : null;
+        $config_landing_page->sponsor_description_en = $request->has("sponsor_description_en") ? $request->input('sponsor_description_en') : null;
+        $config_landing_page->prg_title_en = $request->has("prg_title_en") ? $request->input('prg_title_en') : null;
+        $config_landing_page->prg_description_en = $request->has("prg_description_en") ? $request->input('prg_description_en') : null;
+        $config_landing_page->contact_title_en = $request->has("contact_title_en") ? $request->input('contact_title_en') : null;
+        $config_landing_page->contact_description_en = $request->has("contact_description_en") ? $request->input('contact_description_en') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
