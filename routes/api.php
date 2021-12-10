@@ -48,7 +48,8 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
-    Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
 });
 
@@ -322,6 +323,13 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
     Route::put('edit/profile', 'UserController@editUserProfile')->middleware('assign.guard:users');
 
     Route::post('/register', 'UserController@registerUser');
+
+    Route::group(['prefix' => 'network', "middleware" => ["assign.guard:users"]], function () {
+        Route::post('add', 'UserController@addUserNetwork');
+        Route::get('list', 'UserController@getAllUserNetwork');
+        Route::delete('delete/{user_network_id}', 'UserController@deleteUserNetwork');
+    });
+    
 
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');

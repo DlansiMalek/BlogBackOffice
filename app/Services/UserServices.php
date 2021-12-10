@@ -20,6 +20,7 @@ use App\Models\UserMail;
 use App\Models\UserPack;
 use App\Models\WhiteList;
 use App\Models\FormInputValue;
+use App\Models\UserNetwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -805,11 +806,11 @@ class UserServices
     {
         $email = strtolower($email);
         return User::whereRaw('lower(email) = (?)', ["{$email}"])
-            ->with(['user_congresses' => function ($query) use ($congress_id) {
-                if ($congress_id) {
-                    $query->where('congress_id', '=', $congress_id);
-                }
-            }])
+        ->with(['user_congresses' => function ($query) use ($congress_id) {
+            if ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            }
+        }, 'profile_img'])
             ->first();
     }
 
@@ -1816,5 +1817,67 @@ class UserServices
     {
         return ConfigCongress::where('congress_id', '=', $congress_id)
             ->get('show_in_chat');
+        }
+
+    public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$privilegIds = [],$mailId)
+    {
+         $users = User::whereHas(
+            'responses.values', function ($query) use ($formInputResponseId, $formInputValueId) {
+                $query->where('form_input_id', '=', $formInputResponseId);
+                if (count($formInputValueId) > 0) {
+                    $query->whereIn('form_input_value_id', $formInputValueId);
+                }
+            }
+        )
+        ->with(['user_mails' => function ($query) use ($mailId) {
+            $query->where('mail_id', '=', $mailId);
+        },  'accesses' => function ($query) use ($congressId) {
+            $query->where("congress_id", "=", $congressId);
+        },
+        'user_congresses' => function ($query) use ($congressId,$privilegIds) {
+            $query->where('congress_id', '=', $congressId);
+            if (count($privilegIds) > 0 )
+                $query->whereIn('privilege_id', $privilegIds);
+        },
+        'payments' => function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        } ])->get();
+        return $users;
+    }
+
+    public function addUserNetwork($user_id, $fav_id) 
+    {
+        $user_network = new UserNetwork();
+        $user_network->user_id = $user_id;
+        $user_network->fav_id = $fav_id;
+        $user_network->save();
+        return $user_network;
+    }
+
+    public function getUserNetwork($user_id, $fav_id)
+    {
+        return UserNetwork::where('user_id', '=', $user_id)
+            ->where('fav_id', '=', $fav_id)
+            ->first();
+    }
+
+    public function getAllUserNetwork($user_id)
+    {
+        return UserNetwork::where('user_id', '=', $user_id)
+            ->with(['fav' => function ($query) {
+                $query->with('profile_img');
+            }])
+            ->get();
+    }
+
+    public function getUserNetworkById($user_network_id)
+    {
+        return UserNetwork::where('user_network_id', '=', $user_network_id)
+            ->first();
+    }
+
+    public function deleteUserNetwork($user_network)
+    {
+        return $user_network->delete();
     }
 }

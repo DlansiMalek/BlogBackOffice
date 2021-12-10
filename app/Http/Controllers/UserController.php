@@ -2220,9 +2220,49 @@ class UserController extends Controller
             },'responses.form_input', 'responses.values' => function ($query) {
                 $query->with(['val']);
             }, 'responses.form_input.values',
-            'responses.form_input.type', 'profile_img',
+            'responses.form_input.type', 'profile_img', 
+            'network_member' => function ($query) {
+                $query->select(['fav_id', 'User_Network.user_id', 'user_network_id']);
+            }
         ]);
 
         return response()->json($user);
+    }
+
+    public function addUserNetwork(Request $request) 
+    {
+        if (!$logged_user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['error' => 'must login first'], 404);
+        }
+        $fav_id = $request->input('fav_id');
+        if (!$user = $this->userServices->getUserById($fav_id)) {
+            return response()->json(['response' => 'user not found'], 404);
+        }
+        if ($user_network = $this->userServices->getUserNetwork($logged_user->user_id, $fav_id)) {
+            return response()->json(['response' => 'user already exist in your in network'], 400);
+        }
+        $new_user_network = $this->userServices->addUserNetwork($logged_user->user_id, $fav_id);
+        return response()->json($new_user_network, 200);
+    }
+
+    public function getAllUserNetwork()
+    {
+        if (!$logged_user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['error' => 'must login first'], 404);
+        }
+        $user_network = $this->userServices->getAllUserNetwork($logged_user->user_id);
+        return response()->json($user_network, 200);
+    }
+
+    public function deleteUserNetwork($user_network_id) 
+    {
+        if (!$logged_user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['error' => 'must login first'], 404);
+        }
+        if (!$user_network = $this->userServices->getUserNetworkById($user_network_id)) {
+            return response()->json(['response' => 'no user network exist'], 400);
+        }
+        $new_user_network = $this->userServices->deleteUserNetwork($user_network);
+        return response()->json('network deleted successfully', 200);
     }
 }
