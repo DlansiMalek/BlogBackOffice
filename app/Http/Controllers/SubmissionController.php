@@ -810,6 +810,15 @@ class SubmissionController extends Controller
             $authors = $this->authorServices->getAuthorsAttestation($congressId, $mailId, $withAuthors);
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             foreach ($authors as $author) {
+                $authorMail = null;
+                if (sizeof($author->author_mails) == 0) {
+                    $authorMail = $this->authorServices->addingMailAuthor($mail->mail_id, $author->author_id);
+                } else {
+                    $authorMail = $author->author_mails[0];
+                }
+                if (!Utils::isValidStatus($authorMail)) {
+                    continue;
+                }
                 $request = array();
                 if ($author->email != null && $author->email != "") {
                     foreach ($author->submissions as $submission) {
@@ -831,15 +840,8 @@ class SubmissionController extends Controller
                     }
 
                     if ($mail) {
-                        $authorMail = null;
-                        if (sizeof($author->author_mails) == 0) {
-                            $authorMail = $this->authorServices->addingMailAuthor($mail->mail_id, $author->author_id);
-                        } else {
-                            $authorMail = $author->author_mails[0];
-                        }
-                        if (Utils::isValidStatus($authorMail)) {
-                            $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
-                            $fileName = 'attestationsSubmission.zip';
+                        $fileName = $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
+                        if ($fileName) {
                             $this->mailServices->sendMail(
                                 $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
                                 $author,
