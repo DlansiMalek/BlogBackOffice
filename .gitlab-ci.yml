@@ -54,6 +54,7 @@ ansible-aws-auth:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   only:
     - master
+    - develop
   script:
     - aws ecr get-login-password --region eu-west-3 > AWS_REGISTRY_TOKEN
   artifacts:
