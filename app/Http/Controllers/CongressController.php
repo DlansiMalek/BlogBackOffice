@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
@@ -32,6 +31,7 @@ use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use App\Services\MeetingServices;
 
 class CongressController extends Controller
 {
@@ -53,6 +53,7 @@ class CongressController extends Controller
     protected $standServices;
     protected $trackingServices;
     protected $fmenuServices;
+    protected $meetingServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -69,7 +70,8 @@ class CongressController extends Controller
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices,
                          TrackingServices $trackingServices,
-                         FMenuServices $fmenuServices )
+                         FMenuServices $fmenuServices,
+                         MeetingServices $meetingServices )
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -88,6 +90,7 @@ class CongressController extends Controller
         $this->standServices = $standServices;
         $this->trackingServices = $trackingServices;
         $this->fmenuServices = $fmenuServices;
+        $this->meetingServices = $meetingServices;
     }
 
 
@@ -272,9 +275,15 @@ class CongressController extends Controller
                 $loggedadmin->name
             );
         }
-
+        $reservedMeetingTables = $this->meetingServices->countUsedMeetingTablesByCongressId($congressId);
+        if ($reservedMeetingTables  > $request->input("congress")['nb_meeting_table']) {
+            return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
+        }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
-
+        $nbMeetingTable = $configCongress['nb_meeting_table'];
+        if ($nbMeetingTable != 0) {
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId,);
+        }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
@@ -714,7 +723,14 @@ class CongressController extends Controller
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         $privilege_ids = $request->input('privilege_ids');
         $to_all = $request->query('toAll', 0);
+        $questionId = $request->input('question_id');
+        $responseId = $request->input('response_id');
 
+        if ($questionId != null &&  $responseId != null) {
+            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId,$privilege_ids, $mailId);
+        }
+        else
+        {
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
                 'accesses' => function ($query) use ($congressId) {
@@ -731,6 +747,7 @@ class CongressController extends Controller
                 }
             ], null, $privilege_ids);
 
+        }
 
         foreach ($users as $user) {
             if (Utils::isValidSendMail($congress, $user, $to_all)) {
@@ -1177,4 +1194,5 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
+
 }

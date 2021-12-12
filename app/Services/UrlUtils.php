@@ -191,4 +191,19 @@ class UrlUtils
     {
         return $url_backoffice . "/#/auth/user/" . $user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId; 
     }
+
+    public static function getBaseUrlPWA()
+    {
+        if (App::environment() == 'test') {
+            return "http://localhost:4200/#";
+        }
+        if (App::environment() == 'prod') {
+            return 'https://participant.eventizer.io/#';
+        }
+        if (App::environment() == 'dev') {
+            return 'https://dev.participant.eventizer.io/#';
+        }
+
+        return "http://localhost:4200/#";
+    }
 }

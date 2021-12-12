@@ -37,8 +37,8 @@ class MailMeetingSeeder extends Seeder
             'object' => 'Acceptation de la demande de réunion',
             'template' => '<p>Cher participant,</p>
             <p>Votre rendez-vous avec&nbsp;Mr/Mme {{$user_receiver-&gt;last_name}} {{$user_receiver-&gt;first_name}} à été validé et enregistré.</p>
-            <p><strong><u>Détail du rendez-vous :</u></strong></p><ul><li>{{$user_receiver-&gt;last_name}} {{$user_receiver-&gt;first_name}}</li>
-            <li>{{$meeting-&gt;start_date}}</li></ul><p>Vous pouvez toujours consulter votre calendrier de rendez-vous sur votre espace personnel. </p>
+            <p><strong><u>Détail du rendez-vous :</u></strong></p><ul><li>avec: {{$user_receiver-&gt;last_name}} {{$user_receiver-&gt;first_name}}</li>
+            <li>Date:{{$meeting-&gt;start_date}}</li><li>Numéro de table :{{$meetingtable}}</li></ul><p>Vous pouvez toujours consulter votre calendrier de rendez-vous sur votre espace personnel. </p>
             <p><br></p>
             <p>Pour toute demande d’information, veuillez contacter l’équipe support sur l’adresse email suivante : <a href="mailto:support@eventizer.io" rel="noopener noreferrer" target="_blank" style="color: rgb(17, 85, 204);">support@eventizer.io</a></p>',
             'mail_type_id' => 25

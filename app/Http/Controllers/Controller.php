@@ -229,6 +229,11 @@ WHERE qr_code IS NULL
 SELECT User.user_id, first_name, last_name, passwordDecrypt from User
 INNER JOIN User_Congress ON User_Congress.user_id = User.user_id
 WHERE User_Congress.congress_id = 397
+/* Get data users from submissions
+
+SELECT DISTINCT User.user_id, first_name, last_name, email, passwordDecrypt FROM `Submission`
+INNER JOIN `User` ON `User`.`user_id` = Submission.user_id
+WHERE Submission.congress_id = 384
 */
 
 /*
@@ -240,4 +245,8 @@ FROM `Admin`
 INNER JOIN Admin_Congress ON Admin_Congress.admin_id = Admin.admin_id
 WHERE congress_id = 384
 
+*/
+
+/*
+SELECT * FROM Author WHERE email <> '' AND email NOT LIKE '%_@__%.__%'
 */

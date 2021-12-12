@@ -21,7 +21,7 @@ class Organization extends Model
 
     function stands()
     {
-      return $this->hasMany(Stand::class, 'organization_id', 'organization_id');
+    return $this->hasMany(Stand::class, 'organization_id', 'organization_id')->with(['docs']);
     }
 
     function admin()
