@@ -1819,7 +1819,7 @@ class UserServices
             ->get('show_in_chat');
         }
 
-    public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$privilegIds,$mailId)
+    public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$privilegIds = [],$mailId)
     {
          $users = User::whereHas(
             'responses.values', function ($query) use ($formInputResponseId, $formInputValueId) {
