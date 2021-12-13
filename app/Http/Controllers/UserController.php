@@ -481,7 +481,7 @@ class UserController extends Controller
         return response()->json('Evaluation has been updated successfully', 200);
     }
 
-    public function validateUserAccount($userId = null, $congressId = null, $token = null, Request $request)
+    public function validateUserAccount($userId , $congressId , $token , Request $request)
     {
         $user = $this->userServices->getUserById($userId);
         if (!$user) {
