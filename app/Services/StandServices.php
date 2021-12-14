@@ -156,16 +156,34 @@ class StandServices
 
     public function getCachedStands($congress_id, $page, $perPage ,$search, $stag_id)
     {
-        $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
-
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-
-        $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
-        Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
-
-        return $stands;
+        $stags = explode(',',$stag_id);
+        if(count($stags)<2){
+            $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
+            if (Cache::has($cacheKey)) {
+                return Cache::get($cacheKey);
+            }
+            $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
+            Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+            return $stands;
+        }else{
+            $cacheObjects = [];
+            $allStands = [];
+            $i = 0;
+            foreach($stags as $stag_id ){
+                $i++;
+                $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
+                if (Cache::has($cacheKey)) {
+                    array_push($cacheObjects, Cache::get($cacheKey));
+                    if($i == count($stags)){
+                        return $cacheObjects;
+                    }
+                }
+                $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
+                Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300));
+                array_push($allStands, $stands); // 5 minutes;
+            }
+            return $allStands;
+        }    
     }
 
     public function getStandsPagination($congress_id, $perPage)
