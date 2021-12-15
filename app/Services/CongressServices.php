@@ -1088,6 +1088,8 @@ class CongressServices
         $config_landing_page->prg_description_en = $request->has("prg_description_en") ? $request->input('prg_description_en') : null;
         $config_landing_page->contact_title_en = $request->has("contact_title_en") ? $request->input('contact_title_en') : null;
         $config_landing_page->contact_description_en = $request->has("contact_description_en") ? $request->input('contact_description_en') : null;
+        $config_landing_page->home_sub_title = $request->has("home_sub_title") ? $request->input('home_sub_title') : null;
+        $config_landing_page->home_sub_title_en = $request->has("home_sub_title_en") ? $request->input('home_sub_title_en') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
