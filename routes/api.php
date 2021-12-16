@@ -124,6 +124,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('confirmInscription/{user_id}', 'UserController@confirmInscription');
     Route::get('payments','PaymentController@getPaymentsPagination')->middleware('assign.guard:users');
     Route::group(['prefix' => '{user_id}'], function () {
+        Route::get('pwa', 'UserController@getUserByIdPWA')->middleware('assign.guard:users');
         Route::delete('deleteUserOutOfCongress', 'UserController@delete');
         Route::get('', 'UserController@getUserById');
         Route::group(['prefix' => 'congress/{congressId}'], function () {

@@ -2226,4 +2226,15 @@ class UserController extends Controller
         $new_user_network = $this->userServices->deleteUserNetwork($user_network);
         return response()->json('network deleted successfully', 200);
     }
+
+    public function getUserByIdPWA($userId)
+    {
+        if (!$logged_user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['error' => 'must login first'], 404);
+        }
+        if (!$user = $this->userServices->getUserById($userId)) {
+            return response()->json(['response' => 'user not found'], 404);
+        }
+        return response()->json($user, 200);
+    }
 }
