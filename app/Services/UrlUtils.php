@@ -170,26 +170,26 @@ class UrlUtils
     public static function getFilesUrl()
     {
         if (App::environment() == 'test') {
-            return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
+            return "https://eventizer-dev.s3.eu-west-3.amazonaws.com/";
         }
         if (App::environment() == 'prod') {
-            return "https://eventizer.fra1.cdn.digitaloceanspaces.com/";
+            return "https://eventizer-prod.s3.eu-west-3.amazonaws.com/";
         }
         if (App::environment() == 'dev') {
-            return "https://eventizer-dev.fra1.cdn.digitaloceanspaces.com/";
+            return "https://eventizer-dev.s3.eu-west-3.amazonaws.com/";
         }
 
-        return "https://".env('DIGITALOCEAN_SPACES_BUCKET').".fra1.cdn.digitaloceanspaces.com/";
+        return "https://".env('AWS_BUCKET').".s3.".env('AWS_REGION').".amazonaws.com//";
     }
 
-    public static function getPaymentLinkFrontoffice($url_frontoffice, $token, $congressId) 
+    public static function getPaymentLinkFrontoffice($url_frontoffice, $token, $congressId)
     {
         return $url_frontoffice . "user-profile/payment/upload-payement?token=" . $token . "&congressId=" . $congressId;
     }
 
-    public static function getPaymentLinkBackoffice($url_backoffice, $user_id, $token, $congressId)  
+    public static function getPaymentLinkBackoffice($url_backoffice, $user_id, $token, $congressId)
     {
-        return $url_backoffice . "/#/auth/user/" . $user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId; 
+        return $url_backoffice . "/#/auth/user/" . $user_id . "/upload-payement?token=" . $token . "&congressId=" . $congressId;
     }
 
     public static function getBaseUrlPWA()

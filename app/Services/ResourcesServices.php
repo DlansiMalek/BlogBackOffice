@@ -111,7 +111,7 @@ class ResourcesServices
             if($fileName !== '') {
                 $oldPath = storage_path('app/submissions') . '/' . $fileName;
                 if ($file->exists($oldPath)) {
-                    $FILE_NAME = Storage::disk('digitalocean')->putFile('', new File($oldPath), 'public');
+                    $FILE_NAME = Storage::disk('aws')->putFile('', new File($oldPath), 'public');
                     $resource = $this->saveResource($FILE_NAME, 0);
                     $this->addResourceSubmission($resource->resource_id, $submission->submission_id);
                 }
