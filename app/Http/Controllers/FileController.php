@@ -31,7 +31,7 @@ class FileController extends Controller
     public function uploadResource(Request $request)
     {
         $file = $request->file('files');
-        $FILE_NAME = Storage::disk('aws')->putFile('', $file, 'public');
+        $FILE_NAME = Storage::disk('s3')->putFile('', $file, 'public');
         $resource = $this->resourceServices->saveResource($FILE_NAME, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
@@ -41,7 +41,7 @@ class FileController extends Controller
         if (!$resource = $this->resourceServices->getResourceByPath($path))
             return response()->json(['response' => 'No resource found'], 400);
         $resource->delete();
-        Storage::disk('aws')->delete($path);
+        Storage::disk('s3')->delete($path);
 
         return response()->json(['resource_id' => $resource->resource_id]);
     }

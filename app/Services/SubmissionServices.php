@@ -600,7 +600,7 @@ class SubmissionServices
         $resources = $this->getAllResourcesBySubmission($submission_id);
         foreach ($resources as $item) {
             $resource = $item->resource;
-            Storage::disk('aws')->delete($resource->path);
+            Storage::disk('s3')->delete($resource->path);
             $item->delete();
             $resource->delete();
         }
