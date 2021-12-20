@@ -524,6 +524,7 @@ class CongressServices
         $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
+        $configCongress->support_img = $configCongressRequest['support_img'];
         $configCongress->update();
 
         return $configCongress;

@@ -1662,7 +1662,7 @@ class UserServices
             ->get();
     }
 
-    public function addUserFromExcel($userData, $pass = null)
+    public function addUserFromExcel($userData, $pass = null, $resourceId = null)
     {
         $password = $pass ? $pass : Str::random(8);
         $user = new User();
@@ -1675,6 +1675,9 @@ class UserServices
         $user->passwordDecrypt = $password;
         $user->password = bcrypt($password);
         $user->email_verified = 1;
+        if ($resourceId) {
+            $user->resource_id = $resourceId;
+        }
         $user->save();
         if (!$user->qr_code) {
             $user->qr_code = Utils::generateCode($user->user_id);
