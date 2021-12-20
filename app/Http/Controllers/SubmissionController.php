@@ -19,6 +19,7 @@ use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\ThemeServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ class SubmissionController extends Controller
     protected $sharedServices;
     protected $communicationTypeService;
     protected $resourcesServices;
+    protected $themeServices;
 
     public function __construct(
         SubmissionServices $submissionServices,
@@ -51,7 +53,8 @@ class SubmissionController extends Controller
         MailServices $mailServices,
         SharedServices $sharedServices,
         CommunicationTypeService $communicationTypeService,
-        ResourcesServices $resourcesServices
+        ResourcesServices $resourcesServices,
+        ThemeServices $themeServices
     ) {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
@@ -64,6 +67,7 @@ class SubmissionController extends Controller
         $this->sharedServices = $sharedServices;
         $this->communicationTypeService = $communicationTypeService;
         $this->resourcesServices = $resourcesServices;
+        $this->themeServices = $themeServices;
 
     }
 
@@ -406,6 +410,13 @@ class SubmissionController extends Controller
             $file_upload_code = $this->adminServices->generateRandomString(10);
             $submission->upload_file_code = $file_upload_code;
         }
+        $theme = $this->themeServices->getThemeById(
+            $request->has('theme_id') ? $request->input('theme_id') :
+            $submission->theme_id
+        );
+        if ($request->has('theme_id')) {
+            $submission->theme_id = $request->input('theme_id');
+        }
         $submission->update();
 
         // add review 
@@ -455,7 +466,7 @@ class SubmissionController extends Controller
                         $request->input('status') == '1' ? $submission->code : null,
                         $submission->title,
                         $type ? $type->label : null,
-                        [], null, null, null, null, null, null, null, null, $submission->theme->label
+                        [], null, null, null, null, null, null, null, null, $theme->label
                     ),
                     $user,
                     null,
