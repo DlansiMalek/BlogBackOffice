@@ -723,7 +723,14 @@ class CongressController extends Controller
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         $privilege_ids = $request->input('privilege_ids');
         $to_all = $request->query('toAll', 0);
+        $questionId = $request->input('question_id');
+        $responseId = $request->input('response_id');
 
+        if ($questionId != null &&  $responseId != null) {
+            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId,$privilege_ids, $mailId);
+        }
+        else
+        {
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
                 'accesses' => function ($query) use ($congressId) {
@@ -740,6 +747,7 @@ class CongressController extends Controller
                 }
             ], null, $privilege_ids);
 
+        }
 
         foreach ($users as $user) {
             if (Utils::isValidSendMail($congress, $user, $to_all)) {
@@ -1186,4 +1194,5 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
+
 }

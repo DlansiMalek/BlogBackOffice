@@ -62,12 +62,12 @@ spec:
           envFrom:
             - secretRef:
                 name: backend-config
-          image: eu.gcr.io/eventizer/backend:app-${CI_COMMIT_REF_NAME}
+          image: ${AWS_DOCKER_REGISTRY}/eventizer/backend:app-${CI_COMMIT_REF_NAME}
           imagePullPolicy: Always
           name: artisan
       containers:
         - name: backend-app
-          image: eu.gcr.io/eventizer/backend:app-${CI_COMMIT_REF_NAME}
+          image: ${AWS_DOCKER_REGISTRY}/eventizer/backend:app-${CI_COMMIT_REF_NAME}
           envFrom:
             - secretRef:
                 name: backend-config
