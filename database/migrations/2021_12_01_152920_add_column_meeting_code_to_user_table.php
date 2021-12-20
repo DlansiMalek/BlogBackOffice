@@ -14,8 +14,8 @@ class AddColumnMeetingCodeToUserTable extends Migration
     public function up()
     {
         Schema::table('User', function (Blueprint $table) {
-            $table->text('meeting_code')->nullable()->default(null);
-            $table->text('password_code')->nullable()->default(null);
+            $table->string('meeting_code')->nullable()->default(null);
+            $table->string('password_code')->nullable()->default(null);
         });
     }
 
