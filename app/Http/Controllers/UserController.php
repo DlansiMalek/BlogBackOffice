@@ -2155,9 +2155,10 @@ class UserController extends Controller
     {
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
+        $page = $request->query('page', 1);
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId);        
+        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId);
         return response()->json($users);
     }
 
