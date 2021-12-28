@@ -460,6 +460,11 @@ Route::group(['prefix' => 'landing-page-speakers', "middleware" => ["assign.guar
     Route::delete('delete/{lp_speaker_id}', 'CongressController@deleteLandingPageSpeaker');
 });
 
+Route::group(['prefix' => 'landing-page-organizers', "middleware" => ["assign.guard:admins"]], function () {
+    Route::post('edit/{lp_organizer_id}', 'CongressController@editLandingPageOrganizer');
+    Route::delete('delete/{lp_organizer_id}', 'CongressController@deleteLandingPageOrganizer');
+});
+
 //Access API
 Route::group(['prefix' => 'access'], function () {
     Route::get('{accessId}/user/{userId}/verify-privilege', 'AccessController@verifyPrivilegeByAccess');

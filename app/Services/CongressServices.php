@@ -1093,6 +1093,11 @@ class CongressServices
         $config_landing_page->home_sub_title = $request->has("home_sub_title") ? $request->input('home_sub_title') : null;
         $config_landing_page->home_sub_title_en = $request->has("home_sub_title_en") ? $request->input('home_sub_title_en') : null;
 
+        $config_landing_page->organizers_title = $request->has("organizer_title") ? $request->input('organizer_title') : null;
+        $config_landing_page->organizers_description = $request->has("organizer_description") ? $request->input('organizer_description') : null;
+        $config_landing_page->organizers_title_en = $request->has("organizer_title_en") ? $request->input('organizer_title_en') : null;
+        $config_landing_page->organizers_description_en = $request->has("organizer_description_en") ? $request->input('organizer_description_en') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
@@ -1160,6 +1165,26 @@ class CongressServices
     {
         return LPOrganizer::where('congress_id', '=', $congress_id)
             ->get();
+    }
+
+    public function getLandingPageOrganizerById($lp_organizer_id)
+    {
+        return LPOrganizer::where('lp_organizer_id', '=', $lp_organizer_id)
+            ->first();
+    }
+
+    public function editLandingPageOrganizer($lp_organizer, $request)
+    {
+        $lp_organizer->full_name = $request->input('full_name');
+        $lp_organizer->role = $request->input('role');
+        $lp_organizer->profile_img = $request->input('profile_img');
+        $lp_organizer->update();
+        return $lp_organizer;
+    }
+
+    public function deleteLandingPageOrganizer($organizer)
+    {
+        $organizer->delete();
     }
 
     public function syncronizeLandingPage($congress_id, $congress, $config_congress, $config_landing_page)

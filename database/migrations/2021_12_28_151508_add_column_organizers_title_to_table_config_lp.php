@@ -14,10 +14,10 @@ class AddColumnOrganizersTitleToTableConfigLp extends Migration
     public function up()
     {
         Schema::table('Config_LP', function (Blueprint $table) {
-            $table->string('organizers_title');
-            $table->text('organizers_description');
-            $table->string('organizers_title_en');
-            $table->text('organizers_description_en');
+            $table->string('organizers_title')->nullable()->default(null);
+            $table->text('organizers_description')->nullable()->default(null);
+            $table->string('organizers_title_en')->nullable()->default(null);
+            $table->text('organizers_description_en')->nullable()->default(null);
         });
     }
 
