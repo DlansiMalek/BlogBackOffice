@@ -31,7 +31,7 @@ class FileController extends Controller
     public function uploadResource(Request $request)
     {
         $file = $request->file('files');
-        $FILE_NAME = Storage::disk('s3')->putFile('', $file, 'public');
+        $FILE_NAME = Storage::disk('s3')->put('', $file, 'public');
         $resource = $this->resourceServices->saveResource($FILE_NAME, $file->getSize());
         return response()->json(['resource' => $resource]);
     }
