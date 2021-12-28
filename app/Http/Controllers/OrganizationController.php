@@ -17,6 +17,7 @@ use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+
 class OrganizationController extends Controller
 {
 
@@ -81,7 +82,7 @@ class OrganizationController extends Controller
         } 
         $privilegeId = 7;
         $password = Str::random(8);
-        if ($request->has('email')) {
+        if ($request->has('email') && $request->input('email') != null) {
         if (!($old_admin = $this->adminServices->getAdminByLogin($organization->email))) {
             $admin = $this->adminServices->addPersonnel($request, $password);
             $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
@@ -243,13 +244,17 @@ class OrganizationController extends Controller
         return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
     }
 
-    public function getSponsorsByCongressId($congress_id)
+    public function getSponsorsByCongressId($congress_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
+        if (!$request->has(['isSponsor'])) {
+            return response()->json("required parameter isSponsor", 404);
+        }
+        $isSponsor = $request->query('isSponsor');
 
-        $organizations = $this->organizationServices->getSponsorsByCongressId($congress_id);
+        $organizations = $this->organizationServices->getSponsorsByCongressId($congress_id, $isSponsor);
 
         return response()->json($organizations);
     }
