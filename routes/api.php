@@ -423,6 +423,9 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                     Route::post('add-speaker', 'CongressController@addLandingPageSpeaker');
                     Route::get('get-speakers', 'CongressController@getLandingPageSpeakers');
                     Route::get('syncronize', 'CongressController@syncronizeLandingPage');
+
+                    Route::post('add-organizer', 'CongressController@addLandingPageOrganizer');
+                    Route::get('get-organizers', 'CongressController@getLandingPageOrganizers');
                 });
             });
             Route::post('add', 'CongressController@addCongress');

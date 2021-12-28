@@ -27,6 +27,8 @@ use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use App\Models\LPOrganizer;
 
 /**
  * @property OrganizationServices $organizationServices
@@ -1141,6 +1143,23 @@ class CongressServices
     public function deleteLandingPageSpeaker($speaker)
     {
         $speaker->delete();
+    }
+
+    public function addLandingPageOrganizer($congress_id, $request)
+    {
+        $lp_organizer = new LPOrganizer();
+        $lp_organizer->congress_id = $congress_id;
+        $lp_organizer->full_name = $request->input('full_name');
+        $lp_organizer->role = $request->input('role');
+        $lp_organizer->profile_img = $request->has('profile_img') ? $request->input('profile_img') : '34ZPKTtsyo9ZLPCQ2d2YidDhVedNwFGNfuJDuL45.jpg';
+        $lp_organizer->save();
+        return $lp_organizer;
+    }
+
+    public function getLandingPageOrganizers($congress_id)
+    {
+        return LPOrganizer::where('congress_id', '=', $congress_id)
+            ->get();
     }
 
     public function syncronizeLandingPage($congress_id, $congress, $config_congress, $config_landing_page)

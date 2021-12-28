@@ -1174,6 +1174,28 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
+
+    public function addLandingPageOrganizer($congress_id, Request $request)
+    {
+        if (!$request->has(['full_name', 'role']))
+        return response()->json(['message' => 'bad request:full_name and role are required '], 400);
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        $lp_speaker = $this->congressServices->addLandingPageOrganizer($congress_id, $request);
+
+        return response()->json($lp_speaker, 200);
+    }
+
+    public function getLandingPageOrganizers($congress_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        $speakers = $this->congressServices->getLandingPageOrganizers($congress_id);
+        return response()->json($speakers, 200);
+    }
+    
     public function getConfigLandingPageToFrontOffice($congress_id)
     {
         $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
