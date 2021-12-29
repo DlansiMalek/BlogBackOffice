@@ -1231,6 +1231,11 @@ class CongressController extends Controller
         $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
         return response()->json($speakers, 200);
     }
+    public function getLandingPageOrganizersToFrontOffice($congress_id)
+    {
+        $speakers = $this->congressServices->getLandingPageOrganizers($congress_id);
+        return response()->json($speakers, 200);
+    }
 
     public function getNumberOfParticipants($congress_id)
     {
