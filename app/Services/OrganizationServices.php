@@ -101,9 +101,9 @@ class OrganizationServices
             ->get();
     }
 
-   public function getSponsorsByCongressId($congressId)
+   public function getSponsorsByCongressId($congressId, $isSponsor)
     {
-        return Organization::where('is_sponsor', '=', 1)
+        return Organization::where('is_sponsor', '=', $isSponsor)
             ->where('congress_id', '=', $congressId)
             ->get();
     }
