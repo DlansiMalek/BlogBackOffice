@@ -27,6 +27,7 @@ use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\LPOrganizer;
 
 /**
  * @property OrganizationServices $organizationServices
@@ -1095,6 +1096,11 @@ class CongressServices
         $config_landing_page->partners_description = $request->has("partners_description") ? $request->input('partners_description') : null;
         $config_landing_page->partners_description_en = $request->has("partners_description_en") ? $request->input('partners_description_en') : null;
 
+        $config_landing_page->organizers_title = $request->has("organizers_title") ? $request->input('organizers_title') : null;
+        $config_landing_page->organizers_description = $request->has("organizers_description") ? $request->input('organizers_description') : null;
+        $config_landing_page->organizers_title_en = $request->has("organizers_title_en") ? $request->input('organizers_title_en') : null;
+        $config_landing_page->organizers_description_en = $request->has("organizers_description_en") ? $request->input('organizers_description_en') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
@@ -1145,6 +1151,36 @@ class CongressServices
     public function deleteLandingPageSpeaker($speaker)
     {
         $speaker->delete();
+    }
+
+    public function addLandingPageOrganizer($congress_id, $request, $lp_organizer)
+    {
+        if (!$lp_organizer) {
+            $lp_organizer = new LPOrganizer();
+        }
+        $lp_organizer->congress_id = $congress_id;
+        $lp_organizer->full_name = $request->input('full_name');
+        $lp_organizer->role = $request->input('role');
+        $lp_organizer->profile_img = $request->has('profile_img') ? $request->input('profile_img') : '34ZPKTtsyo9ZLPCQ2d2YidDhVedNwFGNfuJDuL45.jpg';
+        $lp_organizer->save();
+        return $lp_organizer;
+    }
+
+    public function getLandingPageOrganizers($congress_id)
+    {
+        return LPOrganizer::where('congress_id', '=', $congress_id)
+            ->get();
+    }
+
+    public function getLandingPageOrganizerById($lp_organizer_id)
+    {
+        return LPOrganizer::where('lp_organizer_id', '=', $lp_organizer_id)
+            ->first();
+    }
+
+    public function deleteLandingPageOrganizer($organizer)
+    {
+        $organizer->delete();
     }
 
     public function syncronizeLandingPage($congress_id, $congress, $config_congress, $config_landing_page)
