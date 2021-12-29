@@ -461,7 +461,6 @@ Route::group(['prefix' => 'landing-page-speakers', "middleware" => ["assign.guar
 });
 
 Route::group(['prefix' => 'landing-page-organizers', "middleware" => ["assign.guard:admins"]], function () {
-    Route::post('edit/{lp_organizer_id}', 'CongressController@editLandingPageOrganizer');
     Route::delete('delete/{lp_organizer_id}', 'CongressController@deleteLandingPageOrganizer');
 });
 

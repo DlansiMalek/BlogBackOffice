@@ -27,7 +27,6 @@ use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use App\Models\LPOrganizer;
 
 /**
@@ -1093,10 +1092,10 @@ class CongressServices
         $config_landing_page->home_sub_title = $request->has("home_sub_title") ? $request->input('home_sub_title') : null;
         $config_landing_page->home_sub_title_en = $request->has("home_sub_title_en") ? $request->input('home_sub_title_en') : null;
 
-        $config_landing_page->organizers_title = $request->has("organizer_title") ? $request->input('organizer_title') : null;
-        $config_landing_page->organizers_description = $request->has("organizer_description") ? $request->input('organizer_description') : null;
-        $config_landing_page->organizers_title_en = $request->has("organizer_title_en") ? $request->input('organizer_title_en') : null;
-        $config_landing_page->organizers_description_en = $request->has("organizer_description_en") ? $request->input('organizer_description_en') : null;
+        $config_landing_page->organizers_title = $request->has("organizers_title") ? $request->input('organizers_title') : null;
+        $config_landing_page->organizers_description = $request->has("organizers_description") ? $request->input('organizers_description') : null;
+        $config_landing_page->organizers_title_en = $request->has("organizers_title_en") ? $request->input('organizers_title_en') : null;
+        $config_landing_page->organizers_description_en = $request->has("organizers_description_en") ? $request->input('organizers_description_en') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
@@ -1150,9 +1149,11 @@ class CongressServices
         $speaker->delete();
     }
 
-    public function addLandingPageOrganizer($congress_id, $request)
+    public function addLandingPageOrganizer($congress_id, $request, $lp_organizer)
     {
-        $lp_organizer = new LPOrganizer();
+        if (!$lp_organizer) {
+            $lp_organizer = new LPOrganizer();
+        }
         $lp_organizer->congress_id = $congress_id;
         $lp_organizer->full_name = $request->input('full_name');
         $lp_organizer->role = $request->input('role');
@@ -1171,15 +1172,6 @@ class CongressServices
     {
         return LPOrganizer::where('lp_organizer_id', '=', $lp_organizer_id)
             ->first();
-    }
-
-    public function editLandingPageOrganizer($lp_organizer, $request)
-    {
-        $lp_organizer->full_name = $request->input('full_name');
-        $lp_organizer->role = $request->input('role');
-        $lp_organizer->profile_img = $request->input('profile_img');
-        $lp_organizer->update();
-        return $lp_organizer;
     }
 
     public function deleteLandingPageOrganizer($organizer)

@@ -1181,10 +1181,14 @@ class CongressController extends Controller
         return response()->json(['message' => 'bad request:full_name and role are required '], 400);
         if (!$this->adminServices->retrieveAdminFromToken())
             return response()->json(['error' => 'admin_not_found'], 404);
+        $organizer = null;
+        if ($request->has('lp_organizer_id')) {
+            if (!$organizer = $this->congressServices->getLandingPageOrganizerById($request->input('lp_organizer_id')))
+                return response()->json(['error' => 'Speaker not found'], 404);
+        }
+        $lp_organizer = $this->congressServices->addLandingPageOrganizer($congress_id, $request, $organizer);
 
-        $lp_speaker = $this->congressServices->addLandingPageOrganizer($congress_id, $request);
-
-        return response()->json($lp_speaker, 200);
+        return response()->json($lp_organizer, 200);
     }
 
     public function getLandingPageOrganizers($congress_id)
@@ -1192,20 +1196,8 @@ class CongressController extends Controller
         if (!$this->adminServices->retrieveAdminFromToken())
             return response()->json(['error' => 'admin_not_found'], 404);
 
-        $speakers = $this->congressServices->getLandingPageOrganizers($congress_id);
-        return response()->json($speakers, 200);
-    }
-
-    public function editLandingPageOrganizer($lp_organizer_id, Request $request)
-    {
-        if (!$this->adminServices->retrieveAdminFromToken())
-            return response()->json(['error' => 'admin_not_found'], 404);
-
-        if (!$organizer = $this->congressServices->getLandingPageOrganizerById($lp_organizer_id))
-            return response()->json(['error' => 'Speaker not found'], 404);
-
-        $speaker = $this->congressServices->editLandingPageOrganizer($organizer, $request);
-        return response()->json($organizer, 200);
+        $organizers = $this->congressServices->getLandingPageOrganizers($congress_id);
+        return response()->json($organizers, 200);
     }
 
     public function deleteLandingPageOrganizer($lp_organizer_id)
@@ -1233,8 +1225,8 @@ class CongressController extends Controller
     }
     public function getLandingPageOrganizersToFrontOffice($congress_id)
     {
-        $speakers = $this->congressServices->getLandingPageOrganizers($congress_id);
-        return response()->json($speakers, 200);
+        $organizers = $this->congressServices->getLandingPageOrganizers($congress_id);
+        return response()->json($organizers, 200);
     }
 
     public function getNumberOfParticipants($congress_id)
