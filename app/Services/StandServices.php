@@ -9,6 +9,9 @@ use App\Models\StandContentFile;
 use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+
 
 class StandServices
 {
@@ -119,6 +122,8 @@ class StandServices
 
     public function getStands($congress_id,  $name = null, $status = null, $perPage = null, $search = null, $stag_id = null)
     {
+      
+        $stag_id = explode(',',$stag_id);
         $allStand = Stand::where(function ($query) use ($name, $status) {
             if ($name) {
                 $query->where('name', '=', $name);
@@ -131,7 +136,7 @@ class StandServices
             ->when('stags', function ($query) use ($stag_id) {
                 if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
                     $query->join('Stand_Tag', 'Stand_Tag.stand_id', '=', 'Stand.stand_id')
-                    ->where('Stand_Tag.stag_id', '=', $stag_id);
+                    ->whereIn('Stand_Tag.stag_id', $stag_id);
                 }
             })
             ->with(['docs', 'products', 'organization', 'faq', 'stags'])
@@ -145,19 +150,18 @@ class StandServices
                     $query->where('Stand.congress_id', '=', $congress_id)->where('name', 'LIKE', '%' . $search . '%')
                         ->when('Stand.stags', function ($qt) use ($stag_id) {
                             if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
-                                $qt->where('Stand_Tag.stag_id', '=', $stag_id);
+                                $qt->whereIn('Stand_Tag.stag_id', $stag_id);
                             }
                         });
                 });
         }
-
-        return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
+      
+      return  $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
+     
     }
 
     public function getCachedStands($congress_id, $page, $perPage ,$search, $stag_id)
     {
-        $stags = explode(',',$stag_id);
-        if(count($stags)<2){
             $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
             if (Cache::has($cacheKey)) {
                 return Cache::get($cacheKey);
@@ -165,25 +169,6 @@ class StandServices
             $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
             Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
             return $stands;
-        }else{
-            $cacheObjects = [];
-            $allStands = [];
-            $i = 0;
-            foreach($stags as $stag_id ){
-                $i++;
-                $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
-                if (Cache::has($cacheKey)) {
-                    array_push($cacheObjects, Cache::get($cacheKey));
-                    if($i == count($stags)){
-                        return $cacheObjects;
-                    }
-                }
-                $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
-                Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300));
-                array_push($allStands, $stands); // 5 minutes;
-            }
-            return $allStands;
-        }    
     }
 
     public function getStandsPagination($congress_id, $perPage)
