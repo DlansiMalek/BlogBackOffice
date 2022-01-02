@@ -219,7 +219,7 @@ class SubmissionServices
                         });
                     }
                 });
-              
+
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
                 || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
                 || $tri == 'theme_id' || $tri == 'congress_id')) {
@@ -600,7 +600,7 @@ class SubmissionServices
         $resources = $this->getAllResourcesBySubmission($submission_id);
         foreach ($resources as $item) {
             $resource = $item->resource;
-            Storage::disk('digitalocean')->delete($resource->path);
+            Storage::disk('s3')->delete($resource->path);
             $item->delete();
             $resource->delete();
         }
