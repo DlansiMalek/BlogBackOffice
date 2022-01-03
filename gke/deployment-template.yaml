@@ -27,7 +27,7 @@ metadata:
 spec:
   revisionHistoryLimit: 2
   minReadySeconds: 5
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: backend
@@ -88,10 +88,10 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 3
-              memory: 4G
+              cpu: 1200
+              memory: 3G
             requests:
-              cpu: 1
+              cpu: 800
               memory: 2G
           volumeMounts:
             - name: shared-files
@@ -120,8 +120,11 @@ spec:
               port: 80
           resources:
             requests:
-              memory: 1G
-              cpu: 300m
+              memory: 500m
+              cpu: 200m
+            limits:
+              limits: 2G
+              cpu: 600m
           volumeMounts:
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
@@ -165,7 +168,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: backend-${CI_COMMIT_REF_NAME}
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 10
   metrics:
     - type: Resource
