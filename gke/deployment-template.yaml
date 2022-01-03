@@ -88,11 +88,11 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 1200
-              memory: 3G
-            requests:
-              cpu: 800
+              cpu: 1000
               memory: 2G
+            requests:
+              cpu: 500
+              memory: 1G
           volumeMounts:
             - name: shared-files
               mountPath: /app
@@ -123,8 +123,8 @@ spec:
               memory: 500m
               cpu: 200m
             limits:
-              memory: 2G
-              cpu: 600m
+              memory: 1G
+              cpu: 400m
           volumeMounts:
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
