@@ -123,7 +123,7 @@ spec:
               memory: 500m
               cpu: 200m
             limits:
-              limits: 2G
+              memory: 2G
               cpu: 600m
           volumeMounts:
             - name: nginx-config-volume
