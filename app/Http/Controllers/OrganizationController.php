@@ -84,11 +84,11 @@ class OrganizationController extends Controller
         if ($request->has('email')) {
         if (!($old_admin = $this->adminServices->getAdminByLogin($organization->email))) {
             $admin = $this->adminServices->addPersonnel($request, $password);
-            $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
+            $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id, $organization->organization_id);
         } else {
             $admin = $this->adminServices->editPersonnel($request, $old_admin);
             if (!$admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin->admin_id, $congress_id)) {
-                $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
+                $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id, $organization->organization_id);
             }
         }
         if (!$user = $this->userServices->getUserByEmail($organization->email)) {
