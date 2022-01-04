@@ -14,7 +14,7 @@ class AddColumnPhoneCodeToTableCountry extends Migration
     public function up()
     {
         Schema::table('Country', function (Blueprint $table) {
-            $table->string("country_code");
+            $table->string("phone_code")->nullable()->default(null);
         });
     }
 
@@ -26,7 +26,7 @@ class AddColumnPhoneCodeToTableCountry extends Migration
     public function down()
     {
         Schema::table('Country', function (Blueprint $table) {
-            $table->removeColumn('country_code');
+            $table->removeColumn('phone_code')->nullable()->default(null);
         });
     }
 }
