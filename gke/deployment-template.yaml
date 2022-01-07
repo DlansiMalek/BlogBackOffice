@@ -88,7 +88,7 @@ spec:
               port: 9000
           resources:
             limits:
-              memory: 2G
+              cpu: 1
             requests:
               cpu: 800m
               memory: 500Mi
@@ -118,9 +118,11 @@ spec:
             tcpSocket:
               port: 80
           resources:
+            limits:
+              cpu: 1
             requests:
               memory: 500Mi
-              cpu: 400m
+              cpu: 300m
           volumeMounts:
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
