@@ -88,9 +88,9 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 1
+              cpu: 2
             requests:
-              cpu: 800m
+              cpu: 1
               memory: 500Mi
           volumeMounts:
             - name: shared-files
