@@ -1851,4 +1851,29 @@ class UserServices
     {
         return $user_network->delete();
     }
+
+    public function getUsersInformations($congressId,$perPage , $search,$user_id )
+    {
+        $users = DB::table('User')
+      
+    
+        ->leftJoin('Country','User.country_id','=','Country.alpha3code')
+        ->join('User_Congress','User.user_id','=','User_Congress.user_id') 
+        ->where( function ($query) use ($congressId,$search) {
+            if ($search != "") {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+            }
+
+            if ($congressId != null) {
+                $query->where(DB::raw('User_Congress.congress_id'), 'like', '%' . $congressId . '%');
+            }
+             }) 
+            
+        ->select('first_name','last_name','Country.name','mobile','email','passwordDecrypt', 'User.user_id' )
+        ->distinct() 
+        ->paginate($perPage);
+        
+         log::warning($users);
+        return  $users;
+    }
 }
