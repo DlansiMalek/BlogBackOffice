@@ -691,7 +691,10 @@ class CongressServices
 
             }
         }
-        return null;
+        return [
+            "badge_id_generator" => null,
+            "badge_param" => null
+        ];
     }
 
     public function uploadLogo($file)
