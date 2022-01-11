@@ -65,9 +65,7 @@ class AdminTest extends TestCase
             $token = JWTAuth::fromUser($superAdmin);
             $response = $this->withHeader('Authorization', 'Bearer ' . $token)->get('api/super-admin/listUsers')->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        
-       $this->assertCount(10, $dataResponse['data']); 
-        
+    
       
     }
 }
