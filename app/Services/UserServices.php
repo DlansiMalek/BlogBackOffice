@@ -1862,12 +1862,12 @@ class UserServices
             }
 
             if ($congressId != 'null') {
-                $query->where(DB::raw('User_Congress.congress_id'), 'like', '%' . $congressId . '%');
-            }
-             }) 
-            
-        ->select('first_name','last_name','Country.name','mobile','email','passwordDecrypt', 'User.user_id' )
-        ->distinct() 
+                $query->where(DB::raw('User_Congress.congress_id'), '=', $congressId );
+            } 
+             })
+        
+        ->select('first_name','last_name','Country.name','mobile','email','passwordDecrypt', 'User.user_id')
+        ->distinct('User.user_id') 
         ->paginate($perPage);
         return  $users;
     }
