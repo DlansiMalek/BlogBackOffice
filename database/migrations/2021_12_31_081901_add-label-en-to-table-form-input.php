@@ -14,8 +14,8 @@ class AddLabelEnToTableFormInput extends Migration
     public function up()
     {
         Schema::table('Form_Input', function (Blueprint $table) {
-            $table->string('label_en')->nullable()->default(null);
-            $table->string('label')->nullable()->default(null)->change();
+            $table->text('label_en')->nullable()->default(null);
+            $table->text('label')->nullable()->default(null)->change();
         });
     }
 
