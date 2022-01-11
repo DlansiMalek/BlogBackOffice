@@ -554,4 +554,16 @@ $this->withHeader('Authorization', 'Bearer ' . $token)
 ])->assertStatus(200);
 }*/
 
+public function testGetUsersInformation()
+{
+    //  api/super-admin/listUsers
+    $congress = factory(Congress::class)->create();
+    $user = factory(User::class)->create();
+    $token = JWTAuth::fromUser($user);
+    $this->withHeader('Authorization', 'Bearer ' . $token);
+
+    $this->get('api/super-admin/listUsers')
+        ->assertStatus(200);
+
+}
 }
