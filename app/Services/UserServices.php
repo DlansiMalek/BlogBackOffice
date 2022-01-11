@@ -1854,9 +1854,7 @@ class UserServices
 
     public function getUsersInformations($congressId,$perPage , $search,$user_id )
     {
-        $users = DB::table('User')
-      
-    
+        $users = DB::table('User')   
         ->leftJoin('Country','User.country_id','=','Country.alpha3code')
         ->join('User_Congress','User.user_id','=','User_Congress.user_id') 
         ->where( function ($query) use ($congressId,$search) {
@@ -1872,8 +1870,6 @@ class UserServices
         ->select('first_name','last_name','Country.name','mobile','email','passwordDecrypt', 'User.user_id' )
         ->distinct() 
         ->paginate($perPage);
-        
-         log::warning($users);
         return  $users;
     }
 }

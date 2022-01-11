@@ -64,8 +64,6 @@ class AdminTest extends TestCase
             'congress_id' => $congress->congress_id, 'privilege_id' => 3]); 
             $token = JWTAuth::fromUser($superAdmin);
             $response = $this->withHeader('Authorization', 'Bearer ' . $token)->get('api/super-admin/listUsers')->assertStatus(200);
-        $dataResponse = json_decode($response->getContent(), true);
-    
-      
+        $dataResponse = json_decode($response->getContent(), true);     
     }
 }
