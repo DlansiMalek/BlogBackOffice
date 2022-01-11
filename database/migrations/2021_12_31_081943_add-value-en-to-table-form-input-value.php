@@ -14,8 +14,8 @@ class AddValueEnToTableFormInputValue extends Migration
     public function up()
     {
         Schema::table('Form_Input_Value', function (Blueprint $table) {
-            $table->string('value_en')->nullable()->default(null);
-            $table->string('value')->nullable()->default(null)->change();
+            $table->text('value_en')->nullable()->default(null);
+            $table->text('value')->nullable()->default(null)->change();
         });
     }
 
