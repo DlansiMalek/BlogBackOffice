@@ -13,7 +13,7 @@ use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 use App\Models\UserCongress;
-use Illuminate\Support\Facades\Log;
+
 
 class AdminTest extends TestCase
 {
