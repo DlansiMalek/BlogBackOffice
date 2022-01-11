@@ -1864,7 +1864,7 @@ class UserServices
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }
 
-            if ($congressId != null) {
+            if ($congressId != 'null') {
                 $query->where(DB::raw('User_Congress.congress_id'), 'like', '%' . $congressId . '%');
             }
              }) 
