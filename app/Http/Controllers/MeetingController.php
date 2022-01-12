@@ -141,7 +141,7 @@ class MeetingController extends Controller
       }
     }
     if ($request->has('verification_code')) {
-      $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+      $linkFrontOffice = UrlUtils::getUserMeetingLinkFrontoffice($congressId);
       return redirect($linkFrontOffice);
     }
     return response()->json($meeting, 200);

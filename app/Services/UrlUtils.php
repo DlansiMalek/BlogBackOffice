@@ -206,4 +206,19 @@ class UrlUtils
 
         return "http://localhost:4200/#";
     }
+
+    public static function getUserMeetingLinkFrontoffice($congressId)
+    {
+        if (App::environment() == 'test') {
+            return "http://localhost:4200/#/room/" . $congressId . "/meetings";
+        }
+        if (App::environment() == 'prod') {
+            return 'https://app.eventizer.io/#/room/' . $congressId . '/meetings';
+        }
+        if (App::environment() == 'dev') {
+            return 'https://dev.app.eventizer.io/#/room/' . $congressId . '/meetings';
+        }
+
+        return "http://localhost:4200/#/room/" . $congressId . "/meetings";
+    }
 }
