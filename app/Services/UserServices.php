@@ -1856,7 +1856,7 @@ class UserServices
         $users = DB::table('User')   
         ->leftJoin('Country','User.country_id','=','Country.alpha3code')
         ->join('User_Congress','User.user_id','=','User_Congress.user_id') 
-        ->where( function ($query) use ($congressId,$search) {
+        ->where( function ($query) use ($congressId, $search) {
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }
@@ -1866,9 +1866,8 @@ class UserServices
             } 
              })
         
-        ->select('first_name','last_name','Country.name','mobile','email','passwordDecrypt', 'User.user_id')
-        ->distinct('User.user_id') 
-        ->paginate($perPage);
-        return  $users;
+        ->select((DB::raw('DISTINCT User.user_id')),'first_name','last_name','Country.name','mobile','email','passwordDecrypt');
+
+        return  $users = $perPage ? $users->paginate($perPage) : $users->get();
     }
 }
