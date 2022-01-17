@@ -1104,6 +1104,7 @@ class CongressServices
         $config_landing_page->organizers_description = $request->has("organizers_description") ? $request->input('organizers_description') : null;
         $config_landing_page->organizers_title_en = $request->has("organizers_title_en") ? $request->input('organizers_title_en') : null;
         $config_landing_page->organizers_description_en = $request->has("organizers_description_en") ? $request->input('organizers_description_en') : null;
+        $config_landing_page->page_title = $request->has("page_title") ? $request->input('page_title') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
