@@ -652,6 +652,7 @@ class CongressServices
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
         $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
         $config->status = $request->input('config')['status'];
+        $config->is_visible_price = $request->input('config')['is_visible_price'];
         $config->update();
 
         if (isset($request->input('config_selection')['num_evaluators'])) {
