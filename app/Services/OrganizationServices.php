@@ -85,14 +85,15 @@ class OrganizationServices
     {
         $cacheKey = config('cachedKeys.Organizations'). $congressId . $admin_email . $privilege_id ;
 
-        if (Cache::has($cacheKey)) {
+        if (Cache::has($cacheKey) && !$admin_email) {
             return Cache::get($cacheKey);
         }
       
         $Organisations= Organization::with(['admin'])->where('congress_id', '=', $congressId)->where(function ($query) use ($admin_email, $privilege_id) {
             if ($admin_email && $privilege_id == config('privilege.Organisme')) $query->where('email', '=', $admin_email);
         })->get();
-        Cache::put($cacheKey, $Organisations, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        if (!$admin_email)
+            Cache::put($cacheKey, $Organisations, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         
         return $Organisations;
          
