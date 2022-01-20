@@ -1096,8 +1096,8 @@ class CongressServices
         $config_landing_page->home_sub_title_en = $request->has("home_sub_title_en") ? $request->input('home_sub_title_en') : null;
         $config_landing_page->waiting_title = $request->has("waiting_title") ? $request->input('waiting_title') : null;
         $config_landing_page->waiting_desription = $request->has("waiting_desription") ? $request->input('waiting_desription') : null;
-        $config_landing_page->waiting_desription = $request->has("opening_date") ? $request->input('opening_date') : null;
-        $config_landing_page->waiting_desription = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
+        $config_landing_page->opening_date = $request->has("opening_date") ? $request->input('opening_date') : null;
+        $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
         
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
