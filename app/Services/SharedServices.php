@@ -137,7 +137,7 @@ class SharedServices
   }
 
   $Countries= Country::all();
-  Cache::put($cacheKey, $Countries, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+  Cache::put($cacheKey, $Countries, env(86400)); // 24 hours;
 
   return  $Countries;
   }
