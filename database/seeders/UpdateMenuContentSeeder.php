@@ -28,10 +28,10 @@ class UpdateMenuContentSeeder extends Seeder
         Db::table('Menu')->where('menu_id', '=', '14')->update(['index'=>'16']);
         Db::table('Menu')->where('menu_id', '=', '15')->update(['index'=>'17']);
         Db::table('Menu')->where('menu_id', '=', '16')->update(['index'=>'18']);
-        
+
         DB::table('Menu')->insert([
             'menu_id' => 18,
-            'key' => "Configuration",
+            'key' => "GConfiguration",
             'icon' => "fas fa-cogs",
             'index' => 4
         ]);      
