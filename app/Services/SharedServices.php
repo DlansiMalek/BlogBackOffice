@@ -137,7 +137,7 @@ class SharedServices
   }
 
   $Countries= Country::all();
-  Cache::put($cacheKey, $Countries, env(86400)); // 24 hours;
+  Cache::put($cacheKey, $Countries, 86400); // 24 hours;
 
   return  $Countries;
   }

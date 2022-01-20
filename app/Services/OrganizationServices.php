@@ -93,7 +93,7 @@ class OrganizationServices
             if ($admin_email && $privilege_id == config('privilege.Organisme')) $query->where('email', '=', $admin_email);
         })->get();
         if (!$admin_email)
-            Cache::put($cacheKey, $Organisations, env(3600)); // 1 hour;
+            Cache::put($cacheKey, $Organisations, 3600); // 1 hour;
         
         return $Organisations;
          
