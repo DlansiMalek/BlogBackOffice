@@ -1106,6 +1106,12 @@ class CongressServices
         $config_landing_page->organizers_title_en = $request->has("organizers_title_en") ? $request->input('organizers_title_en') : null;
         $config_landing_page->organizers_description_en = $request->has("organizers_description_en") ? $request->input('organizers_description_en') : null;
         $config_landing_page->page_title = $request->has("page_title") ? $request->input('page_title') : null;
+        $config_landing_page->waiting_title = $request->has("waiting_title") ? $request->input('waiting_title') : null;
+        $config_landing_page->waiting_desription = $request->has("waiting_desription") ? $request->input('waiting_desription') : null;
+        $config_landing_page->opening_date = $request->has("opening_date") ? $request->input('opening_date') : null;
+        $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
+        $config_landing_page->waiting_title_en = $request->has("waiting_title_en") ? $request->input('waiting_title_en') : null;
+        $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
