@@ -14,6 +14,8 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FormInputResponse;
+use Illuminate\Support\Facades\Cache;
+
 
 class SharedServices
 {
@@ -127,7 +129,17 @@ class SharedServices
 
   public function getAllCountries()
   {
-    return Country::all();
+  
+  $cacheKey = config('cachedKeys.Countries') ;
+
+  if (Cache::has($cacheKey)) {
+      return Cache::get($cacheKey);
+  }
+
+  $Countries= Country::all();
+  Cache::put($cacheKey, $Countries, 86400); // 24 hours;
+
+  return  $Countries;
   }
 
   public function getAllCongressTypes()
