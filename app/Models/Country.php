@@ -10,7 +10,7 @@ class Country extends Model
     protected $table = 'Country';
     protected $primaryKey = 'alpha3code';
     public $incrementing = false;
-    protected $fillable = ['code', 'name'];
+    protected $fillable = ['code', 'name', 'phone_code'];
     public $timestamps = false;
 
     public function cities()
