@@ -525,6 +525,15 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $perPage = null, $status = null, $questions = null)
+    {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })->get();
+        return $users;
+        //  return $perPage ? $users->paginate($perPage) : $users->get();
+    }
+
 
     public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {
