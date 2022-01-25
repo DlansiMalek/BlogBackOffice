@@ -32,6 +32,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Services\MeetingServices;
 
+
 class UserController extends Controller
 {
     protected $contactServices;
@@ -1622,14 +1623,14 @@ class UserController extends Controller
             return response()->json(['response' => 'bad request'], 400);
         }
 
-        $user->verification_code = Str::random(40);
+        $user->password_code = Str::random(40);
         $user->update();
         if ($request->id !== null) {
             $congressid = $request->id;
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
 
         } else {
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $user->user_id . '?verification_code=' . $user->password_code . '&user_id=' . $user->user_id;
 
         }
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
@@ -1646,7 +1647,7 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserById($user_id)) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($user->verification_code !== $verification_code) {
+        if ($user->password_code !== $verification_code) {
             return response()->json('bad request', 400);
         }
 
@@ -1663,7 +1664,7 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserById($userId)) {
             return response()->json(['response' => 'user not found'], 404);
         }
-        if ($user->verification_code !== $verification_code) {
+        if ($user->password_code  !== $verification_code) {
             return response()->json(['response' => 'bad request'], 400);
         }
         if (!$mailAdminType = $this->mailServices->getMailTypeAdmin('reset_password_success')) {
