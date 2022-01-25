@@ -356,13 +356,13 @@ class UserController extends Controller
             return response()->json('no admin found', 404);
         }
         $access = $request->query('access', '');
-        $payment = $request->query('status', '');
-        $status = $request->query('payment', '');
+        $payment = $request->query('payment', '');
+        $status = $request->query('status', '');
         $questions = $request->query('question', '');
 
         $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions);
         Log::warning($users);
-        return response()->json($request);
+        return response()->json($users);
     }
 
     public function getUsersByCongress($congressId, $privilegeId)

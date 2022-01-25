@@ -529,9 +529,22 @@ class UserServices
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
-        })->get();
+        })->whereHas(
+            'user_access',
+            function ($query) use ($access) {
+                if ($access) {
+                    $query->where('access_id', '=', $access);
+                }
+            }
+        )->whereHas(
+            'payments',
+            function ($query) use ($payment) {
+                if ($payment) {
+                    $query->where('isPaid', '=', $payment);
+                }
+            }
+        )->get();
         return $users;
-        //  return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
 
