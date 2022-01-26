@@ -89,7 +89,7 @@ class SubmissionServices
     public function getSubmissionById($submission_id)
     {
         return Submission::where('submission_id', '=', $submission_id)
-            ->with(['congress', 'user'])
+            ->with(['congress', 'user', 'theme'])
             ->first();
     }
 
@@ -161,7 +161,7 @@ class SubmissionServices
             },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
-                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                     ->with(['evaluator:admin_id,name,email']);
             },
         ]);
@@ -219,7 +219,7 @@ class SubmissionServices
                         });
                     }
                 });
-              
+
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
                 || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
                 || $tri == 'theme_id' || $tri == 'congress_id')) {
@@ -242,7 +242,7 @@ class SubmissionServices
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type', 'communication_type_id', 'limit_date',
                         'prez_type', 'description', 'global_note', 'communicationType',
-                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
+                        'status', 'theme', 'user', 'authors','submissions_evaluations',
                         'congress_id', 'created_at', 'congress', 'resources','comments']);
                 return $submissionToRender;
             }
@@ -258,7 +258,7 @@ class SubmissionServices
                     'theme:theme_id,label',
                     'communicationType:communication_type_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
-                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     },
                 ])->where('submission_id', '=', $submission_id)->first();
@@ -297,9 +297,10 @@ class SubmissionServices
 
     }
 
-    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation)
+    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme_id)
     {
         $evaluation->note = $note;
+        $evaluation->theme_id = $theme_id;
         $evaluation->save();
         // supposons seulement un seul utilisateur a fait la correction
         // dans ce cas on doit pas faire la moyenne
@@ -599,7 +600,7 @@ class SubmissionServices
         $resources = $this->getAllResourcesBySubmission($submission_id);
         foreach ($resources as $item) {
             $resource = $item->resource;
-            Storage::disk('digitalocean')->delete($resource->path);
+            Storage::disk('s3')->delete($resource->path);
             $item->delete();
             $resource->delete();
         }

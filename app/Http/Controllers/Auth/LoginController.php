@@ -163,14 +163,13 @@ class LoginController extends Controller
 
     public function redirectToGoogleProvider(Request $request)
     {
-
         $id = $request->id;
         $idCongress = $request->idCongress;
-
+        $isPwa = $request->pwa;
         Session::put('id', $id);
         Session::put('idCongress', $idCongress);
+        Session::put('isPwa', $isPwa);
         return Socialite::driver('google')->with(["prompt" => "select_account"])->redirect();
-
     }
 
     /**
@@ -183,8 +182,10 @@ class LoginController extends Controller
     {
         $id = Session::get('id', url('/'));
         $idCongress = Session::get('idCongress', url('/'));
+        $isPwa = Session::get('isPwa', false);
         Session::forget('idCongress');
         Session::forget('id');
+        Session::forget('isPwa');
         try {
             $user = Socialite::with('google')->user();
         } catch (\Exception $e) {
@@ -193,6 +194,9 @@ class LoginController extends Controller
         $existingUser = User::where('email', $user->email)->first();
         if (!$existingUser && $id !== null) {
             $compte = "non";
+            if ($isPwa == true || $isPwa == 'true') {
+                return redirect()->to(UrlUtils::getBaseUrlPWA() . '/auth/login?&isAccount=' . $compte);
+            }
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&compte=' . $compte);
 
         }
@@ -200,13 +204,14 @@ class LoginController extends Controller
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
         $token = auth()->login($existingUser, true);
+        if ($isPwa == true || $isPwa == 'true') {
+            return redirect()->to(UrlUtils::getBaseUrlPWA() . '/auth/login?&token=' . $token . '&user=' . $existingUser->email);
+        }
         if ($idCongress !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
-
         }
         if ($id !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
-
         } else {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/login?&token=' . $token . '&user=' . $existingUser->email);
         }
@@ -220,8 +225,10 @@ class LoginController extends Controller
     {
         $id = $request->id;
         $idCongress = $request->idCongress;
+        $isPwa = $request->pwa;
         Session::put('id', $id);
         Session::put('idCongress', $idCongress);
+        Session::put('isPwa', $isPwa);
         return Socialite::driver('facebook')->redirect();
     }
 
@@ -234,8 +241,10 @@ class LoginController extends Controller
     {
         $id = Session::get('id', url('/'));
         $idCongress = Session::get('idCongress', url('/'));
+        $isPwa = Session::get('isPwa', false);
         Session::forget('idCongress');
         Session::forget('id');
+        Session::forget('isPwa');
         try {
             $user = Socialite::with('facebook')->user();
         } catch (\Exception $e) {
@@ -244,6 +253,9 @@ class LoginController extends Controller
         $existingUser = User::where('email', $user->email)->first();
         if (!$existingUser && $id !== null) {
             $compte = "non";
+            if ($isPwa == true || $isPwa == 'true') {
+                return redirect()->to(UrlUtils::getBaseUrlPWA() . '/auth/login?&isAccount=' . $compte);
+            }
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/landingpage/' . $id . '/login?&compte=' . $compte);
 
         }
@@ -251,6 +263,9 @@ class LoginController extends Controller
             $existingUser = $this->userServices->saveUserWithFbOrGoogle($user);
         }
         $token = auth()->login($existingUser, true);
+        if ($isPwa == true || $isPwa == 'true') {
+            return redirect()->to(UrlUtils::getBaseUrlPWA() . '/auth/login?&token=' . $token . '&user=' . $existingUser->email);
+        }
         if ($idCongress !== null) {
             return redirect()->to(UrlUtils::getBaseUrlFrontOffice() . '/inscription-event/public/' . $idCongress . '?&token=' . $token . '&user=' . $existingUser->email . '&id=' . $id);
 
