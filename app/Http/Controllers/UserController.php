@@ -34,10 +34,6 @@ use Illuminate\Support\Facades\Schema;
 use App\Services\MeetingServices;
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 48457a00e28d158ba89a1a8ee74eea14a31c82c9
 class UserController extends Controller
 {
     protected $contactServices;
