@@ -1861,13 +1861,13 @@ class UserServices
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
             }
 
-            if ($congressId != 'null') {
+            if ($congressId != 'null' && $congressId  ) {
                 $query->where(DB::raw('User_Congress.congress_id'), '=', $congressId );
             } 
              })
         
         ->select((DB::raw('DISTINCT User.user_id')),'first_name','last_name','Country.name','mobile','email','passwordDecrypt');
 
-        return  $users = $perPage ? $users->paginate($perPage) : $users->get();
+        return $users->paginate($perPage);
     }
 }

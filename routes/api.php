@@ -475,6 +475,9 @@ Route::group(['prefix' => 'admin', 'middleware' => 'marketing'], function () {
     Route::put('{admin_id}', "AdminController@editClient");
     Route::put('{admin_id}/offre/{offreId}', "AdminController@editClientPayment");
 });
+Route::group(['prefix' => 'all-users', 'middleware' => 'marketing'], function () {
+    Route::get('listUsers', 'UserController@getUsersInformations');
+});
 
 Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
     Route::get('list', 'OffreController@getAllOffres');
@@ -659,7 +662,3 @@ Route::group(["prefix" => "3D"], function () {
     });
 }); 
 
-
-Route::group(['prefix' => 'super-admin', 'middleware' => 'super-admin'], function () {
-    Route::get('listUsers', 'UserController@getUsersInformations');
-});

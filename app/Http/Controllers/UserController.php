@@ -2232,7 +2232,7 @@ class UserController extends Controller
     {
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
-        $congress_id = $request->query('congress_id', );
+        $congress_id = $request->query('congress_id',null);
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
         }
