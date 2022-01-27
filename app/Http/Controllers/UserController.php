@@ -748,12 +748,12 @@ class UserController extends Controller
             $urlStreaming = $congress->config->url_streaming;
         } else {
             $access = $this->accessServices->getAccessById($accessId);
-            $isAllowedJitsi = $congress->config->max_online_participants && $access->url_streaming ? $congress->config->max_online_participants >= $access->nb_current_participants : true;
+            $isAllowedJitsi =   $access->max_online_participants && $access->url_streaming ?   $access->max_online_participants >= $access->nb_current_participants : true;
             $urlStreaming = $access->url_streaming;
         }
-        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId);
-        if (count($allowedOnlineAccess) != 0 && $urlStreaming) {
-            $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id) ? true : false;
+        $allowedOnlineAccess = $this->congressServices->getAllAllowedOnlineAccess($congressId,$accessId);
+        if (count($allowedOnlineAccess) != 0 && $urlStreaming && $isAllowedJitsi ) {
+            $isAllowedJitsi = $this->congressServices->getAllowedOnlineAccessByPrivilegeId($congressId, $user->user_congresses[0]->privilege_id,$accessId) ? true : false;
         }
 
         $userToUpdate = $accessId ? $user->user_access[0] : $user->user_congresses[0];
