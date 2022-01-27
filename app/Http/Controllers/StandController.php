@@ -9,7 +9,7 @@ use App\Services\VotingServices;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\STagServices;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request;use Illuminate\Support\Facades\Log;
 
 class StandController extends Controller
 {
@@ -42,7 +42,7 @@ class StandController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        if ($request->input('organization_id')) {
+        if ($request->input('organization_id') && $request->input('organization_id') != "null") {
             $organization_id = $request->input('organization_id');
             $stands = $this->standServices->getStands($congress_id, null,  null,  null,  null,  null, $organization_id);
             return response()->json($stands, 200);
