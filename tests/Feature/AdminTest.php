@@ -54,7 +54,7 @@ class AdminTest extends TestCase
     public function testGetUsersInformation()
     {
         //  api/super-admin/listUsers
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.marketing')]);
         $user2 = factory(User::class)->create();
         $user3 = factory(User::class)->create();
         $congress = factory(Congress::class)->create();
@@ -63,7 +63,7 @@ class AdminTest extends TestCase
         $userCongress = factory(UserCongress::class)->create(['user_id' => $user3->user_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => 3]); 
             $token = JWTAuth::fromUser($superAdmin);
-            $response = $this->withHeader('Authorization', 'Bearer ' . $token)->get('api/super-admin/listUsers')->assertStatus(200);
+            $response = $this->withHeader('Authorization', 'Bearer ' . $token)->get('api/all-users/listUsers')->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);     
     }
 }
