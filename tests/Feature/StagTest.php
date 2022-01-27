@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Congress;
 use App\Models\STag;
+use App\Models\GSTag;
 
 class StagTest extends TestCase
 {
@@ -18,8 +19,9 @@ class StagTest extends TestCase
     public function testGetSTags()
     {
         $congress = factory(Congress::class)->create();
-        $stag = factory(STag::class)->create(['congress_id' =>$congress->congress_id]);
-        $response = $this->get('api/congress/' . $congress->congress_id .'/stags/stand-tag-list')
+        $gtag = factory(GSTag::class)->create(['congress_id' => $congress->congress_id]);
+        $stag = factory(STag::class)->create(['congress_id' => $congress->congress_id ,'gstag_id' => $gtag->gstag_id  ]);
+        $response = $this->get('api/congress/' . $congress->congress_id . '/stags/stand-tag-list')
         ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(1, $dataResponse);
@@ -28,19 +30,24 @@ class StagTest extends TestCase
     public function testAddTag()
     {
         $congress = factory(Congress::class)->create();
-        $stag = $this->getStag();
-        $response = $this->post('api/congress/' . $congress->congress_id .'/stags/add', $stag)
-        ->assertStatus(200);
+        $gtag = factory(GSTag::class)->create(['congress_id' => $congress->congress_id]);
+        $stag = $this->getFakeDataSTag($congress->congress_id, $gtag->gstag_id);
+        $response = $this->post('api/congress/' . $congress->congress_id . '/stags/add', $stag)
+            ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $stagResp = STag::where('stag_id', '=', $dataResponse['0']['stag_id'])->first();
+        $stagResp = STag::where('stag_id', '=', $dataResponse['0']['stag_id'])->with(['gtag'])->first();
         $this->assertEquals($stagResp->label, $stag['label']);
+        $this->assertEquals($stagResp->gstag_id, $gtag->gstag_id);
         $this->assertEquals($stagResp->congress_id, $congress->congress_id);
     }
 
-    private function getStag()
+    private function getFakeDataSTag($congress_id ,$gstag_id)
     {
         return [
-            'label' => $this->faker->word
+            'congress_id' => $congress_id,
+            'label' => $this->faker->word,
+            'gstag_id' => $gstag_id   
+      
         ];
-    }
+    }  
 }
