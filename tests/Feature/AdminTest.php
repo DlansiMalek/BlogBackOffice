@@ -54,7 +54,7 @@ class AdminTest extends TestCase
     public function testGetUsersInformation()
     {
         //  api/super-admin/listUsers
-        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.marketing')]);
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
         $user2 = factory(User::class)->create();
         $user3 = factory(User::class)->create();
         $congress = factory(Congress::class)->create();
