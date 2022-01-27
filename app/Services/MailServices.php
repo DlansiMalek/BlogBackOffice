@@ -3,7 +3,6 @@
 
 namespace App\Services;
 
-use App\Models\Congress;
 use App\Models\Mail;
 use App\Models\MailAdmin;
 use App\Models\MailType;
@@ -12,7 +11,6 @@ use App\Models\Offre;
 use App\Models\UserMail;
 use App\Models\UserMailAdmin;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -26,7 +24,7 @@ class MailServices
 {
     protected $maxRequest = 0;
 
-    public function getAllMailTypes($congressId = null, $type)
+    public function getAllMailTypes($congressId , $type)
     {
         return MailType::where('type', '=', $type)
             ->with(['mails' => function ($query) use ($congressId) {
@@ -84,18 +82,26 @@ class MailServices
             ->first();
     }
 
-    public function getMailByUserIdAndMailId($mailId, $userId)
+    public function getMailByUserIdAndMailId($mailId, $userId, $submissionId = null)
     {
         return UserMail::where('user_id', '=', $userId)
             ->where('mail_id', '=', $mailId)
+            ->where(function ($query) use ($submissionId) {
+                if ($submissionId != null) {
+                    $query->where('submission_id', '=', $submissionId);
+                }
+            })
             ->first();
     }
 
-    public function addingMailUser($mailId, $userId)
+    public function addingMailUser($mailId, $userId, $submissionId = null)
     {
         $mailUser = new UserMail();
         $mailUser->user_id = $userId;
         $mailUser->mail_id = $mailId;
+        if ($submissionId) {
+            $mailUser->submission_id = $submissionId;
+        }
         $mailUser->save();
 
         return $mailUser;
@@ -194,7 +200,11 @@ class MailServices
         if ($congress != null) {
             $offre = $this->getOffreByCongressId($congress->congress_id);
         }
-
+        // waiting sending mail
+        if ($userMail) {
+            $userMail->status = 2;
+            $userMail->update();
+        }
         if ($offre != null && $offre->is_mail_pro == 1) {
             $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
         } else {
@@ -302,7 +312,10 @@ class MailServices
         }
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
         $replyTo = $congress != null && $congress->config != null && $congress->config->replyto_mail!= null ? $congress->config->replyto_mail : env('MAIL_USERNAME', 'contact@eventizer.io');
-       
+        /* 
+            TODO removing  
+            $logMail = env('MAIL_LOG', 'logs@eventizer.io');
+        */
         $message = array(
             'sender' => array(
                 'email'=> $replyTo,
@@ -316,8 +329,11 @@ class MailServices
             'to' => array(
                 array(
                     'email' => $email,
-                ),
+                )
             ),
+            /*'bcc' => array(
+                array('email' => $logMail)
+            ),*/
             'tags' => array(strval($congress->congress_id))
         );
         if ($fileAttached) {

@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call(FMenuSeeder::class);
         $this->call(StandTypeSeeder::class);
         $this->call(StandContentConfigSeeder::class);
         $this->call(CountriesSeedTable::class);
@@ -60,7 +61,9 @@ class DatabaseSeeder extends Seeder
         $this->call(UserMailSeeder::class);
         $this->call(MailTypeAdminSeedTable::class);
         $this->call(MailAdminSeedTable::class);
+        $this->call(MailContactUsSeeder::class);
         $this->call(UserMailAdminSeeder::class);
+        $this->call(OrganizationMailSeeder::class);
 
         $this->call(LikeSeedTable::class);
         $this->call(ResourceSeeder::class);
@@ -107,6 +110,9 @@ class DatabaseSeeder extends Seeder
         $this->call(LPSpeakerSeeder::class);
         
         $this->call(AccessGameSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(ProjectSeeder::class);
 
+        $this->call(PrivilegeMenuChildrenTableSeeder::class);
     }
 }

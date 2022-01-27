@@ -12,6 +12,7 @@ use App\Models\SubmissionEvaluation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class SubmissionServices
 {
@@ -89,7 +90,7 @@ class SubmissionServices
     public function getSubmissionById($submission_id)
     {
         return Submission::where('submission_id', '=', $submission_id)
-            ->with(['congress', 'user'])
+            ->with(['congress', 'user', 'theme'])
             ->first();
     }
 
@@ -161,7 +162,7 @@ class SubmissionServices
             },
             'theme:theme_id,label',
             'submissions_evaluations' => function ($query) {
-                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                     ->with(['evaluator:admin_id,name,email']);
             },
         ]);
@@ -219,7 +220,7 @@ class SubmissionServices
                         });
                     }
                 });
-              
+
             if ($order && ($tri == 'submission_id' || $tri == 'title' || $tri == 'type' || $tri == 'prez_type'
                 || $tri == 'description' || $tri == 'global_note' || $tri == 'status' || $tri == 'user_id'
                 || $tri == 'theme_id' || $tri == 'congress_id')) {
@@ -242,7 +243,7 @@ class SubmissionServices
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type', 'communication_type_id', 'limit_date',
                         'prez_type', 'description', 'global_note', 'communicationType',
-                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
+                        'status', 'theme', 'user', 'authors','submissions_evaluations',
                         'congress_id', 'created_at', 'congress', 'resources','comments']);
                 return $submissionToRender;
             }
@@ -258,7 +259,7 @@ class SubmissionServices
                     'theme:theme_id,label',
                     'communicationType:communication_type_id,label',
                     'submissions_evaluations' => function ($query) use ($admin) {
-                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id')
+                        $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                             ->with(['evaluator:admin_id,name,email'])->where('admin_id', '=', $admin->admin_id);
                     },
                 ])->where('submission_id', '=', $submission_id)->first();
@@ -297,9 +298,10 @@ class SubmissionServices
 
     }
 
-    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation)
+    public function putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme_id)
     {
         $evaluation->note = $note;
+        $evaluation->theme_id = $theme_id;
         $evaluation->save();
         // supposons seulement un seul utilisateur a fait la correction
         // dans ce cas on doit pas faire la moyenne
@@ -352,26 +354,33 @@ class SubmissionServices
             ->get();
     }
 
-    public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
+    public function getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id)
     {
         $submissions = Submission::with([
-            'resources', 'authors' => function ($query) {
+            'theme','resources', 'authors' => function ($query) {
                 $query->orderBy('rank');
             },
         ])->where('status', '=', 1)
-        ->where('congress_id', '=', $congressId);
+        ->where('congress_id', '=', $congressId)
+        ->orderBy('code');
 
         if ($communication_type_id != 'null' && $communication_type_id != '') {
-            $submissions->where('communication_type_id', '=', $communication_type_id);
+            $submissions->where('communication_type_id', '=', $communication_type_id);  
         }
-        if ($search != "null" && $search!='') {
+        if ( $theme_id != 'null' &&  $theme_id != '') { 
+            $submissions->where('theme_id','=', $theme_id);
+        }
+        if ($search != "null" && $search!='') {  
             $submissions->where('title', 'like', '%' . $search . '%')
-            ->orWhere(function($q) use ($search, $congressId, $communication_type_id) {
+            ->orWhere(function($q) use ($search, $congressId, $communication_type_id, $theme_id) {
                 $q->where('congress_id', '=', $congressId)
                 ->where('status', '=', 1)
                 ->where('code', 'like', '%' . $search . '%');
                 if ($communication_type_id != 'null' && $communication_type_id != '') {
                     $q->where('communication_type_id', '=', $communication_type_id);
+                }
+                if ( $theme_id != 'null' &&  $theme_id != '') { 
+                        $q->where('theme_id','=', $theme_id);
                 }
             })
             ->orWhereHas("authors", function ($query) use ($search, $congressId) {
@@ -388,15 +397,15 @@ class SubmissionServices
         return $response;
     }
 
-    public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id)
+    public function getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id)
     {
-        $cacheKey = 'submissions-' . $congressId.$search.$offset.$perPage.$communication_type_id;
+        $cacheKey = config('cachedKeys.Submissions') . $congressId.$search.$offset.$perPage.$communication_type_id.$theme_id;
 
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
-        $submissions = $this->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        $submissions = $this->getAllSubmissionsByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id);
         Cache::put($cacheKey, $submissions, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
         return $submissions;
@@ -598,7 +607,7 @@ class SubmissionServices
         $resources = $this->getAllResourcesBySubmission($submission_id);
         foreach ($resources as $item) {
             $resource = $item->resource;
-            Storage::disk('digitalocean')->delete($resource->path);
+            Storage::disk('s3')->delete($resource->path);
             $item->delete();
             $resource->delete();
         }

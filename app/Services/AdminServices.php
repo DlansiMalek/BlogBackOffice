@@ -327,15 +327,15 @@ class AdminServices
         return $personnel;
     }
 
-    public function editPersonnel($admin)
+    public function editPersonnel($admin, $oldAdmin)
     {
-        return Admin::where("admin_id", "=", $admin['admin_id'])
-            ->update([
-                'name' => $admin["name"],
-                'email' => $admin["email"],
-                'mobile' => $admin["mobile"]
-            ]);
+        $oldAdmin->name = $admin["name"];
+        $oldAdmin->email = $admin["email"];
+        $oldAdmin->mobile = $admin["mobile"];
+        $oldAdmin->update();
+        return $oldAdmin;
     }
+
 
     public function deleteAdminById($admin)
     {
@@ -505,6 +505,7 @@ class AdminServices
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+        $template = str_replace('{{$admin-&gt;password}}', '{{$admin->passwordDecrypt}}', $template);
         $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);

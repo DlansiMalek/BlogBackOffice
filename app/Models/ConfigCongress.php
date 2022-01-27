@@ -43,7 +43,9 @@ class ConfigCongress extends Model
         'nb_max_access',
         'meeting_duration',
         'pause_duration',
-        'default_country'
+        'default_country',
+        'nb_meeting_table',
+        'is_visible_price'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];

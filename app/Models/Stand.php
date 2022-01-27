@@ -32,9 +32,25 @@ class Stand extends Model
     function products() {
         return $this->hasMany(StandProduct::class,'stand_id','stand_id');
     }
+    function stags() {
+        return $this->belongsToMany(STag::class, 'Stand_Tag', 'stand_id', 'stag_id');
+    }
 
     function faq() {
         return $this->hasMany(FAQ::class,'stand_id','stand_id');
+    }
+
+    function stand_content_file() {
+        return $this->belongsToMany(StandContentConfig::class, 'Stand_Content_File', 'stand_id', 'stand_content_config_id')
+            ->withPivot(['file', 'url']);
+    }
+
+    function stand_type() {
+        return $this->hasOne(StandType::class,'stand_type_id','stand_type_id');
+    }
+
+    function stand_content_config() {
+        return $this->hasOne(StandContentConfig::class,'stand_type_id','stand_type_id');
     }
 }
 

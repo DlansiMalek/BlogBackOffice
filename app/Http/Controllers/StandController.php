@@ -8,6 +8,7 @@ use App\Services\StandServices;
 use App\Services\VotingServices;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
+use App\Services\STagServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -17,22 +18,25 @@ class StandController extends Controller
     protected $congressServices;
     protected $votingServices;
     protected $adminServices;
+    protected $stagServices;
 
     function __construct(
         StandServices $standServices,
         CongressServices $congressServices,
         VotingServices $votingServices,
         AccessServices $accessServices,
-        AdminServices $adminServices
+        AdminServices $adminServices,
+        STagServices $stagServices
     ) {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
         $this->accessServices = $accessServices;
         $this->adminServices = $adminServices;
+        $this->stagServices = $stagServices;
     }
 
-
+    
     public function getStands($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
@@ -56,7 +60,9 @@ class StandController extends Controller
             $stand = $this->standServices->getStandById($request->input('stand_id'));
         }
         $stand = $this->standServices->addStand($stand, $congressId, $request);
-        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id);
+        $this->stagServices->deleteOldSTags($stand->stand_id);
+        $this->stagServices->addAllStandTags($request->input('tag_id_selected'), $stand->stand_id);
+        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id); 
         return response()->json($stand, 200);
     }
 
@@ -153,12 +159,16 @@ class StandController extends Controller
         return response()->json(['stands' => $stands, 'accesses' => $accesses]);
     }
 
-    public function getStandsByCongress($congress_id)
+    public function getStandsByCongress($congress_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $stands = $this->standServices->getCachedStands($congress_id);
+        $perPage = $request->query('perPage', 10);
+        $page = $request->query('page', 1);
+        $search = $request->query('search', '');
+        $stag_id = $request->query('stag_id','');
+        $stands = $this->standServices->getCachedStands($congress_id,$page,$perPage,$search,$stag_id);
         return response()->json($stands, 200);
     }
 

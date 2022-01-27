@@ -19,6 +19,7 @@ use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\ThemeServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ class SubmissionController extends Controller
     protected $sharedServices;
     protected $communicationTypeService;
     protected $resourcesServices;
+    protected $themeServices;
 
     public function __construct(
         SubmissionServices $submissionServices,
@@ -51,7 +53,8 @@ class SubmissionController extends Controller
         MailServices $mailServices,
         SharedServices $sharedServices,
         CommunicationTypeService $communicationTypeService,
-        ResourcesServices $resourcesServices
+        ResourcesServices $resourcesServices,
+        ThemeServices $themeServices
     ) {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
@@ -64,6 +67,7 @@ class SubmissionController extends Controller
         $this->sharedServices = $sharedServices;
         $this->communicationTypeService = $communicationTypeService;
         $this->resourcesServices = $resourcesServices;
+        $this->themeServices = $themeServices;
 
     }
 
@@ -118,9 +122,9 @@ class SubmissionController extends Controller
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission->submission_id);
                 if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission->submission_id);
                 }
 
                 $this->mailServices->sendMail(
@@ -207,9 +211,9 @@ class SubmissionController extends Controller
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission->submission_id);
                 if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission->submission_id);
                 }
 
                 $this->mailServices->sendMail(
@@ -290,9 +294,9 @@ class SubmissionController extends Controller
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
                 if ($mail) {
-                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
+                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission->submission_id);
                     if (!$userMail) {
-                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission->submission_id);
                         $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
                         );
@@ -361,13 +365,13 @@ class SubmissionController extends Controller
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
         $congress = $this->congressServices->getCongressById($congress_id);
         if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id);
-            if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                $this->mailServices->sendMail(
-                    $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
-                );
-            }
+          $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission_id);
+          if (!$userMail) {
+            $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submission_id);
+            $this->mailServices->sendMail(
+                $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, null, $mail->object, null, $userMail
+            );
+          }
         }
 
         return response()->json(['response' => 'Submission status changed'], 201);
@@ -406,6 +410,13 @@ class SubmissionController extends Controller
             $file_upload_code = $this->adminServices->generateRandomString(10);
             $submission->upload_file_code = $file_upload_code;
         }
+        $theme = $this->themeServices->getThemeById(
+            $request->has('theme_id') ? $request->input('theme_id') :
+            $submission->theme_id
+        );
+        if ($request->has('theme_id')) {
+            $submission->theme_id = $request->input('theme_id');
+        }
         $submission->update();
 
         // add review 
@@ -427,9 +438,9 @@ class SubmissionController extends Controller
             $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
 
             if ($mail) {
-                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id, $submission_id);
                 if (!$userMail) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id, $submission_id);
                 }
                 $link = '';
                 if (($request->input('status') == 4)) {
@@ -454,8 +465,8 @@ class SubmissionController extends Controller
                         $link,
                         $request->input('status') == '1' ? $submission->code : null,
                         $submission->title,
-                        $type ? $type->label : null
-
+                        $type ? $type->label : null,
+                        [], null, null, null, null, null, null, null, null, $theme->label
                     ),
                     $user,
                     null,
@@ -475,6 +486,7 @@ class SubmissionController extends Controller
         $note = $request->input('note', -1);
         $comment = $request->input('comment');
         $status = $request->input('status');
+        $theme = $request->input('theme');
         if (!($submission = $this->submissionServices->getSubmissionById($submissionId)) || $note < 0 || $note > 20) {
             return response()->json(['response' => 'bad request'], 400);
         }
@@ -486,7 +498,7 @@ class SubmissionController extends Controller
             }
             $evaluation = $this->submissionServices->getSubmissionEvaluationByAdminId($admin, $submissionId);
             $evaluation->communication_type_id = $request->input('communication_type_id');
-            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation);
+            $evaluation = $this->submissionServices->putEvaluationToSubmission($admin, $submissionId, $note, $evaluation, $theme);
 
             // add review 
             if ($status === 6 || $comment) {
@@ -495,9 +507,9 @@ class SubmissionController extends Controller
                 $mailtype = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
                 if ($mail) {
-                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+                    $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id, $submission->submission_id);
                     if (!$userMail) {
-                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id, $submission->submission_id);
                         $this->mailServices->sendMail(
                             $this->congressServices->renderMail($mail->template, $submission->congress, $submission->user, null, null, null), $submission->user, $submission->congress, $mail->object, null, $userMail
                         );
@@ -519,9 +531,9 @@ class SubmissionController extends Controller
         $mailtype = $this->congressServices->getMailType('submission_a_reviser', $this->type);
         $mail = $this->congressServices->getMail($submission->congress_id, $mailtype->mail_type_id);
         if ($mail) {
-            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id);
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $submission->user_id, $submission->submission_id);
             if (!$userMail) {
-                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id);
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $submission->user_id, $submission->submission_id);
             }
             $linkSubmission = UrlUtils::getBaseUrlFrontOffice() . "/user-profile/submission/edit/".$submission->submission_id;
             $this->mailServices->sendMail(
@@ -558,14 +570,12 @@ class SubmissionController extends Controller
         $search = $request->query('search', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
-        $communication_type_id = $request->query('communication_type_id');
-        if (!$communication_type_id) {
-            return response()->json(['response' => 'bad request'], 400);
-        }
+        $communication_type_id = $request->query('communication_type_id','');
+        $theme_id = $request->query('theme_id','');
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id);
         return response()->json($submissions, 200);
     }
 
@@ -809,6 +819,15 @@ class SubmissionController extends Controller
             $authors = $this->authorServices->getAuthorsAttestation($congressId, $mailId, $withAuthors);
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             foreach ($authors as $author) {
+                $authorMail = null;
+                if (sizeof($author->author_mails) == 0) {
+                    $authorMail = $this->authorServices->addingMailAuthor($mail->mail_id, $author->author_id);
+                } else {
+                    $authorMail = $author->author_mails[0];
+                }
+                if (!Utils::isValidStatus($authorMail)) {
+                    continue;
+                }
                 $request = array();
                 if ($author->email != null && $author->email != "") {
                     foreach ($author->submissions as $submission) {
@@ -830,15 +849,8 @@ class SubmissionController extends Controller
                     }
 
                     if ($mail) {
-                        $authorMail = null;
-                        if (sizeof($author->author_mails) == 0) {
-                            $authorMail = $this->authorServices->addingMailAuthor($mail->mail_id, $author->author_id);
-                        } else {
-                            $authorMail = $author->author_mails[0];
-                        }
-                        if ($authorMail->status != 1) {
-                            $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
-                            $fileName = 'attestationsSubmission.zip';
+                        $fileName = $this->sharedServices->saveAttestationsSubmissionsInPublic($request);
+                        if ($fileName) {
                             $this->mailServices->sendMail(
                                 $this->congressServices->renderMail($mail->template, $congress, $author, null, null, null, null, null, null, null, null, null, null, null, null, $author->submissions),
                                 $author,
@@ -893,7 +905,10 @@ class SubmissionController extends Controller
                 return response()->json(['error' => 'mail attestation submission not found'], 400);
             }
             $userMail = null;
-
+            $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submissionId);
+            if (!$userMail) {
+                $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id, $submissionId);
+            }
             $attestationsSubmissions = $this->submissionServices->getAttestationSubmissionEnabled($congressId);
             $attestationSubmission = null;
             foreach ($attestationsSubmissions as $attestation) {

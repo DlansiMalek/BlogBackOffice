@@ -29,7 +29,8 @@ class SubmissionTest extends TestCase
             'congress_id' => $congress->congress_id,
             'user_id' => $user->user_id,
             'type' => 'Série',
-            'communication_type_id' => 1
+            'communication_type_id' => 1,
+            'theme_id' => 1,
         ]);
         $author = factory(Author::class)->create([
             'submission_id' => $submission->submission_id,
@@ -42,7 +43,7 @@ class SubmissionTest extends TestCase
             'submission_id' => $submission->submission_id,
             'resource_id' => $resource->resource_id
         ]);
-        $this->get('api/submissions/congress/' . $congress->congress_id.'?communication_type_id=1')
+        $this->get('api/submissions/congress/' . $congress->congress_id.'?communication_type_id=1&theme_id=1')
             ->assertStatus(200);
 
     }
@@ -72,6 +73,7 @@ class SubmissionTest extends TestCase
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
             'meeting_duration' => $this->faker->numberBetween(0, 60),
             'pause_duration' => $this->faker->numberBetween(0, 30),
+            'nb_meeting_table' => $this->faker->numberBetween(0, 1),
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -109,6 +111,7 @@ class SubmissionTest extends TestCase
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
             'meeting_duration' => $this->faker->numberBetween(0, 60),
             'pause_duration' => $this->faker->numberBetween(0, 30),
+            'nb_meeting_table' => $this->faker->numberBetween(0, 1),
 
         ]);
         $config['privileges'] = [3];
@@ -150,6 +153,7 @@ class SubmissionTest extends TestCase
             'start_submission_date' => $this->faker->date(),
             'max_words' => $this->faker->numberBetween(100, 500),
             'num_evaluators' => $this->faker->numberBetween(1, 5),
+            'show_file_upload' => $this->faker->numberBetween(0, 1),
         ];
     }
 }
