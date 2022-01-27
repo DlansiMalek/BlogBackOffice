@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\Badge;
@@ -32,6 +31,7 @@ use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use App\Services\MeetingServices;
 
 class CongressController extends Controller
 {
@@ -53,6 +53,7 @@ class CongressController extends Controller
     protected $standServices;
     protected $trackingServices;
     protected $fmenuServices;
+    protected $meetingServices;
 
     function __construct(CongressServices $congressServices, AdminServices $adminServices,
                          AccessServices $accessServices,
@@ -69,7 +70,8 @@ class CongressController extends Controller
                          ResourcesServices $resourceService,
                          PaymentServices $paymentServices,
                          TrackingServices $trackingServices,
-                         FMenuServices $fmenuServices )
+                         FMenuServices $fmenuServices,
+                         MeetingServices $meetingServices )
     {
         $this->congressServices = $congressServices;
         $this->geoServices = $geoServices;
@@ -88,6 +90,7 @@ class CongressController extends Controller
         $this->standServices = $standServices;
         $this->trackingServices = $trackingServices;
         $this->fmenuServices = $fmenuServices;
+        $this->meetingServices = $meetingServices;
     }
 
 
@@ -272,9 +275,15 @@ class CongressController extends Controller
                 $loggedadmin->name
             );
         }
-
+        $reservedMeetingTables = $this->meetingServices->countUsedMeetingTablesByCongressId($congressId);
+        if ($reservedMeetingTables  > $request->input("congress")['nb_meeting_table']) {
+            return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
+        }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
-
+        $nbMeetingTable = $configCongress['nb_meeting_table'];
+        if ($nbMeetingTable != 0) {
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId,);
+        }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
@@ -714,7 +723,14 @@ class CongressController extends Controller
         $congress = $this->congressServices->getCongressById($mail->congress_id);
         $privilege_ids = $request->input('privilege_ids');
         $to_all = $request->query('toAll', 0);
+        $questionId = $request->input('question_id');
+        $responseId = $request->input('response_id');
 
+        if ($questionId != null &&  $responseId != null) {
+            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId,$privilege_ids, $mailId);
+        }
+        else
+        {
         $users = $this->userServices->getUsersWithRelations($congressId,
             [
                 'accesses' => function ($query) use ($congressId) {
@@ -731,6 +747,7 @@ class CongressController extends Controller
                 }
             ], null, $privilege_ids);
 
+        }
 
         foreach ($users as $user) {
             if (Utils::isValidSendMail($congress, $user, $to_all)) {
@@ -1157,6 +1174,44 @@ class CongressController extends Controller
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
+
+    public function addLandingPageOrganizer($congress_id, Request $request)
+    {
+        if (!$request->has(['full_name', 'role']))
+        return response()->json(['message' => 'bad request:full_name and role are required '], 400);
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+        $organizer = null;
+        if ($request->has('lp_organizer_id')) {
+            if (!$organizer = $this->congressServices->getLandingPageOrganizerById($request->input('lp_organizer_id')))
+                return response()->json(['error' => 'Speaker not found'], 404);
+        }
+        $lp_organizer = $this->congressServices->addLandingPageOrganizer($congress_id, $request, $organizer);
+
+        return response()->json($lp_organizer, 200);
+    }
+
+    public function getLandingPageOrganizers($congress_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        $organizers = $this->congressServices->getLandingPageOrganizers($congress_id);
+        return response()->json($organizers, 200);
+    }
+
+    public function deleteLandingPageOrganizer($lp_organizer_id)
+    {
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+
+        if (!$organizer = $this->congressServices->getLandingPageOrganizerById($lp_organizer_id))
+            return response()->json(['error' => 'Organizer not found'], 404);
+
+        $this->congressServices->deleteLandingPageOrganizer($organizer);
+        return response()->json(['Deleted succesfully'], 200);
+    }
+    
     public function getConfigLandingPageToFrontOffice($congress_id)
     {
         $config_landing_page = $this->congressServices->getConfigLandingPageById($congress_id);
@@ -1168,6 +1223,11 @@ class CongressController extends Controller
         $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
         return response()->json($speakers, 200);
     }
+    public function getLandingPageOrganizersToFrontOffice($congress_id)
+    {
+        $organizers = $this->congressServices->getLandingPageOrganizers($congress_id);
+        return response()->json($organizers, 200);
+    }
 
     public function getNumberOfParticipants($congress_id)
     {
@@ -1177,4 +1237,5 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
+
 }

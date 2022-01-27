@@ -73,6 +73,7 @@ class SubmissionTest extends TestCase
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
             'meeting_duration' => $this->faker->numberBetween(0, 60),
             'pause_duration' => $this->faker->numberBetween(0, 30),
+            'nb_meeting_table' => $this->faker->numberBetween(0, 1),
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -110,6 +111,7 @@ class SubmissionTest extends TestCase
             'nb_max_access' => $this->faker->numberBetween(-1, 10),
             'meeting_duration' => $this->faker->numberBetween(0, 60),
             'pause_duration' => $this->faker->numberBetween(0, 30),
+            'nb_meeting_table' => $this->faker->numberBetween(0, 1),
 
         ]);
         $config['privileges'] = [3];

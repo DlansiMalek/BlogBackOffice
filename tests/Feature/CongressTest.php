@@ -357,6 +357,7 @@ class CongressTest extends TestCase
                 'status' => 1,
                 'is_submission_enabled' => $this->faker->numberBetween(0, 1),
                 'currency_code' => 'TND',
+                'is_visible_price' => $this->faker->numberBetween(0, 1),
             ],
             'config_selection' => [
                 'num_evaluators' => $this->faker->numberBetween(1, 20),

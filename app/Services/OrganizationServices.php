@@ -12,6 +12,8 @@ use App\Models\AdminCongress;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 
 class OrganizationServices
@@ -81,9 +83,20 @@ class OrganizationServices
 
     public function getOrganizationsByCongressId($congressId, $admin_email = null, $privilege_id = null)
     {
-        return  Organization::with(['admin'])->where('congress_id', '=', $congressId)->where(function ($query) use ($admin_email, $privilege_id) {
+        $cacheKey = config('cachedKeys.Organizations'). $congressId . $admin_email . $privilege_id ;
+
+        if (Cache::has($cacheKey) && !$admin_email) {
+            return Cache::get($cacheKey);
+        }
+      
+        $Organisations= Organization::with(['admin'])->where('congress_id', '=', $congressId)->where(function ($query) use ($admin_email, $privilege_id) {
             if ($admin_email && $privilege_id == config('privilege.Organisme')) $query->where('email', '=', $admin_email);
         })->get();
+        if (!$admin_email)
+            Cache::put($cacheKey, $Organisations, 3600); // 1 hour;
+        
+        return $Organisations;
+         
     }
 
     public function getAllUserByOrganizationId($organizationId, $congressId)
@@ -101,9 +114,9 @@ class OrganizationServices
             ->get();
     }
 
-   public function getSponsorsByCongressId($congressId)
+   public function getSponsorsByCongressId($congressId, $isSponsor)
     {
-        return Organization::where('is_sponsor', '=', 1)
+        return Organization::where('is_sponsor', '=', $isSponsor)
             ->where('congress_id', '=', $congressId)
             ->get();
     }

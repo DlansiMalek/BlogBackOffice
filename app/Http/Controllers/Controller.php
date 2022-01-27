@@ -248,5 +248,5 @@ WHERE congress_id = 384
 */
 
 /*
-
 SELECT * FROM Author WHERE email <> '' AND email NOT LIKE '%_@__%.__%'
+*/

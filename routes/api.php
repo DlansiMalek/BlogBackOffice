@@ -48,7 +48,8 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
-    Route::get('/update', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
 });
 
@@ -235,6 +236,10 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::post('add', 'STagController@addSTag');
         });
 
+        Route::group(['prefix' => 'gstags'], function () {
+            Route::get('stand-gtag-list', 'GSTagController@getGSTags');
+            Route::post('add', 'GSTagController@addGSTag');
+        });
         Route::group(['prefix' => 'product'], function () {
             Route::get('{product_id}', 'StandProductController@getStandProductById');
         });
@@ -323,6 +328,13 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 
     Route::post('/register', 'UserController@registerUser');
 
+    Route::group(['prefix' => 'network', "middleware" => ["assign.guard:users"]], function () {
+        Route::post('add', 'UserController@addUserNetwork');
+        Route::get('list', 'UserController@getAllUserNetwork');
+        Route::delete('delete/{user_network_id}', 'UserController@deleteUserNetwork');
+    });
+    
+
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
         Route::group(['prefix' => '{congress_id}'], function () {
@@ -340,7 +352,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
-            Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');
+            Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');           
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
@@ -414,6 +427,9 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                     Route::post('add-speaker', 'CongressController@addLandingPageSpeaker');
                     Route::get('get-speakers', 'CongressController@getLandingPageSpeakers');
                     Route::get('syncronize', 'CongressController@syncronizeLandingPage');
+
+                    Route::post('add-organizer', 'CongressController@addLandingPageOrganizer');
+                    Route::get('get-organizers', 'CongressController@getLandingPageOrganizers');
                 });
             });
             Route::post('add', 'CongressController@addCongress');
@@ -446,6 +462,10 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
 Route::group(['prefix' => 'landing-page-speakers', "middleware" => ["assign.guard:admins"]], function () {
     Route::post('edit/{lp_speaker_id}', 'CongressController@editLandingPageSpeaker');
     Route::delete('delete/{lp_speaker_id}', 'CongressController@deleteLandingPageSpeaker');
+});
+
+Route::group(['prefix' => 'landing-page-organizers', "middleware" => ["assign.guard:admins"]], function () {
+    Route::delete('delete/{lp_organizer_id}', 'CongressController@deleteLandingPageOrganizer');
 });
 
 //Access API
@@ -631,6 +651,7 @@ Route::group(["prefix" => "peaksource"], function () {
 Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
+    Route::get('get-organizers', 'CongressController@getLandingPageOrganizersToFrontOffice');
 });
 Route::group(['prefix' => 'menu'], function () {
     Route::get('all/{show_after_reload}', 'MenuController@getMenus');
