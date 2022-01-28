@@ -9,7 +9,7 @@ use App\Services\VotingServices;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\STagServices;
-use Illuminate\Http\Request;use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class StandController extends Controller
 {
