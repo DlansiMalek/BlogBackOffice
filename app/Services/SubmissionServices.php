@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 class SubmissionServices
 {
 
-    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id, $extId = null, $status = null, $eligible = null)
+    public function addSubmission($title, $type, $communication_type_id, $description, $congress_id, $theme_id, $user_id, $extId = null, $status = null, $eligible = null,$key_words = null)
     {
         $submission = new Submission();
         $submission->title = $title;
@@ -34,12 +34,12 @@ class SubmissionServices
             $submission->eligible = $eligible;
         }
         $submission->extId = $extId;
-
+        $submission->key_words = str_replace(array("\r\n","\n"),'<br>',$key_words);
         $submission->save();
         return $submission;
     }
 
-    public function editSubmission($submission, $title, $type, $status, $communication_type_id, $description, $theme_id, $code)
+    public function editSubmission($submission, $title, $type, $status, $communication_type_id, $description, $theme_id, $code,$key_words)
     {
         $submission->title = $title;
         $submission->type = $type;
@@ -48,6 +48,7 @@ class SubmissionServices
         $submission->description = $description;
         $submission->theme_id = $theme_id;
         $submission->upload_file_code = $code;
+        $submission->key_words = str_replace(array("\r\n","\n"),'<br>',$key_words);
         $submission->update();
         return $submission;
     }
@@ -243,8 +244,8 @@ class SubmissionServices
                 $submissionToRender = $submissionById
                     ->only(['submission_id', 'title', 'type', 'communication_type_id', 'limit_date',
                         'prez_type', 'description', 'global_note', 'communicationType',
-                        'status', 'theme', 'user', 'authors','submissions_evaluations',
-                        'congress_id', 'created_at', 'congress', 'resources','comments']);
+                        'status', 'theme', 'user', 'authors', 'submissions_evaluations',
+                        'congress_id', 'created_at', 'congress', 'resources','comments','key_words']);
                 return $submissionToRender;
             }
 
