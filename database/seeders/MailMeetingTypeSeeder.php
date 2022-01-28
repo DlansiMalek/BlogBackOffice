@@ -32,5 +32,11 @@ class MailMeetingTypeSeeder extends Seeder
             'display_name' => "Refus de la demande de réunion",
             'type' => "event"
         ]);
+        DB::table('Mail_Type')->insert([
+            'mail_type_id' => 27,
+            'name' => 'annulation_meeting',
+            'display_name' => "Annulation de la réunion",
+            'type' => "event"
+        ]);
     }
 }

@@ -58,5 +58,12 @@ class MailMeetingSeeder extends Seeder
                 </p>',
             'mail_type_id' => 26
         ]);
+
+        DB::table('Mail')->insert([
+            'object' => 'Annulation de la réunion',
+            'template' => '<p>Cher participant,</p>
+            <p>annulation</p>',
+            'mail_type_id' => 27
+        ]);
     }
 }
