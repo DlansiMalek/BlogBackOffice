@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Congress;
+use App\Models\ConfigCongress;
+use App\Models\MeetingTable;
 use App\Models\User;
 use App\Models\Meeting;
 use App\Models\Admin;
@@ -42,6 +44,9 @@ class MeetingTest extends TestCase
     public function testUpdateUserMeetingStatus()
     {
         $congress = factory(Congress::class)->create();
+        $meetingtable = factory(MeetingTable::class)->create([
+            'congress_id' => $congress->congress_id,
+        ]);
         $userSender = factory(User::class)->create();
         $userReceiver = factory(User::class)->create();
         $meeting = factory(Meeting::class)->create([ 'congress_id'=> $congress->congress_id]);

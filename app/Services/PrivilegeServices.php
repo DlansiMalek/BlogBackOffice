@@ -109,12 +109,13 @@ class PrivilegeServices
         return $result;
     }
 
-    public function affectPrivilegeToAdmin($privilegeId, $adminId, $congress_id)
+    public function affectPrivilegeToAdmin($privilegeId, $adminId, $congress_id, $organization_id = null)
     {
         $admin_congress = new AdminCongress();
         $admin_congress->admin_id = $adminId;
         $admin_congress->privilege_id = $privilegeId;
         $admin_congress->congress_id = $congress_id;
+        $admin_congress->organization_id = $organization_id;
         $admin_congress->save();
 
         return $admin_congress;

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Resource;
 use App\Models\Congress;
+use App\Models\AdminCongress;
 use App\Models\CongressOrganization;
 use App\Models\Organization;
 use Tests\TestCase;
@@ -21,8 +22,8 @@ class OrganizationTest extends TestCase
     public function testGetCongressOrganizations()
     {
         $congress = factory(Congress::class)->create();
+        $admin_congress =  factory(AdminCongress::class)->create(['congress_id' => $congress->congress_id,'privilege_id' => 7, 'admin_id' => $this->admin->admin_id]);
         $organization = factory(Organization::class)->create();
-        
         $response = $this->get('api/congress/' . $congress->congress_id . '/organization')
                 ->assertStatus(200);
     }
