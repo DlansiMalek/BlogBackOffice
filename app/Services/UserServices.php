@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 
+
 class UserServices
 {
 
@@ -1866,8 +1867,9 @@ class UserServices
             } 
              })
         
-        ->select((DB::raw('DISTINCT User.user_id')),'first_name','last_name','Country.name','mobile','email','passwordDecrypt');
-
-        return $users->paginate($perPage);
+        ->select('User.user_id','first_name','last_name','Country.name','mobile','email','passwordDecrypt')
+        ->groupBy('User.user_id','first_name','last_name','Country.name','mobile','email','passwordDecrypt');
+        
+        return  $users->paginate($perPage);  
     }
 }

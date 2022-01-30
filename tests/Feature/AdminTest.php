@@ -13,8 +13,6 @@ use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 use App\Models\UserCongress;
-
-
 class AdminTest extends TestCase
 {
     /**
@@ -55,15 +53,25 @@ class AdminTest extends TestCase
     {
         //  api/super-admin/listUsers
         $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
-        $user2 = factory(User::class)->create();
-        $user3 = factory(User::class)->create();
+        $user = factory(User::class)->create();
         $congress = factory(Congress::class)->create();
-        $userCongress = factory(UserCongress::class)->create(['user_id' => $user2->user_id,
-            'congress_id' => $congress->congress_id, 'privilege_id' => 3]);
-        $userCongress = factory(UserCongress::class)->create(['user_id' => $user3->user_id,
+        $userCongress = factory(UserCongress::class)->create(['user_id' => $user->user_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => 3]); 
             $token = JWTAuth::fromUser($superAdmin);
             $response = $this->withHeader('Authorization', 'Bearer ' . $token)->get('api/all-users/listUsers')->assertStatus(200);
-        $dataResponse = json_decode($response->getContent(), true);     
+        $dataResponse = json_decode($response->getContent(), true);
+        $data = User::where('user_id', '=', $user->user_id)->first();
+        $last_page=$dataResponse['last_page'];
+        $responseData=$this->withHeader('Authorization', 'Bearer ' . $token)->get('api/all-users/listUsers?page='.$last_page)->assertStatus(200);
+        $length_array=count($responseData['data']);
+        $this->assertEquals($responseData['data'][$length_array-1]['user_id'],  $data->user_id);
+        $this->assertEquals($responseData['data'][$length_array-1]['first_name'],  $data->first_name);
+        $this->assertEquals($responseData['data'][$length_array-1]['last_name'],  $data->last_name);
+        $this->assertEquals($responseData['data'][$length_array-1]['mobile'],  $data->mobile);
+        $this->assertEquals($responseData['data'][$length_array-1]['email'],  $data->email);
+        $this->assertEquals($responseData['data'][$length_array-1]['passwordDecrypt'],  $data->passwordDecrypt);     
+
+
     }
+    
 }
