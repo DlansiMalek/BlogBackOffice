@@ -187,7 +187,7 @@ class MailServices
     }
 
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null )
     {
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;

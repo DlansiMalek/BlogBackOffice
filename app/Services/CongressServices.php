@@ -523,6 +523,7 @@ class CongressServices
         $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->agora_primary_background = $configCongressRequest['agora_primary_background'];
         $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
+        $configCongress->show_in_chat = $configCongressRequest['show_in_chat'];
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
