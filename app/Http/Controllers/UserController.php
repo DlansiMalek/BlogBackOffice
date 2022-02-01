@@ -2227,4 +2227,18 @@ class UserController extends Controller
         $new_user_network = $this->userServices->deleteUserNetwork($user_network);
         return response()->json('network deleted successfully', 200);
     }
+
+    
+    public function getUsersInformations(Request $request)
+    {
+        $perPage = $request->query('perPage', 10);
+        $search = Str::lower($request->query('search', ''));
+        $congress_id = $request->query('congress_id',null);
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json('no user found', 404);
+        }
+
+        $users = $this->userServices->getUsersInformations($congress_id,$perPage,$search,$user->user_id);
+        return response()->json($users);
+    }
 }

@@ -353,7 +353,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
             Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');           
-            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');      
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
@@ -485,6 +485,9 @@ Route::group(['prefix' => 'admin', 'middleware' => 'marketing'], function () {
     Route::post('mail/{mailTypeAdminId}', 'MailController@saveMailAdmin');
     Route::put('{admin_id}', "AdminController@editClient");
     Route::put('{admin_id}/offre/{offreId}', "AdminController@editClientPayment");
+});
+Route::group(['prefix' => 'all-users', 'middleware' => 'marketing'], function () {
+    Route::get('listUsers', 'UserController@getUsersInformations');
 });
 
 Route::group(['prefix' => 'offre', 'middleware' => 'marketing'], function () {
@@ -670,3 +673,4 @@ Route::group(["prefix" => "3D"], function () {
         });
     });
 }); 
+
