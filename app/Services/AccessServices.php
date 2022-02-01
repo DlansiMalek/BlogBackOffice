@@ -90,6 +90,8 @@ class AccessServices
 
         if ($request->has('is_online'))
             $access->is_online = $request->input('is_online');
+            if ($request->has('max_online_participants')) $access->max_online_participants = $request->input('max_online_participants');
+
 
         $access->update();
         return $access;
@@ -196,7 +198,7 @@ class AccessServices
     public function getByCongressId($congress_id)
     {
         return Access::with(['speakers', 'chairs', 'topic', 'resources', 'type',
-            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
+            'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker','privileges'])
             ->whereNull('parent_id')
             ->where('congress_id', '=', $congress_id)
             ->orderBy('start_date')

@@ -38,6 +38,4 @@ class STagController extends Controller
         return response()->json($stags);
     }
 
-
-   
 }

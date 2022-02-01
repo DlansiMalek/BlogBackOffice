@@ -236,6 +236,10 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
             Route::post('add', 'STagController@addSTag');
         });
 
+        Route::group(['prefix' => 'gstags'], function () {
+            Route::get('stand-gtag-list', 'GSTagController@getGSTags');
+            Route::post('add', 'GSTagController@addGSTag');
+        });
         Route::group(['prefix' => 'product'], function () {
             Route::get('{product_id}', 'StandProductController@getStandProductById');
         });
@@ -423,6 +427,9 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                     Route::post('add-speaker', 'CongressController@addLandingPageSpeaker');
                     Route::get('get-speakers', 'CongressController@getLandingPageSpeakers');
                     Route::get('syncronize', 'CongressController@syncronizeLandingPage');
+
+                    Route::post('add-organizer', 'CongressController@addLandingPageOrganizer');
+                    Route::get('get-organizers', 'CongressController@getLandingPageOrganizers');
                 });
             });
             Route::post('add', 'CongressController@addCongress');
@@ -455,6 +462,10 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
 Route::group(['prefix' => 'landing-page-speakers', "middleware" => ["assign.guard:admins"]], function () {
     Route::post('edit/{lp_speaker_id}', 'CongressController@editLandingPageSpeaker');
     Route::delete('delete/{lp_speaker_id}', 'CongressController@deleteLandingPageSpeaker');
+});
+
+Route::group(['prefix' => 'landing-page-organizers', "middleware" => ["assign.guard:admins"]], function () {
+    Route::delete('delete/{lp_organizer_id}', 'CongressController@deleteLandingPageOrganizer');
 });
 
 //Access API
@@ -640,6 +651,7 @@ Route::group(["prefix" => "peaksource"], function () {
 Route::group(['prefix' => 'congress/{congress_id}/landing-page'], function () {
     Route::get('get-config', 'CongressController@getConfigLandingPageToFrontOffice');
     Route::get('get-speakers', 'CongressController@getLandingPageSpeakersToFrontOffice');
+    Route::get('get-organizers', 'CongressController@getLandingPageOrganizersToFrontOffice');
 });
 Route::group(['prefix' => 'menu'], function () {
     Route::get('all/{show_after_reload}', 'MenuController@getMenus');
