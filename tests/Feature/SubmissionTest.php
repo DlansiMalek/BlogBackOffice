@@ -29,7 +29,8 @@ class SubmissionTest extends TestCase
             'congress_id' => $congress->congress_id,
             'user_id' => $user->user_id,
             'type' => 'Série',
-            'communication_type_id' => 1
+            'communication_type_id' => 1,
+            'theme_id' => 1,
         ]);
         $author = factory(Author::class)->create([
             'submission_id' => $submission->submission_id,
@@ -42,7 +43,7 @@ class SubmissionTest extends TestCase
             'submission_id' => $submission->submission_id,
             'resource_id' => $resource->resource_id
         ]);
-        $this->get('api/submissions/congress/' . $congress->congress_id.'?communication_type_id=1')
+        $this->get('api/submissions/congress/' . $congress->congress_id.'?communication_type_id=1&theme_id=1')
             ->assertStatus(200);
 
     }

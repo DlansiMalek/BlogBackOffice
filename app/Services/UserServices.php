@@ -23,6 +23,7 @@ use App\Models\FormInputValue;
 use App\Models\UserNetwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -1882,5 +1883,26 @@ class UserServices
     public function deleteUserNetwork($user_network)
     {
         return $user_network->delete();
+    }
+
+    public function getUsersInformations($congressId,$perPage , $search,$user_id )
+    {
+        $users = DB::table('User')   
+        ->leftJoin('Country','User.country_id','=','Country.alpha3code')
+        ->join('User_Congress','User.user_id','=','User_Congress.user_id') 
+        ->where( function ($query) use ($congressId, $search) {
+            if ($search != "") {
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+            }
+
+            if ($congressId != 'null' && $congressId  ) {
+                $query->where(DB::raw('User_Congress.congress_id'), '=', $congressId );
+            } 
+             })
+        
+        ->select('User.user_id','first_name','last_name','Country.name','mobile','email','passwordDecrypt')
+        ->groupBy('User.user_id','first_name','last_name','Country.name','mobile','email','passwordDecrypt');
+        
+        return  $users->paginate($perPage);  
     }
 }
