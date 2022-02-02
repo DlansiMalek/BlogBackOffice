@@ -122,6 +122,7 @@ class StandServices
 
     public function getStands($congress_id,  $name = null, $status = null, $perPage = null, $search = null, $stag_id =null, $organization_id = null)
     {
+        $stag_id = explode(',',$stag_id);
         $allStand = Stand::where(function ($query) use ($name, $status, $organization_id) {
             if ($name) {
                 $query->where('name', '=', $name);
@@ -134,13 +135,12 @@ class StandServices
             }
         })
 
-            ->when('stags', function ($query) use ($stag_id) {
-                if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
-                    $query->join('Stand_Tag', 'Stand_Tag.stand_id', '=', 'Stand.stand_id')
-                    ->whereIn('Stand_Tag.stag_id', $stag_id);
+        ->with(['docs', 'products', 'organization', 'faq', 'stags'])
+             ->whereHas('stags', function ($query) use ($stag_id) {
+                if ($stag_id[0]!= '' && $stag_id[0]!= 'null' && $stag_id[0]!= null && $stag_id!=null && $stag_id!="null") {
+                   $query ->whereIn('Stand_Tag.stag_id', $stag_id);
                 }
-            })
-            ->with(['docs', 'products', 'organization', 'faq', 'stags'])
+            }) 
             ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
             ->where('congress_id', '=', $congress_id);
         if ($search != "null" && $search != '') {
@@ -149,14 +149,14 @@ class StandServices
             })
                 ->orWhereHas("organization", function ($query) use ($search, $congress_id, $stag_id) {
                     $query->where('Stand.congress_id', '=', $congress_id)->where('name', 'LIKE', '%' . $search . '%')
-                        ->when('Stand.stags', function ($qt) use ($stag_id) {
-                            if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
-                                $qt->whereIn('Stand_Tag.stag_id', $stag_id);
-                            }
-                        });
+                     ->whereHas('stags', function ($query) use ($stag_id) {
+                        if ($stag_id[0]!= '' && $stag_id[0]!= 'null' && $stag_id[0]!= null && $stag_id!=null && $stag_id!="null") {
+                           $query ->whereIn('Stand_Tag.stag_id', $stag_id);
+                        }
+                    }); 
                 });
         }
-      
+    
       return  $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
      
     }
