@@ -355,13 +355,13 @@ class UserController extends Controller
         if (!$admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congressId)) {
             return response()->json('no admin found', 404);
         }
-        $access = $request->query('access', '');
+        $access =(array) $request->query('access', '');
         $payment = $request->query('payment', '');
         $status = $request->query('status', '');
-        $questions = $request->query('question', '');
+        $questions = (array)$request->query('question', '');
+        $perPage = $request->query('perPage', 10);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions, $perPage);
 
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions);
-        Log::warning($users);
         return response()->json($users);
     }
 

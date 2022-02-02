@@ -525,7 +525,7 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getUsersByFilter($congressId, $access = null, $payment = null, $perPage = null, $status = null, $questions = null)
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null )
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
@@ -533,7 +533,7 @@ class UserServices
             'user_access',
             function ($query) use ($access) {
                 if ($access) {
-                    $query->where('access_id', '=', $access);
+                    $query->whereIn('access_id', $access);
                 }
             }
         )->whereHas(
@@ -543,10 +543,34 @@ class UserServices
                     $query->where('isPaid', '=', $payment);
                 }
             }
-        )->get();
+        )->whereHas(
+            'responses',
+            function ($query) use ($questions) {
+                if ($questions) {
+                    $query->whereHas(
+                        'values',
+                        function ($q) use ($questions) {
+                            $q->whereIn('form_input_value_id', $questions);
+                        }
+                    );
+                }
+            }
+        )->whereHas('user_congresses', function ($query) use ($status, $congressId) {
+            if ($status) {
+                $query->where('isSelected', '=', $status)->where('congress_id', '=', $congressId);
+            }
+        })
+        ->with([
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }
+
+        ])->paginate($perPage);
+      
         return $users;
     }
-
 
     public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {
