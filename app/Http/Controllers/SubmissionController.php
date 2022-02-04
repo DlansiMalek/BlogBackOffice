@@ -19,6 +19,7 @@ use App\Services\SubmissionServices;
 use App\Services\UrlUtils;
 use App\Services\UserServices;
 use App\Services\Utils;
+use App\Services\ThemeServices;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ class SubmissionController extends Controller
     protected $sharedServices;
     protected $communicationTypeService;
     protected $resourcesServices;
+    protected $themeServices;
 
     public function __construct(
         SubmissionServices $submissionServices,
@@ -51,7 +53,8 @@ class SubmissionController extends Controller
         MailServices $mailServices,
         SharedServices $sharedServices,
         CommunicationTypeService $communicationTypeService,
-        ResourcesServices $resourcesServices
+        ResourcesServices $resourcesServices,
+        ThemeServices $themeServices
     ) {
         $this->submissionServices = $submissionServices;
         $this->authorServices = $authorServices;
@@ -64,6 +67,7 @@ class SubmissionController extends Controller
         $this->sharedServices = $sharedServices;
         $this->communicationTypeService = $communicationTypeService;
         $this->resourcesServices = $resourcesServices;
+        $this->themeServices = $themeServices;
 
     }
 
@@ -90,7 +94,12 @@ class SubmissionController extends Controller
                 $request->input('submission.description'),
                 $request->input('submission.congress_id'),
                 $request->input('submission.theme_id'),
-                $user->user_id
+                $user->user_id,
+                null,
+                null,
+                null,
+                $request->input('submission.key_words'),
+
             );
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
@@ -170,7 +179,8 @@ class SubmissionController extends Controller
                 $request->input('submission.communication_type_id'),
                 $request->input('submission.description'),
                 $request->input('submission.theme_id'),
-                $code
+                $code,
+                $request->input('submission.key_words')
             );
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
@@ -406,6 +416,13 @@ class SubmissionController extends Controller
             $file_upload_code = $this->adminServices->generateRandomString(10);
             $submission->upload_file_code = $file_upload_code;
         }
+        $theme = $this->themeServices->getThemeById(
+            $request->has('theme_id') ? $request->input('theme_id') :
+            $submission->theme_id
+        );
+        if ($request->has('theme_id')) {
+            $submission->theme_id = $request->input('theme_id');
+        }
         $submission->update();
 
         // add review 
@@ -455,7 +472,7 @@ class SubmissionController extends Controller
                         $request->input('status') == '1' ? $submission->code : null,
                         $submission->title,
                         $type ? $type->label : null,
-                        [], null, null, null, null, null, null, null, null, $submission->theme->label
+                        [], null, null, null, null, null, null, null, null, $theme->label
                     ),
                     $user,
                     null,
@@ -559,14 +576,12 @@ class SubmissionController extends Controller
         $search = $request->query('search', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
-        $communication_type_id = $request->query('communication_type_id');
-        if (!$communication_type_id) {
-            return response()->json(['response' => 'bad request'], 400);
-        }
+        $communication_type_id = $request->query('communication_type_id','');
+        $theme_id = $request->query('theme_id','');
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id);
         return response()->json($submissions, 200);
     }
 

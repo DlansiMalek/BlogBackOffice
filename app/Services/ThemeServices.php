@@ -28,4 +28,9 @@ class ThemeServices {
         $theme->description = $externalTheme['description'];
         $theme->save();
     }
+
+    public function getThemeById($theme_id)
+    {
+        return Theme::where('theme_id', '=', $theme_id)->first();
+    }
 }

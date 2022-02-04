@@ -11,6 +11,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\User;
+use App\Models\UserCongress;
 
 class AdminTest extends TestCase
 {
@@ -48,5 +50,29 @@ class AdminTest extends TestCase
             ->put('api/admin/' .$admin->admin_id .'/offre/' .$offre->offre_id, $request)
         ->assertStatus(200);
     }
+    public function testGetUsersInformation()
+    {
+        //  api/super-admin/listUsers
+        $superAdmin = factory(Admin::class)->create(['privilege_id' => config('privilege.Super_Admin')]);
+        $user = factory(User::class)->create();
+        $congress = factory(Congress::class)->create();
+        $userCongress = factory(UserCongress::class)->create(['user_id' => $user->user_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => 3]); 
+            $token = JWTAuth::fromUser($superAdmin);
+            $response = $this->withHeader('Authorization', 'Bearer ' . $token)->get('api/all-users/listUsers')->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+        $data = User::where('user_id', '=', $user->user_id)->first();
+        $lastPage=$dataResponse['last_page'];
+        $responseData=$this->withHeader('Authorization', 'Bearer ' . $token)->get('api/all-users/listUsers?page='.$lastPage)->assertStatus(200);
+        $lengthArray=count($responseData['data']);
+        $lastUser=$responseData['data'][$lengthArray-1];
+        $this->assertEquals($lastUser['user_id'],  $data->user_id);
+        $this->assertEquals($lastUser['first_name'],  $data->first_name);
+        $this->assertEquals($lastUser['last_name'],  $data->last_name);
+        $this->assertEquals($lastUser['mobile'],  $data->mobile);
+        $this->assertEquals($lastUser['email'],  $data->email);
+        $this->assertEquals($lastUser['passwordDecrypt'],  $data->passwordDecrypt);     
 
+    }
+    
 }
