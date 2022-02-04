@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 
 class UserServices
@@ -1885,6 +1886,19 @@ class UserServices
         return $user_network->delete();
     }
 
+    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId)
+{
+    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId ;
+
+    if (Cache::has($cacheKey)) {
+        return Cache::get($cacheKey);
+    }
+
+    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId);
+    Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+
+    return $users;
+}
     public function getUsersInformations($congressId,$perPage , $search,$user_id )
     {
         $users = DB::table('User')   
@@ -1906,3 +1920,5 @@ class UserServices
         return  $users->paginate($perPage);  
     }
 }
+
+
