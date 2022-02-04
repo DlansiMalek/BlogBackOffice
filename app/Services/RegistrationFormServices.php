@@ -55,6 +55,7 @@ class RegistrationFormServices
             $input->form_input_type_id = $new["form_input_type_id"];
             $input->congress_id = $congressId;
             $input->label = $new["label"];
+            $input->label_en = $new["label_en"];
             $input->required = $new["required"];
             $input->key = $new["key"] ? $new["key"] : substr($new["label"], 180);
             $input->save();
@@ -86,6 +87,7 @@ class RegistrationFormServices
                     if (!$value) $value = new FormInputValue();
                     $value->form_input_value_id = $valueRequest['form_input_value_id'];
                     $value->value = $valueRequest['value'];
+                    $value->value_en = $valueRequest['value_en'];
                     $value->form_input_id = $input->form_input_id;
                     if ($value->form_input_value_id) $value->update();
                     else $value->save();

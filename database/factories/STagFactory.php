@@ -8,6 +8,6 @@ use Faker\Generator as Faker;
 
 $factory->define(STag::class, function (Faker $faker) {
     return [
-        'label' => $faker->word,
+        'label' => $faker->word
     ];
 });

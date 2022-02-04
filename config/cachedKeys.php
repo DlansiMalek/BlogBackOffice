@@ -7,5 +7,7 @@ return [
     'Stand' => 'stand-',
     'Stands' => 'stands-',
     'Submissions' => 'submissions-',
-    'GenericMenus' => 'generic-menus-'
+    'GenericMenus' => 'generic-menus-',
+    'Countries' => 'countries-',
+    'Organizations' => 'organizations-'
 ];

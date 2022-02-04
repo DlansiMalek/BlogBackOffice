@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $this->call(FMenuSeeder::class);
         $this->call(StandTypeSeeder::class);
         $this->call(StandContentConfigSeeder::class);
         $this->call(CountriesSeedTable::class);
