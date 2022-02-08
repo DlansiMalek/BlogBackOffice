@@ -282,13 +282,17 @@ class OrganizationController extends Controller
                     if ($user_by_mail) {
                         $userCongress = $this->userServices->getUserCongress($congressId, $user_by_mail->user_id);
                     }
-                    $this->userServices->addUserCongressFromExcelOrgnization($userCongress, $newUser->user_id, $congressId, 7);
+                    $newUserCongress = $this->userServices->addUserCongressFromExcelOrgnization($userCongress, $newUser->user_id, $congressId, 7);
                 }
                 // Add Organization & Stand
                 $newOrg = $this->organizationServices->getOrganizationByNameAndCongress($org['organization_name'], $congressId);
                 $newOrganization = $this->organizationServices->addOrganizationFromExcel($newOrg, $org, $congressId, $newAdmin);
                 $stand = $this->standServices->getStandByCongressIdOrgizantionIdAndName($org['organization_name'], $congressId, $newOrganization->organization_id);
                 $this->standServices->addStandFromExcel($stand, $org['organization_name'], $congressId, $newOrganization->organization_id);
+                if (isset($org['admin_name']) && isset($org['admin_email'])) {
+                    $newUserCongress->organization_id = $newOrganization->organization_id;
+                    $newUserCongress->update();
+                }
             }
         }
         return response()->json($this->organizationServices->getOrganizationsByCongressId($congressId));

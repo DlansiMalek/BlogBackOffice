@@ -1773,7 +1773,7 @@ class UserServices
         $userCongress->user_id = $user_id;
         $userCongress->privilege_id = $privilegeId ;    //privilege Organisme
         $userCongress->save();
-
+        return $userCongress;
     }
 
     public function getAllUsersByCongressFrontOfficeWithPagination($congressId,$perPage , $search,$user_id )
