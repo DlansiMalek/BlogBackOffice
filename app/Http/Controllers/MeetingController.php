@@ -150,99 +150,93 @@ class MeetingController extends Controller
     }
   }
 
-  public function makeOrganizerPresent ($meeting_id , Request $request )
+  public function makeOrganizerPresent($meeting_id, Request $request)
   {
-    $meeting= $this->meetingServices->getMeetingById($meeting_id);
-    $this->meetingServices->makeOrganizerPresent($meeting, $request->input('is_organizer_present') );
+    $meeting = $this->meetingServices->getMeetingById($meeting_id);
+    $this->meetingServices->makeOrganizerPresent($meeting, $request->input('is_organizer_present'));
   }
 
-  public function makeParticipantPresent ($meeting_id , Request $request)
+  public function makeParticipantPresent($meeting_id, Request $request)
   {
-    $user_meeting=$this->meetingServices->getUserMeetingsById($meeting_id,$request->input('user_id'));
+    $user_meeting = $this->meetingServices->getUserMeetingsById($meeting_id, $request->input('user_id'));
     $this->meetingServices->makeParticipantPresent($user_meeting, $request->input('is_participant_present'));
   }
 
   public function getNumberOfMeetingsPerDay($congress_id, Request $request)
   {
-    $status = $request->query('status','1');
-   
+    $status = $request->query('status', '1');
+
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
       return response()->json('no congress found', 404);
-  }
-  $datetime1 = new DateTime($congress->start_date);
-$datetime2 = new DateTime($congress->end_date);
-$interval = $datetime2->diff($datetime1);
-$days = $interval->format('%a');
-$nombres = array();
+    }
+    $datetime1 = new DateTime($congress->start_date);
+    $datetime2 = new DateTime($congress->end_date);
+    $interval = $datetime2->diff($datetime1);
+    $days = $interval->format('%a');
+    $nombres = array();
 
-for ($i = 0; $i <=  $days ; $i++)
-{
+    for ($i = 0; $i <=  $days; $i++) {
 
-  $nombre=$this->meetingServices->getNumberOfMeetings($congress_id,$status,$datetime1->modify('+'.$i.' day'),null);
-  array_push($nombres,(object)[
-    'date' => $datetime1->modify('+'.$i.'day')->format('Y-m-d'),
-    'count' => $nombre
-]);
-  //  array_sum($nombres)
-}
-return response()->json($nombres, 200);
-
-
+      $nombre = $this->meetingServices->getNumberOfMeetings($congress_id, $status, $datetime1->modify('+' . $i . ' day'), null);
+      array_push($nombres, (object)[
+        'date' => $datetime1->modify('+' . $i . 'day')->format('Y-m-d'),
+        'count' => $nombre
+      ]);
+      //  array_sum($nombres)
+    }
+    return response()->json($nombres, 200);
   }
 
   public function getTotalNumberOfMeetings($congress_id)
-{
-  $nombre_total=$this->meetingServices->getTotalNumberOfMeetings($congress_id);
-  $nombre_meetings_accpeted=$this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congress_id,1);
-  $nombre_meetings_done= $this->meetingServices->getMeetingsDone($congress_id,1,1);
-  $pourcentage_meetings_accpeted=($nombre_meetings_accpeted/$nombre_total);
-  $pourcentage_meetings_done=($nombre_meetings_done/$nombre_meetings_accpeted);
-  return response()->json(["pourcentage_meetings_accpeted"=>$pourcentage_meetings_accpeted
-                          ,"pourcentage_meetings_done"=>$pourcentage_meetings_done], 200);
+  {
+    $nombre_total = $this->meetingServices->getTotalNumberOfMeetings($congress_id);
+    $nombre_meetings_accpeted = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congress_id, 1);
+    $nombre_meetings_done = $this->meetingServices->getMeetingsDone($congress_id, 1, 1);
+    $pourcentage_meetings_accpeted = ($nombre_meetings_accpeted / $nombre_total);
+    $pourcentage_meetings_done = ($nombre_meetings_done / $nombre_meetings_accpeted);
+    return response()->json([
+      "pourcentage_meetings_accpeted" => $pourcentage_meetings_accpeted, "pourcentage_meetings_done" => $pourcentage_meetings_done
+    ], 200);
+  }
 
-}
+  public function getNumberOfMeetings($congress_id, Request $request)
+  {
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json('no congress found', 404);
+    }
+    $datetime1 = new DateTime($congress->start_date);
+    $datetime2 = new DateTime($congress->end_date);
+    $interval = $datetime2->diff($datetime1);
+    $days = $interval->format('%a');
+    $nombres = array();
 
-public function getNumberOfMeetings($congress_id, Request $request)
-{
-  if (!$congress = $this->congressServices->getCongressById($congress_id)) {
-    return response()->json('no congress found', 404);
-}
-$datetime1 = new DateTime($congress->start_date);
-$datetime2 = new DateTime($congress->end_date);
-$interval = $datetime2->diff($datetime1);
-$days = $interval->format('%a');
-$nombres = array();
+    for ($i = -1; $i <=  $days; $i++) {
 
-for ($i = -1; $i <=  $days ; $i++)
-{
+      $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
+      $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
+      $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
+      array_push($nombres, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')), [
+        [
 
-  $nombre_meetings_accpeted=$this->meetingServices->getNumberOfMeetings($congress_id,1,date('Y-m-d', strtotime($congress->start_date. ' +'. $i .'days')));
-  $nombre_meetings_Refused=$this->meetingServices->getNumberOfMeetings($congress_id,-1,date('Y-m-d', strtotime($congress->start_date. ' +'. $i .'days')));
-  $nombre_meetings_waiting=$this->meetingServices->getNumberOfMeetings($congress_id,0,date('Y-m-d', strtotime($congress->start_date. ' +'. $i .'days')));
-  array_push($nombres, date('Y-m-d', strtotime($congress->start_date. ' +'. $i .'days')),[[
-    
-    "label"=>"MeetingsAccpeted",
-    "value"=>$nombre_meetings_accpeted ,
-  ],
-  [
-    "label"=>"MeetingsRefused",
-    "value"=>$nombre_meetings_Refused ,
-  ],
-  [
-    "label"=>"MeetingsWaiting ",
-   "value"=>$nombre_meetings_waiting 
-  ] 
-]);
+          "label" => "MeetingsAccpeted",
+          "value" => $nombre_meetings_accpeted,
+        ],
+        [
+          "label" => "MeetingsRefused",
+          "value" => $nombre_meetings_Refused,
+        ],
+        [
+          "label" => "MeetingsWaiting ",
+          "value" => $nombre_meetings_waiting
+        ]
+      ]);
+    }
+    return response()->json($nombres, 200);
+  }
 
-}
-return response()->json($nombres, 200);
-
-
-
-}
-
-public function getRequestDetailsPagination($congress_id, Request $request){
-  $per_page = $request->query('perPage', 10);
-  return $this->meetingServices->getRequestDetailsPagination($congress_id,$per_page);
-}
+  public function getRequestDetailsPagination($congress_id, Request $request)
+  {
+    $per_page = $request->query('perPage', 10);
+    return $this->meetingServices->getRequestDetailsPagination($congress_id, $per_page);
+  }
 }

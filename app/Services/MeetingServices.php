@@ -136,43 +136,44 @@ class MeetingServices
     public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status)
     {
         return Meeting::whereHas("user_meeting", function ($query) use ($status) {
-            if($status!='null')
-            {
-            $query->where('status', '=', $status);
+            if ($status != 'null') {
+                $query->where('status', '=', $status);
             }
-        })->where('congress_id', '=', $congress_id)       
-        ->count();
+        })->where('congress_id', '=', $congress_id)
+            ->count();
     }
 
     public function getTotalNumberOfMeetings($congress_id)
     {
         return Meeting::whereHas("user_meeting")
-        ->where('congress_id', '=', $congress_id)       
-        ->count(); 
+        ->where('congress_id', '=', $congress_id)
+            ->count();
     }
 
-    public function getMeetingsDone($congress_id,$is_participant_present,$is_organizer_present)
+    public function getMeetingsDone($congress_id, $is_participant_present, $is_organizer_present)
     {
-        $count=Meeting::where('is_organizer_present', '=', $is_organizer_present)
-        ->where('end_date','<',date('Y-m-d H:i:s'))
-        ->where('congress_id', '=', $congress_id)       
-        ->count(); 
-      return  $count = $count==0 ? Meeting::whereHas("user_meeting", function ($query) use ($is_participant_present) {
-                                 $query->where('is_participant_present', '=', $is_participant_present);
-                             })->where('end_date','<',date('Y-m-d H:i:s'))
-                             -> where('congress_id', '=', $congress_id)
-                             ->count() : $count; 
-                         
-       
+        $count = Meeting::where('is_organizer_present', '=', $is_organizer_present)
+            ->where('end_date', '<', date('Y-m-d H:i:s'))
+            ->where('congress_id', '=', $congress_id)
+            ->count();
+        return  $count = $count == 0 ? Meeting::whereHas("user_meeting", function ($query) use ($is_participant_present) {
+            $query->where('is_participant_present', '=', $is_participant_present);
+        })->where('end_date', '<', date('Y-m-d H:i:s'))
+        ->where('congress_id', '=', $congress_id)
+            ->count() : $count;
     }
 
-    public function getRequestDetailsPagination($congress_id, $per_page){
- 
-        return Meeting::with(['user_meeting' => function ($query) {
-            $query->with(['organizer', 'participant'=> function ($query) {
-                $query->with(['user_mails']);
+    public function getRequestDetailsPagination($congress_id, $per_page)
+    {
+        return Meeting::with(['user_meeting' => function ($query) use ($congress_id) {
+            $query->with(['organizer', 'participant' => function ($query) use ($congress_id) {
+                $query->with(['user_mails' => function($q) use ($congress_id) {
+                    $q->whereHas('mail', function($q) use ($congress_id) {
+                        $q->where('congress_id','=', $congress_id);
+                    });
+                }]);
             }]);
         }])->where('congress_id', '=', $congress_id)
-        ->paginate($per_page);
+            ->paginate($per_page);
     }
 }
