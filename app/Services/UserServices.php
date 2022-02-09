@@ -507,7 +507,7 @@ class UserServices
             if ($tri == 'type')
                 $users->orderBy('privilege_id', $order);
             if ($tri == 'date')
-                $users->orderBy('User_Congress.updated_at', $order);
+                $users->orderBy('User_Congress.created_at', $order);
             if ($tri == 'status')  
                  $users->orderBy('User_Congress.isSelected', $order);
                 
