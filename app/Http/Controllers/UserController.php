@@ -1735,20 +1735,23 @@ class UserController extends Controller
             $this->userServices->saveUserResponses($request->input('responses'), $user->user_id);
         }
         $show_in_chat = $this->userServices->getShowInChat($congress_id);
-        if (Schema::hasColumn('User',$show_in_chat[0]['show_in_chat'])&& $show_in_chat != 'null') {
-            $user_congress->chat_info = $user[$show_in_chat[0]['show_in_chat']];
+        $show_in_chat=explode(';',$show_in_chat);
+        $count = count($show_in_chat) ;
+        for($i=0 ; $i< $count; $i++){
+        if (Schema::hasColumn('User',$show_in_chat[$i])) {
+            $user_congress->chat_info = $user[$show_in_chat[$i]]. ';'. $user_congress->chat_info ;
         } else {
-            $form_input = $this->userServices->getQuestionByKey($congress_id, $show_in_chat[0]['show_in_chat']);   
+            $form_input = $this->userServices->getQuestionByKey($congress_id,$show_in_chat[$i]);   
            if($form_input) {
             if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9){    
                 $chat_info = $this->userServices->getValueResponse($user->user_id, $form_input->form_input_id);
-                $user_congress->chat_info = $chat_info[0]['values'][0]['val']['value'];
+                $user_congress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $user_congress->chat_info;
             } else {
                 $chat_info = $this->userServices->getResponseFormInput($user->user_id, $form_input->form_input_id);
-                $user_congress->chat_info = $chat_info[0]['response'];    
+                $user_congress->chat_info = $chat_info[0]['response'] . ";" .  $user_congress->chat_info;    
             }  
            }    
-        }
+    }}
         $user_congress->save();
 
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);

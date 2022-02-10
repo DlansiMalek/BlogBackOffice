@@ -28,7 +28,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
-
 class UserServices
 {
 
@@ -1820,8 +1819,11 @@ class UserServices
 
     public function getShowInChat($congress_id)
     {
-        return ConfigCongress::where('congress_id', '=', $congress_id)
-            ->get('show_in_chat');
+        $show_in_chat =ConfigCongress::where('congress_id', '=', $congress_id)
+            ->get('show_in_chat')->pluck('show_in_chat'); 
+        $show_in_chat = substr($show_in_chat,2);
+        $show_in_chat=substr_replace($show_in_chat ,"", -2);
+        return  $show_in_chat ;    
         }
 
     public function getAllUsersByCongressWithSameResponse($congressId,$formInputResponseId, $formInputValueId,$privilegIds = [],$mailId)

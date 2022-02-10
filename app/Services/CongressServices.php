@@ -29,6 +29,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\LPOrganizer;
 
+
 /**
  * @property OrganizationServices $organizationServices
  */
@@ -523,10 +524,14 @@ class CongressServices
         $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->agora_primary_background = $configCongressRequest['agora_primary_background'];
         $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
-        $configCongress->show_in_chat = $configCongressRequest['show_in_chat'];
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
+        if($configCongressRequest['show_in_chat']){
+            $configCongressRequest['show_in_chat']= collect($configCongressRequest['show_in_chat'])->implode(';');
+            $configCongress->show_in_chat = $configCongressRequest['show_in_chat'];
+        }
+        
         $configCongress->update();
 
         return $configCongress;
