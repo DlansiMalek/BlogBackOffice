@@ -25,7 +25,7 @@ class PaymentServices
             ->with(['congress'])
             ->first();
     }
-    public function affectPaymentToUser($user_id, $congress_id, $price, $free)
+    public function affectPaymentToUser($user_id, $congress_id, $price, $free, $isPaid = 0)
     {
         $payment = new Payment();
 
@@ -33,6 +33,7 @@ class PaymentServices
         $payment->congress_id = $congress_id;
         $payment->free = $free;
         $payment->price = $price;
+        $payment->isPaid = $isPaid;
         $payment->save();
         
         return $payment;

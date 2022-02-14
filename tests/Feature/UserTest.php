@@ -15,6 +15,7 @@ use App\Models\Pack;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\UserNetwork;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -427,6 +428,52 @@ class UserTest extends TestCase
 
     }
 
+    public function testAddUserNetwork() 
+    {
+        $logged_user = factory(User::class)->create();
+        $fav_user = factory(User::class)->create();
+        $token = JWTAuth::fromUser($logged_user);
+        $response= $this->withHeader('Authorization', 'Bearer ' . $token)
+        ->post('api/user/network/add', ['fav_id' => $fav_user->user_id])
+        ->assertStatus(200);    
+        $dataResponse = json_decode($response->getContent(), true);
+        $user_network = UserNetwork::where('user_network_id', '=', $dataResponse['user_network_id'])->first();
+        $this->assertEquals($fav_user->user_id, $user_network->fav_id);
+        $this->assertEquals($logged_user->user_id, $user_network->user_id);
+    }
+
+    public function testGetAllUserNetwork() 
+    {
+        $logged_user = factory(User::class)->create();
+        $fav_user1 = factory(User::class)->create();
+        $user_network1 = factory(UserNetwork::class)->create(['fav_id' => $fav_user1->user_id, 'user_id' => $logged_user->user_id]);
+        $fav_user2 = factory(User::class)->create();
+        $user_network2 = factory(UserNetwork::class)->create(['fav_id' => $fav_user2->user_id, 'user_id' => $logged_user->user_id]);
+        $token = JWTAuth::fromUser($logged_user);
+        $response= $this->withHeader('Authorization', 'Bearer ' . $token)
+        ->get('api/user/network/list')
+        ->assertStatus(200);    
+        $user_networks = UserNetwork::where('user_id', '=', $logged_user->user_id)->get();
+        $this->assertCount(2, $user_networks);
+        $this->assertEquals($fav_user1->user_id, $user_networks[0]->fav_id);
+        $this->assertEquals($logged_user->user_id, $user_networks[0]->user_id);
+        $this->assertEquals($fav_user2->user_id, $user_networks[1]->fav_id);
+        $this->assertEquals($logged_user->user_id, $user_networks[1]->user_id);
+    }
+
+    public function testDeleteUserNetwork() 
+    {
+        $logged_user = factory(User::class)->create();
+        $fav_user = factory(User::class)->create();
+        $user_network = factory(UserNetwork::class)->create(['fav_id' => $fav_user->user_id, 'user_id' => $logged_user->user_id]);
+        $token = JWTAuth::fromUser($logged_user);
+        $response= $this->withHeader('Authorization', 'Bearer ' . $token)
+        ->delete('api/user/network/delete/' . $user_network->user_network_id)
+        ->assertStatus(200);    
+        $user_network = UserNetwork::where('user_id', '=', $logged_user->user_id)->get();
+        $this->assertCount(0, $user_network);
+    }
+
     private function getUserData($pack_id, $access_id)
     {
         return [
@@ -506,5 +553,4 @@ $this->withHeader('Authorization', 'Bearer ' . $token)
 ]
 ])->assertStatus(200);
 }*/
-
 }

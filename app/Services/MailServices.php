@@ -82,18 +82,29 @@ class MailServices
             ->first();
     }
 
-    public function getMailByUserIdAndMailId($mailId, $userId)
+    public function getMailByUserIdAndMailId($mailId, $userId, $submissionId = null)
     {
         return UserMail::where('user_id', '=', $userId)
             ->where('mail_id', '=', $mailId)
+            ->where(function ($query) use ($submissionId) {
+                if ($submissionId != null) {
+                    $query->where('submission_id', '=', $submissionId);
+                }
+            })
             ->first();
     }
 
-    public function addingMailUser($mailId, $userId)
+    public function addingMailUser($mailId, $userId, $submissionId = null, $meetingId = null)
     {
         $mailUser = new UserMail();
         $mailUser->user_id = $userId;
         $mailUser->mail_id = $mailId;
+        if ($submissionId) {
+            $mailUser->submission_id = $submissionId;
+        }
+        if ($meetingId) {
+            $mailUser->meeting_id = $meetingId;
+        }
         $mailUser->save();
 
         return $mailUser;
@@ -179,7 +190,7 @@ class MailServices
     }
 
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null)
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null )
     {
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;
@@ -304,7 +315,10 @@ class MailServices
         }
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
         $replyTo = $congress != null && $congress->config != null && $congress->config->replyto_mail!= null ? $congress->config->replyto_mail : env('MAIL_USERNAME', 'contact@eventizer.io');
-       
+        /* 
+            TODO removing  
+            $logMail = env('MAIL_LOG', 'logs@eventizer.io');
+        */
         $message = array(
             'sender' => array(
                 'email'=> $replyTo,
@@ -318,8 +332,11 @@ class MailServices
             'to' => array(
                 array(
                     'email' => $email,
-                ),
+                )
             ),
+            /*'bcc' => array(
+                array('email' => $logMail)
+            ),*/
             'tags' => array(strval($congress->congress_id))
         );
         if ($fileAttached) {
