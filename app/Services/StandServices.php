@@ -387,4 +387,17 @@ class StandServices
             ->first();
     }
 
+    public function getRandomStands($congress_id)
+    {
+        $randomStand = Stand::where('congress_id', '=', $congress_id)
+            ->with(['organization'])
+            ->orWhereHas("organization", function ($query) use ($congress_id) {
+                $query->where('Stand.congress_id', '=', $congress_id);             
+            })
+            ->get()
+            ->random(4);
+
+        return $randomStand ;
+    }
+
 }

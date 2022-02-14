@@ -353,7 +353,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::post('save-excel', 'UserController@saveUsersFromExcel');
             Route::post('set-current-participant', 'CongressController@setCurrentParticipants');
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
-            Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');           
+            Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');
+            Route::get('randomUsersPWA', 'UserController@getRandomUsers')->middleware('assign.guard:users');              
             Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');      
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
@@ -367,6 +368,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
                 Route::delete('{white_list_id}', 'UserController@deleteWhiteList');
             });
             Route::get('stands', 'StandController@getStandsByCongress');
+            Route::get('randomStandsPWA', 'StandController@getRandomStands');
             Route::get('participants-number', 'CongressController@getNumberOfParticipants');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
