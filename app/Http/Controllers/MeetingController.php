@@ -59,7 +59,7 @@ class MeetingController extends Controller
     if ($duplicated_meeting > 0) {
       return response()->json(['response' => 'Meeting on the same date found'], 401);
     }
-    $user_receiver->verification_code = Str::random(40);
+    $user_receiver->meeting_code = Str::random(40);
     $user_receiver->save();
     $meeting = null;
     if ($request->has('meeting_id')) {
@@ -73,10 +73,10 @@ class MeetingController extends Controller
     $userMeeting = $request->input('user_meeting')['user_meeting_id'] ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $userMeet[0], $request, $user_sender->user_id);
     if ($mailtype = $this->congressServices->getMailType('request_meeting')) {
       if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, $user_receiver->verification_code), $user_receiver, $congress, $mail->object, null, null, null, null);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, $user_receiver->meeting_code), $user_receiver, $congress, $mail->object, null, null, null, null);
       } else {
         if ($mail = $this->congressServices->getMailOutOfCongress(24)) {
-          $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null,  $meeting, $user_receiver, $user_sender, $user_receiver->verification_code), $user_receiver, $congress, $mail->object, null, null, null, null);
+          $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null,  $meeting, $user_receiver, $user_sender, $user_receiver->meeting_code), $user_receiver, $congress, $mail->object, null, null, null, null);
         }
       }
     }
@@ -110,7 +110,7 @@ class MeetingController extends Controller
       if ($user_receiver = $this->userServices->getUserById($user_meeting->user_receiver_id)) {
         if ($request->has('verification_code')) {
           $verification_code = $request->input('verification_code');
-          if (!$user_receiver->verification_code == $verification_code) {
+          if (!$user_receiver->meeting_code == $verification_code) {
             return response()->json(['response' => 'No verification code found'], 401);
           }
         }

@@ -8,6 +8,7 @@ return [
     'Stands' => 'stands-',
     'Submissions' => 'submissions-',
     'GenericMenus' => 'generic-menus-',
+    'Users' => 'users-',
     'Countries' => 'countries-',
     'Organizations' => 'organizations-'
 ];

@@ -94,7 +94,12 @@ class SubmissionController extends Controller
                 $request->input('submission.description'),
                 $request->input('submission.congress_id'),
                 $request->input('submission.theme_id'),
-                $user->user_id
+                $user->user_id,
+                null,
+                null,
+                null,
+                $request->input('submission.key_words'),
+
             );
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
@@ -174,7 +179,8 @@ class SubmissionController extends Controller
                 $request->input('submission.communication_type_id'),
                 $request->input('submission.description'),
                 $request->input('submission.theme_id'),
-                $code
+                $code,
+                $request->input('submission.key_words')
             );
             $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
             $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
@@ -570,14 +576,12 @@ class SubmissionController extends Controller
         $search = $request->query('search', '');
         $offset = $request->query('offset', 0);
         $perPage = $request->query('perPage', 5);
-        $communication_type_id = $request->query('communication_type_id');
-        if (!$communication_type_id) {
-            return response()->json(['response' => 'bad request'], 400);
-        }
+        $communication_type_id = $request->query('communication_type_id','');
+        $theme_id = $request->query('theme_id','');
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
-        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id);
+        $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id);
         return response()->json($submissions, 200);
     }
 

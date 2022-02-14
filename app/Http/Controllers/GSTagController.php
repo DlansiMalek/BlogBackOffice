@@ -3,39 +3,38 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\STagServices;
+use App\Services\GSTagServices;
 use App\Services\CongressServices;
 
-class STagController extends Controller
+class GSTagController extends Controller
 {
-    protected $stagServices;
+    protected $gstagServices;
     protected $congressServices;
 
     function __construct(
-        STagServices $stagServices,
+        GSTagServices $gstagServices,
         CongressServices $congressServices
     ) {
-        $this->stagServices = $stagServices;
+        $this->gstagServices = $gstagServices;
         $this->congressServices = $congressServices;
     }
 
-    public function addSTag($congress_id, Request $request)
+    public function addGSTag($congress_id, Request $request)
     {
         if (!$this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $this->stagServices->addSTag($request, $congress_id);
-        $stags = $this->stagServices->getSTags($congress_id);
-        return response()->json($stags);
+        $this->gstagServices->addGSTag($request, $congress_id);
+        $gstags = $this->gstagServices->getGSTags($congress_id);
+        return response()->json($gstags);
     }
 
-    public function getSTags($congress_id)
+    public function getGSTags($congress_id)
     {
         if (!$this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $stags = $this->stagServices->getSTags($congress_id);
-        return response()->json($stags);
+        $gstags = $this->gstagServices->getGSTags($congress_id);
+        return response()->json($gstags);
     }
-
 }
