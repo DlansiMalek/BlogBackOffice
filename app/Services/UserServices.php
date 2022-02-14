@@ -506,9 +506,10 @@ class UserServices
             if ($tri == 'type')
                 $users->orderBy('privilege_id', $order);
             if ($tri == 'date')
-                $users->orderBy('User_Congress.updated_at', $order);
-            if ($tri == 'status')
-                $users->orderBy('User_Congress.isSelected', $order);
+                $users->orderBy('User_Congress.created_at', $order);
+            if ($tri == 'status')  
+                 $users->orderBy('User_Congress.isSelected', $order);
+                
         }
         if ($order && ($tri == 'isPaid' || $tri == 'price')) {
             $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
@@ -1799,6 +1800,7 @@ class UserServices
         $userCongress->user_id = $user_id;
         $userCongress->privilege_id = $privilegeId;    //privilege Organisme
         $userCongress->save();
+        return $userCongress;
     }
 
     public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id)
