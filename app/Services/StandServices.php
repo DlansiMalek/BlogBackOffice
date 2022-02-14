@@ -117,14 +117,17 @@ class StandServices
     }
 
 
-    public function getStands($congress_id,  $name = null, $status = null, $perPage = null, $search = null, $stag_id = null)
+    public function getStands($congress_id,  $name = null, $status = null, $perPage = null, $search = null, $stag_id =null, $organization_id = null)
     {
-        $allStand = Stand::where(function ($query) use ($name, $status) {
+        $allStand = Stand::where(function ($query) use ($name, $status, $organization_id) {
             if ($name) {
                 $query->where('name', '=', $name);
             }
             if ($status) {
                 $query->where('status', '=', $status);
+            }
+            if ($organization_id != null) {
+                $query->where('organization_id', '=', $organization_id);
             }
         })
 
