@@ -525,11 +525,27 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null )
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
-        })->whereHas(
+        })
+            ->where(function ($query) use ($search, $congressId) {
+                if ($search) {
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                    $query->orWhereHas('country', function ($q) use ($search) {
+                        $q->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+                    });
+                    $query->orWhereHas('payments', function ($q) use ($search, $congressId) {
+                        $q->where('congress_id', '=', $congressId)
+                            ->whereRaw('(price) like (?)',  ["%{$search}%"]);
+                    });
+                }
+            })
+            ->whereHas(
             'user_access',
             function ($query) use ($access) {
                 if ($access) {
@@ -550,7 +566,7 @@ class UserServices
                     $query->whereHas(
                         'values',
                         function ($q) use ($questions) {
-                            $q->whereIn('form_input_value_id', $questions);
+                            $q->whereIn('form_input_value_id', $questions)->orWhereRaw('lower(response) like (?)', ["%{$questions[0]}%"]);
                         }
                     );
                 }

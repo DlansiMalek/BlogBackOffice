@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Validator; use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
 use App\Services\AccessServices;
@@ -349,18 +349,13 @@ class UserController extends Controller
 
     public function getUsersByCongressFilter($congressId, Request $request)
     {
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
-            return response()->json('no admin found', 404);
-        }
-        if (!$admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congressId)) {
-            return response()->json('no admin found', 404);
-        }
-        $access =(array) $request->query('access', '');
+        $access = (array) $request->query('access', '');
         $payment = $request->query('payment', '');
+        $search = Str::lower($request->query('search', ''));
         $status = $request->query('status', '');
         $questions = (array)$request->query('question', '');
         $perPage = $request->query('perPage', 10);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions, $perPage);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions, $perPage, $search);
 
         return response()->json($users);
     }
