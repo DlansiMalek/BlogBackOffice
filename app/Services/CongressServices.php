@@ -528,8 +528,8 @@ class CongressServices
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
         if($configCongressRequest['show_in_chat']){
-            $configCongressRequest['show_in_chat']= collect($configCongressRequest['show_in_chat'])->implode(';');
-            $configCongress->show_in_chat = $configCongressRequest['show_in_chat'];
+            $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
+            $configCongress->show_in_chat = $showInChat;
         }
         
         $configCongress->update();

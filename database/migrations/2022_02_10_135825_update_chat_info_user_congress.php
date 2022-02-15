@@ -26,7 +26,6 @@ class UpdateChatInfoUserCongress extends Migration
     public function down()
     {
         Schema::table('User_Congress', function (Blueprint $table) {
-            $table->removeColumn('chat_info');        
-        });
+            $table->string('chat_info')->default(Null)->nullable()->change();        });
     }
 }
