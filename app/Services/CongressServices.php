@@ -447,6 +447,8 @@ class CongressServices
         $congress->description = $congressRequest->input('description');
         $congress->congress_type_id = $congressRequest->input('congress_type_id');
         $congress->private = $congressRequest->input('private');
+        $congress->description_en = $congressRequest->input('description_en');
+        $congress->name_en = $congressRequest->input('name_en');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -651,6 +653,8 @@ class CongressServices
         $congress->congress_type_id = $request->input('congress_type_id');
         $congress->description = $request->input('description');
         $congress->private = $request->input('private');
+        $congress->description_en = $request->input('description_en');
+        $congress->name_en = $request->input('name_en');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
