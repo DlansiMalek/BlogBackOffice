@@ -1931,8 +1931,11 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }])
             ->with('profile_img')
-            ->get()
-            ->random(4);
+            ->get();
+
+            if(count($users)>= 4){
+                $users= $users->random(4);
+            }
         return  $users;
 
     }

@@ -394,10 +394,11 @@ class StandServices
             ->orWhereHas("organization", function ($query) use ($congress_id) {
                 $query->where('Stand.congress_id', '=', $congress_id);             
             })
-            ->get()
-            ->random(4);
-
-        return $randomStand ;
+            ->get();
+            if(count($randomStand)>= 4){
+            $randomStand= $randomStand->random(4);
+            }
+        return  $randomStand ;
     }
 
 }
