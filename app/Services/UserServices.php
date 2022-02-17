@@ -548,14 +548,14 @@ class UserServices
             ->whereHas(
             'user_access',
             function ($query) use ($access) {
-                if ($access) {
+                if ($access != '' && $access != null) {
                     $query->whereIn('access_id', $access);
                 }
             }
         )->whereHas(
             'payments',
             function ($query) use ($payment) {
-                if ($payment) {
+                if ($payment != '' && $payment != null) {
                     $query->where('isPaid', '=', $payment);
                 }
             }
@@ -572,7 +572,7 @@ class UserServices
                 }
             }
         )->whereHas('user_congresses', function ($query) use ($status, $congressId) {
-            if ($status) {
+            if ($status != '' && $status != null) {
                 $query->where('isSelected', '=', $status)->where('congress_id', '=', $congressId);
             }
         })
