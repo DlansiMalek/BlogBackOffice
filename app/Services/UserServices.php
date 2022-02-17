@@ -566,9 +566,9 @@ class UserServices
                     $query->whereHas(
                         'values',
                         function ($q) use ($questions) {
-                            $q->whereIn('form_input_value_id', $questions)->orWhereRaw('lower(response) like (?)', ["%{$questions[0]}%"]);
+                            $q->whereIn('form_input_value_id', $questions);
                         }
-                    );
+                    )->orWhereRaw('lower(response) like (?)', ["%{$questions[0]}%"]);
                 }
             }
         )->whereHas('user_congresses', function ($query) use ($status, $congressId) {

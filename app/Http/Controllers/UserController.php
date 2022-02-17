@@ -31,6 +31,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Services\MeetingServices;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -354,6 +355,18 @@ class UserController extends Controller
         $search = Str::lower($request->query('search', ''));
         $status = $request->query('status', '');
         $questions = (array)$request->query('question', '');
+        $questionsArray = explode(',', $request->query('question', ''));
+        $questionsIds = [];
+        $questionString = '';
+        foreach($questionsArray as $question) {
+            if(intVal($question) == 0) {
+                $questionString = $questionString . ' ' . $question;
+            } else {
+                array_push($questionsIds, $question);
+            }
+        }
+        Log::info($questionsIds);
+        Log::info($questionString);
         $perPage = $request->query('perPage', 10);
         $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions, $perPage, $search);
 
