@@ -96,7 +96,7 @@ class CongressController extends Controller
 
     public function addCongress(Request $request)
     {
-        if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
+        if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']) && !$request->has(['name_en', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
         $congress = $this->congressServices->addCongress(
