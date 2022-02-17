@@ -119,7 +119,9 @@ class CongressServices
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
+                $query->orWhere('name_en', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
+                $query->orWhere('description_en', 'LIKE', '%' . $search . '%');
             })
             ->where(function ($query) use ($minPrice, $maxPrice, $startDate, $endDate, $type) {
                 if ($startDate != '' && $startDate != 'null') {
@@ -149,8 +151,8 @@ class CongressServices
                 }
 
             });
-        $all_congresses = $perPage ? $all_congresses->paginate($perPage, ["congress_id", "name", "start_date",
-            "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage, ["congress_id", "name", "name_en", "start_date",
+            "end_date", "price", "description", "description_en", "congress_type_id"]) : $all_congresses->get();
         return $all_congresses;
     }
 

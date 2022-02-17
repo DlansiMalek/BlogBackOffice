@@ -28,8 +28,8 @@ class AddEnglishNameDescriptionToCongressTable extends Migration
     public function down()
     {
         Schema::table('Congress', function (Blueprint $table) {
-            $table->removeColumn('name_en')->nullable()->default(null);
-            $table->removeColumn('description_en')->nullable()->default(null);
+            $table->removeColumn('name_en');
+            $table->removeColumn('description_en');
             $table->string('name')->change();
         });
     }
