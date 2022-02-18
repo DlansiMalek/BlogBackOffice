@@ -32,6 +32,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 use App\Services\MeetingServices;
+use Illuminate\Support\Facades\Log;
 
 
 class UserController extends Controller
@@ -345,6 +346,28 @@ class UserController extends Controller
                 }
             }
         }
+        return response()->json($users);
+    }
+
+    public function getUsersByCongressFilter($congressId, Request $request)
+    {
+        $access = (array) $request->query('access', '');
+        $payment = $request->query('payment', '');
+        $search = Str::lower($request->query('search', ''));
+        $status = $request->query('status', '');
+        $questionsArray = explode(',', $request->query('question', ''));
+        $questionsIds = [];
+        $questionString = '';
+        foreach($questionsArray as $question) {
+            if(intVal($question) == 0 || str_contains($question, '-')) {
+                $questionString = $questionString . ' ' . $question;
+            } else {
+                array_push($questionsIds, $question);
+            }
+        }
+        $perPage = $request->query('perPage', 10);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString);
+
         return response()->json($users);
     }
 

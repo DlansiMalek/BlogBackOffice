@@ -524,6 +524,68 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null)
+    {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+            ->where(function ($query) use ($search, $congressId) {
+                if ($search) {
+                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
+                    $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                    $query->orWhereHas('country', function ($q) use ($search) {
+                        $q->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+                    });
+                    $query->orWhereHas('payments', function ($q) use ($search, $congressId) {
+                        $q->where('congress_id', '=', $congressId)
+                            ->whereRaw('(price) like (?)',  ["%{$search}%"]);
+                    });
+                }
+            })
+            ->whereHas(
+            'user_access',
+            function ($query) use ($access) {
+                if ($access != '' && $access != null) {
+                    $query->whereIn('access_id', $access);
+                }
+            }
+        )->whereHas(
+            'payments',
+            function ($query) use ($payment) {
+                if ($payment != '' && $payment != null) {
+                    $query->where('isPaid', '=', $payment);
+                }
+            }
+        )->whereHas(
+            'responses',
+            function ($query) use ($questions, $questionString) {
+                if ($questions) {
+                    $query->whereHas(
+                        'values',
+                        function ($q) use ($questions) {
+                            $q->whereIn('form_input_value_id', $questions);
+                        }
+                    )->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"]);
+                }
+            }
+        )->whereHas('user_congresses', function ($query) use ($status, $congressId) {
+            if ($status != '' && $status != null) {
+                $query->where('isSelected', '=', $status)->where('congress_id', '=', $congressId);
+            }
+        })
+        ->with([
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }
+
+        ])->paginate($perPage);
+      
+        return $users;
+    }
 
     public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {

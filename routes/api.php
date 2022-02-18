@@ -343,6 +343,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('list-all', 'UserController@getAllUsersByCongress');
             Route::get('list/{privilegeId}', 'UserController@getUsersByCongress');
             Route::get('list-pagination', 'UserController@getUsersByCongressPagination');
+            Route::get('list-filter', 'UserController@getUsersByCongressFilter');
             Route::post('add', 'UserController@addUserToCongress');
             Route::post('register', 'UserController@saveUser');
             Route::post('registerV2', 'UserController@saveUserInscription')->middleware('assign.guard:users');
