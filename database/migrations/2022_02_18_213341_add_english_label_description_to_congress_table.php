@@ -31,8 +31,8 @@ class AddEnglishLabelDescriptionToCongressTable extends Migration
         Schema::table('Theme', function (Blueprint $table) {
             $table->removeColumn('label_en');
             $table->removeColumn('description_en');
-            $table->removeColumn('label');
-            $table->removeColumn('description');
+            $table->string('label')->change();
+            $table->string('description')->change();
         });
     }
 }
