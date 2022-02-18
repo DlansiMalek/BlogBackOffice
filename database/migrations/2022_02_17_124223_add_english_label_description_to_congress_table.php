@@ -17,6 +17,7 @@ class AddEnglishLabelDescriptionToCongressTable extends Migration
             $table->string('label_en')->nullable()->default(null);
             $table->string('description_en')->nullable()->default(null);
             $table->string('label')->default(null)->nullable()->change();
+            $table->string('description')->default(null)->nullable()->change();
         });
     }
 
@@ -31,6 +32,7 @@ class AddEnglishLabelDescriptionToCongressTable extends Migration
             $table->removeColumn('label_en');
             $table->removeColumn('description_en');
             $table->removeColumn('label');
+            $table->removeColumn('description');
         });
     }
 }

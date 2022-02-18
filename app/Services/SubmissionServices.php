@@ -161,7 +161,7 @@ class SubmissionServices
                     ->with(['service', 'etablissment'])
                     ->orderBy('rank');
             },
-            'theme:theme_id,label',
+            'theme:theme_id,label,label_en',
             'submissions_evaluations' => function ($query) {
                 $query->select('submission_id', 'submission_evaluation_id', 'admin_id', 'note', 'communication_type_id','theme_id')
                     ->with(['evaluator:admin_id,name,email']);
