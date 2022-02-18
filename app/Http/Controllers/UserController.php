@@ -354,21 +354,18 @@ class UserController extends Controller
         $payment = $request->query('payment', '');
         $search = Str::lower($request->query('search', ''));
         $status = $request->query('status', '');
-        $questions = (array)$request->query('question', '');
         $questionsArray = explode(',', $request->query('question', ''));
         $questionsIds = [];
         $questionString = '';
         foreach($questionsArray as $question) {
-            if(intVal($question) == 0) {
+            if(intVal($question) == 0 || str_contains($question, '-')) {
                 $questionString = $questionString . ' ' . $question;
             } else {
                 array_push($questionsIds, $question);
             }
         }
-        Log::info($questionsIds);
-        Log::info($questionString);
         $perPage = $request->query('perPage', 10);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questions, $perPage, $search);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString);
 
         return response()->json($users);
     }
