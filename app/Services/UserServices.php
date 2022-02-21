@@ -1983,6 +1983,27 @@ class UserServices
         
         return  $users->paginate($perPage);  
     }
+
+    public function getRandomUsers($congressId,$user_id)
+    {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id) {
+            $query->where('congress_id', '=', $congressId);
+            $query->where('user_id', '!=', $user_id);
+
+        })
+            ->with(['user_congresses'=> function ($query) use ($congressId){
+                $query->where('congress_id', '=', $congressId);
+            }])
+            ->with('profile_img')
+            ->get();
+
+            if(count($users)>= 4){
+                $users= $users->random(4);
+            }
+        return  $users;
+
+    }
+
 }
 
 
