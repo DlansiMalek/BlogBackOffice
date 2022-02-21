@@ -196,4 +196,15 @@ class MeetingController extends Controller
       return response()->json(['error' => 'Insufficient tables'], 405);
     }
   }
+
+  function addMeetingEvaluation(Request $request)
+  {
+    $user  = $this->userServices->retrieveUserFromToken();
+    if (!$user) {
+      return response()->json(['response' => 'No user found'], 401);
+  }
+    $this->meetingServices->addMeetingEvaluation($user->user_id , $request);
+          $evaluation = $this->meetingServices->getMeetingEvaluation($user->user_id);
+          return response()->json($evaluation);
+    }
 }

@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
+use App\Models\MeetingEvaluation;
 
 
 
@@ -179,5 +180,19 @@ class MeetingServices
         return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id) {
             $query->where('user_sender_id', '=', $user_sender_id)->where('user_receiver_id','=',$user_reveiver_id);
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
+    }
+
+    public function addMeetingEvaluation($user_id , Request $request)
+    {
+        $meetingEvaluation = new MeetingEvaluation();
+        $meetingEvaluation->note = $request->input('note');
+        $meetingEvaluation->comment = $request->input('comment');
+        $meetingEvaluation->user_id = $user_id;
+        $meetingEvaluation->save();
+    }
+
+    public function getMeetingEvaluation($user_id)
+    {
+        return MeetingEvaluation::where('user_id', '=', $user_id);
     }
 }
