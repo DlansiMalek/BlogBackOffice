@@ -543,33 +543,31 @@ class UserServices
                     });
                 }
             })
-            ->whereHas(
-            'user_access',
-            function ($query) use ($access) {
+            ->where(function ($query) use ($access) {
                 if ($access != '' && $access != null) {
-                    $query->whereIn('access_id', $access);
+                    $query->whereHas('user_access', function ($query) use ($access) {
+                            $query->whereIn('access_id', $access);
+                        });
                 }
-            }
-        )->whereHas(
-            'payments',
-            function ($query) use ($payment) {
+            })
+            ->where(function ($query) use ($payment) {
                 if ($payment != '' && $payment != null) {
-                    $query->where('isPaid', '=', $payment);
+                    $query->whereHas('payments', function ($query) use ($payment) {
+                        $query->where('isPaid', '=', $payment);
+                    });
                 }
-            }
-        )->whereHas(
-            'responses',
-            function ($query) use ($questions, $questionString) {
-                if ($questions) {
-                    $query->whereHas(
-                        'values',
-                        function ($q) use ($questions) {
-                            $q->whereIn('form_input_value_id', $questions);
-                        }
-                    )->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"]);
+            })
+            ->where(function ($query) use ($questions, $questionString) {
+                if ($questions || $questionString) {
+                    $query->whereHas('responses', function ($query) use ($questions, $questionString) {
+                            $query->whereHas('values', function ($q) use ($questions) {
+                                    $q->whereIn('form_input_value_id', $questions);
+                                }
+                            )->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"]);
+                        });
                 }
-            }
-        )->whereHas('user_congresses', function ($query) use ($status, $congressId) {
+            })
+            ->whereHas('user_congresses', function ($query) use ($status, $congressId) {
             if ($status != '' && $status != null) {
                 $query->where('isSelected', '=', $status)->where('congress_id', '=', $congressId);
             }
