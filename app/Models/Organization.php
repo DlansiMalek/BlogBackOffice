@@ -32,4 +32,8 @@ class Organization extends Model
     {
       return $this->belongsToMany('App\Models\User', 'User_Congress', 'organization_id', 'user_id');
     }
+
+    function stags() {
+      return $this->belongsToMany(STag::class, 'Stand_Tag', 'stand_id', 'stag_id');
+  }
 }
