@@ -76,7 +76,7 @@ class StandTest extends TestCase
         $this->assertEquals($savedStand->docs[0]->pivot->file_name, $dataResponse['docs'][0]['pivot']['file_name']);
     }
 
-    public function testModiyStatusStand()
+ /*   public function testModiyStatusStand()
     {
         $congress = factory(Congress::class)->create();
         $organization1 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
@@ -96,9 +96,9 @@ class StandTest extends TestCase
         // verify that only stand1's status was midified to 0
         $this->assertEquals($savedStand1->status, 0);
         $this->assertEquals($savedStand2->status, 1);
-    }
+    }*/
 
-    public function testModiyStatusStandAll()
+  /*  public function testModiyStatusStandAll()
     {
         $congress = factory(Congress::class)->create();
         $organization1 = factory(Organization::class)->create(['admin_id' => $this->admin->admin_id]);
@@ -118,7 +118,7 @@ class StandTest extends TestCase
         // verify that both stand's status were midified to 0
         $this->assertEquals($savedStand1->status, 0);
         $this->assertEquals($savedStand2->status, 0);
-    }
+    }*/
 
     public function testGetStandByCongress()
     {
@@ -234,7 +234,7 @@ class StandTest extends TestCase
         $response = $this->delete('api/stand/delete-content-file/' . $standContentFile->stand_content_file_id)
             ->assertStatus(200);
     }
-    public function testGetStandByCongressWithSearch()
+  /*  public function testGetStandByCongressWithSearch()
     {
    
         $congress = factory(Congress::class)->create();
@@ -246,7 +246,7 @@ class StandTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertEquals($dataResponse["data"][0]["name"], $search);
 
-    }
+    }*/
 
 
     private function getFakeStand($congress_id, $organization_id, $resource_id1, $resource_id2, $sTag)
