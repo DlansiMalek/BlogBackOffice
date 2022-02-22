@@ -134,11 +134,11 @@ class StandServices
         })
 
         ->with(['docs', 'products', 'organization', 'faq', 'stags'])
-             ->whereHas('stags', function ($query) use ($stag_id) {
+            /*  ->whereHas('stags', function ($query) use ($stag_id) {
                 if ($stag_id[0]!= '' && $stag_id[0]!= 'null' && $stag_id[0]!= null && $stag_id!=null && $stag_id!="null") {
                    $query ->whereIn('Stand_Tag.stag_id', $stag_id);
                 }
-            }) 
+            })  */
             ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
             ->where('congress_id', '=', $congress_id);
         if ($search != "null" && $search != '') {
