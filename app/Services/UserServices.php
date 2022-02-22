@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class UserServices
 {
@@ -557,14 +558,17 @@ class UserServices
                     });
                 }
             })
-            ->where(function ($query) use ($questions, $questionString) {
-                if ($questions || $questionString) {
-                    $query->whereHas('responses', function ($query) use ($questions, $questionString) {
-                            $query->whereHas('values', function ($q) use ($questions) {
-                                    $q->whereIn('form_input_value_id', $questions);
-                                }
-                            )->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"]);
-                        });
+            ->where(function ($query) use ($questions, $questionString, $congressId) {
+                if (sizeof($questions) != 0 || ($questionString != '' && $questionString != null && $questionString !=  ' ')) {
+                    $query->whereHas('responses', function ($query) use ($questions, $questionString, $congressId) {
+                        $query->whereHas('values', function ($q) use ($questions) {
+                            $q->whereIn('form_input_value_id', $questions);
+                        })
+                            ->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"])
+                            ->whereHas('form_input', function ($q) use ($congressId) {
+                                $q->where('congress_id', '=', $congressId);
+                            });
+                    });
                 }
             })
             ->whereHas('user_congresses', function ($query) use ($status, $congressId) {
