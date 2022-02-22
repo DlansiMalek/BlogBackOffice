@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class UserServices
 {
@@ -543,33 +544,34 @@ class UserServices
                     });
                 }
             })
-            ->whereHas(
-            'user_access',
-            function ($query) use ($access) {
+            ->where(function ($query) use ($access) {
                 if ($access != '' && $access != null) {
-                    $query->whereIn('access_id', $access);
+                    $query->whereHas('user_access', function ($query) use ($access) {
+                            $query->whereIn('access_id', $access);
+                        });
                 }
-            }
-        )->whereHas(
-            'payments',
-            function ($query) use ($payment) {
+            })
+            ->where(function ($query) use ($payment) {
                 if ($payment != '' && $payment != null) {
-                    $query->where('isPaid', '=', $payment);
+                    $query->whereHas('payments', function ($query) use ($payment) {
+                        $query->where('isPaid', '=', $payment);
+                    });
                 }
-            }
-        )->whereHas(
-            'responses',
-            function ($query) use ($questions, $questionString) {
-                if ($questions) {
-                    $query->whereHas(
-                        'values',
-                        function ($q) use ($questions) {
+            })
+            ->where(function ($query) use ($questions, $questionString, $congressId) {
+                if (sizeof($questions) != 0 || ($questionString != '' && $questionString != null && $questionString !=  ' ')) {
+                    $query->whereHas('responses', function ($query) use ($questions, $questionString, $congressId) {
+                        $query->whereHas('values', function ($q) use ($questions) {
                             $q->whereIn('form_input_value_id', $questions);
-                        }
-                    )->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"]);
+                        })
+                            ->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"])
+                            ->whereHas('form_input', function ($q) use ($congressId) {
+                                $q->where('congress_id', '=', $congressId);
+                            });
+                    });
                 }
-            }
-        )->whereHas('user_congresses', function ($query) use ($status, $congressId) {
+            })
+            ->whereHas('user_congresses', function ($query) use ($status, $congressId) {
             if ($status != '' && $status != null) {
                 $query->where('isSelected', '=', $status)->where('congress_id', '=', $congressId);
             }

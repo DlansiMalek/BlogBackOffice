@@ -351,16 +351,16 @@ class UserController extends Controller
 
     public function getUsersByCongressFilter($congressId, Request $request)
     {
-        $access = (array) $request->query('access', '');
+        $access = (array)$request->query('access', '');
         $payment = $request->query('payment', '');
-        $search = Str::lower($request->query('search', ''));
+        $search = strtolower($request->query('search', ''));
         $status = $request->query('status', '');
         $questionsArray = explode(',', $request->query('question', ''));
         $questionsIds = [];
         $questionString = '';
         foreach($questionsArray as $question) {
             if(intVal($question) == 0 || str_contains($question, '-')) {
-                $questionString = $questionString . ' ' . $question;
+                $questionString = $questionString . strtolower($question);
             } else {
                 array_push($questionsIds, $question);
             }
