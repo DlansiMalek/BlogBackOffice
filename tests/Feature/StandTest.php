@@ -8,8 +8,6 @@ use App\Models\Resource;
 use App\Models\ResourceStand;
 use App\Models\Stand;
 use App\Models\StandContentConfig;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\UserCongress;
@@ -18,7 +16,6 @@ use App\Models\STag;
 use App\Models\GSTag;
 use App\Models\StandContentFile;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Log;
 
 class StandTest extends TestCase
 {
@@ -130,7 +127,7 @@ class StandTest extends TestCase
         $response = $this->get('api/user/congress/' . $congress->congress_id . '/stands')
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(0, $dataResponse['data']);
+        $this->assertCount(2, $dataResponse['data']);
     }
 
     public function testGetStands()
@@ -143,7 +140,7 @@ class StandTest extends TestCase
         $response = $this->get('api/congress/' . $congress->congress_id . '/stand')
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $this->assertCount(0, $dataResponse);
+        $this->assertCount(2, $dataResponse);
     }
     
 
