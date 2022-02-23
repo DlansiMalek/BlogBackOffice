@@ -558,13 +558,26 @@ class UserServices
                     });
                 }
             })
-            ->where(function ($query) use ($questions, $questionString, $congressId) {
-                if (sizeof($questions) != 0 || ($questionString != '' && $questionString != null && $questionString !=  ' ')) {
-                    $query->whereHas('responses', function ($query) use ($questions, $questionString, $congressId) {
+            ->where(function ($query) use ($questions, $congressId) {
+                if (sizeof($questions) != 0) {
+                    $query->whereHas('responses', function ($query) use ($questions, $congressId) {
                         $query->whereHas('values', function ($q) use ($questions) {
                             $q->whereIn('form_input_value_id', $questions);
                         })
-                            ->orWhereRaw('lower(response) like (?)', ["%{$questionString}%"])
+                            ->whereHas('form_input', function ($q) use ($congressId) {
+                                $q->where('congress_id', '=', $congressId);
+                            });
+                    });
+                }
+            })
+            ->where(function ($query) use ($questionString, $congressId) {
+                if (sizeof($questionString) != 0) {
+                    $query->whereHas('responses', function ($query) use ($questionString, $congressId) {
+                        $query->where(function ($query) use ($questionString) {
+                            foreach ($questionString as $q) {
+                                $query->orWhereRaw('lower(response) like (?)', ["%{$q}%"]);
+                            }
+                        })
                             ->whereHas('form_input', function ($q) use ($congressId) {
                                 $q->where('congress_id', '=', $congressId);
                             });
