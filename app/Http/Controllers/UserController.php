@@ -357,10 +357,10 @@ class UserController extends Controller
         $status = $request->query('status', '');
         $questionsArray = explode(',', $request->query('question', ''));
         $questionsIds = [];
-        $questionString = '';
+        $questionString = [];
         foreach($questionsArray as $question) {
             if(intVal($question) == 0 || str_contains($question, '-')) {
-                $questionString = $questionString . strtolower($question);
+                array_push($questionString, strtolower($question));
             } else {
                 array_push($questionsIds, $question);
             }
