@@ -182,17 +182,19 @@ class MeetingServices
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
     }
 
-    public function addMeetingEvaluation($user_id , Request $request)
+    public function addMeetingEvaluation($request , $user_id , $meeting)
     {
         $meetingEvaluation = new MeetingEvaluation();
         $meetingEvaluation->note = $request->input('note');
         $meetingEvaluation->comment = $request->input('comment');
         $meetingEvaluation->user_id = $user_id;
+        $meetingEvaluation->meeting_id = $meeting;
         $meetingEvaluation->save();
     }
 
-    public function getMeetingEvaluation($user_id)
+    public function getMeetingEvaluation($meeting_id)
     {
-        return MeetingEvaluation::where('user_id', '=', $user_id);
+        return MeetingEvaluation::where('meeting_id', '=', $meeting_id)
+        ->get();
     }
 }

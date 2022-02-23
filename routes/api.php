@@ -51,7 +51,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
     Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
-    Route::post('/add-evaluation-meeting-PWA', 'MeetingController@aaddMeetingEvaluation')->middleware('assign.guard:users');
+    Route::post('/add-evaluation-meeting-PWA', 'MeetingController@addMeetingEvaluation')->middleware('assign.guard:users');
 });
 
 //SMS API

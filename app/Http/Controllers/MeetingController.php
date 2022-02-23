@@ -11,7 +11,6 @@ use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
 
-
 class MeetingController extends Controller
 {
   protected $congressServices;
@@ -199,12 +198,14 @@ class MeetingController extends Controller
 
   function addMeetingEvaluation(Request $request)
   {
-    $user  = $this->userServices->retrieveUserFromToken();
+    $user = $this->userServices->retrieveUserFromToken();
     if (!$user) {
       return response()->json(['response' => 'No user found'], 401);
-  }
-    $this->meetingServices->addMeetingEvaluation($user->user_id , $request);
-          $evaluation = $this->meetingServices->getMeetingEvaluation($user->user_id);
-          return response()->json($evaluation);
     }
+    $this->meetingServices->addMeetingEvaluation($request, $user->user_id, $request->input('meeting_id'));
+    $evaluation = $this->meetingServices->getMeetingEvaluation($request->input('meeting_id'));
+
+    return response()->json($evaluation, 200);
+  }
+
 }

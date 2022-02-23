@@ -14,7 +14,9 @@ class CreateMeetingEvaluation extends Migration
     public function up()
     {
         Schema::create('Meeting_Evaluation', function (Blueprint $table) {
-            $table->increments('meeting_id');
+            $table->increments('meeting_evaluation_id');
+            $table->unsignedInteger('meeting_id');
+            $table->foreign('meeting_id')->references('meeting_id')->on('Meeting')->onDelete('cascade');
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');
             $table->string('comment')->nullable()->default(null);
@@ -32,6 +34,7 @@ class CreateMeetingEvaluation extends Migration
     {
         Schema::table('Meeting_Evaluation', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
+            $table->dropForeign(['meeting_id']);
         });
         Schema::dropIfExists('Meeting_Evaluation');
     }
