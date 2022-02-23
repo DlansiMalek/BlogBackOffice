@@ -202,10 +202,9 @@ class MeetingController extends Controller
     if (!$user) {
       return response()->json(['response' => 'No user found'], 401);
     }
-    $this->meetingServices->addMeetingEvaluation($request, $user->user_id, $request->input('meeting_id'));
-    $evaluation = $this->meetingServices->getMeetingEvaluation($request->input('meeting_id'));
+    $meetingEvaluation = $this->meetingServices->addMeetingEvaluation($request, $user->user_id);
 
-    return response()->json($evaluation, 200);
+    return response()->json($meetingEvaluation, 200);
   }
 
 }

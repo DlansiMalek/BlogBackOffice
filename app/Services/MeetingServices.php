@@ -48,7 +48,7 @@ class MeetingServices
     }
     public function getMeetingByUserId($user_id, $congress_id)
     {
-        return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
+        return Meeting::with(['meeting_evaluation','meetingtable', 'user_meeting' => function ($query) {
             $query->with([
                 'organizer' => function ($q) {
                     $q->with(['profile_img']);
@@ -182,19 +182,15 @@ class MeetingServices
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
     }
 
-    public function addMeetingEvaluation($request , $user_id , $meeting)
+    public function addMeetingEvaluation($request , $user_id)
     {
         $meetingEvaluation = new MeetingEvaluation();
         $meetingEvaluation->note = $request->input('note');
         $meetingEvaluation->comment = $request->input('comment');
         $meetingEvaluation->user_id = $user_id;
-        $meetingEvaluation->meeting_id = $meeting;
+        $meetingEvaluation->meeting_id =  $request->input('meeting_id');
         $meetingEvaluation->save();
+        return $meetingEvaluation;
     }
 
-    public function getMeetingEvaluation($meeting_id)
-    {
-        return MeetingEvaluation::where('meeting_id', '=', $meeting_id)
-        ->get();
-    }
 }
