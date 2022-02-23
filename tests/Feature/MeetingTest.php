@@ -13,6 +13,7 @@ use App\Models\Meeting;
 use App\Models\Admin;
 use App\Models\UserMeeting;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\MeetingEvaluation;
 
 class MeetingTest extends TestCase
 {
@@ -58,6 +59,24 @@ class MeetingTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function testAddMeetingEvation()
+    {
+        $congress = factory(Congress::class)->create();
+        $meeting = factory(Meeting::class)->create([ 'congress_id'=> $congress->congress_id]);
+        $user = factory(User::class)->create();
+        $token = JWTAuth::fromUser($user);
+        $this->withHeader('Authorization', 'Bearer ' . $token);
+        $meetingEvaluation = $this->getFakeMeetingEvaluation($user->user_id, $meeting->meeting_id);
+        $response = $this->post('api/meetings/add-evaluation-meeting-PWA',$meetingEvaluation)
+            ->assertStatus(200);
+        $dataResponse = json_decode($response->getContent(), true);
+        $evalResp = MeetingEvaluation::where('meeting_evaluation_id', '=', $dataResponse['0']['meeting_evaluation_id'])->first();
+        $this->assertEquals($evalResp->comment, $meetingEvaluation['comment']);
+        $this->assertEquals($evalResp->note, $meetingEvaluation['note']);
+        $this->assertEquals($evalResp->meeting_id, $meeting->meeting_id);
+        $this->assertEquals($evalResp->user_id, $user->user_id);
+    }
+
 
     private function getFakeMeeting()
     {
@@ -65,6 +84,16 @@ class MeetingTest extends TestCase
             'name' =>    $this->faker->word,
             'start_date' => $this->faker->date(),
             'end_date' => $this->faker->date(),
+        ];
+    }
+
+    private function getFakeMeetingEvaluation($user_id , $meeting_id)
+    {
+        return [
+            'comment' =>    $this->faker->word,
+            'note' => $this->faker->numberBetween(0,5),
+            'meeting_id' => $meeting_id,
+            'user_id' => $user_id
         ];
     }
 }
