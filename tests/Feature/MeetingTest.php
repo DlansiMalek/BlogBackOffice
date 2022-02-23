@@ -70,7 +70,7 @@ class MeetingTest extends TestCase
         $response = $this->post('api/meetings/add-evaluation-meeting-PWA',$meetingEvaluation)
             ->assertStatus(200);
         $dataResponse = json_decode($response->getContent(), true);
-        $evalResp = MeetingEvaluation::where('meeting_evaluation_id', '=', $dataResponse['0']['meeting_evaluation_id'])->first();
+        $evalResp = MeetingEvaluation::where('meeting_evaluation_id', '=', $dataResponse['meeting_evaluation_id'])->first();
         $this->assertEquals($evalResp->comment, $meetingEvaluation['comment']);
         $this->assertEquals($evalResp->note, $meetingEvaluation['note']);
         $this->assertEquals($evalResp->meeting_id, $meeting->meeting_id);
