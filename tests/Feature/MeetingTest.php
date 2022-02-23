@@ -59,7 +59,7 @@ class MeetingTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function testAddMeetingEvation()
+    public function testAddMeetingEvaluation()
     {
         $congress = factory(Congress::class)->create();
         $meeting = factory(Meeting::class)->create([ 'congress_id'=> $congress->congress_id]);
