@@ -415,17 +415,6 @@ class UserServices
     // }
     public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null, $admin_id = null)
     {
-        if ($search != "") {
-            $payed = Utils::isSimilar($search, "payé", 60);
-            $unpayed = Utils::isSimilar($search, "non payé", 75);
-            $accepted = Utils::isSimilar($search, "accepted", 60);
-            $inProgress = Utils::isSimilar($search, "in progress", 60);
-            $refused = Utils::isSimilar($search, "refused", 60);
-        } else {
-
-            $payed = $unpayed = $accepted = $inProgress = $refused = null;
-        }
-
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
             if ($privilegeIds != null) {
@@ -465,37 +454,13 @@ class UserServices
                     }
                 }
             ])
-            ->where(function ($query) use ($search, $payed, $unpayed, $accepted, $inProgress, $refused, $congressId) {
-                if ($search != "" && !$payed && !$unpayed && !$accepted && !$inProgress && !$refused) {
+            ->where(function ($query) use ($search) {             
                     $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
-                    $query->orWhereHas('country', function ($q) use ($search) {
-                        $q->whereRaw('lower(name) like (?)', ["%{$search}%"]);
-                    });
-                    $query->orWhereHas('payments', function ($q) use ($search, $congressId) {
-                        $q->where('congress_id', '=', $congressId)
-                            ->whereRaw('(price) like (?)',  ["%{$search}%"]);
-                    });
-                }
             });
-
-        if ($search != "" && ($payed || $unpayed)) {
-            $users = $users->whereHas('payments', function ($query) use ($search, $congressId, $unpayed) {
-                $isPaid = $unpayed ? 0 : 1;
-                $query->where('isPaid', '=', $isPaid)->where('congress_id', '=', $congressId);
-            });
-        }
-
-        if ($search != "" && ($accepted || $inProgress || $refused)) {
-            $users = $users->whereHas('user_congresses', function ($query) use ($search, $congressId, $accepted, $inProgress, $refused) {
-                $isSelected = $accepted ? 1 : ($inProgress ? 0 : -1);
-                $query->where('isSelected', '=', $isSelected)->where('congress_id', '=', $congressId);
-            });
-        }
-
-        if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
+      
+      /*   if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
             || $tri == 'mobile')) {
             $users = $users->orderBy($tri, $order);
         }
@@ -519,7 +484,7 @@ class UserServices
                         ->where('User_Congress.congress_id', '=', $congressId);
                 })
                 ->orderBy($tri, $order);
-        }
+        } */
 
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
