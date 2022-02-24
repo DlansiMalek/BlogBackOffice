@@ -331,7 +331,7 @@ class UserController extends Controller
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         $admin_id = $admin_congress->privilege_id == config('privilege.Comite_de_selection') ? $admin->admin_id : null;
-        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $tri, $order, $admin_id);
+        $users = $this->userServices->getUsersByCongress($congressId, null, true, $perPage, $search, $admin_id);
 
         foreach ($users as $user) {
             foreach ($user->accesses as $access) {
