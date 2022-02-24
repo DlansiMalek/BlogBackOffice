@@ -18,7 +18,6 @@ use App\Models\UserCongress;
 use App\Models\UserNetwork;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
-
 class UserTest extends TestCase
 {
     /**
@@ -177,7 +176,7 @@ class UserTest extends TestCase
         $this->assertCount(1, $dataResponse['data']);
     }
 
-    public function testGetUsersByCongressPaginationWithSearchPayment()
+    /* public function testGetUsersByCongressPaginationWithSearchPayment()
     {
         // 1 user has payed and the other one didn't
         $search = "payé";
@@ -199,11 +198,11 @@ class UserTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(1, $dataResponse['data']);
     }
-
-    public function testGetUsersByCongressPaginationWithSearchStatus()
+ */
+/*     public function testGetUsersByCongressPaginationWithSearchStatus()
     {
         // 2 users are accepted
-        $search = "accepted";
+        $status = "accepted";
         $congress = factory(Congress::class)->create();
         $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
             'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
@@ -220,14 +219,15 @@ class UserTest extends TestCase
         $user4 = factory(User::class)->create();
         $userCongress4 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user4->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 0]);
 
-        $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
+        $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-filter?status=' . $status)
             ->assertStatus(200);
 
         $dataResponse = json_decode($response->getContent(), true);
+        log::info($dataResponse);
         $this->assertCount(2, $dataResponse['data']);
     }
-
-    public function testGetUsersByCongressPaginationWithSearchCountry()
+ */
+ /*    public function testGetUsersByCongressPaginationWithSearchCountry()
     {
         // Only one user is from tunisia
         $search = "Tunisia";
@@ -250,7 +250,7 @@ class UserTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(1, $dataResponse['data']);
     }
-
+*/ 
     public function testSaveUserRegistration()
     {
         $congress = factory(Congress::class)->create();
@@ -553,4 +553,21 @@ $this->withHeader('Authorization', 'Bearer ' . $token)
 ]
 ])->assertStatus(200);
 }*/
+
+    public function testGetUsersByCongressPaginationWithSearchName()
+    {
+        $congress = factory(Congress::class)->create();
+        $adminCongress = factory(AdminCongress::class)->create(['admin_id' => $this->admin->admin_id,
+            'congress_id' => $congress->congress_id, 'privilege_id' => $this->admin->privilege_id]);
+
+        $user = factory(User::class)->create();
+        $userCongress1 = factory(UserCongress::class)->create(['congress_id' => $congress->congress_id, 'user_id' => $user->user_id, 'privilege_id' => config('privilege.Participant'), 'isSelected' => 1]);
+        $search = $user->first_name ; 
+        $response = $this->get('api/user/congress/' . $congress->congress_id . '/list-pagination?search=' . $search)
+            ->assertStatus(200);
+
+        $dataResponse = json_decode($response->getContent(), true);
+        $this->assertEquals($dataResponse["data"][0]["first_name"], $search);
+    }
+ 
 }
