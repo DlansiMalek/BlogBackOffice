@@ -413,7 +413,7 @@ class UserServices
     //         }
     //     })->get();
     // }
-    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $tri = null, $order = null, $admin_id = null)
+    public function getUsersByCongress($congressId, $privilegeIds = null, $withAttestation = null, $perPage = null, $search = null, $admin_id = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
@@ -441,10 +441,8 @@ class UserServices
                     $query->whereHas('form_input', function ($query) use ($congressId) {
                         $query->where('congress_id', '=', $congressId);
                     });
-                }, 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId, $tri, $order) {
+                }, 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                    if ($tri == 'isPaid')
-                        $query->orderBy($tri, $order);
                 },
                 'inscription_evaluation' => function ($query) use ($congressId, $admin_id) {
                     if ($admin_id) {
@@ -459,37 +457,10 @@ class UserServices
                     $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
             });
-      
-      /*   if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
-            || $tri == 'mobile')) {
-            $users = $users->orderBy($tri, $order);
-        }
-        if ($order && ($tri == 'type' || $tri == 'date' || $tri == 'status')) {
-            $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
-                ->where('User_Congress.congress_id', '=', $congressId);
-
-            if ($tri == 'type')
-                $users->orderBy('privilege_id', $order);
-            if ($tri == 'date')
-                $users->orderBy('User_Congress.created_at', $order);
-            if ($tri == 'status')  
-                 $users->orderBy('User_Congress.isSelected', $order);
-                
-        }
-        if ($order && ($tri == 'isPaid' || $tri == 'price')) {
-            $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
-                ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
-                ->where(function ($query) use ($congressId) {
-                    $query->where('Payment.congress_id', '=', $congressId)
-                        ->where('User_Congress.congress_id', '=', $congressId);
-                })
-                ->orderBy($tri, $order);
-        } */
-
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null)
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null , $tri = null, $order = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
             $query->where('congress_id', '=', $congressId);
@@ -561,9 +532,34 @@ class UserServices
                 $query->where('congress_id', '=', $congressId);
             }
 
-        ])->paginate($perPage);
-      
-        return $users;
+        ]);
+             if ($order && ($tri == 'user_id' || $tri == 'country_id' || $tri == 'first_name' || $tri == 'email'
+            || $tri == 'mobile')) {
+            $users = $users->orderBy($tri, $order);
+        }
+        if ($order && ($tri == 'type' || $tri == 'date' || $tri == 'status')) {
+            $users = $users->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
+                ->where('User_Congress.congress_id', '=', $congressId);
+
+            if ($tri == 'type')
+                $users->orderBy('privilege_id', $order);
+            if ($tri == 'date')
+                $users->orderBy('User_Congress.created_at', $order);
+            if ($tri == 'status')  
+                 $users->orderBy('User_Congress.isSelected', $order);
+                
+        }
+        if ($order && ($tri == 'isPaid' || $tri == 'price')) {
+            $users = $users->leftJoin('Payment', 'Payment.user_id', '=', 'User.user_id')
+                ->join('User_Congress', 'User_Congress.user_id', '=', 'User.user_id')
+                ->where(function ($query) use ($congressId) {
+                    $query->where('Payment.congress_id', '=', $congressId)
+                        ->where('User_Congress.congress_id', '=', $congressId);
+                })
+                ->orderBy($tri, $order);
+        } 
+   
+        return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
     public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
