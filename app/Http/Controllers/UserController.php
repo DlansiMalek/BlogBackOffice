@@ -366,7 +366,8 @@ class UserController extends Controller
             }
         }
         $perPage = $request->query('perPage', 10);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString);
+        $page = $request->query('page', 1);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $page);
 
         return response()->json($users);
     }
