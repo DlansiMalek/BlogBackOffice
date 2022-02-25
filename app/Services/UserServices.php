@@ -560,28 +560,27 @@ class UserServices
             })
             ->where(function ($query) use ($questions, $congressId) {
                 if (sizeof($questions) != 0) {
-                    $query->whereHas('responses', function ($query) use ($questions, $congressId) {
-                        $query->whereHas('values', function ($q) use ($questions) {
-                            $q->whereIn('form_input_value_id', $questions);
-                        })
-                            ->whereHas('form_input', function ($q) use ($congressId) {
-                                $q->where('congress_id', '=', $congressId);
+                    foreach ($questions as $ques) {
+                        $query->whereHas('responses', function ($query) use ($ques) {
+                            $query->whereHas('values', function ($q) use ($ques) {
+                                $q->where('form_input_value_id', '=', $ques);
                             });
-                    });
+                        });
+                    }
                 }
             })
             ->where(function ($query) use ($questionString, $congressId) {
                 if (sizeof($questionString) != 0) {
-                    $query->whereHas('responses', function ($query) use ($questionString, $congressId) {
-                        $query->where(function ($query) use ($questionString) {
-                            foreach ($questionString as $q) {
-                                $query->orWhereRaw('lower(response) like (?)', ["%{$q}%"]);
-                            }
-                        })
-                            ->whereHas('form_input', function ($q) use ($congressId) {
-                                $q->where('congress_id', '=', $congressId);
-                            });
-                    });
+                    foreach ($questionString as $q) {
+                        $query->whereHas('responses', function ($query) use ($congressId, $q) {
+                            $query->where(function ($query) use ($q) {
+                                $query->whereRaw('lower(response) like (?)', ["%{$q}%"]);
+                            })
+                                ->whereHas('form_input', function ($q) use ($congressId) {
+                                    $q->where('congress_id', '=', $congressId);
+                                });
+                        });
+                    }
                 }
             })
             ->whereHas('user_congresses', function ($query) use ($status, $congressId) {
