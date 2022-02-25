@@ -27,6 +27,8 @@ use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\LPOrganizer;
+
 
 /**
  * @property OrganizationServices $organizationServices
@@ -118,7 +120,9 @@ class CongressServices
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
+                $query->orWhere('name_en', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
+                $query->orWhere('description_en', 'LIKE', '%' . $search . '%');
             })
             ->where(function ($query) use ($minPrice, $maxPrice, $startDate, $endDate, $type) {
                 if ($startDate != '' && $startDate != 'null') {
@@ -148,8 +152,8 @@ class CongressServices
                 }
 
             });
-        $all_congresses = $perPage ? $all_congresses->paginate($perPage, ["congress_id", "name", "start_date",
-            "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage, ["congress_id", "name", "name_en", "start_date",
+            "end_date", "price", "description", "description_en", "congress_type_id"]) : $all_congresses->get();
         return $all_congresses;
     }
 
@@ -446,6 +450,8 @@ class CongressServices
         $congress->description = $congressRequest->input('description');
         $congress->congress_type_id = $congressRequest->input('congress_type_id');
         $congress->private = $congressRequest->input('private');
+        $congress->description_en = $congressRequest->input('description_en');
+        $congress->name_en = $congressRequest->input('name_en');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -525,42 +531,49 @@ class CongressServices
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
+        if($configCongressRequest['show_in_chat']){
+            $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
+            $configCongress->show_in_chat = $showInChat;
+        }
+        
         $configCongress->update();
 
         return $configCongress;
     }
 
-    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId)
+    public function addAllAllowedAccessByCongressId($privilegeIds, $congressId,$access_id=null)
     {
         foreach ($privilegeIds as $privilegeId) {
-            $this->addAllowedOnlineAccess($privilegeId, $congressId);
+            $this->addAllowedOnlineAccess($privilegeId, $congressId,$access_id);
         }
     }
 
-    public function addAllowedOnlineAccess($privilege_id, $congress_id)
+    public function addAllowedOnlineAccess($privilege_id, $congress_id,$access_id=null)
     {
         $newAllowedOnlineAccess = new AllowedOnlineAccess();
         $newAllowedOnlineAccess->privilege_id = $privilege_id;
         $newAllowedOnlineAccess->congress_id = $congress_id;
+        $newAllowedOnlineAccess->access_id = $access_id;
         $newAllowedOnlineAccess->save();
     }
 
-    public function getAllAllowedOnlineAccess($congress_id)
+    public function getAllAllowedOnlineAccess($congress_id,$access_id=null)
     {
-        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)->where('access_id', '=', $access_id)
+
             ->get();
     }
 
-    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id)
+    public function getAllowedOnlineAccessByPrivilegeId($congress_id, $privilege_id,$access_id=null)
     {
         return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
-            ->where('privilege_id', '=', $privilege_id)
+            ->where('privilege_id', '=', $privilege_id)->where('access_id', '=', $access_id)
             ->first();
     }
 
-    public function deleteAllAllowedAccessByCongressId($congress_id)
+    public function deleteAllAllowedAccessByCongressId($congress_id,$access_id=null)
     {
-        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)
+        return AllowedOnlineAccess::where('congress_id', '=', $congress_id)->where('access_id','=',$access_id)
             ->delete();
     }
 
@@ -647,11 +660,14 @@ class CongressServices
         $congress->congress_type_id = $request->input('congress_type_id');
         $congress->description = $request->input('description');
         $congress->private = $request->input('private');
+        $congress->description_en = $request->input('description_en');
+        $congress->name_en = $request->input('name_en');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
         $config->access_system = $request->input('config')['access_system'] ? $request->input('config')['access_system'] : 'Workshop';
         $config->status = $request->input('config')['status'];
+        $config->is_visible_price = $request->input('config')['is_visible_price'];
         $config->update();
 
         if (isset($request->input('config_selection')['num_evaluators'])) {
@@ -757,12 +773,14 @@ class CongressServices
                 $submissionsParms = $submissionsParms . "</ul>";
             }
         }
-
+    
         if ($congress != null) {
             $startDate = \App\Services\Utils::convertDateFrench($congress->start_date);
             $endDate = \App\Services\Utils::convertDateFrench($congress->end_date);
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
+            $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
+            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ; 
         }
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
@@ -805,10 +823,16 @@ class CongressServices
         $linkRefuseMeeting =  $meeting != null ? UrlUtils::getBaseUrl() . '/meetings/'. $meeting->meeting_id .'/update-status?status=-1&verification_code='.$verification_code : null ;
         $template = str_replace('{{$meetingButtons}}', '
                                                   <a href="{{$linkAcceptMeeting}}" style="color:#fff;background-color:#2196f3;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Oui</a> 
+        
                                                   <a href="{{$linkRefuseMeeting}}" style="color:#fff;background-color:#f44336;width: 60px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Non</a>', $template);
+        $location=null;
+        if($congress->location != null){
+            $location=$congress->location->address; 
+        }                                  
+        $template = str_replace('{{$addToCalendar}}', '<a href="http://www.google.com/calendar/r/eventedit?action=TEMPLATE&text={{$congress->name}}&dates={{$congressStartDate}}/{{$congressEndDate}}&details={{$congress->description}}&location={{$location}}&trp=false&sprop=&sprop=name:" style="color:#fff;background-color:#2196f3;width: 140px;display:inline-block;font-weight:400;text-align:center;white-space:nowrap;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border:1px solid transparent;padding:.4375rem .875rem;font-size:.8125rem;line-height:1.5385;border-radius:.1875rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out">Ajouter au calendrier </a>', $template);
         if ($participant != null)
             $participant->gender = $participant->gender == 2 ? 'Mme.' : 'Mr.';
-        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting, 'meetingtable' => $meetingtable,'submissionTheme' => $submissionTheme]);
+        return view(['template' => '<html><head><style> .ql-size-large { font-size: 1.5em; } .ql-size-huge { font-size: 2.5em; } .ql-align-center { text-align:center; } </style></head>' . $template . '</html>'], ['congress' => $congress, 'participant' => $participant, 'link' => $link, 'organization' => $organization, 'userPayment' => $userPayment, 'linkSondage' => $linkSondage, 'linkFrontOffice' => $linkFrontOffice, 'linkModerateur' => $linkModerateur, 'linkInvitees' => $linkInvitees, 'room' => $room, 'linkFiles' => $linkFiles, 'submission_code' => $submissionCode, 'submission_title' => $submissionTitle, 'communication_type' => $communication_type, 'linkAccept' => $linkAccept, 'linkRefuse' => $linkRefuse,'submissionComment' => $submissionComment,'linkSubmission'=> $linkSubmission,'linkPrincipalRoom'=>$linkPrincipalRoom, 'linkAcceptMeeting' => $linkAcceptMeeting, 'linkRefuseMeeting' => $linkRefuseMeeting, 'user_sender' => $user_sender, 'user_receiver' => $user_receiver, 'meeting' => $meeting, 'meetingtable' => $meetingtable,'submissionTheme' => $submissionTheme , 'congressStartDate'=>$congressStartDate,'congressEndDate'=>$congressEndDate, 'location'=>$location]);
 
     }
 
@@ -1094,6 +1118,22 @@ class CongressServices
         $config_landing_page->contact_description_en = $request->has("contact_description_en") ? $request->input('contact_description_en') : null;
         $config_landing_page->home_sub_title = $request->has("home_sub_title") ? $request->input('home_sub_title') : null;
         $config_landing_page->home_sub_title_en = $request->has("home_sub_title_en") ? $request->input('home_sub_title_en') : null;
+        $config_landing_page->partners_title = $request->has("partners_title") ? $request->input('partners_title') : null;
+        $config_landing_page->partners_title_en = $request->has("partners_title_en") ? $request->input('partners_title_en') : null;
+        $config_landing_page->partners_description = $request->has("partners_description") ? $request->input('partners_description') : null;
+        $config_landing_page->partners_description_en = $request->has("partners_description_en") ? $request->input('partners_description_en') : null;
+
+        $config_landing_page->organizers_title = $request->has("organizers_title") ? $request->input('organizers_title') : null;
+        $config_landing_page->organizers_description = $request->has("organizers_description") ? $request->input('organizers_description') : null;
+        $config_landing_page->organizers_title_en = $request->has("organizers_title_en") ? $request->input('organizers_title_en') : null;
+        $config_landing_page->organizers_description_en = $request->has("organizers_description_en") ? $request->input('organizers_description_en') : null;
+        $config_landing_page->page_title = $request->has("page_title") ? $request->input('page_title') : null;
+        $config_landing_page->waiting_title = $request->has("waiting_title") ? $request->input('waiting_title') : null;
+        $config_landing_page->waiting_desription = $request->has("waiting_desription") ? $request->input('waiting_desription') : null;
+        $config_landing_page->opening_date = $request->has("opening_date") ? $request->input('opening_date') : null;
+        $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
+        $config_landing_page->waiting_title_en = $request->has("waiting_title_en") ? $request->input('waiting_title_en') : null;
+        $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
@@ -1145,6 +1185,36 @@ class CongressServices
     public function deleteLandingPageSpeaker($speaker)
     {
         $speaker->delete();
+    }
+
+    public function addLandingPageOrganizer($congress_id, $request, $lp_organizer)
+    {
+        if (!$lp_organizer) {
+            $lp_organizer = new LPOrganizer();
+        }
+        $lp_organizer->congress_id = $congress_id;
+        $lp_organizer->full_name = $request->input('full_name');
+        $lp_organizer->role = $request->input('role');
+        $lp_organizer->profile_img = $request->has('profile_img') ? $request->input('profile_img') : '34ZPKTtsyo9ZLPCQ2d2YidDhVedNwFGNfuJDuL45.jpg';
+        $lp_organizer->save();
+        return $lp_organizer;
+    }
+
+    public function getLandingPageOrganizers($congress_id)
+    {
+        return LPOrganizer::where('congress_id', '=', $congress_id)
+            ->get();
+    }
+
+    public function getLandingPageOrganizerById($lp_organizer_id)
+    {
+        return LPOrganizer::where('lp_organizer_id', '=', $lp_organizer_id)
+            ->first();
+    }
+
+    public function deleteLandingPageOrganizer($organizer)
+    {
+        $organizer->delete();
     }
 
     public function syncronizeLandingPage($congress_id, $congress, $config_congress, $config_landing_page)

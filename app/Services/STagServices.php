@@ -7,18 +7,19 @@ use App\Models\STag;
 use App\Models\StandTag;
 
 
-
 class STagServices
 {
     public function getSTags($congress_id)
     {
-        return STag::where('congress_id', '=', $congress_id)->get();
+        return STag::where('congress_id', '=', $congress_id)
+            ->get();
     }
 
     public function addSTag($request, $congress_id)
     {
         $stag = new STag();
         $stag->label = $request->input('label');
+        $stag->gstag_id = $request->input('gstag_id');
         $stag->congress_id = $congress_id;
         $stag->save();
     }
@@ -44,4 +45,5 @@ class STagServices
     {
         return StandTag::where('stand_id', '=', $stand_id)->delete();
     }
+
 }

@@ -37,10 +37,15 @@ class StandController extends Controller
     }
 
     
-    public function getStands($congress_id)
+    public function getStands($congress_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
+        }
+        if ($request->input('organization_id') && $request->input('organization_id') != "null") {
+            $organization_id = $request->input('organization_id');
+            $stands = $this->standServices->getStands($congress_id, null,  null,  null,  null,  null, $organization_id);
+            return response()->json($stands, 200);
         }
         $stands = $this->standServices->getStands($congress_id);
         return response()->json($stands, 200);
@@ -219,5 +224,15 @@ class StandController extends Controller
         $contentFile = $this->standServices->getStandContentFile($stand_content_file_id);
         $contentFile->delete();
         return response()->json(['response' => 'deleted successfully'], 200);
+    }
+
+    public function getRandomStands($congress_id, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        
+        $stands = $this->standServices->getRandomStands($congress_id);
+        return response()->json($stands, 200);
     }
 }

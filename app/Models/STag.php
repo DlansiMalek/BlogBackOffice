@@ -15,4 +15,8 @@ class STag extends Model
     function stand() {
         return $this->belongsToMany(Stand::class ,'Stand_Tag' , 'stag_id', 'stand_id');
     }
+    function gtag() {
+        return $this->hasOne(GSTag::class,'gstag_id','gstag_id');
+    }
+    
 }

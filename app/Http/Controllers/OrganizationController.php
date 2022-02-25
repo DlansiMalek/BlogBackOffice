@@ -17,6 +17,7 @@ use App\Services\UserServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+
 class OrganizationController extends Controller
 {
 
@@ -81,14 +82,14 @@ class OrganizationController extends Controller
         } 
         $privilegeId = 7;
         $password = Str::random(8);
-        if ($request->has('email')) {
+        if ($request->has('email') && $request->input('email') != null) {
         if (!($old_admin = $this->adminServices->getAdminByLogin($organization->email))) {
             $admin = $this->adminServices->addPersonnel($request, $password);
-            $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
+            $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id, $organization->organization_id);
         } else {
             $admin = $this->adminServices->editPersonnel($request, $old_admin);
             if (!$admin_congress = $this->privilegeServices->checkIfAdminOfCongress($admin->admin_id, $congress_id)) {
-                $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id);
+                $admin_congress = $this->privilegeServices->affectPrivilegeToAdmin($privilegeId, $admin->admin_id, $congress_id, $organization->organization_id);
             }
         }
         if (!$user = $this->userServices->getUserByEmail($organization->email)) {
@@ -243,13 +244,17 @@ class OrganizationController extends Controller
         return response()->json($this->organizationServices->getAllUserByOrganizationId($organizationId, $congressId));
     }
 
-    public function getSponsorsByCongressId($congress_id)
+    public function getSponsorsByCongressId($congress_id, Request $request)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
+        if (!$request->has(['isSponsor'])) {
+            return response()->json("required parameter isSponsor", 404);
+        }
+        $isSponsor = $request->query('isSponsor');
 
-        $organizations = $this->organizationServices->getSponsorsByCongressId($congress_id);
+        $organizations = $this->organizationServices->getSponsorsByCongressId($congress_id, $isSponsor);
 
         return response()->json($organizations);
     }
@@ -277,13 +282,17 @@ class OrganizationController extends Controller
                     if ($user_by_mail) {
                         $userCongress = $this->userServices->getUserCongress($congressId, $user_by_mail->user_id);
                     }
-                    $this->userServices->addUserCongressFromExcelOrgnization($userCongress, $newUser->user_id, $congressId, 7);
+                    $newUserCongress = $this->userServices->addUserCongressFromExcelOrgnization($userCongress, $newUser->user_id, $congressId, 7);
                 }
                 // Add Organization & Stand
                 $newOrg = $this->organizationServices->getOrganizationByNameAndCongress($org['organization_name'], $congressId);
                 $newOrganization = $this->organizationServices->addOrganizationFromExcel($newOrg, $org, $congressId, $newAdmin);
                 $stand = $this->standServices->getStandByCongressIdOrgizantionIdAndName($org['organization_name'], $congressId, $newOrganization->organization_id);
                 $this->standServices->addStandFromExcel($stand, $org['organization_name'], $congressId, $newOrganization->organization_id);
+                if (isset($org['admin_name']) && isset($org['admin_email'])) {
+                    $newUserCongress->organization_id = $newOrganization->organization_id;
+                    $newUserCongress->update();
+                }
             }
         }
         return response()->json($this->organizationServices->getOrganizationsByCongressId($congressId));
