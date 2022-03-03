@@ -282,7 +282,12 @@ class CongressController extends Controller
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
         $nbMeetingTable = $configCongress['nb_meeting_table'];
         if ($nbMeetingTable != 0) {
-            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId,);
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
+        }
+        $tableFix = $this->meetingServices->getFixTables($congressId);
+        $nbTableFix = $tableFix->count();
+        if ($nbTableFix != 0) {
+            $this->meetingServices->InsertFixTable($nbTableFix, $tableFix);
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");

@@ -190,14 +190,16 @@ class MeetingServices
     public function getUserIdByEmail($email)
     {
         $email = strtolower($email);
-        $user_id =User::whereRaw('lower(email) = (?)', $email)
-        ->get('user_id');
-        return $user_id ;
+        $user_id = User::whereRaw('lower(email) = (?)', $email)
+            ->get('user_id');
+        return $user_id;
     }
 
     public function getFixTables($congress_id)
     {
-        return MeetingTable::where('congress_id', '=', $congress_id)->get();   
+        return MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->get();
     }
 
     public function haveMeeting($congress_id)
@@ -219,7 +221,7 @@ class MeetingServices
                     break;
                 }
             }
-            if (!$exists && $haveMeeting ) $old->delete();
+            if (!$exists && $haveMeeting) $old->delete();
         }
 
         foreach ($newFixTbales->all() as $new) {
@@ -235,17 +237,25 @@ class MeetingServices
                     break;
                 }
             }
-            if (!$input && $existUser) break ;
-                if (!$input) $input = new MeetingTable();
-                $input->congress_id = $congress_id;
-                if (!$input || $haveMeeting) {
-                    $input->user_id = $userId;
-                }
-                $input->label = $new["label"];
-                $input->banner = $new["banner"];
-                $input->save();
-            
+            if (!$input && $existUser) break;
+            if (!$input) $input = new MeetingTable();
+            $input->congress_id = $congress_id;
+            if (!$input || $haveMeeting) {
+                $input->user_id = $userId;
+            }
+            $input->label = $new["label"];
+            $input->banner = $new["banner"];
+            $input->save();
         }
     }
-   
+
+    public function InsertFixTable($nbFixTable, $tableFix)
+    {
+        for ($i = 1; $i <= $nbFixTable; $i++) {
+            $label = "Table " . $i;
+            $tableFix[$i - 1]->label = $label;
+            $tableFix[$i - 1]->update();
+        }
+    } 
+  
 }
