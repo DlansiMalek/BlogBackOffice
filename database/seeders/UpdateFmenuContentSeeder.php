@@ -24,7 +24,7 @@ class UpdateFmenuContentSeeder extends Seeder
             'is_visible' => '1',
             'rank' => '7',
             'url' => 'tables',
-            'logo' => 'fas fa-users',
+            'logo' => 'fas fa-handshake',
         ]);      
     }
 }

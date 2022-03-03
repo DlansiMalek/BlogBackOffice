@@ -218,4 +218,8 @@ class MeetingController extends Controller
         return $this->meetingServices->getFixTables($congress_id);
     }
 
+  public function getFixTables($congress_id)
+    {
+      return $this->meetingServices->getFixTables($congress_id);
+    }
 }
