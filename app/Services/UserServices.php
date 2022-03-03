@@ -571,7 +571,7 @@ class UserServices
                 }
             })
             ->where(function ($query) use ($questionString, $congressId) {
-                if (sizeof($questionString) != 0) {
+                if (sizeof($questionString) != 0 && $questionString[0] != '') {
                     $query->whereHas('responses', function ($query) use ($questionString, $congressId) {
                         $query->where(function ($query) use ($questionString) {
                             foreach ($questionString as $q) {
