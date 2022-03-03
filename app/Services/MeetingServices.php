@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
+use App\Models\User;
 
 
 
@@ -185,4 +186,66 @@ class MeetingServices
     {
         return UserMeeting::where('meeting_id', '=', $meeting_id)->first();
     }
+
+    public function getUserIdByEmail($email)
+    {
+        $email = strtolower($email);
+        $user_id =User::whereRaw('lower(email) = (?)', $email)
+        ->get('user_id');
+        return $user_id ;
+    }
+
+    public function getFixTables($congress_id)
+    {
+        return MeetingTable::where('congress_id', '=', $congress_id)->get();   
+    }
+
+    public function haveMeeting($congress_id)
+    {
+        return MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id);
+    }
+
+    public function setFixTables($newFixTbales, $congress_id)
+    {
+
+        $oldFixTbales = $this->getFixTables($congress_id);
+        $haveMeeting = $this->haveMeeting($congress_id);
+
+        foreach ($oldFixTbales as $old) {
+            $exists = false;
+            foreach ($newFixTbales->all() as $new) {
+                if ($old->meeting_table_id == $new['meeting_table_id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists && $haveMeeting ) $old->delete();
+        }
+
+        foreach ($newFixTbales->all() as $new) {
+            $input = null;
+            $existUser = false;
+            $userId = $this->getUserIdByEmail($new["user_id"], $congress_id)[0]['user_id'];
+            foreach ($oldFixTbales as $old) {
+                if ($old->user_id == $userId) {
+                    $existUser = true;
+                }
+                if ($old->meeting_table_id == $new['meeting_table_id']) {
+                    $input = $old;
+                    break;
+                }
+            }
+            if (!$input && $existUser) break ;
+                if (!$input) $input = new MeetingTable();
+                $input->congress_id = $congress_id;
+                if (!$input || $haveMeeting) {
+                    $input->user_id = $userId;
+                }
+                $input->label = $new["label"];
+                $input->banner = $new["banner"];
+                $input->save();
+            
+        }
+    }
+   
 }

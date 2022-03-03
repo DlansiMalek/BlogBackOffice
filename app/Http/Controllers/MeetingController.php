@@ -211,4 +211,11 @@ class MeetingController extends Controller
       return response()->json(['error' => 'Insufficient tables'], 405);
     }
   }
+
+  public function setFixTables(Request $request, $congress_id)
+    {
+        $this->meetingServices->setFixTables($request, $congress_id);
+        return $this->meetingServices->getFixTables($congress_id);
+    }
+
 }
