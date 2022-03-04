@@ -10,7 +10,6 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
-use Illuminate\Support\Facades\Log;
 
 
 class MeetingController extends Controller

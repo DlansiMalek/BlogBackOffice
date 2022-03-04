@@ -210,10 +210,10 @@ class MeetingServices
     public function setFixTables($newFixTbales, $congress_id)
     {
 
-        $oldFixTbales = $this->getFixTables($congress_id);
+        $oldFixTables = $this->getFixTables($congress_id);
         $haveMeeting = $this->haveMeeting($congress_id);
 
-        foreach ($oldFixTbales as $old) {
+        foreach ($oldFixTables as $old) {
             $exists = false;
             foreach ($newFixTbales->all() as $new) {
                 if ($old->meeting_table_id == $new['meeting_table_id']) {
@@ -228,7 +228,7 @@ class MeetingServices
             $input = null;
             $existUser = false;
             $userId = $this->getUserIdByEmail($new["user_id"], $congress_id)[0]['user_id'];
-            foreach ($oldFixTbales as $old) {
+            foreach ($oldFixTables as $old) {
                 if ($old->user_id == $userId) {
                     $existUser = true;
                 }

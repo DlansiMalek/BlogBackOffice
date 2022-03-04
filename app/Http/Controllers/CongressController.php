@@ -286,6 +286,7 @@ class CongressController extends Controller
         }
         $tableFix = $this->meetingServices->getFixTables($congressId);
         $nbTableFix = $tableFix->count();
+        
         if ($nbTableFix != 0) {
             $this->meetingServices->InsertFixTable($nbTableFix, $tableFix);
         }
@@ -1242,5 +1243,4 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
-
 }
