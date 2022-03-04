@@ -19,4 +19,7 @@ class MeetingTable extends Model
         return $this->hasMany(Meeting::class,'meeting_table_id','meeting_table_id');
     }
 
+    function participant() {
+        return $this->hasMany(User::class,'user_id','user_id');
+    }
 }

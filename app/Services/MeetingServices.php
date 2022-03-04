@@ -128,12 +128,15 @@ class MeetingServices
 
     public function getMeetingTablesByCongressId($congress_id)
     {
-        return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->get();
+        return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->where('user_id','=',null)->get();
     }
 
     public function deleteMeetingTablesWithNoMeeting($congress_id)
     {
-        $delete_meetings = MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->delete();
+        $delete_meetings = MeetingTable::doesnthave('meetings')
+        ->where('congress_id', '=', $congress_id)
+        ->where('user_id','=',null)
+        ->delete();
         return $this->getMeetingTablesByCongressId($congress_id);
     }
 
@@ -199,6 +202,7 @@ class MeetingServices
     {
         return MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
+            ->with(["participant"])
             ->get();
     }
 

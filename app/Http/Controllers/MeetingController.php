@@ -214,7 +214,8 @@ class MeetingController extends Controller
   public function setFixTables(Request $request, $congress_id)
     {
         $this->meetingServices->setFixTables($request, $congress_id);
-        return $this->meetingServices->getFixTables($congress_id);
+        $fixTables = $this->meetingServices->getFixTables($congress_id);
+        return response()->json($fixTables, 200);
     }
 
   public function getFixTables($congress_id)
