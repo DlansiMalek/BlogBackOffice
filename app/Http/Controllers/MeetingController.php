@@ -128,7 +128,8 @@ class MeetingController extends Controller
       if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
-      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id);
+      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
+      Log::info($conflicts);
       if (sizeof($conflicts) > 0) {
         $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
       }
