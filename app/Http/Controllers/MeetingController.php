@@ -69,7 +69,7 @@ class MeetingController extends Controller
       $userMeet = $this->meetingServices->getFirstUserMeetingsByMeetingId($meeting->meeting_id);
     }
     $meeting = $this->meetingServices->addMeeting($meeting,  $request);
-    $userMeeting = $request->has('meeting_id') ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $userMeet[0], $request, $user_sender->user_id);
+    $userMeeting = $request->has('meeting_id') ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $request->input('user_received_id'), $user_sender->user_id);
     if ($mailtype = $this->congressServices->getMailType('request_meeting')) {
       if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, $user_receiver->meeting_code), $user_receiver, $congress, $mail->object, null, null, null, null);
@@ -128,7 +128,8 @@ class MeetingController extends Controller
       if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
-      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id);
+      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
+      Log::info($conflicts);
       if (sizeof($conflicts) > 0) {
         $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
       }
