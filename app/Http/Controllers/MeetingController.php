@@ -222,4 +222,13 @@ class MeetingController extends Controller
     {
       return $this->meetingServices->getFixTables($congress_id);
     }
+
+ 
+  public function getMeetingTableByCongress($congress_id, Request $request)
+    {
+      $perPage = $request->query('perPage', 10);
+      $search = Str::lower($request->query('search', ''));
+      $listMeetingTables =$this->meetingServices->getMeetingTableByCongress($congress_id, $perPage, $search);
+        return response()->json($listMeetingTables, 200);
+    }  
 }

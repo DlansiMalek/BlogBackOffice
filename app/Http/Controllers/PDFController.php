@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CongressServices;
+use App\Services\MeetingServices;
 use Dompdf\Dompdf;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
@@ -12,10 +13,12 @@ class PDFController extends Controller
 {
 
     protected $congressServices;
+    protected $meetingServices;
 
-    public function __construct(CongressServices $congressServices)
+    public function __construct(CongressServices $congressServices, MeetingServices $meetingServices )
     {
         $this->congressServices = $congressServices;
+        $this->meetingServices = $meetingServices;
     }
 
     function generateProgramPDF($congress_id)
@@ -38,6 +41,24 @@ class PDFController extends Controller
         $pdf->save(public_path() . "/program.pdf");
         if ($file->exists(public_path() . "/program.pdf")) {
             return response()->download(public_path() . "/program.pdf")
+                ->deleteFileAfterSend(true);
+        } else {
+            return response()->json(["error" => "dossier vide"]);
+        }
+    }
+
+    function generateMeetingPlanningPDF($meeting_id)
+    {
+        $file = new Filesystem();
+        $MeetingPlanning = $this->meetingServices->getMeetingPlanning($meeting_id);
+
+        $data = [
+            'meeting' =>$MeetingPlanning
+        ];
+        $pdf = PDF::loadView('meetingProgram', $data);
+        $pdf->save(public_path() . "/meetingProgram.pdf");
+        if ($file->exists(public_path() . "/meetingProgram.pdf")) {
+            return response()->download(public_path() . "/meetingProgram.pdf")
                 ->deleteFileAfterSend(true);
         } else {
             return response()->json(["error" => "dossier vide"]);

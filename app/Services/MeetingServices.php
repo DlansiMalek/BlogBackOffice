@@ -260,6 +260,24 @@ class MeetingServices
             $tableFix[$i - 1]->label = $label;
             $tableFix[$i - 1]->update();
         }
-    } 
+    }
+    
+    public function getMeetingTableByCongress($congress_id, $perPage, $search)
+    {
+        $listMeetingTables= MeetingTable::where('congress_id', '=', $congress_id)
+        ->where(function ($query) use ($search) {
+            if ($search != "") {
+                $query->whereRaw('lower(label) like (?)', ["%{$search}%"]);
+            }
+        });
+    return $listMeetingTables->paginate($perPage);
+    }    
+  
+    public function getMeetingPlanning($meeting_id)
+    {
+        $MeetingPlanning= Meeting::where('meeting_id', '=', $meeting_id)
+        ->first();
+    return $MeetingPlanning;
+    }    
   
 }

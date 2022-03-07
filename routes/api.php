@@ -52,6 +52,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
     Route::get('{congress_id}/get-fix-tables', 'MeetingController@getFixTables');
+    Route::get('{congress_id}/get-meeting-tables', 'MeetingController@getMeetingTableByCongress');
 
 });
 
@@ -209,6 +210,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
 
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
+        Route::get('/{meeting_id}/planning-program-pdf', 'PDFController@generateMeetingPlanningPDF');
         Route::group(['prefix' => 'stand'], function () {
             Route::get('', 'StandController@getStands');
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
