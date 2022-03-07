@@ -590,6 +590,8 @@ class CongressServices
         $configSubmission->start_submission_date = $submissionData['start_submission_date'];
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
         $configSubmission->show_file_upload = $submissionData['show_file_upload'];
+        $configSubmission->explanatory_paragraph = $submissionData['explanatory_paragraph'];
+        $configSubmission->explanatory_paragraph_en = $submissionData['explanatory_paragraph_en'];
         $configSubmission->save();
         return $configSubmission;
 
