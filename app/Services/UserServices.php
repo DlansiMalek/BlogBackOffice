@@ -570,17 +570,17 @@ class UserServices
                 }
             })
             ->where(function ($query) use ($questionString, $congressId) {
-                if (sizeof($questionString) != 0) {
-                    foreach ($questionString as $q) {
-                        $query->whereHas('responses', function ($query) use ($congressId, $q) {
-                            $query->where(function ($query) use ($q) {
-                                $query->whereRaw('lower(response) like (?)', ["%{$q}%"]);
-                            })
-                                ->whereHas('form_input', function ($q) use ($congressId) {
-                                    $q->where('congress_id', '=', $congressId);
-                                });
-                        });
-                    }
+                if (sizeof($questionString) != 0 && $questionString[0] != '') {
+                    $query->whereHas('responses', function ($query) use ($questionString, $congressId) {
+                        $query->where(function ($query) use ($questionString) {
+                            foreach ($questionString as $q) {
+                                $query->orWhereRaw('lower(response) like (?)', ["%{$q}%"]);
+                            }
+                        })
+                            ->whereHas('form_input', function ($q) use ($congressId) {
+                                $q->where('congress_id', '=', $congressId);
+                            });
+                    });
                 }
             })
             ->whereHas('user_congresses', function ($query) use ($status, $congressId) {
