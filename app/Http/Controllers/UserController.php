@@ -358,6 +358,7 @@ class UserController extends Controller
         $questionsArray = explode(',', $request->query('question', ''));
         $questionsIds = [];
         $questionString = [];
+        $all = $request->query('all', 0);
         foreach($questionsArray as $question) {
             if(intVal($question) == 0 || str_contains($question, '-')) {
                 array_push($questionString, strtolower($question));
@@ -366,7 +367,7 @@ class UserController extends Controller
             }
         }
         $perPage = $request->query('perPage', 10);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all);
 
         return response()->json($users);
     }
