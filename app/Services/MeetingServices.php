@@ -180,4 +180,9 @@ class MeetingServices
             $query->where('user_sender_id', '=', $user_sender_id)->where('user_receiver_id','=',$user_reveiver_id);
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
     }
+
+    public function getFirstUserMeetingsByMeetingId($meeting_id)
+    {
+        return UserMeeting::where('meeting_id', '=', $meeting_id)->first();
+    }
 }
