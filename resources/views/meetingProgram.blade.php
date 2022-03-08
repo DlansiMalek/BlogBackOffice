@@ -18,9 +18,13 @@
      id="title-container">
     <div style="text-align:center; width: 100%;">
        <b>{{$meeting->name}}</b>
-        <br>
-        Tunis, Tunisie
-        {{-- TODO Add real location here--}}
+       <br>
+       @if($meeting->start_date)
+            {{date('d/m/Y',strtotime($meeting->start_date))}}
+            @if($meeting->end_date)
+                - {{date('d/m/Y',strtotime($meeting->end_date))}}
+            @endif
+        @endif
         <br>
     </div>
 </div>
