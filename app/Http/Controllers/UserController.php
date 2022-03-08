@@ -6,7 +6,6 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AttestationRequest;
 use App\Models\FormInputResponse;
-use App\Models\User;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
 use App\Services\BadgeServices;
