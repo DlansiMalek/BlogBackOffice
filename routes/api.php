@@ -116,6 +116,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('password/reset/{userId}', 'UserController@resetUserPassword');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
+    Route::post('send-mail-to-selected-users/{mail_id}/{congress_id}', 'UserController@sendEmailToSelectedUsers');
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
 
