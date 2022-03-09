@@ -129,7 +129,7 @@ class MeetingServices
         })->where('congress_id', '=', $congress_id)
         ->where(function ($query) use ($start_date, $end_date) {
             if ($start_date != '' && $start_date != 'null'){
-            $query->where('start_date', '=', $start_date);
+            $query->whereDate('start_date', $start_date);
         }
         if ($end_date != '' && $end_date != 'null'){
             $query->whereDate('end_date', '<=', date($end_date));

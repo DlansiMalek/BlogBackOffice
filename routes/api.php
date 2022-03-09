@@ -57,6 +57,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::get('{congress_id}/number-meetings', 'MeetingController@getNumberOfMeetings');
     Route::get('{congress_id}/request-details', 'MeetingController@getRequestDetailsPagination');
     Route::get('{congress_id}/available-timeslots', 'MeetingController@getAvailableTimeslots');
+    Route::get('{congress_id}/meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
 });
 
 //SMS API

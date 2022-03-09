@@ -167,6 +167,20 @@ class MeetingController extends Controller
     }
   }
 
+  public function affectTablesToMeeting($meeting, $user_meeting, $congressId, $request)
+  {
+    $date =  $meeting->start_date;
+    $meetingtable = $this->meetingServices->getAvailableMeetingTable($date, $congressId);
+    if ($meetingtable) {
+      $meeting = $this->meetingServices->addTableToMeeting($meeting, $meetingtable->meeting_table_id);
+    } else {
+      $status = -1;
+      $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
+      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
+      return response()->json(['error' => 'Insufficient tables'], 405);
+    }
+  }
+
   public function makeOrganizerPresent($meeting_id, Request $request)
   {
     $meeting = $this->meetingServices->getMeetingById($meeting_id);
@@ -221,9 +235,11 @@ class MeetingController extends Controller
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
       return response()->json('no congress found', 404);
     }
-    $datetime1 = new DateTime($congress->start_date);
-    $datetime2 = new DateTime($congress->end_date);
-    $interval = $datetime2->diff($datetime1);
+    $startDate = $request->query('startDate', '');
+    $endDate = $request->query('endDate', '');
+    $congressStartDate = $startDate == '' ? new DateTime($congress->start_date) : new DateTime($startDate);
+    $congressEndDate = $endDate == '' ? new DateTime($congress->end_date) : new DateTime($endDate);
+    $interval = $congressEndDate->diff($congressStartDate);
     $days = $interval->format('%a');
     $nombres = array();
 
@@ -232,20 +248,12 @@ class MeetingController extends Controller
       $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
-      array_push($nombres, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')), [
-        [
-
-          "label" => "MeetingsAccpeted",
-          "value" => $nombre_meetings_accpeted,
-        ],
-        [
-          "label" => "MeetingsRefused",
-          "value" => $nombre_meetings_Refused,
-        ],
-        [
-          "label" => "MeetingsWaiting ",
-          "value" => $nombre_meetings_waiting
-        ]
+      array_push($nombres, [
+          "type" => "val3",
+          "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')))),
+          "Alpha" => strval($nombre_meetings_accpeted), 
+          "Delta" => strval($nombre_meetings_Refused),
+          "Sigma" => strval($nombre_meetings_waiting)
       ]);
     }
     return response()->json($nombres, 200);
@@ -284,20 +292,6 @@ class MeetingController extends Controller
     }
   }
 
-  public function affectTablesToMeeting($meeting, $user_meeting, $congressId, $request)
-  {
-    $date =  $meeting->start_date;
-    $meetingtable = $this->meetingServices->getAvailableMeetingTable($date, $congressId);
-    if ($meetingtable) {
-      $meeting = $this->meetingServices->addTableToMeeting($meeting, $meetingtable->meeting_table_id);
-    } else {
-      $status = -1;
-      $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
-      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
-      return response()->json(['error' => 'Insufficient tables'], 405);
-    }
-  }
-
   public function getAvailableTimeslots($congressId)
   {
     if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
@@ -330,5 +324,21 @@ class MeetingController extends Controller
     $participantsHavingMeetings = $this->userServices->getNumberOfUsersHavingMeeting($congressId);
     $averageOfParticipantsHavingMeetings = $numberOfParticipants > 0 ? $participantsHavingMeetings / $numberOfParticipants : 0;
     return response()->json(['AvailableTimeslots' => $averaveAvailableTimeslots, 'ParticipantshavingMeetings' => $averageOfParticipantsHavingMeetings], 200);
+  }
+
+  public function getTotalNumberOfMeetingsWithSatuts($congressId, Request $request)
+  {
+    if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+      return response()->json('no admin found', 404);
+    }
+    $status = $request->query('status');
+    if (!$status && $status != 0) {
+      return response()->json('status required', 400);
+    }
+    if (!$congress = $this->congressServices->getCongressById($congressId)) {
+      return response()->json('congress not found', 404);
+    }
+    $numberOfMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, $status);
+    return response()->json($numberOfMeetings, 200);
   }
 }
