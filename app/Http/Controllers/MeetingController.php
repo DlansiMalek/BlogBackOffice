@@ -10,6 +10,7 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
+use Illuminate\Support\Facades\Log;
 
 
 class MeetingController extends Controller
@@ -62,15 +63,13 @@ class MeetingController extends Controller
     $user_receiver->meeting_code = Str::random(40);
     $user_receiver->save();
     $meeting = null;
+    $userMeet = null;
     if ($request->has('meeting_id')) {
       $meeting = $this->meetingServices->getMeetingById($request->input('meeting_id'));
-    }
-    $userMeet = null;
-    if ($request->input('user_meeting')['user_meeting_id']) {
-      $userMeet = $this->meetingServices->UserMeetingsById($request->input('user_meeting')['user_meeting_id']);
+      $userMeet = $this->meetingServices->getFirstUserMeetingsByMeetingId($meeting->meeting_id);
     }
     $meeting = $this->meetingServices->addMeeting($meeting,  $request);
-    $userMeeting = $request->input('user_meeting')['user_meeting_id'] ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $userMeet[0], $request, $user_sender->user_id);
+    $userMeeting = $request->has('meeting_id') ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $request->input('user_received_id'), $user_sender->user_id);
     if ($mailtype = $this->congressServices->getMailType('request_meeting')) {
       if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, $user_receiver->meeting_code), $user_receiver, $congress, $mail->object, null, null, null, null);
@@ -124,24 +123,30 @@ class MeetingController extends Controller
     if (!$user_sender) {
       return response()->json(['response' => 'No user found'], 401);
     }
-    $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
+
     if ($status == 1) {
       if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
-      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id);
+      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
+      Log::info($conflicts);
       if (sizeof($conflicts) > 0) {
         $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
       }
       $this->sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver);
+    } else if (($user_meeting->status == 1) && ($status == -1)) {
+      if ($mailtype = $this->congressServices->getMailType('annulation_meeting')) {
+        $this->sendAnnulationMail($congress, $mailtype, $user_sender, $meeting, $user_receiver);
+      }
     } else {
-      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);  
+      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
       if ($mailtype = $this->congressServices->getMailType('decline_meeting')) {
         $this->sendDeclineMail($congress, $mailtype, $user_sender, $meeting, $user_receiver);
       }
     }
+    $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
     if ($request->has('verification_code')) {
-      $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+      $linkFrontOffice = UrlUtils::getUserMeetingLinkFrontoffice($congressId);
       return redirect($linkFrontOffice);
     }
     return response()->json($meeting, 200);
@@ -165,6 +170,17 @@ class MeetingController extends Controller
       $conflict_meeting = $this->meetingServices->declineMeeting($conflict_meeting['user_meeting']->first());
       $user_sender_conflict = $this->userServices->getUserById($user_meeting->user_sender_id);
       $this->sendDeclineMail($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
+    }
+  }
+
+  public function sendAnnulationMail($congress, $mailtype, $user_sender, $meeting, $user_receiver)
+  {
+    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+      $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
+    } else {
+      if ($mail = $this->congressServices->getMailOutOfCongress(27)) {
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, null, null, null);
+      }
     }
   }
 

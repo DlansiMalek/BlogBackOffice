@@ -561,7 +561,7 @@ class UserServices
                     });
                 }
             })
-            ->where(function ($query) use ($questions, $congressId) {
+            ->where(function ($query) use ($questions) {
                 if (sizeof($questions) != 0) {
                     foreach ($questions as $ques) {
                         $query->whereHas('responses', function ($query) use ($ques) {

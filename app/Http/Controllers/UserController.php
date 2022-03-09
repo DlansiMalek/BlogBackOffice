@@ -367,6 +367,7 @@ class UserController extends Controller
             }
         }
         $perPage = $request->query('perPage', 10);
+        $page = $request->query('page', 1);
         $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all);
 
         return response()->json($users);
@@ -1523,7 +1524,7 @@ class UserController extends Controller
     {
         if (!$user = $this->userServices->getUserIdAndByCongressId($user_id, $congress_id)) {
             return response()->json(['response' => 'user not found'], 404);
-        }
+    }
 
         if (!$mail = $this->congressServices->getEmailById($mail_id)) {
             return response()->json(['response' => 'mail not found'], 404);
@@ -1533,6 +1534,28 @@ class UserController extends Controller
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
+    
+    public function sendEmailToSelectedUsers($mail_id, $congress_id, Request $request){
+         
+     if (!$mail = $this->congressServices->getEmailById($mail_id)) {
+       return response()->json(['response' => 'mail not found'], 404);
+        }
+    if (! $congress = $this->congressServices->getCongressById($congress_id)){
+       return response()->json(['response' => 'Congress not found'], 404); 
+        }
+        $users = $request->input('users');
+        foreach((array)$users as $user){
+
+    if (!$user = $this->userServices->getUserIdAndByCongressId($user, $congress_id)) {
+        return response()->json(['response' => 'user not found'], 404);
+     }
+       $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+       $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
+    }
+     return response()->json(['response' => 'success'], 200);
+    }
+        
+
 
     public function userConnect($qrCode)
     {

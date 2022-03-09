@@ -23,11 +23,11 @@ class MeetingServices
         $meeting->save();
         return $meeting;
     }
-    public function addUserMeeting($meeting, $usermeeting, $request, $user_id)
+    public function addUserMeeting($meeting, $user_received_id, $user_id)
     {
         $usermeeting = new UserMeeting();
         $usermeeting->user_sender_id = $user_id;
-        $usermeeting->user_receiver_id = $request->input('user_received_id');
+        $usermeeting->user_receiver_id = $user_received_id;
         $usermeeting->meeting_id = $meeting->meeting_id;
         $usermeeting->status = 0;
         $usermeeting->save();
@@ -88,7 +88,7 @@ class MeetingServices
         })->first();
     }
 
-    public function getMeetingConflicts($meet, $user_id)
+    public function getMeetingConflicts($meet, $user_sender_id, $user_receiver_id)
     {
         return Meeting::where('meeting_id', '!=', $meet->meeting_id)
         ->where('congress_id', '=', $meet->congress_id)
@@ -97,9 +97,11 @@ class MeetingServices
         ->whereHas("user_meeting", function ($query) {
             $query->where('status', '=', 1);
         })
-        ->whereHas("user_meeting", function ($query) use ($user_id) {
-            $query->where('user_sender_id', '=', $user_id)
-            ->orwhere('user_receiver_id', '=', $user_id);
+        ->whereHas("user_meeting", function ($query) use ($user_sender_id, $user_receiver_id) {
+            $query->where('user_sender_id', '=', $user_sender_id)
+            ->orwhere('user_receiver_id', '=', $user_sender_id)
+            ->orwhere('user_sender_id', '=', $user_receiver_id)
+            ->orwhere('user_receiver_id', '=', $user_receiver_id);
         })
         ->get();
     }
@@ -179,5 +181,10 @@ class MeetingServices
         return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id) {
             $query->where('user_sender_id', '=', $user_sender_id)->where('user_receiver_id','=',$user_reveiver_id);
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
+    }
+
+    public function getFirstUserMeetingsByMeetingId($meeting_id)
+    {
+        return UserMeeting::where('meeting_id', '=', $meeting_id)->first();
     }
 }
