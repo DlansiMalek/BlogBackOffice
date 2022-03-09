@@ -284,12 +284,6 @@ class CongressController extends Controller
         if ($nbMeetingTable != 0) {
             $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
         }
-        $tableFix = $this->meetingServices->getFixTables($congressId);
-        $nbTableFix = $tableFix->count();
-        
-        if ($nbTableFix != 0) {
-            $this->meetingServices->InsertFixTable($nbTableFix, $tableFix);
-        }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
 
