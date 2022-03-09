@@ -229,8 +229,8 @@ class MeetingController extends Controller
     if ($nbTableFix != 0) {
       $this->meetingServices->InsertFixTable($nbTableFix, $fixTables);
     }
-    return response()->json(['fixTables' => $fixTables, 'erorTables' => $errorTables], 200);
-  }
+    return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
+  } 
 
   public function getFixTables($congress_id)
   {
