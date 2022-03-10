@@ -45,9 +45,11 @@ class MeetingServices
             ->with(['user_meeting', 'meetingtable'])
             ->first();
     }
-    public function getMeetingByUserId($user_id, $congress_id)
+    
+    public function getMeetingByUserId($user_id, $congress_id, $status)
     {
-        return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
+        if($status == 99) {
+            return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
             $query->with([
                 'organizer' => function ($q) {
                     $q->with(['profile_img']);
@@ -60,22 +62,22 @@ class MeetingServices
                 ->orwhere('user_receiver_id', '=', $user_id);
         })->where('congress_id', '=', $congress_id)
         ->get();
-    }
-    public function getMeetingByUserIdAndStatus($user_id, $congress_id, $status)
-    {
-        return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
-            $query->with([
-                'organizer' => function ($q) {
-                    $q->with(['profile_img']);
-                }, 'participant' => function ($q) {
-                    $q->with(['profile_img']);
-                }
-            ]);
-        }])->whereHas("user_meeting", function ($query) use ($user_id, $status) {
-            $query->where('status','=',$status)->where('user_sender_id', '=', $user_id)
-                ->orwhere('user_receiver_id', '=', $user_id);
-        })->where('congress_id', '=', $congress_id)
-        ->get();
+        } else {
+            return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
+                $query->with([
+                    'organizer' => function ($q) {
+                        $q->with(['profile_img']);
+                    }, 'participant' => function ($q) {
+                        $q->with(['profile_img']);
+                    }
+                ]);
+            }])->whereHas("user_meeting", function ($query) use ($user_id, $status) {
+                $query->where('status','=',$status)->where('user_sender_id', '=', $user_id)
+                    ->orwhere('user_receiver_id', '=', $user_id);
+            })->where('congress_id', '=', $congress_id)
+            ->get();
+        }
+        
     }
     public function getUserMeetingsByMeetingId($meeting_id)
     {

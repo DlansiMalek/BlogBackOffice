@@ -36,16 +36,12 @@ class MeetingController extends Controller
   }
 
 
-  public function getUserMeetingById($congress_id, Request $request)
+  public function getUserMeetingById($congress_id, $status, Request $request)
   {
-    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id);
+    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id, $status);
   }
 
-  public function getUserMeetingByIdAndStatus($congress_id, $status, Request $request)
-  {
-    return $this->meetingServices->getMeetingByUserIdAndStatus($request->input('user_id'), $congress_id, $status);
-  }
-
+  
   function addMeeting(Request $request)
   {
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
