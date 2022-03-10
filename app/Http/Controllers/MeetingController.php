@@ -10,7 +10,6 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
-use Illuminate\Support\Facades\Log;
 
 
 class MeetingController extends Controller
@@ -125,7 +124,10 @@ class MeetingController extends Controller
     }
 
     if ($status == 1) {
-      if ($nb_meeting_tables > 0) {
+      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
+      if ($tableFix) {
+          $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
+      } else if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
       $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
@@ -203,6 +205,7 @@ class MeetingController extends Controller
   {
     $date =  $meeting->start_date;
     $meetingtable = $this->meetingServices->getAvailableMeetingTable($date, $congressId);
+    
     if ($meetingtable) {
       $meeting = $this->meetingServices->addTableToMeeting($meeting, $meetingtable->meeting_table_id);
     } else {
@@ -211,5 +214,22 @@ class MeetingController extends Controller
       $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
       return response()->json(['error' => 'Insufficient tables'], 405);
     }
+  }
+
+  public function setFixTables(Request $request, $congress_id)
+  {
+    $errorTables = $this->meetingServices->setFixTables($request, $congress_id);
+    $fixTables = $this->meetingServices->getFixTables($congress_id);
+    $nbTableFix = $fixTables->count();
+
+    if ($nbTableFix != 0) {
+      $this->meetingServices->InsertFixTable($nbTableFix, $fixTables);
+    }
+    return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
+  }
+
+  public function getFixTables($congress_id)
+  {
+    return $this->meetingServices->getFixTables($congress_id);
   }
 }

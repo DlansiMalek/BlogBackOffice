@@ -51,6 +51,8 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
     Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
+    Route::get('{congress_id}/get-fix-tables', 'MeetingController@getFixTables');
+
 });
 
 //SMS API
@@ -425,7 +427,7 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
                 Route::get('get-fmenus', 'CongressController@getGenericFmenus');
                 Route::post('edit-fmenus', 'CongressController@editFmenus');
-
+                Route::post('set-fix-tables', 'MeetingController@setFixTables');
                 Route::group(['prefix' => 'landing-page'], function () {
                     Route::post('edit-config', 'CongressController@editConfigLandingPage');
                     Route::get('get-config', 'CongressController@getConfigLandingPage');
