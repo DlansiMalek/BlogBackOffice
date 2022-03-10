@@ -139,14 +139,18 @@ class MeetingServices
         ->count();
     }
 
-    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status = null)
+    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status = null, $date = null)
     {
         return Meeting::whereHas("user_meeting", function ($query) use ($status) {
             if ($status && $status != 'null') {
                 $query->where('status', '=', $status);
             }
         })->where('congress_id', '=', $congress_id)
-            ->count();
+        ->where(function ($query) use ($date) {
+            if ($date && $date != 'null') {
+                $query->whereDate('start_date', $date);
+            }
+        })->count();
     }
 
     public function getMeetingsDone($congress_id, $is_participant_present, $is_organizer_present)

@@ -181,6 +181,33 @@ class MeetingController extends Controller
     }
   }
 
+  public function declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver)
+  {
+    $mailtype = $this->congressServices->getMailType('decline_meeting');
+    foreach ($conflicts as $conflict_meeting) {
+      $conflict_meeting = $this->meetingServices->declineMeeting($conflict_meeting['user_meeting']->first());
+      $user_sender_conflict = $this->userServices->getUserById($user_meeting->user_sender_id);
+      $this->sendDeclineMail($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
+    }
+  }
+
+  public function sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver)
+  {
+    $meeting = $this->meetingServices->getMeetingById($meeting->meeting_id);
+    $meetingtable = $meeting['meetingtable'];
+    if ($mailtype = $this->congressServices->getMailType('accept_meeting')) {
+      if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, null, $meetingtable['label']), $user_sender, $congress, $mail->object, null, $userMail, null, null);
+      } else {
+        if ($mail = $this->congressServices->getMailOutOfCongress(25)) {
+          $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
+          $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress,  $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null,  $meeting, $user_receiver, $user_sender, null, $meetingtable['label']),  $user_sender, $congress, $mail->object, null, $userMail, null, null);
+        }
+      }
+    }
+  }
+
   public function makeOrganizerPresent($meeting_id, Request $request)
   {
     $meeting = $this->meetingServices->getMeetingById($meeting_id);
@@ -191,31 +218,6 @@ class MeetingController extends Controller
   {
     $user_meeting = $this->meetingServices->getUserMeetingsById($meeting_id, $request->input('user_id'));
     $this->meetingServices->makeParticipantPresent($user_meeting, $request->input('is_participant_present'));
-  }
-
-  public function getNumberOfMeetingsPerDay($congress_id, Request $request)
-  {
-    $status = $request->query('status', '1');
-
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
-      return response()->json('no congress found', 404);
-    }
-    $datetime1 = new DateTime($congress->start_date);
-    $datetime2 = new DateTime($congress->end_date);
-    $interval = $datetime2->diff($datetime1);
-    $days = $interval->format('%a');
-    $nombres = array();
-
-    for ($i = 0; $i <=  $days; $i++) {
-
-      $nombre = $this->meetingServices->getNumberOfMeetings($congress_id, $status, $datetime1->modify('+' . $i . ' day'), null);
-      array_push($nombres, (object)[
-        'date' => $datetime1->modify('+' . $i . 'day')->format('Y-m-d'),
-        'count' => $nombre
-      ]);
-      //  array_sum($nombres)
-    }
-    return response()->json($nombres, 200);
   }
 
   public function getTotalNumberOfMeetings($congress_id)
@@ -264,32 +266,6 @@ class MeetingController extends Controller
     $per_page = $request->query('perPage', 10);
     return $this->meetingServices->getRequestDetailsPagination($congress_id, $per_page);
 
-  }
-  public function declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver)
-  {
-    $mailtype = $this->congressServices->getMailType('decline_meeting');
-    foreach ($conflicts as $conflict_meeting) {
-      $conflict_meeting = $this->meetingServices->declineMeeting($conflict_meeting['user_meeting']->first());
-      $user_sender_conflict = $this->userServices->getUserById($user_meeting->user_sender_id);
-      $this->sendDeclineMail($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
-    }
-  }
-
-  public function sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver)
-  {
-    $meeting = $this->meetingServices->getMeetingById($meeting->meeting_id);
-    $meetingtable = $meeting['meetingtable'];
-    if ($mailtype = $this->congressServices->getMailType('accept_meeting')) {
-      if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
-        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, null, $meetingtable['label']), $user_sender, $congress, $mail->object, null, $userMail, null, null);
-      } else {
-        if ($mail = $this->congressServices->getMailOutOfCongress(25)) {
-          $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
-          $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress,  $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null,  $meeting, $user_receiver, $user_sender, null, $meetingtable['label']),  $user_sender, $congress, $mail->object, null, $userMail, null, null);
-        }
-      }
-    }
   }
 
   public function getAvailableTimeslots($congressId)
@@ -340,5 +316,42 @@ class MeetingController extends Controller
     }
     $numberOfMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, $status);
     return response()->json($numberOfMeetings, 200);
+  }
+
+  public function getMeetingPerDayByStatus($congressId, Request $request)
+  {
+    if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+      return response()->json('no admin found', 404);
+    }
+    if (!$congress = $this->congressServices->getCongressById($congressId)) {
+      return response()->json('congress not found', 404);
+    }
+    $date = $request->input('date');
+    if (!$date) {
+      return response()->json('date required', 400);
+    }
+    $acceptedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, 1, new DateTime($date));
+    $rejectedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, -1, new DateTime($date));
+    $waitingMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, 0, new DateTime($date));
+    $totalMeetings = $acceptedMeetings + $rejectedMeetings + $waitingMeetings;
+    $response = [
+      [
+        "label" => "Accepted meetings",
+        "value" => $acceptedMeetings
+      ],
+      [
+        "label" => "Rejected meetings",
+        "value" => $rejectedMeetings
+      ],
+      [
+        "label" => "Pending meetings",
+        "value" => $waitingMeetings
+      ],
+      [
+        "label" => "Total meetings",
+        "value" => $totalMeetings
+      ],
+    ];
+    return response()->json($response, 200);
   }
 }

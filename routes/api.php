@@ -48,16 +48,21 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
-    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
-    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
-    Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
-    Route::put('{meeting_id}/statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
-    Route::put('{meeting_id}/statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
-    Route::get('{congress_id}/meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
-    Route::get('{congress_id}/number-meetings', 'MeetingController@getNumberOfMeetings');
-    Route::get('{congress_id}/request-details', 'MeetingController@getRequestDetailsPagination');
-    Route::get('{congress_id}/available-timeslots', 'MeetingController@getAvailableTimeslots');
-    Route::get('{congress_id}/meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
+    Route::group(['prefix' => '{congress_id}'], function () {
+        Route::get('', 'MeetingController@getUserMeetingById');
+        Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
+        Route::get('number-meetings', 'MeetingController@getNumberOfMeetings');
+        Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
+        Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
+        Route::get('meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
+        Route::get('meeting-per-day-by-status', 'MeetingController@getMeetingPerDayByStatus');
+    });
+    Route::group(['prefix' => '{meeting_id}'], function () {
+        Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+        Route::get('update-status', 'MeetingController@modiyStatus');
+        Route::put('statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
+        Route::put('statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
+    });
 });
 
 //SMS API
