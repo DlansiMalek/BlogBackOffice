@@ -8,8 +8,6 @@ use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\User;
 use App\Services\UserServices;
-use Illuminate\Support\Facades\Log;
-
 
 
 class MeetingServices
@@ -215,9 +213,13 @@ class MeetingServices
             ->first();
     }
 
-    public function haveMeeting($meeting_table_id)
+    public function getMeetingTableByUserId($congress_id, $user_id)
     {
-        return MeetingTable::doesnthave('meetings')->where('meeting_table_id', '=', $meeting_table_id);
+        return MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->where('user_id', '=',  $user_id)
+            ->with(["participant"])
+            ->first();
     }
 
     public function getMeetingTableById($meeting_table_id)
@@ -226,13 +228,25 @@ class MeetingServices
             ->with('meetings')->first();
     }
 
+    public function getUserByEmail($email, $congress_id)
+    {
+        $email = strtolower($email);
+        $user = User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->whereHas('user_congresses', function ($query) use ($congress_id) {
+                if ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id);
+                }
+            })
+            ->first();
+        return $user;
+    }
+
     public function setFixTables($newFixTbales, $congress_id)
     {
-
         $oldFixTables = $this->getFixTables($congress_id);
-
         $invalidDelete = [];
         $invalidUpdate = [];
+        $invalidUser = [];
 
         foreach ($oldFixTables as  $old) {
             $exists = false;
@@ -259,7 +273,7 @@ class MeetingServices
         foreach ($newFixTbales->all() as $new) {
             $meetingTable = null;
             $exsistUser = false;
-            $user = $this->userServices->getUserByEmail($new["user_id"], $congress_id);
+            $user = $this->getUserByEmail($new['user_id'], $congress_id);
             if ($user) {
                 foreach ($oldFixTables as $old) {
                     if ($old->meeting_table_id == $new['meeting_table_id']) {
@@ -289,9 +303,11 @@ class MeetingServices
                 $meetingTable->label = $new["label"];
                 $meetingTable->banner = $new["banner"];
                 $meetingTable->save();
+            } else {
+                array_push($invalidUser, $new['user_id']);
             }
         }
-        return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete];
+        return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete,  'InvalidUser' => $invalidUser];
     }
 
     public function InsertFixTable($nbFixTable, $tableFix)

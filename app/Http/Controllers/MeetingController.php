@@ -10,7 +10,6 @@ use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
-use Illuminate\Support\Facades\Log;
 
 
 class MeetingController extends Controller
@@ -125,12 +124,9 @@ class MeetingController extends Controller
     }
 
     if ($status == 1) {
-      $tableFix = $this->meetingServices->getFixTable($congressId);
-      $nbTableFix = $tableFix->count();
-      if($nbTableFix>0){
-        if( $tableFix->user_id == $user_receiver->user_id){
+      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
+      if($tableFix){
           $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
-        }
       }
       if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
@@ -230,7 +226,7 @@ class MeetingController extends Controller
       $this->meetingServices->InsertFixTable($nbTableFix, $fixTables);
     }
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
-  } 
+  }
 
   public function getFixTables($congress_id)
   {
