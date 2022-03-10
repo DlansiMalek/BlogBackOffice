@@ -125,10 +125,9 @@ class MeetingController extends Controller
 
     if ($status == 1) {
       $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
-      if($tableFix){
+      if ($tableFix) {
           $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
-      }
-      if ($nb_meeting_tables > 0) {
+      } else if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
       $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id);

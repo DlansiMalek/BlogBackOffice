@@ -151,7 +151,8 @@ class MeetingServices
     {
         return MeetingTable::whereDoesntHave('meetings', function ($query) use ($date) {
             $query->where('start_date', '=', $date);
-        })->where('congress_id', '=', $congress_id)->first();
+        })->where('congress_id', '=', $congress_id)
+        ->where('user_id', '=', null)->first();
     }
  
     public function removeDuplicatesMeetingTable($label, $congress_id)
@@ -225,7 +226,7 @@ class MeetingServices
     public function getMeetingTableById($meeting_table_id)
     {
         return MeetingTable::where('meeting_table_id', '=', $meeting_table_id)
-            ->with('meetings')->first();
+            ->with(['meetings' , 'participant'])->first();
     }
 
     public function getUserByEmail($email, $congress_id)
@@ -257,23 +258,21 @@ class MeetingServices
                     break;
                 }
             }
-
             $meetingTableById = $this->getMeetingTableById($old->meeting_table_id);
-
             if (!$exists && count($meetingTableById->meetings) == 0) {
                 $old->delete();
                 $meetingTableDeleted = true;
                 break;
             }
             if (!$meetingTableDeleted && count($meetingTableById->meetings) != 0 && !$exists) {
-                array_push($invalidDelete, $meetingTableById);
+                array_push($invalidDelete, ' ' .$meetingTableById->participant[0]->email);
             }
         }
 
         foreach ($newFixTbales->all() as $new) {
             $meetingTable = null;
             $exsistUser = false;
-            $user = $this->getUserByEmail($new['user_id'], $congress_id);
+            $user = $this->getUserByEmail($new['participant'][0]['email'], $congress_id);
             if ($user) {
                 foreach ($oldFixTables as $old) {
                     if ($old->meeting_table_id == $new['meeting_table_id']) {
@@ -282,16 +281,14 @@ class MeetingServices
                         break;
                     }
                 }
-
                 if (!$meetingTable) {
                     $meetingTable = new MeetingTable();
                     $meetingTable->congress_id = $congress_id;
                 }
-
                 if ($exsistUser && $user->user_id != $meetingTable->user_id) {
                     $tableMeeting = $this->getMeetingTableById($meetingTable->meeting_table_id);
                     if (count($tableMeeting->meetings) != 0) {
-                        array_push($invalidUpdate, $tableMeeting);
+                        array_push($invalidUpdate, ' ' .$user->email);
                     } else {
                         $meetingTable->user_id = $user->user_id;
                     }
@@ -299,12 +296,11 @@ class MeetingServices
                 if (!$exsistUser) {
                     $meetingTable->user_id = $user->user_id;
                 }
-
                 $meetingTable->label = $new["label"];
                 $meetingTable->banner = $new["banner"];
                 $meetingTable->save();
             } else {
-                array_push($invalidUser, $new['user_id']);
+                array_push($invalidUser, ' ' .$new['participant'][0]['email']);
             }
         }
         return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete,  'InvalidUser' => $invalidUser];
