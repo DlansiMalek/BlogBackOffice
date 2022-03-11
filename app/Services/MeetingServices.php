@@ -48,7 +48,7 @@ class MeetingServices
     
     public function getMeetingByUserId($user_id, $congress_id, $status)
     {
-        if($status == 99) {
+        if($status == "all") {
             return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
             $query->with([
                 'organizer' => function ($q) {
@@ -72,8 +72,8 @@ class MeetingServices
                     }
                 ]);
             }])->whereHas("user_meeting", function ($query) use ($user_id, $status) {
-                $query->where('status','=',$status)->where('user_sender_id', '=', $user_id)
-                    ->orwhere('user_receiver_id', '=', $user_id);
+                $query->where('user_sender_id', '=', $user_id)->where('status','=',$status)
+                    ->orwhere('user_receiver_id', '=', $user_id)->where('status','=',$status);
             })->where('congress_id', '=', $congress_id)
             ->get();
         }
