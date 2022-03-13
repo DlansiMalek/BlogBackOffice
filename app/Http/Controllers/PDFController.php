@@ -51,10 +51,18 @@ class PDFController extends Controller
     {
         $file = new Filesystem();
         $MeetingPlanning = $this->meetingServices->getMeetingPlanning($meeting_id);
+        $congressId = $MeetingPlanning->meeting->congress_id; 
+        $congress = $this->congressServices->getCongressById($congressId);
+
 
         $data = [
-            'meeting' =>$MeetingPlanning
+            'congress' => $congress,
+            'meeting' =>$MeetingPlanning->meeting,
+            'organizer' =>$MeetingPlanning->organizer,
+            'participant' =>$MeetingPlanning->participant
+
         ];
+        log::info($MeetingPlanning);
         $pdf = PDF::loadView('meetingProgram', $data);
         $pdf->save(public_path() . "/meetingProgram.pdf");
         if ($file->exists(public_path() . "/meetingProgram.pdf")) {

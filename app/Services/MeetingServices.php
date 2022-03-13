@@ -265,6 +265,7 @@ class MeetingServices
     public function getMeetingTableByCongress($congress_id, $perPage, $search)
     {
         $listMeetingTables= MeetingTable::where('congress_id', '=', $congress_id)
+        ->with(['meetings'])
         ->where(function ($query) use ($search) {
             if ($search != "") {
                 $query->whereRaw('lower(label) like (?)', ["%{$search}%"]);
@@ -275,7 +276,8 @@ class MeetingServices
   
     public function getMeetingPlanning($meeting_id)
     {
-        $MeetingPlanning= Meeting::where('meeting_id', '=', $meeting_id)
+        $MeetingPlanning= UserMeeting::where('meeting_id', '=', $meeting_id)
+        ->with(['meeting', 'organizer','participant'])
         ->first();
     return $MeetingPlanning;
     }    
