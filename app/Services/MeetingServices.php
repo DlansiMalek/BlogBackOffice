@@ -238,6 +238,7 @@ class MeetingServices
             ->whereHas('user_congresses', function ($query) use ($congress_id) {
                 if ($congress_id) {
                     $query->where('congress_id', '=', $congress_id);
+                    $query->where('isSelected','=',1);
                 }
             })
             ->first();
