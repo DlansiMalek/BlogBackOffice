@@ -7,16 +7,15 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\User;
-use App\Services\UserServices;
-
+use App\Services\CongressServices;
 
 class MeetingServices
 {
-    protected $userServices;
+    protected $congressServices;
 
-    function __construct(UserServices $userServices)
+    function __construct(CongressServices $congressServices)
     {
-        $this->userServices = $userServices;
+        $this->congressServices = $congressServices;
     }
  
     public function addMeeting($meeting, $request)
@@ -231,15 +230,19 @@ class MeetingServices
             ->with(['meetings' , 'participant'])->first();
     }
 
-    public function getUserByEmail($email, $congress_id)
+    public function getUserByEmail($email, $congress_id , $isSelected)
     {
         $email = strtolower($email);
         $user = User::whereRaw('lower(email) = (?)', ["{$email}"])
-            ->whereHas('user_congresses', function ($query) use ($congress_id) {
+            ->whereHas('user_congresses', function ($query) use ($congress_id , $isSelected) {
                 if ($congress_id) {
                     $query->where('congress_id', '=', $congress_id);
-                    $query->where('isSelected','=',1);
                 }
+                $query->whereHas('congress', function ($query) use ($isSelected) {
+                   if($isSelected != null){
+                    $query->where('isSelected','=' ,1);
+                }
+                });
             })
             ->first();
         return $user;
@@ -251,6 +254,11 @@ class MeetingServices
         $invalidDelete = [];
         $invalidUpdate = [];
         $invalidUser = [];
+        $isSelected = null ;
+        $congress =$this->congressServices->getCongressById($congress_id);
+        if($congress->congress_type_id <3){
+            $isSelected=1 ;
+        }
 
         foreach ($oldFixTables as  $old) {
             $exists = false;
@@ -275,7 +283,7 @@ class MeetingServices
         foreach ($newFixTbales->all() as $new) {
             $meetingTable = null;
             $exsistUser = false;
-            $user = $this->getUserByEmail($new['participant'][0]['email'], $congress_id);
+            $user = $this->getUserByEmail($new['participant'][0]['email'], $congress_id , $isSelected);
             if ($user) {
                 foreach ($oldFixTables as $old) {
                     if ($old->meeting_table_id == $new['meeting_table_id']) {
