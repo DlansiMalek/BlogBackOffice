@@ -131,7 +131,6 @@ class MeetingController extends Controller
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
       $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
-      Log::info($conflicts);
       if (sizeof($conflicts) > 0) {
         $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
       }
