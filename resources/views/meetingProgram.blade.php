@@ -53,17 +53,11 @@
             <li>
                 @if($meeting->user_meeting[0]->organizer)
                 <h4> Organisateur : {{$meeting->user_meeting[0]->organizer->last_name}} {{$meeting->user_meeting[0]->organizer->first_name}}</h4>
-
-                @else
-                <h4> Organisateur : not yet</h4>
                 @endif
             </li>
             <li>
                 @if($meeting->user_meeting[0]->participant)
                 <h4> participant : {{$meeting->user_meeting[0]->participant->last_name}} {{$meeting->user_meeting[0]->participant->first_name}}</h4>
-
-                @else
-                <h4> participant : not yet</h4>
                 @endif
             </li>
 
