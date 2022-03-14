@@ -238,5 +238,9 @@ class MeetingController extends Controller
       $search = Str::lower($request->query('search', ''));
       $listMeetingTables =$this->meetingServices->getMeetingTableByCongress($congress_id, $perPage, $search);
         return response()->json($listMeetingTables, 200);
-    }  
+    }
+    public function getMeetingPlanning($meeting_table_id)
+    {
+      return $this->meetingServices->getMeetingPlanning($meeting_table_id);
+    }
 }

@@ -6,7 +6,6 @@ use App\Services\CongressServices;
 use App\Services\MeetingServices;
 use Dompdf\Dompdf;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Log;
 use PDF;
 
 class PDFController extends Controller
@@ -51,23 +50,18 @@ class PDFController extends Controller
     {
         $file = new Filesystem();
         $MeetingPlanning = $this->meetingServices->getMeetingPlanning($meeting_id);
-        $congressId = $MeetingPlanning->meeting->congress_id; 
+        $congressId = $MeetingPlanning->congress_id;
         $congress = $this->congressServices->getCongressById($congressId);
-
 
         $data = [
             'congress' => $congress,
-            'meeting' =>$MeetingPlanning->meeting,
-            'organizer' =>$MeetingPlanning->organizer,
-            'participant' =>$MeetingPlanning->participant
-
+            'meetings' => $MeetingPlanning->meetings
         ];
-        log::info($MeetingPlanning);
         $pdf = PDF::loadView('meetingProgram', $data);
         $pdf->save(public_path() . "/meetingProgram.pdf");
         if ($file->exists(public_path() . "/meetingProgram.pdf")) {
             return response()->download(public_path() . "/meetingProgram.pdf")
-                ->deleteFileAfterSend(true);
+            ->deleteFileAfterSend(true);
         } else {
             return response()->json(["error" => "dossier vide"]);
         }

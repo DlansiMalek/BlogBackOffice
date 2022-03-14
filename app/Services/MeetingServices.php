@@ -329,10 +329,10 @@ class MeetingServices
     return $listMeetingTables->paginate($perPage);
     }    
   
-    public function getMeetingPlanning($meeting_id)
+    public function getMeetingPlanning($meeting_table_id)
     {
-        $MeetingPlanning= UserMeeting::where('meeting_id', '=', $meeting_id)
-        ->with(['meeting', 'organizer','participant'])
+        $MeetingPlanning= MeetingTable::where('meeting_table_id', '=', $meeting_table_id)
+        ->with(['meetings.user_meeting.organizer', 'meetings.user_meeting.participant','meetings'])
         ->first();
     return $MeetingPlanning;
     }    
