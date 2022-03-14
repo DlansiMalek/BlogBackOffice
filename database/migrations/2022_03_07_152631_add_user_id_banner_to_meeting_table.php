@@ -19,8 +19,6 @@ class AddUserIdBannerToMeetingTable extends Migration
                 ->on('User')->onDelete('cascade');
 
             $table->string('banner')->nullable()->default(null);
-            $table->string('label')->default(null)->nullable()->change();
-
         });
     }
 
@@ -34,7 +32,6 @@ class AddUserIdBannerToMeetingTable extends Migration
         Schema::table('Meeting_Table', function (Blueprint $table) {
             $table->dropForeign('user_id');
             $table->removeColumn('banner');
-            $table->string('label')->change();
         });
     }
 }

@@ -68,7 +68,7 @@ class MeetingController extends Controller
       $userMeet = $this->meetingServices->getFirstUserMeetingsByMeetingId($meeting->meeting_id);
     }
     $meeting = $this->meetingServices->addMeeting($meeting,  $request);
-    $userMeeting = $request->has('meeting_id') ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $userMeet[0], $request, $user_sender->user_id);
+    $userMeeting = $request->has('meeting_id') ? $this->meetingServices->editUserMeeting($userMeet) : $this->meetingServices->addUserMeeting($meeting, $request->input('user_received_id'), $user_sender->user_id);
     if ($mailtype = $this->congressServices->getMailType('request_meeting')) {
       if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_receiver, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender, $user_receiver->meeting_code), $user_receiver, $congress, $mail->object, null, null, null, null);
@@ -124,10 +124,13 @@ class MeetingController extends Controller
     }
 
     if ($status == 1) {
-      if ($nb_meeting_tables > 0) {
+      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
+      if ($tableFix) {
+          $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
+      } else if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
-      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id);
+      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
       if (sizeof($conflicts) > 0) {
         $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
       }
@@ -201,6 +204,7 @@ class MeetingController extends Controller
   {
     $date =  $meeting->start_date;
     $meetingtable = $this->meetingServices->getAvailableMeetingTable($date, $congressId);
+    
     if ($meetingtable) {
       $meeting = $this->meetingServices->addTableToMeeting($meeting, $meetingtable->meeting_table_id);
     } else {
@@ -212,18 +216,22 @@ class MeetingController extends Controller
   }
 
   public function setFixTables(Request $request, $congress_id)
-    {
-        $this->meetingServices->setFixTables($request, $congress_id);
-        $fixTables = $this->meetingServices->getFixTables($congress_id);
-        return response()->json($fixTables, 200);
+  {
+    $errorTables = $this->meetingServices->setFixTables($request, $congress_id);
+    $fixTables = $this->meetingServices->getFixTables($congress_id);
+    $nbTableFix = $fixTables->count();
+
+    if ($nbTableFix != 0) {
+      $this->meetingServices->InsertFixTable($nbTableFix, $fixTables);
     }
+    return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
+  }
 
   public function getFixTables($congress_id)
     {
       return $this->meetingServices->getFixTables($congress_id);
     }
 
- 
   public function getMeetingTableByCongress($congress_id, Request $request)
     {
       $perPage = $request->query('perPage', 10);
