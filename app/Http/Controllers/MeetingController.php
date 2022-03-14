@@ -131,7 +131,6 @@ class MeetingController extends Controller
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
       $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
-      Log::info($conflicts);
       if (sizeof($conflicts) > 0) {
         $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
       }
@@ -218,7 +217,14 @@ class MeetingController extends Controller
 
   public function setFixTables(Request $request, $congress_id)
   {
-    $errorTables = $this->meetingServices->setFixTables($request, $congress_id);
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json(["message" => "congress not found"], 404);
+    }
+    $isSelected = null;
+    if ($congress->congress_type_id < 3) {
+      $isSelected = 1;
+    }
+    $errorTables = $this->meetingServices->setFixTables($request, $congress_id, $isSelected);
     $fixTables = $this->meetingServices->getFixTables($congress_id);
     $nbTableFix = $fixTables->count();
 

@@ -7,15 +7,12 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\User;
-use App\Services\CongressServices;
 
 class MeetingServices
 {
-    protected $congressServices;
 
-    function __construct(CongressServices $congressServices)
+    function __construct()
     {
-        $this->congressServices = $congressServices;
     }
  
     public function addMeeting($meeting, $request)
@@ -248,17 +245,12 @@ class MeetingServices
         return $user;
     }
 
-    public function setFixTables($newFixTbales, $congress_id)
+    public function setFixTables($newFixTbales, $congress_id, $isSelected = null)
     {
         $oldFixTables = $this->getFixTables($congress_id);
         $invalidDelete = [];
         $invalidUpdate = [];
         $invalidUser = [];
-        $isSelected = null ;
-        $congress =$this->congressServices->getCongressById($congress_id);
-        if($congress->congress_type_id <3){
-            $isSelected=1 ;
-        }
 
         foreach ($oldFixTables as  $old) {
             $exists = false;
