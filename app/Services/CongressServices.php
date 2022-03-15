@@ -29,6 +29,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\LPOrganizer;
 
+
 /**
  * @property OrganizationServices $organizationServices
  */
@@ -119,7 +120,9 @@ class CongressServices
             ->where('private', '=', 0)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%');
+                $query->orWhere('name_en', 'LIKE', '%' . $search . '%');
                 $query->orWhere('description', 'LIKE', '%' . $search . '%');
+                $query->orWhere('description_en', 'LIKE', '%' . $search . '%');
             })
             ->where(function ($query) use ($minPrice, $maxPrice, $startDate, $endDate, $type) {
                 if ($startDate != '' && $startDate != 'null') {
@@ -149,8 +152,8 @@ class CongressServices
                 }
 
             });
-        $all_congresses = $perPage ? $all_congresses->paginate($perPage, ["congress_id", "name", "start_date",
-            "end_date", "price", "description", "congress_type_id"]) : $all_congresses->get();
+        $all_congresses = $perPage ? $all_congresses->paginate($perPage, ["congress_id", "name", "name_en", "start_date",
+            "end_date", "price", "description", "description_en", "congress_type_id"]) : $all_congresses->get();
         return $all_congresses;
     }
 
@@ -447,6 +450,8 @@ class CongressServices
         $congress->description = $congressRequest->input('description');
         $congress->congress_type_id = $congressRequest->input('congress_type_id');
         $congress->private = $congressRequest->input('private');
+        $congress->description_en = $congressRequest->input('description_en');
+        $congress->name_en = $congressRequest->input('name_en');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -523,10 +528,14 @@ class CongressServices
         $configCongress->default_country = $configCongressRequest['default_country'];
         $configCongress->agora_primary_background = $configCongressRequest['agora_primary_background'];
         $configCongress->agora_secondary_background = $configCongressRequest['agora_secondary_background'];
-        $configCongress->show_in_chat = $configCongressRequest['show_in_chat'];
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
+        if($configCongressRequest['show_in_chat']){
+            $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
+            $configCongress->show_in_chat = $showInChat;
+        }
+        
         $configCongress->update();
 
         return $configCongress;
@@ -581,6 +590,8 @@ class CongressServices
         $configSubmission->start_submission_date = $submissionData['start_submission_date'];
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
         $configSubmission->show_file_upload = $submissionData['show_file_upload'];
+        $configSubmission->explanatory_paragraph = $submissionData['explanatory_paragraph'];
+        $configSubmission->explanatory_paragraph_en = $submissionData['explanatory_paragraph_en'];
         $configSubmission->save();
         return $configSubmission;
 
@@ -651,6 +662,8 @@ class CongressServices
         $congress->congress_type_id = $request->input('congress_type_id');
         $congress->description = $request->input('description');
         $congress->private = $request->input('private');
+        $congress->description_en = $request->input('description_en');
+        $congress->name_en = $request->input('name_en');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;

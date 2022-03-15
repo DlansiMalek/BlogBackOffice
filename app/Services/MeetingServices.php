@@ -6,11 +6,15 @@ namespace App\Services;
 use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
-use Illuminate\Support\Facades\Log;
-
+use App\Models\User;
 
 class MeetingServices
 {
+
+    function __construct()
+    {
+    }
+ 
     public function addMeeting($meeting, $request)
     {
         if (!$meeting) {
@@ -23,11 +27,11 @@ class MeetingServices
         $meeting->save();
         return $meeting;
     }
-    public function addUserMeeting($meeting, $usermeeting, $request, $user_id)
+    public function addUserMeeting($meeting, $user_received_id, $user_id)
     {
         $usermeeting = new UserMeeting();
         $usermeeting->user_sender_id = $user_id;
-        $usermeeting->user_receiver_id = $request->input('user_received_id');
+        $usermeeting->user_receiver_id = $user_received_id;
         $usermeeting->meeting_id = $meeting->meeting_id;
         $usermeeting->status = 0;
         $usermeeting->save();
@@ -88,7 +92,7 @@ class MeetingServices
         })->first();
     }
 
-    public function getMeetingConflicts($meet, $user_id)
+    public function getMeetingConflicts($meet, $user_sender_id, $user_receiver_id)
     {
         return Meeting::where('meeting_id', '!=', $meet->meeting_id)
         ->where('congress_id', '=', $meet->congress_id)
@@ -97,9 +101,11 @@ class MeetingServices
         ->whereHas("user_meeting", function ($query) {
             $query->where('status', '=', 1);
         })
-        ->whereHas("user_meeting", function ($query) use ($user_id) {
-            $query->where('user_sender_id', '=', $user_id)
-            ->orwhere('user_receiver_id', '=', $user_id);
+        ->whereHas("user_meeting", function ($query) use ($user_sender_id, $user_receiver_id) {
+            $query->where('user_sender_id', '=', $user_sender_id)
+            ->orwhere('user_receiver_id', '=', $user_sender_id)
+            ->orwhere('user_sender_id', '=', $user_receiver_id)
+            ->orwhere('user_receiver_id', '=', $user_receiver_id);
         })
         ->get();
     }
@@ -208,12 +214,15 @@ class MeetingServices
 
     public function getMeetingTablesByCongressId($congress_id)
     {
-        return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->get();
+        return MeetingTable::with(["meetings"])->where('congress_id', '=', $congress_id)->where('user_id','=',null)->get();
     }
 
     public function deleteMeetingTablesWithNoMeeting($congress_id)
     {
-        $delete_meetings = MeetingTable::doesnthave('meetings')->where('congress_id', '=', $congress_id)->delete();
+        $delete_meetings = MeetingTable::doesnthave('meetings')
+        ->where('congress_id', '=', $congress_id)
+        ->where('user_id','=',null)
+        ->delete();
         return $this->getMeetingTablesByCongressId($congress_id);
     }
 
@@ -221,7 +230,8 @@ class MeetingServices
     {
         return MeetingTable::whereDoesntHave('meetings', function ($query) use ($date) {
             $query->where('start_date', '=', $date);
-        })->where('congress_id', '=', $congress_id)->first();
+        })->where('congress_id', '=', $congress_id)
+        ->where('user_id', '=', null)->first();
     }
  
     public function removeDuplicatesMeetingTable($label, $congress_id)
@@ -290,4 +300,131 @@ class MeetingServices
         })
         ->count();
     }
+    public function getFirstUserMeetingsByMeetingId($meeting_id)
+    {
+        return UserMeeting::where('meeting_id', '=', $meeting_id)->first();
+    }
+
+    public function getFixTables($congress_id)
+    {
+        return MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->with(["participant"])
+            ->get();
+    }
+
+    public function getFixTable($congress_id)
+    {
+        return MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->with(["participant"])
+            ->first();
+    }
+
+    public function getMeetingTableByUserId($congress_id, $user_id)
+    {
+        return MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->where('user_id', '=',  $user_id)
+            ->with(["participant"])
+            ->first();
+    }
+
+    public function getMeetingTableById($meeting_table_id)
+    {
+        return MeetingTable::where('meeting_table_id', '=', $meeting_table_id)
+            ->with(['meetings' , 'participant'])->first();
+    }
+
+    public function getUserByEmail($email, $congress_id , $isSelected)
+    {
+        $email = strtolower($email);
+        $user = User::whereRaw('lower(email) = (?)', ["{$email}"])
+            ->whereHas('user_congresses', function ($query) use ($congress_id , $isSelected) {
+                if ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id);
+                }
+                $query->whereHas('congress', function ($query) use ($isSelected) {
+                   if($isSelected != null){
+                    $query->where('isSelected','=' ,1);
+                }
+                });
+            })
+            ->first();
+        return $user;
+    }
+
+    public function setFixTables($newFixTbales, $congress_id, $isSelected = null)
+    {
+        $oldFixTables = $this->getFixTables($congress_id);
+        $invalidDelete = [];
+        $invalidUpdate = [];
+        $invalidUser = [];
+
+        foreach ($oldFixTables as  $old) {
+            $exists = false;
+            $meetingTableDeleted = false;
+            foreach ($newFixTbales->all() as $new) {
+                if ($old->meeting_table_id == $new['meeting_table_id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            $meetingTableById = $this->getMeetingTableById($old->meeting_table_id);
+            if (!$exists && count($meetingTableById->meetings) == 0) {
+                $old->delete();
+                $meetingTableDeleted = true;
+                break;
+            }
+            if (!$meetingTableDeleted && count($meetingTableById->meetings) != 0 && !$exists) {
+                array_push($invalidDelete, ' ' .$meetingTableById->participant[0]->email);
+            }
+        }
+
+        foreach ($newFixTbales->all() as $new) {
+            $meetingTable = null;
+            $exsistUser = false;
+            $user = $this->getUserByEmail($new['participant'][0]['email'], $congress_id , $isSelected);
+            if ($user) {
+                foreach ($oldFixTables as $old) {
+                    if ($old->meeting_table_id == $new['meeting_table_id']) {
+                        $meetingTable = $old;
+                        $exsistUser = true;
+                        break;
+                    }
+                }
+                if (!$meetingTable) {
+                    $meetingTable = new MeetingTable();
+                    $meetingTable->congress_id = $congress_id;
+                }
+                if ($exsistUser && $user->user_id != $meetingTable->user_id) {
+                    $tableMeeting = $this->getMeetingTableById($meetingTable->meeting_table_id);
+                    if (count($tableMeeting->meetings) != 0) {
+                        array_push($invalidUpdate, ' ' .$user->email);
+                    } else {
+                        $meetingTable->user_id = $user->user_id;
+                    }
+                }
+                if (!$exsistUser) {
+                    $meetingTable->user_id = $user->user_id;
+                }
+                $meetingTable->label = $new["label"];
+                $meetingTable->banner = $new["banner"];
+                $meetingTable->save();
+            } else {
+                array_push($invalidUser, ' ' .$new['participant'][0]['email']);
+            }
+        }
+        return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete,  'InvalidUser' => $invalidUser];
+    }
+
+    public function InsertFixTable($nbFixTable, $tableFix)
+    {
+        for ($i = 1; $i <= $nbFixTable; $i++) {
+            $label = "Table " . $i;
+            $tableFix[$i - 1]->label = $label;
+            $tableFix[$i - 1]->update();
+        }
+    } 
+  
 }

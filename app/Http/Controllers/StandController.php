@@ -225,4 +225,14 @@ class StandController extends Controller
         $contentFile->delete();
         return response()->json(['response' => 'deleted successfully'], 200);
     }
+
+    public function getRandomStands($congress_id, Request $request)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        
+        $stands = $this->standServices->getRandomStands($congress_id);
+        return response()->json($stands, 200);
+    }
 }

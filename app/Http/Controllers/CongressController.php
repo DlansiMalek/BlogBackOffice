@@ -96,7 +96,7 @@ class CongressController extends Controller
 
     public function addCongress(Request $request)
     {
-        if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']))
+        if (!$request->has(['name', 'start_date', 'end_date', 'price', 'config']) && !$request->has(['name_en', 'start_date', 'end_date', 'price', 'config']))
             return response()->json(['message' => 'bad request'], 400);
         $admin = $this->adminServices->retrieveAdminFromToken();
         $congress = $this->congressServices->addCongress(
@@ -282,7 +282,7 @@ class CongressController extends Controller
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
         $nbMeetingTable = $configCongress['nb_meeting_table'];
         if ($nbMeetingTable != 0) {
-            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId,);
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
@@ -1237,5 +1237,4 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
-
 }

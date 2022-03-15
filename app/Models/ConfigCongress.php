@@ -46,6 +46,7 @@ class ConfigCongress extends Model
         'default_country',
         'nb_meeting_table',
         'is_visible_price'
+        
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
