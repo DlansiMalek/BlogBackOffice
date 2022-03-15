@@ -55,7 +55,7 @@ Route::group(['prefix' => 'meetings'], function () {
         Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
         Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
         Route::get('meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
-        Route::get('meeting-per-day-by-status', 'MeetingController@getMeetingPerDayByStatus');
+        Route::get('meetings-between-two-dates-by-status', 'MeetingController@getMeetingsBetweenTwoDatesByStatus');
     });
     Route::group(['prefix' => '{meeting_id}'], function () {
         Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');

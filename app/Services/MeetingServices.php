@@ -139,16 +139,17 @@ class MeetingServices
         ->count();
     }
 
-    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status = null, $date = null)
+    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status = null, $startDate = null, $endDate = null)
     {
         return Meeting::whereHas("user_meeting", function ($query) use ($status) {
             if ($status && $status != 'null') {
                 $query->where('status', '=', $status);
             }
         })->where('congress_id', '=', $congress_id)
-        ->where(function ($query) use ($date) {
-            if ($date && $date != 'null') {
-                $query->whereDate('start_date', $date);
+        ->where(function ($query) use ($startDate, $endDate) {
+            if ($startDate && $startDate != 'null') {
+                $query->whereDate('start_date', '>=', $startDate)
+                ->whereDate('end_date', '<=', $endDate);
             }
         })->count();
     }
@@ -165,7 +166,7 @@ class MeetingServices
         return  $count;
     }
 
-    public function getRequestDetailsPagination($congress_id, $per_page)
+    public function getRequestDetailsPagination($congress_id, $per_page, $startDate, $endDate, $search)
     {
         return Meeting::with(['user_meeting' => function ($query) use ($congress_id) {
             $query->with(['organizer', 'participant' => function ($query) use ($congress_id) {
@@ -175,7 +176,16 @@ class MeetingServices
                     });
                 }]);
             }]);
-        }])->where('congress_id', '=', $congress_id)
+        }])->where(function ($query) use ($startDate, $endDate, $search) {
+            if ($search !== '' && $search !== null && $search !== 'null') {
+                $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+            }
+            if ($startDate != '' && $startDate != null && $startDate != 'null') {
+                $query->whereDate('start_date', '>=', $startDate)
+                ->whereDate('end_date', '<=', $endDate);
+            }
+        })
+        ->where('congress_id', '=', $congress_id)
             ->paginate($per_page);
     }
 

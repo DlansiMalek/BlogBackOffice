@@ -264,7 +264,10 @@ class MeetingController extends Controller
   public function getRequestDetailsPagination($congress_id, Request $request)
   {
     $per_page = $request->query('perPage', 10);
-    return $this->meetingServices->getRequestDetailsPagination($congress_id, $per_page);
+    $startDate = $request->query('startDate', '');
+    $endDate = $request->query('endDate', '');
+    $search = $request->query('search', '');
+    return $this->meetingServices->getRequestDetailsPagination($congress_id, $per_page, $startDate, $endDate, $search);
 
   }
 
@@ -318,7 +321,7 @@ class MeetingController extends Controller
     return response()->json($numberOfMeetings, 200);
   }
 
-  public function getMeetingPerDayByStatus($congressId, Request $request)
+  public function getMeetingsBetweenTwoDatesByStatus($congressId, Request $request)
   {
     if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
       return response()->json('no admin found', 404);
@@ -326,13 +329,17 @@ class MeetingController extends Controller
     if (!$congress = $this->congressServices->getCongressById($congressId)) {
       return response()->json('congress not found', 404);
     }
-    $date = $request->input('date');
-    if (!$date) {
-      return response()->json('date required', 400);
+    $startDate = $request->input('startDate');
+    if (!$startDate) {
+      return response()->json('start date required', 400);
     }
-    $acceptedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, 1, new DateTime($date));
-    $rejectedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, -1, new DateTime($date));
-    $waitingMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, 0, new DateTime($date));
+    $endDate = $request->input('endDate');
+    if (!$endDate) {
+      return response()->json('end date required', 400);
+    }
+    $acceptedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, 1, new DateTime($startDate), new DateTime($endDate));
+    $rejectedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, -1, new DateTime($startDate), new DateTime($endDate));
+    $waitingMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, 0, new DateTime($startDate), new DateTime($endDate));
     $totalMeetings = $acceptedMeetings + $rejectedMeetings + $waitingMeetings;
     $response = [
       [
