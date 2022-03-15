@@ -10,7 +10,7 @@ class ConfigSubmission extends Model
 
     protected $table = 'Config_Submission';
     protected $primaryKey = 'config_submission_id';
-    protected $fillable = ['congress_id', 'max_words',	'start_submission_date',	'end_submission_date', 'explanatory_paragraph' ,  'show_file_upload'];
+    protected $fillable = ['congress_id', 'max_words','start_submission_date','end_submission_date', 'explanatory_paragraph' ,'show_file_upload','explanatory_paragraph_en'];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;

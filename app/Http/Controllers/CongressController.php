@@ -333,7 +333,35 @@ class CongressController extends Controller
                 $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user,  $link, null, $userPayment ,null,null,null,null,null,null,null,null,null,[],null,null,$linkPrincipalRoom), $user, $congress, $mail->object, false, $userMail);
             }
         }
-    }
+        }
+
+    public function editConfigSubmission(Request $request, $congressId){
+
+    if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+    return response()->json(['error' => 'admin_not_found'], 404);
+        }
+    $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
+     $submissionData = $request->input("submission");
+     $theme_ids = $request->input("themes_id_selected");
+    if (sizeof($submissionData) > 1) {
+        $this->congressServices->addCongressSubmission(
+            $configSubmission,
+            $submissionData,
+            $congressId
+        ); } 
+    else 
+    if($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
+       $this->congressServices->deleteConfigsubmission($configSubmission);
+       $this->congressServices->deleteAllThemes($congressId);
+        }
+    if ($theme_ids && sizeof($submissionData) > 0) {
+       $this->congressServices->addSubmissionThemeCongress(
+       $theme_ids,
+       $congressId);
+        }
+    return response()->json(['message' => 'edit config submission success', 'config_submission' => $configSubmission]);
+       
+     }
 
     public function editCongress(Request $request, $congressId)
     {

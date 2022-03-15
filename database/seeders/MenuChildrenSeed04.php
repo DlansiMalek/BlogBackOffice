@@ -20,5 +20,7 @@ class MenuChildrenSeed04 extends Seeder
             'menu_id' => 18,
             'index' => 1
         ]);
+
+       
     }
 }
