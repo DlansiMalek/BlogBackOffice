@@ -234,8 +234,14 @@ class MeetingController extends Controller
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
   }
 
-  public function getFixTables($congress_id)
+  public function getFixTables($congress_id, Request $request)
   {
-    return $this->meetingServices->getFixTables($congress_id);
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json(['response' => 'Congress not found', 404]);
+    }
+    $perPage = $request->query('perPage', 10);
+    $page = $request->query('page', 1);
+    $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage);
+    return response()->json($fixTables, 200);
   }
 }

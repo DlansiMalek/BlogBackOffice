@@ -10,5 +10,6 @@ return [
     'GenericMenus' => 'generic-menus-',
     'Users' => 'users-',
     'Countries' => 'countries-',
-    'Organizations' => 'organizations-'
+    'Organizations' => 'organizations-',
+    'FixTables' => 'fix-tables-'
 ];
