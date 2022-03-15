@@ -222,7 +222,7 @@ class MeetingController extends Controller
 
   public function getTotalNumberOfMeetings($congress_id)
   {
-    $totalNumber = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congress_id);
+    $totalNumber = $this->meetingServices->getTotalNumberOfMeetingsByCongress($congress_id);
     $numberOfAcceptedMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congress_id, 1);
     $numberOfMeetingsDone = $this->meetingServices->getMeetingsDone($congress_id, 1, 1);
     $percentageOfAcceptedMeetings = $totalNumber > 0 ? ($numberOfAcceptedMeetings / $totalNumber) : 0 ;
@@ -245,11 +245,12 @@ class MeetingController extends Controller
     $days = $interval->format('%a');
     $nombres = array();
 
-    for ($i = -1; $i <=  $days; $i++) {
+    for ($i = 0; $i <=  $days; $i++) {
 
       $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
+      Log::info($nombre_meetings_waiting);
       array_push($nombres, [
           "type" => "val3",
           "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')))),

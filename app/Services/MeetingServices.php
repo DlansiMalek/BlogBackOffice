@@ -122,36 +122,39 @@ class MeetingServices
       $user_meeting->update();
     }
 
-    public function getNumberOfMeetings($congress_id, $status = null,$start_date = null,$end_date = null)
+    public function getNumberOfMeetings($congress_id, $status = null,$start_date = null)
     {
         return Meeting::whereHas("user_meeting", function ($query) use ($status) {
-            $query->where('status', '=', $status);
+                $query->where('status', '=', $status);
         })->where('congress_id', '=', $congress_id)
-        ->where(function ($query) use ($start_date, $end_date) {
+        ->where(function ($query) use ($start_date) {
             if ($start_date != '' && $start_date != 'null'){
             $query->whereDate('start_date', $start_date);
         }
-        if ($end_date != '' && $end_date != 'null'){
-            $query->whereDate('end_date', '<=', date($end_date));
-        }
         })
-       
         ->count();
     }
 
-    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status = null, $startDate = null, $endDate = null)
+    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status, $startDate = null, $endDate = null)
     {
         return Meeting::whereHas("user_meeting", function ($query) use ($status) {
-            if ($status && $status != 'null') {
                 $query->where('status', '=', $status);
-            }
         })->where('congress_id', '=', $congress_id)
         ->where(function ($query) use ($startDate, $endDate) {
             if ($startDate && $startDate != 'null') {
-                $query->whereDate('start_date', '>=', $startDate)
-                ->whereDate('end_date', '<=', $endDate);
+                $query->whereDate('start_date', '>=', $startDate);
+            }
+            if ($endDate && $endDate != 'null') {
+                $query->whereDate('end_date', '<=', $endDate);
             }
         })->count();
+    }
+
+    public function getTotalNumberOfMeetingsByCongress($congress_id)
+    {
+        return Meeting::whereHas("user_meeting")
+        ->where('congress_id', '=', $congress_id)
+        ->count();
     }
 
     public function getMeetingsDone($congress_id, $is_participant_present, $is_organizer_present)
