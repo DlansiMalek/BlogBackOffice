@@ -258,6 +258,7 @@ class CongressController extends Controller
         }
 
         $configCongress = $this->congressServices->getCongressConfigById($congressId);
+        $oldShowInFixTable = $configCongress->show_in_fix_table ;
 
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
 
@@ -316,7 +317,10 @@ class CongressController extends Controller
         // Config OnlineAccess Allowed
         $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
         $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
-
+        $newShowInFixTable = $request->input("congress")['show_in_fix_table'];
+        if ($oldShowInFixTable != $newShowInFixTable) {
+            $this->userServices->editFixTableInfo($newShowInFixTable, $congressId);
+        }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
     }
