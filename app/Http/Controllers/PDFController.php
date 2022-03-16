@@ -49,13 +49,13 @@ class PDFController extends Controller
     function generateMeetingPlanningPDF($meeting_id)
     {
         $file = new Filesystem();
-        $MeetingPlanning = $this->meetingServices->getMeetingPlanning($meeting_id);
-        $congressId = $MeetingPlanning->congress_id;
+        $meetingPlanning = $this->meetingServices->getMeetingPlanning($meeting_id);
+        $congressId = $meetingPlanning->congress_id;
         $congress = $this->congressServices->getCongressById($congressId);
 
         $data = [
             'congress' => $congress,
-            'meetings' => $MeetingPlanning->meetings
+            'meetings' => $meetingPlanning->meetings
         ];
         $pdf = PDF::loadView('meetingProgram', $data);
         $pdf->save(public_path() . "/meetingProgram.pdf");

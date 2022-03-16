@@ -20,16 +20,19 @@
         h4 {
             line-height: 1.5;
             font-weight: 600;
-            font-size: x-small;
+            font-size:xx-small
         }
 
         h3 {
             line-height: 2;
             font-weight: 800;
-            font-size: small;
+            font-size: x-small;
             font-weight: bold;
         }
-
+        ul, li {
+            list-style: square;
+            margin-bottom: -16px;
+        }
         .content {
             margin-top: 60px;
         }
@@ -42,7 +45,6 @@
             <b>{{$congress->name}}</b>
         </div>
     </div>
-
     <div class="content">
         @foreach($meetings as $key => $meeting)
         <ul>
@@ -57,10 +59,9 @@
             </li>
             <li>
                 @if($meeting->user_meeting[0]->participant)
-                <h4> participant : {{$meeting->user_meeting[0]->participant->last_name}} {{$meeting->user_meeting[0]->participant->first_name}}</h4>
+                <h4> Participant(s): {{$meeting->user_meeting[0]->participant->last_name}} {{$meeting->user_meeting[0]->participant->first_name}}</h4>
                 @endif
             </li>
-
             <li>
                 <h4> @if($meeting->start_date)
                     Date et heure du début : {{date('d/m/Y : H:i',strtotime($meeting->start_date))}}</h4>
@@ -75,9 +76,7 @@
             </li>
         </ul>
         @endforeach
-
     </div>
-
 </body>
 
 </html>

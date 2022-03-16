@@ -57,6 +57,7 @@ Route::group(['prefix' => 'meetings'], function () {
         Route::get('meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
         Route::get('meetings-between-two-dates-by-status', 'MeetingController@getMeetingsBetweenTwoDatesByStatus');
         Route::get('get-fix-tables', 'MeetingController@getFixTables');
+        Route::get('get-meeting-tables', 'MeetingController@getMeetingTableByCongress');
     });
     Route::group(['prefix' => '{meeting_id}'], function () {
         Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
