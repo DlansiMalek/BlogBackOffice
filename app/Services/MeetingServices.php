@@ -444,7 +444,11 @@ class MeetingServices
     {
         $allFixTables = MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
-            ->with(["participant"])
+            ->with(["participant.user_congresses" => function ($query) use ($congress_id){
+                if ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id);
+                }
+            }])
             ->where(function ($query) use ($search) {
                 if ($search !== '' && $search != null && $search != 'null') {
                     $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
