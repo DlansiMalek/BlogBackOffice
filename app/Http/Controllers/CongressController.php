@@ -261,8 +261,6 @@ class CongressController extends Controller
 
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
 
-        $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
-
         $newConfig = $request->input("congress");
 
         $token = null;
@@ -276,7 +274,7 @@ class CongressController extends Controller
             );
         }
         $reservedMeetingTables = $this->meetingServices->countUsedMeetingTablesByCongressId($congressId);
-        if ($reservedMeetingTables  > $request->input("congress")['nb_meeting_table']) {
+       if ($reservedMeetingTables  > $request->input("congress")['nb_meeting_table']) {
             return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
         }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
@@ -284,25 +282,6 @@ class CongressController extends Controller
         if ($nbMeetingTable != 0) {
             $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
         }
-        $submissionData = $request->input("submission");
-        $theme_ids = $request->input("themes_id_selected");
-
-        if (sizeof($submissionData) > 1) {
-            $this->congressServices->addCongressSubmission(
-                $configSubmission,
-                $submissionData,
-                $congressId
-            );
-        } else if($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
-            $this->congressServices->deleteConfigsubmission($configSubmission);
-            $this->congressServices->deleteAllThemes($congressId);
-        }
-        if ($theme_ids && sizeof($submissionData) > 0) {
-            $this->congressServices->addSubmissionThemeCongress(
-                $theme_ids,
-                $congressId);
-        }
-
         // Config Location
         $eventLocation = $request->input("eventLocation");
 
@@ -312,7 +291,6 @@ class CongressController extends Controller
 
             $this->congressServices->editCongressLocation($configLocation, $eventLocation, $city->city_id, $congressId);
         }
-
         // Config OnlineAccess Allowed
         $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
         $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
@@ -340,15 +318,20 @@ class CongressController extends Controller
     if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
     return response()->json(['error' => 'admin_not_found'], 404);
         }
+    $configCongress = $this->congressServices->getCongressConfigById($congressId);
     $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
-     $submissionData = $request->input("submission");
-     $theme_ids = $request->input("themes_id_selected");
+    $token = null;
+    // update the is_submission_enabled column of the Config_Congress table
+    $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId,$token);
+
+    $submissionData = $request->input("submission");
+    $theme_ids = $request->input("themes_id_selected");
     if (sizeof($submissionData) > 1) {
         $this->congressServices->addCongressSubmission(
             $configSubmission,
             $submissionData,
             $congressId
-        ); } 
+    ); } 
     else 
     if($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
        $this->congressServices->deleteConfigsubmission($configSubmission);

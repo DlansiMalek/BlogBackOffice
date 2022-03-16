@@ -489,7 +489,7 @@ class CongressServices
         if (!$configCongress) {
             $configCongress = new ConfigCongress();
         }
-
+        
         $configCongress->logo = $configCongressRequest['logo'];
         $configCongress->banner = $configCongressRequest['banner'];
         $configCongress->free = $configCongressRequest['free'];
@@ -513,11 +513,11 @@ class CongressServices
         $configCongress->currency_code = $configCongressRequest['currency_code'];
         $configCongress->lydia_api = $configCongressRequest['lydia_api'];
         $configCongress->lydia_token = $configCongressRequest['lydia_token'];
-        $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->register_disabled = $configCongressRequest['register_disabled'];
         $configCongress->application = $configCongressRequest['application'];
         $configCongress->max_online_participants = $configCongressRequest['max_online_participants'];
         $configCongress->url_streaming = $configCongressRequest['url_streaming'];
+        $configCongress->is_submission_enabled = $configCongressRequest['is_submission_enabled'];
         $configCongress->is_upload_user_img = $configCongressRequest['is_upload_user_img'];
         $configCongress->is_sponsor_logo = $configCongressRequest['is_sponsor_logo'];
         $configCongress->is_phone_required = $configCongressRequest['is_phone_required'];
@@ -591,7 +591,7 @@ class CongressServices
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
         $configSubmission->show_file_upload = $submissionData['show_file_upload'];
         $configSubmission->explanatory_paragraph = $submissionData['explanatory_paragraph'];
-         $configSubmission->explanatory_paragraph_en = $submissionData['explanatory_paragraph_en'];
+        $configSubmission->explanatory_paragraph_en = $submissionData['explanatory_paragraph_en'];
         $configSubmission->save();
         return $configSubmission;
 
