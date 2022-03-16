@@ -2040,6 +2040,12 @@ class UserServices
 
     }
 
+    public function getFixTableInfo($congress_id)
+    {
+        $show_in_fix_table =ConfigCongress::where('congress_id', '=', $congress_id)
+            ->get('show_in_fix_table');
+        return  $show_in_fix_table ;    
+        }
 }
 
 

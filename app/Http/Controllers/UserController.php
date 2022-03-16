@@ -1797,8 +1797,20 @@ class UserController extends Controller
                 $chat_info = $this->userServices->getResponseFormInput($user->user_id, $form_input->form_input_id);
                 $user_congress->chat_info = $chat_info[0]['response'] . ";" .  $user_congress->chat_info;    
             }  
-           }    
-    }}
+           }
+        }
+            $fix_table_info = $this->userServices->getFixTableInfo($congress_id);
+            $fix_table_info = $fix_table_info[0]["show_in_fix_table"];
+            $form_input = $this->userServices->getQuestionByKey($congress_id, $fix_table_info);
+            if ($form_input) {
+                if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
+                    $fix_table_info = $this->userServices->getValueResponse($user->user_id, $form_input->form_input_id);
+                    $user_congress->fix_table_info = $fix_table_info[0]['values'][0]['val']['value'];
+                } else {
+                    $fix_table_info = $this->userServices->getResponseFormInput($user->user_id, $form_input->form_input_id);
+                    $user_congress->fix_table_info = $fix_table_info[0]['response'];
+                }
+            }
         $user_congress->save();
 
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
@@ -1915,7 +1927,7 @@ class UserController extends Controller
         $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
     }
-
+    }
 
     public function trackingUser(Request $request)
     {
