@@ -241,7 +241,8 @@ class MeetingController extends Controller
     }
     $perPage = $request->query('perPage', 10);
     $page = $request->query('page', 1);
-    $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage);
+    $search = $request->query('search', '');
+    $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage, $search);
     return response()->json($fixTables, 200);
   }
 }
