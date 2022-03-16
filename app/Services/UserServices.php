@@ -2019,6 +2019,17 @@ class UserServices
         return  $users->paginate($perPage);  
     }
 
+    public function getNumberOfUsersHavingMeeting($congressId) 
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })->whereHas('meetingsOrganizer', function ($query) use ($congressId) {
+            $query->where('Meeting.congress_id', '=', $congressId);
+        })->orWhereHas('meetingsParticipant', function ($query) use ($congressId) {
+            $query->where('Meeting.congress_id', '=', $congressId);
+        })
+        ->count();
+    }
     public function getRandomUsers($congressId,$user_id)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id) {
