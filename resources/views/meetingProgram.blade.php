@@ -59,7 +59,7 @@
             </li>
             <li>
                 @if($meeting->user_meeting[0]->participant)
-                <h4> Participant(s): {{$meeting->user_meeting[0]->participant->last_name}} {{$meeting->user_meeting[0]->participant->first_name}}</h4>
+                <h4> Participant(s) : {{$meeting->user_meeting[0]->participant->last_name}} {{$meeting->user_meeting[0]->participant->first_name}}</h4>
                 @endif
             </li>
             <li>
