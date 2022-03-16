@@ -7,7 +7,7 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Cache;
 class MeetingServices
 {
 
@@ -425,6 +425,36 @@ class MeetingServices
             $tableFix[$i - 1]->label = $label;
             $tableFix[$i - 1]->update();
         }
-    } 
+    }
+
+    public function getCachedFixTables($congress_id, $page, $perPage, $search)
+    {
+
+        $cacheKey = config('cachedKeys.FixTables') . $congress_id . $page . $perPage . $search;
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        $fixTables = $this->getFixTablesWithPagination($congress_id, $perPage, $search);
+        Cache::put($cacheKey, $fixTables, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        return $fixTables;
+
+    }
+
+    public function getFixTablesWithPagination($congress_id, $perPage = null, $search)
+    {
+        $allFixTables = MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->with(["participant"])
+            ->where(function ($query) use ($search) {
+                if ($search !== '' && $search != null && $search != 'null') {
+                    $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
+                    ->orWhereHas('participant', function ($query) use ($search) {
+                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
+                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    });
+                }
+            });
+        return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
+    }
   
 }
