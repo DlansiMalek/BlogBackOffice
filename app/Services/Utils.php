@@ -312,4 +312,14 @@ class Utils
         $object['last_name']  = isset($name[1]) ? $name[1] : '-';
         return $object;
     }
+
+    public static function convertDateTimeToTime($date)
+    {
+        return (new DateTime($date))->format('h:i:s A');
+    }
+
+    public static function convertTimeTo24HoursFormat($time)
+    {
+        return date("H:i:s", strtotime($time));
+    }
 }

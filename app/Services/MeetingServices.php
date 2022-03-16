@@ -7,7 +7,7 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Cache;
 class MeetingServices
 {
 
@@ -116,6 +116,87 @@ class MeetingServices
         $user_meeting->save();
         return $user_meeting;
     }
+    public function makeOrganizerPresent ($meeting , $is_organizer_present )
+    {
+      $meeting->is_organizer_present =$is_organizer_present ;
+      $meeting->update();
+  
+    }
+    public function makeParticipantPresent ($user_meeting , $is_participant_present)
+    {
+      $user_meeting->is_participant_present =$is_participant_present ;
+      $user_meeting->update();
+    }
+
+    public function getNumberOfMeetings($congress_id, $status = null,$start_date = null)
+    {
+        return Meeting::whereHas("user_meeting", function ($query) use ($status) {
+                $query->where('status', '=', $status);
+        })->where('congress_id', '=', $congress_id)
+        ->where(function ($query) use ($start_date) {
+            if ($start_date != '' && $start_date != 'null'){
+            $query->whereDate('start_date', $start_date);
+        }
+        })
+        ->count();
+    }
+
+    public function getTotalNumberOfMeetingsWithSatuts($congress_id, $status, $startDate = null, $endDate = null)
+    {
+        return Meeting::whereHas("user_meeting", function ($query) use ($status) {
+                $query->where('status', '=', $status);
+        })->where('congress_id', '=', $congress_id)
+        ->where(function ($query) use ($startDate, $endDate) {
+            if ($startDate && $startDate != 'null') {
+                $query->whereDate('start_date', '>=', $startDate);
+            }
+            if ($endDate && $endDate != 'null') {
+                $query->whereDate('end_date', '<=', $endDate);
+            }
+        })->count();
+    }
+
+    public function getTotalNumberOfMeetingsByCongress($congress_id)
+    {
+        return Meeting::whereHas("user_meeting")
+        ->where('congress_id', '=', $congress_id)
+        ->count();
+    }
+
+    public function getMeetingsDone($congress_id, $is_participant_present, $is_organizer_present)
+    {
+        $count = Meeting::where('is_organizer_present', '=', $is_organizer_present)
+            ->where('end_date', '<', date('Y-m-d H:i:s'))
+            ->where('congress_id', '=', $congress_id)
+            ->whereHas("user_meeting", function ($query) use ($is_participant_present) {
+                $query->where('is_participant_present', '=', $is_participant_present);
+            })
+            ->count();
+        return  $count;
+    }
+
+    public function getRequestDetailsPagination($congress_id, $per_page, $startDate, $endDate, $search)
+    {
+        return Meeting::with(['user_meeting' => function ($query) use ($congress_id) {
+            $query->with(['organizer', 'participant' => function ($query) use ($congress_id) {
+                $query->with(['user_mails' => function($q) use ($congress_id) {
+                    $q->whereHas('meeting', function($q) use ($congress_id) {
+                        $q->where('congress_id','=', $congress_id);
+                    });
+                }]);
+            }]);
+        }])->where(function ($query) use ($startDate, $endDate, $search) {
+            if ($search !== '' && $search !== null && $search !== 'null') {
+                $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+            }
+            if ($startDate != '' && $startDate != null && $startDate != 'null') {
+                $query->whereDate('start_date', '>=', $startDate)
+                ->whereDate('end_date', '<=', $endDate);
+            }
+        })
+        ->where('congress_id', '=', $congress_id)
+            ->paginate($per_page);
+    }
 
     public function addMeetingTable($label, $congress_id)
     {
@@ -191,6 +272,34 @@ class MeetingServices
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
     }
 
+    public function getMeetingsTimes($startTime, $endTime, $duration, $pause) 
+    {
+        $meetingsTimes = [];
+        if ($startTime == $endTime || $startTime > $endTime)
+        {
+            $endTime = date("H:i:s", strtotime('11:00 PM'));
+        }
+        $meetingsTimes[0] = $startTime;
+        $i = 0;
+        while (isset($meetingsTimes[$i]) && $meetingsTimes[$i] < $endTime) {
+            $newTime = $pause == 0 ? date("H:i", strtotime('+' . $duration . ' minutes', strtotime($meetingsTimes[$i]))) : date("H:i", strtotime('+' . $duration + $pause . ' minutes', strtotime($meetingsTimes[$i])));
+           if ($newTime < $endTime && date("H:i", strtotime('+' . $duration . ' minutes', strtotime($newTime))) <= $endTime) 
+            {
+                array_push($meetingsTimes, $newTime);
+            }
+            $i++;
+        }
+        return $i;
+    }
+
+    public function getTotalNumberOfUserMeetingsBySatuts($congressId, $status)
+    {
+        return UserMeeting::where('status', '=', $status)
+        ->whereHas('meeting', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })
+        ->count();
+    }
     public function getFirstUserMeetingsByMeetingId($meeting_id)
     {
         return UserMeeting::where('meeting_id', '=', $meeting_id)->first();
@@ -337,5 +446,35 @@ class MeetingServices
         ->first();
     return $MeetingPlanning;
     }    
+
+    public function getCachedFixTables($congress_id, $page, $perPage, $search)
+    {
+
+        $cacheKey = config('cachedKeys.FixTables') . $congress_id . $page . $perPage . $search;
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        $fixTables = $this->getFixTablesWithPagination($congress_id, $perPage, $search);
+        Cache::put($cacheKey, $fixTables, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+        return $fixTables;
+
+    }
+
+    public function getFixTablesWithPagination($congress_id, $perPage = null, $search)
+    {
+        $allFixTables = MeetingTable::where('congress_id', '=', $congress_id)
+            ->where('user_id', '!=', null)
+            ->with(["participant"])
+            ->where(function ($query) use ($search) {
+                if ($search !== '' && $search != null && $search != 'null') {
+                    $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
+                    ->orWhereHas('participant', function ($query) use ($search) {
+                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
+                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    });
+                }
+            });
+        return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
+    }
   
 }

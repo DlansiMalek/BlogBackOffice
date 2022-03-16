@@ -48,12 +48,22 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
-    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
-    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
-    Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
-    Route::get('{congress_id}/get-fix-tables', 'MeetingController@getFixTables');
-    Route::get('{congress_id}/get-meeting-tables', 'MeetingController@getMeetingTableByCongress');
-
+    Route::group(['prefix' => '{congress_id}'], function () {
+        Route::get('', 'MeetingController@getUserMeetingById');
+        Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
+        Route::get('number-meetings', 'MeetingController@getNumberOfMeetings');
+        Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
+        Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
+        Route::get('meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
+        Route::get('meetings-between-two-dates-by-status', 'MeetingController@getMeetingsBetweenTwoDatesByStatus');
+        Route::get('get-fix-tables', 'MeetingController@getFixTables');
+    });
+    Route::group(['prefix' => '{meeting_id}'], function () {
+        Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+        Route::get('update-status', 'MeetingController@modiyStatus');
+        Route::put('statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
+        Route::put('statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
+    });
 });
 
 //SMS API

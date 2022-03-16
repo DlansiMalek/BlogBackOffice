@@ -25,6 +25,10 @@ class UserMail extends Model
     public function mail(){
         return $this->belongsTo('App\Models\Mail','mail_id','mail_id');
     }
+
+    public function meeting(){
+        return $this->belongsTo('App\Models\Meeting','meeting_id','meeting_id');
+    }
 }
 
 /*
