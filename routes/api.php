@@ -48,6 +48,10 @@ Route::group(['prefix' => 'contact-us'], function () {
 });
 Route::group(['prefix' => 'meetings'], function () {
     Route::post('/add', 'MeetingController@addMeeting')->middleware('assign.guard:users');
+    Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+    Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
+    Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
+    Route::post('/add-evaluation-meeting-PWA', 'MeetingController@addMeetingEvaluation')->middleware('assign.guard:users');
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'MeetingController@getUserMeetingById');
         Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');

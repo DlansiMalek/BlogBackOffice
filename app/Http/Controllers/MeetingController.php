@@ -15,7 +15,6 @@ use DateTime;
 
 
 
-
 class MeetingController extends Controller
 {
   protected $congressServices;
@@ -186,6 +185,17 @@ class MeetingController extends Controller
       $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
       return response()->json(['error' => 'Insufficient tables'], 405);
     }
+  }
+
+  function addMeetingEvaluation(Request $request)
+  {
+    $user = $this->userServices->retrieveUserFromToken();
+    if (!$user) {
+      return response()->json(['response' => 'No user found'], 401);
+    }
+    $meetingEvaluation = $this->meetingServices->addMeetingEvaluation($request, $user->user_id);
+
+    return response()->json($meetingEvaluation, 200);
   }
 
   public function declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver)

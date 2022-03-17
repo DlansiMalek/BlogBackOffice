@@ -6,6 +6,10 @@ namespace App\Services;
 use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
+use App\Models\MeetingEvaluation;
+
+
+
 use App\Models\User;
 use App\Models\UserCongress;
 use App\Models\ConfigCongress;
@@ -56,8 +60,9 @@ class MeetingServices
     
     public function getMeetingByUserId($user_id, $congress_id, $status)
     {
-        
-            return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
+        return Meeting::with(['meeting_evaluation' => function ($query) use ($user_id) {
+            $query->where('user_id', '=', $user_id);
+        },'meetingtable', 'user_meeting' => function ($query) {
             $query->with([
                 'organizer' => function ($q) {
                     $q->with(['profile_img']);
@@ -282,6 +287,17 @@ class MeetingServices
         return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id) {
             $query->where('user_sender_id', '=', $user_sender_id)->where('user_receiver_id','=',$user_reveiver_id);
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
+    }
+
+    public function addMeetingEvaluation($request , $user_id)
+    {
+        $meetingEvaluation = new MeetingEvaluation();
+        $meetingEvaluation->note = $request->input('note');
+        $meetingEvaluation->comment = $request->input('comment');
+        $meetingEvaluation->user_id = $user_id;
+        $meetingEvaluation->meeting_id =  $request->input('meeting_id');
+        $meetingEvaluation->save();
+        return $meetingEvaluation;
     }
 
     public function getMeetingsTimes($startTime, $endTime, $duration, $pause) 
