@@ -19,7 +19,7 @@ class CreateMeetingEvaluation extends Migration
             $table->foreign('meeting_id')->references('meeting_id')->on('Meeting')->onDelete('cascade');
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('User')->onDelete('cascade');
-            $table->string('comment')->nullable()->default(null);
+            $table->text('comment')->nullable()->default(null);
             $table->tinyInteger('note')->default(0);
             $table->timestamps();
         });
