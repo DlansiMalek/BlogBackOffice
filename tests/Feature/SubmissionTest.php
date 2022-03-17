@@ -154,6 +154,8 @@ class SubmissionTest extends TestCase
             'max_words' => $this->faker->numberBetween(100, 500),
             'num_evaluators' => $this->faker->numberBetween(1, 5),
             'show_file_upload' => $this->faker->numberBetween(0, 1),
+            'explanatory_paragraph' => $this->faker->paragraph,
+            'explanatory_paragraph_en' => $this->faker->paragraph
         ];
     }
 }

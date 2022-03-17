@@ -10,6 +10,7 @@ use App\Models\StandType;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+
 class StandServices
 {
 
@@ -117,8 +118,9 @@ class StandServices
     }
 
 
-    public function getStands($congress_id,  $name = null, $status = null, $perPage = null, $search = null, $stag_id =null, $organization_id = null)
+    public function getStands($congress_id,  $name = null, $status = null, $perPage = null, $search = null, $stag_id = null, $organization_id = null)
     {
+        $stag_id = explode(',', $stag_id);
         $allStand = Stand::where(function ($query) use ($name, $status, $organization_id) {
             if ($name) {
                 $query->where('name', '=', $name);
@@ -131,13 +133,14 @@ class StandServices
             }
         })
 
-            ->when('stags', function ($query) use ($stag_id) {
-                if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
-                    $query->join('Stand_Tag', 'Stand_Tag.stand_id', '=', 'Stand.stand_id')
-                    ->where('Stand_Tag.stag_id', '=', $stag_id);
+            ->with(['docs', 'products', 'organization', 'faq', 'stags'])
+            ->where(function ($query) use ($stag_id) {
+                if ($stag_id[0] != '' && $stag_id[0] != 'null' && $stag_id[0] != null && $stag_id != null && $stag_id != "null") {
+                    $query->whereHas('stags', function ($query) use ($stag_id) {
+                        $query->whereIn('Stand_Tag.stag_id', $stag_id);
+                    });
                 }
             })
-            ->with(['docs', 'products', 'organization', 'faq', 'stags'])
             ->orderBy(DB::raw('ISNULL(priority), priority'), 'ASC')
             ->where('congress_id', '=', $congress_id);
         if ($search != "null" && $search != '') {
@@ -146,29 +149,28 @@ class StandServices
             })
                 ->orWhereHas("organization", function ($query) use ($search, $congress_id, $stag_id) {
                     $query->where('Stand.congress_id', '=', $congress_id)->where('name', 'LIKE', '%' . $search . '%')
-                        ->when('Stand.stags', function ($qt) use ($stag_id) {
-                            if ($stag_id != '' && $stag_id != null && $stag_id != 'null') {
-                                $qt->where('Stand_Tag.stag_id', '=', $stag_id);
+                        ->whereHas('stands', function ($query) use ($stag_id) {
+                            if ($stag_id[0] != '' && $stag_id[0] != 'null' && $stag_id[0] != null && $stag_id != null && $stag_id != "null") {
+                                $query->whereHas('stags', function ($query) use ($stag_id) {
+                                    $query->whereIn('Stand_Tag.stag_id', $stag_id);
+                                });
                             }
                         });
                 });
         }
 
-        return $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
+        return  $allStand = $perPage ? $allStand->paginate($perPage) : $allStand->get();
     }
 
     public function getCachedStands($congress_id, $page, $perPage ,$search, $stag_id)
     {
-        $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
-
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-
-        $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
-        Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
-
-        return $stands;
+            $cacheKey = config('cachedKeys.Stands') . $congress_id . $page . $perPage . $search . $stag_id;
+            if (Cache::has($cacheKey)) {
+                return Cache::get($cacheKey);
+            }
+            $stands = $this->getStands($congress_id, null,null, $perPage,$search,$stag_id);
+            Cache::put($cacheKey, $stands, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+            return $stands;
     }
 
     public function getStandsPagination($congress_id, $perPage)
@@ -385,6 +387,20 @@ class StandServices
     {
         return StandContentFile::where('stand_content_file_id', '=', $stand_content_file_id)
             ->first();
+    }
+
+    public function getRandomStands($congress_id)
+    {
+        $randomStand = Stand::where('congress_id', '=', $congress_id)
+            ->with(['organization'])
+            ->orWhereHas("organization", function ($query) use ($congress_id) {
+                $query->where('Stand.congress_id', '=', $congress_id);             
+            })
+            ->get();
+            if(count($randomStand)>= 4){
+            $randomStand= $randomStand->random(4);
+            }
+        return  $randomStand ;
     }
 
 }

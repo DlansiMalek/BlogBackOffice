@@ -94,13 +94,16 @@ class MailServices
             ->first();
     }
 
-    public function addingMailUser($mailId, $userId, $submissionId = null)
+    public function addingMailUser($mailId, $userId, $submissionId = null, $meetingId = null)
     {
         $mailUser = new UserMail();
         $mailUser->user_id = $userId;
         $mailUser->mail_id = $mailId;
         if ($submissionId) {
             $mailUser->submission_id = $submissionId;
+        }
+        if ($meetingId) {
+            $mailUser->meeting_id = $meetingId;
         }
         $mailUser->save();
 
