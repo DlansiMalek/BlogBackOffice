@@ -2050,29 +2050,24 @@ class UserServices
 
     }
 
-    public function getFixTableInfo($congress_id)
-    {
-        $show_in_fix_table = ConfigCongress::where('congress_id', '=', $congress_id)
-            ->get('show_in_fix_table');
-        return  $show_in_fix_table;
-    }
-
     public function editFixTableInfo($fix_table_info, $congress_id)
     {
         $userCongress = UserCongress::where('congress_id', '=', $congress_id)
-            ->get();
+        ->whereHas('user', function ($query) use ($congress_id) {
+            $query->whereHas('table', function ($q) use ($congress_id) {
+                $q->where('congress_id', '=', $congress_id);
+            });
+        })->get();
         $form_input = $this->getQuestionByKey($congress_id, $fix_table_info);
         foreach ($userCongress as $fixTableInfo) {
             if ($fix_table_info == null) {
                 $fixTableInfo->fix_table_info = null;
                 $fixTableInfo->update();
             } else {
-
                 if ($form_input) {
                     if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
                         $fix_table_info = $this->getValueResponse($fixTableInfo->user_id, $form_input->form_input_id);
                         $fixTableInfo->fix_table_info = $fix_table_info[0]['values'][0]['val']['value'];
-                        log::info($fix_table_info[0]['values'][0]['val']['value']);
                     } else {
                         $fix_table_info = $this->getResponseFormInput($fixTableInfo->user_id, $form_input->form_input_id);
                         $fixTableInfo->fix_table_info = $fix_table_info[0]['response'];
