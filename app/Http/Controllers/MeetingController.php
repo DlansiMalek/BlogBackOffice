@@ -40,8 +40,10 @@ class MeetingController extends Controller
   }
 
 
-  public function getUserMeetingById($congress_id, $status, Request $request)
+  public function getUserMeetingById($congress_id, Request $request)
   {
+    $status = $request->query("status", '');
+    Log::info($status);
     return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id, $status);
   }
 

@@ -52,7 +52,7 @@ class MeetingServices
     
     public function getMeetingByUserId($user_id, $congress_id, $status)
     {
-        if($status == "all") {
+        
             return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
             $query->with([
                 'organizer' => function ($q) {
@@ -61,26 +61,14 @@ class MeetingServices
                     $q->with(['profile_img']);
                 }
             ]);
-        }])->whereHas("user_meeting", function ($query) use ($user_id) {
+        }])->whereHas("user_meeting", function ($query) use ($user_id, $status) {
             $query->where('user_sender_id', '=', $user_id)
                 ->orwhere('user_receiver_id', '=', $user_id);
+        })->whereHas("user_meeting", function ($query) use ($user_id, $status) {
+            if ($status != '') { $query->where('status', '=' , $status);}
         })->where('congress_id', '=', $congress_id)
         ->get();
-        } else {
-            return Meeting::with(['meetingtable', 'user_meeting' => function ($query) {
-                $query->with([
-                    'organizer' => function ($q) {
-                        $q->with(['profile_img']);
-                    }, 'participant' => function ($q) {
-                        $q->with(['profile_img']);
-                    }
-                ]);
-            }])->whereHas("user_meeting", function ($query) use ($user_id, $status) {
-                $query->where('user_sender_id', '=', $user_id)->where('status','=',$status)
-                    ->orwhere('user_receiver_id', '=', $user_id)->where('status','=',$status);
-            })->where('congress_id', '=', $congress_id)
-            ->get();
-        }
+        
         
     }
     public function getUserMeetingsByMeetingId($meeting_id)

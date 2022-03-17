@@ -42,14 +42,3 @@ Tous les tests héritent du classe `TestCase.php` qui contient les initialisatio
 Les data sets sert à ajouter des données fake qu'on est besoin lors de tests. Ce sont des tests unitaires donc on va tester unitairement un WS et pas des WS ensemble dans le méme fonction.
 
 Pour créer un dataSet il suffit d'aller vers `database/factories` et créer une nouvelle classe avec le nommage `DomaineFactory.php`
-
-
-
-MAIL_DRIVER=SMTP
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=465
-MAIL_USERNAME=(email)
-MAIL_PASSWORD=(mot de passe)
-MAIL_ENCRYPTION=ssl
-MAIL_FROM_ADDRESS=(email)
-MAIL_FROM_NAME="Plateforme Eventizer"
