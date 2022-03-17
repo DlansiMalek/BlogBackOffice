@@ -13,7 +13,7 @@ class AddFixTableInfoToUserCongress extends Migration
      */
     public function up()
     {
-        Schema::table('User_congress', function (Blueprint $table) {
+        Schema::table('User_Congress', function (Blueprint $table) {
             $table->string('fix_table_info')->nullable()->default(null);
         });
     }
@@ -25,7 +25,7 @@ class AddFixTableInfoToUserCongress extends Migration
      */
     public function down()
     {
-        Schema::table('User_congress', function (Blueprint $table) {
+        Schema::table('User_Congress', function (Blueprint $table) {
             $table->removeColumn('fix_table_info');
         });
     }
