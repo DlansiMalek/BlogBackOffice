@@ -359,7 +359,6 @@ class UserController extends Controller
         $questionsArray = explode(',', $request->query('question', ''));
         $questionsIds = [];
         $questionString = [];
-        $all = $request->query('all', 0);
         foreach($questionsArray as $question) {
             if(intVal($question) == 0 || str_contains($question, '-')) {
                 array_push($questionString, strtolower($question));
@@ -1798,8 +1797,8 @@ class UserController extends Controller
                 $chat_info = $this->userServices->getResponseFormInput($user->user_id, $form_input->form_input_id);
                 $user_congress->chat_info = $chat_info[0]['response'] . ";" .  $user_congress->chat_info;    
             }  
-           }    
-    }}
+           }
+        }
         $user_congress->save();
 
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
@@ -1916,7 +1915,7 @@ class UserController extends Controller
         $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
     }
-
+    }
 
     public function trackingUser(Request $request)
     {

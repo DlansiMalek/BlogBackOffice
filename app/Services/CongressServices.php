@@ -535,6 +535,7 @@ class CongressServices
             $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
             $configCongress->show_in_chat = $showInChat;
         }
+        $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
         
         $configCongress->update();
 
