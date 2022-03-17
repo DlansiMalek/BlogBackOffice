@@ -447,6 +447,26 @@ class MeetingServices
             $tableFix[$i - 1]->update();
         }
     }
+    
+    public function getMeetingTableByCongress($congress_id, $perPage, $search)
+    {
+        $listMeetingTables= MeetingTable::where('congress_id', '=', $congress_id)
+        ->with(['meetings'])
+        ->where(function ($query) use ($search) {
+            if ($search != "") {
+                $query->whereRaw('lower(label) like (?)', ["%{$search}%"]);
+            }
+        });
+    return $listMeetingTables->paginate($perPage);
+    }    
+  
+    public function getMeetingPlanning($meeting_table_id)
+    {
+        $MeetingPlanning= MeetingTable::where('meeting_table_id', '=', $meeting_table_id)
+        ->with(['meetings.user_meeting.organizer', 'meetings.user_meeting.participant','meetings'])
+        ->first();
+    return $MeetingPlanning;
+    }    
 
     public function getCachedFixTables($congress_id, $page, $perPage, $search)
     {

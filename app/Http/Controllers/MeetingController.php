@@ -399,6 +399,20 @@ class MeetingController extends Controller
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
   }
 
+
+  public function getMeetingTableByCongress($congress_id, Request $request)
+  {
+    $perPage = $request->query('perPage', 10);
+    $search = Str::lower($request->query('search', ''));
+    $listMeetingTables = $this->meetingServices->getMeetingTableByCongress($congress_id, $perPage, $search);
+    return response()->json($listMeetingTables, 200);
+  }
+
+  public function getMeetingPlanning($meeting_table_id)
+  {
+    return $this->meetingServices->getMeetingPlanning($meeting_table_id);
+  }
+  
   public function getFixTables($congress_id, Request $request)
   {
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
