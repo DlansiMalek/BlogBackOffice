@@ -60,7 +60,9 @@ class MeetingServices
     
     public function getMeetingByUserId($user_id, $congress_id, $status)
     {
-        return Meeting::with(['meeting_evaluation','meetingtable', 'user_meeting' => function ($query) {
+        return Meeting::with(['meeting_evaluation' => function ($query) use ($user_id) {
+            $query->where('user_id', '=', $user_id);
+        },'meetingtable', 'user_meeting' => function ($query) {
             $query->with([
                 'organizer' => function ($q) {
                     $q->with(['profile_img']);
