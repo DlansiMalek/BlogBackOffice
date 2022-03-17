@@ -619,6 +619,7 @@ class UserServices
         return $users;
     }
 
+
     public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId, $isTracked) {
