@@ -317,9 +317,8 @@ class CongressController extends Controller
         // Config OnlineAccess Allowed
         $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
         $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
-        $newShowInFixTable = $request->input("congress")['show_in_fix_table'];
-        if ($oldShowInFixTable != $newShowInFixTable) {
-            $this->userServices->editFixTableInfo($newShowInFixTable, $congressId);
+        if ($oldShowInFixTable != $request->input("congress")['show_in_fix_table']) {
+            $this->userServices->editFixTableInfo($request->input("congress")['show_in_fix_table'], $congressId);
         }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
