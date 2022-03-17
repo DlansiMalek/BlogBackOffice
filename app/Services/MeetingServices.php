@@ -11,6 +11,10 @@ use App\Models\MeetingEvaluation;
 
 
 use App\Models\User;
+use App\Models\UserCongress;
+use App\Models\ConfigCongress;
+use App\Models\FormInput;
+use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
 class MeetingServices
 {
@@ -53,7 +57,8 @@ class MeetingServices
             ->with(['user_meeting', 'meetingtable'])
             ->first();
     }
-    public function getMeetingByUserId($user_id, $congress_id)
+    
+    public function getMeetingByUserId($user_id, $congress_id, $status)
     {
         return Meeting::with(['meeting_evaluation','meetingtable', 'user_meeting' => function ($query) {
             $query->with([
@@ -66,8 +71,14 @@ class MeetingServices
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
                 ->orwhere('user_receiver_id', '=', $user_id);
+        })->whereHas("user_meeting", function ($query) use ($status) {
+            if ($status != '') { 
+                $query->where('status', '=' , $status);
+            }
         })->where('congress_id', '=', $congress_id)
         ->get();
+        
+        
     }
     public function getUserMeetingsByMeetingId($meeting_id)
     {
@@ -426,6 +437,23 @@ class MeetingServices
                 $meetingTable->label = $new["label"];
                 $meetingTable->banner = $new["banner"];
                 $meetingTable->save();
+
+                $userCongress = $this->getUserCongressByUserId($congress_id, $user->user_id);
+                if ($userCongress) {
+                    $fix_table_info = $this->getFixTableInfo($congress_id);
+                    $fix_table_info = $fix_table_info[0]["show_in_fix_table"];
+                    $form_input = $this->getQuestionByKey($congress_id, $fix_table_info);
+                    if ($form_input) {
+                        if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
+                            $fix_table_info = $this->getValueResponse($user->user_id, $form_input->form_input_id);
+                            $userCongress->fix_table_info = $fix_table_info[0]['values'][0]['val']['value'];
+                        } else {
+                            $fix_table_info = $this->getResponseFormInput($user->user_id, $form_input->form_input_id);
+                            $userCongress->fix_table_info = $fix_table_info[0]['response'];
+                        }
+                        $userCongress->update();
+                    }
+                }
             } else {
                 array_push($invalidUser, ' ' .$new['participant'][0]['email']);
             }
@@ -441,6 +469,26 @@ class MeetingServices
             $tableFix[$i - 1]->update();
         }
     }
+    
+    public function getMeetingTableByCongress($congress_id, $perPage, $search)
+    {
+        $listMeetingTables= MeetingTable::where('congress_id', '=', $congress_id)
+        ->with(['meetings'])
+        ->where(function ($query) use ($search) {
+            if ($search != "") {
+                $query->whereRaw('lower(label) like (?)', ["%{$search}%"]);
+            }
+        });
+    return $listMeetingTables->paginate($perPage);
+    }    
+  
+    public function getMeetingPlanning($meeting_table_id)
+    {
+        $MeetingPlanning= MeetingTable::where('meeting_table_id', '=', $meeting_table_id)
+        ->with(['meetings.user_meeting.organizer', 'meetings.user_meeting.participant','meetings'])
+        ->first();
+    return $MeetingPlanning;
+    }    
 
     public function getCachedFixTables($congress_id, $page, $perPage, $search)
     {
@@ -459,7 +507,11 @@ class MeetingServices
     {
         $allFixTables = MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
-            ->with(["participant"])
+            ->with(["participant.user_congresses" => function ($query) use ($congress_id){
+                if ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id);
+                }
+            }])
             ->where(function ($query) use ($search) {
                 if ($search !== '' && $search != null && $search != 'null') {
                     $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
@@ -470,6 +522,42 @@ class MeetingServices
                 }
             });
         return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
+    }
+
+    public function getFixTableInfo($congress_id)
+    {
+        return ConfigCongress::where('congress_id', '=', $congress_id)
+            ->get('show_in_fix_table');
+    }
+
+    public function getUserCongressByUserId($congressId, $userId)
+    {
+        return UserCongress::where('congress_id', '=', $congressId)
+        ->where('user_id', '=', $userId)->first();
+    }
+
+    public function getQuestionByKey($congress_id,$key)
+    {
+        return FormInput::where('congress_id', '=', $congress_id)
+         ->where('key','=',$key)
+         ->first();
+    }
+
+    public function getValueResponse($user_id, $form_input_id)
+    {
+        return FormInputResponse::where('user_id', '=', $user_id)
+        ->where('form_input_id', '=', $form_input_id) 
+        ->with(['values'  => function ($query) {
+            $query->with(['val']);
+        }]) 
+        ->get();
+    }
+
+    public function getResponseFormInput($user_id, $form_input_id)
+    {
+        return FormInputResponse::where('user_id', '=', $user_id)
+            ->where('form_input_id', '=', $form_input_id)   
+            ->get('response');
     }
   
 }

@@ -9,7 +9,6 @@ use App\Services\AdminServices;
 use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
@@ -41,9 +40,11 @@ class MeetingController extends Controller
 
   public function getUserMeetingById($congress_id, Request $request)
   {
-    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id);
+    $status = $request->query("status", '');
+    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id, $status);
   }
 
+  
   function addMeeting(Request $request)
   {
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
@@ -277,7 +278,6 @@ class MeetingController extends Controller
       $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
-      Log::info($nombre_meetings_waiting);
       array_push($nombres, [
           "type" => "val3",
           "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')))),
@@ -409,6 +409,20 @@ class MeetingController extends Controller
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
   }
 
+
+  public function getMeetingTableByCongress($congress_id, Request $request)
+  {
+    $perPage = $request->query('perPage', 10);
+    $search = Str::lower($request->query('search', ''));
+    $listMeetingTables = $this->meetingServices->getMeetingTableByCongress($congress_id, $perPage, $search);
+    return response()->json($listMeetingTables, 200);
+  }
+
+  public function getMeetingPlanning($meeting_table_id)
+  {
+    return $this->meetingServices->getMeetingPlanning($meeting_table_id);
+  }
+  
   public function getFixTables($congress_id, Request $request)
   {
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
