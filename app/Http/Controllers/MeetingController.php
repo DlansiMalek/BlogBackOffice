@@ -9,7 +9,6 @@ use App\Services\AdminServices;
 use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
@@ -43,7 +42,6 @@ class MeetingController extends Controller
   public function getUserMeetingById($congress_id, Request $request)
   {
     $status = $request->query("status", '');
-    Log::info($status);
     return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id, $status);
   }
 
@@ -270,7 +268,6 @@ class MeetingController extends Controller
       $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
-      Log::info($nombre_meetings_waiting);
       array_push($nombres, [
           "type" => "val3",
           "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')))),
