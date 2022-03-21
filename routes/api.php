@@ -66,6 +66,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::group(['prefix' => '{meeting_id}'], function () {
         Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
         Route::get('update-status', 'MeetingController@modiyStatus');
+        Route::get('update-status-by-admin', 'MeetingController@modifyStatusByOrganizer')->middleware('assign.guard:admins');
         Route::put('statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
         Route::put('statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
     });
