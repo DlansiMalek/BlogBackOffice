@@ -479,7 +479,7 @@ class MeetingServices
             ->where(function ($query) use ($search) {
                 if ($search != "") {
                     $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
-                    ->orWhereHas('user_congresses', function ($query) use ($search) {
+                    ->orWhereHas('participant.user_congresses', function ($query) use ($search) {
                         $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
                     });
                 }
@@ -525,7 +525,7 @@ class MeetingServices
                         $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
                         ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     })
-                        ->orWhereHas('user_congresses', function ($query) use ($search) {
+                        ->orWhereHas('participant.user_congresses', function ($query) use ($search) {
                             $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
                         });
                 }
