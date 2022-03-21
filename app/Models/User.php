@@ -159,4 +159,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(User::class, 'User_Network', 'fav_id', 'user_id');
     }
+
+    function table() {
+        return $this->hasMany(MeetingTable::class,'user_id','user_id');
+    }
 }

@@ -17,7 +17,7 @@ class MenuChildrenSeed06 extends Seeder
         DB::table('Menu_Children')->insert([
             'menu_children_id' => 45,
             'key' => 'Tables', 
-            'url' => '/stats/manage-meetings/list-meeting-tables', 
+            'url' => '/manage-meetings/list-meeting-tables', 
             'menu_id' => 6, 
             'index' => 1
         ]);

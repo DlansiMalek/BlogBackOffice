@@ -9,11 +9,9 @@ use App\Services\AdminServices;
 use App\Services\MailServices;
 use App\Services\CongressServices;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
-
 
 
 
@@ -42,9 +40,11 @@ class MeetingController extends Controller
 
   public function getUserMeetingById($congress_id, Request $request)
   {
-    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id);
+    $status = $request->query("status", '');
+    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id, $status);
   }
 
+  
   function addMeeting(Request $request)
   {
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
@@ -187,6 +187,17 @@ class MeetingController extends Controller
     }
   }
 
+  function addMeetingEvaluation(Request $request)
+  {
+    $user = $this->userServices->retrieveUserFromToken();
+    if (!$user) {
+      return response()->json(['response' => 'No user found'], 401);
+    }
+    $meetingEvaluation = $this->meetingServices->addMeetingEvaluation($request, $user->user_id);
+
+    return response()->json($meetingEvaluation, 200);
+  }
+
   public function declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver)
   {
     $mailtype = $this->congressServices->getMailType('decline_meeting');
@@ -267,7 +278,6 @@ class MeetingController extends Controller
       $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
       $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
-      Log::info($nombre_meetings_waiting);
       array_push($nombres, [
           "type" => "val3",
           "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')))),
