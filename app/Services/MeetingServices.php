@@ -473,17 +473,21 @@ class MeetingServices
             $tableFix[$i - 1]->update();
         }
     }
-    
+
     public function getMeetingTableByCongress($congress_id, $perPage, $search)
     {
-        $listMeetingTables= MeetingTable::where('congress_id', '=', $congress_id)
-        ->with(['meetings'])
-        ->where(function ($query) use ($search) {
-            if ($search != "") {
-                $query->whereRaw('lower(label) like (?)', ["%{$search}%"]);
-            }
-        });
-    return $listMeetingTables->paginate($perPage);
+        $listMeetingTables = MeetingTable::where('congress_id', '=', $congress_id)
+            ->with(['meetings', 'participant.user_congresses'])
+            ->where(function ($query) use ($search) {
+                if ($search != "") {
+                    $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
+                    ->orWhereHas('participant.user_congresses', function ($query) use ($search) {
+                        $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
+                    });
+                }
+            });
+
+        return $listMeetingTables->paginate($perPage);
     }    
   
     public function getMeetingPlanning($meeting_table_id)
@@ -522,7 +526,10 @@ class MeetingServices
                     ->orWhereHas('participant', function ($query) use ($search) {
                         $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
                         ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                    });
+                    })
+                        ->orWhereHas('participant.user_congresses', function ($query) use ($search) {
+                            $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
+                        });
                 }
             });
         return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
