@@ -282,10 +282,12 @@ class MeetingServices
         }
     }
 
-    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id, $user_reveiver_id)
+    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id, $user_reveiver_id, $status)
     {
-        return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id) {
-            $query->where('user_sender_id', '=', $user_sender_id)->where('user_receiver_id','=',$user_reveiver_id);
+        return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id, $status) {
+            $query->where('user_sender_id', '=', $user_sender_id)
+            ->where('user_receiver_id','=',$user_reveiver_id)
+            ->where('status', '=',  $status);
         })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
     }
 
