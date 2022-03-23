@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -60,7 +61,7 @@ class MeetingController extends Controller
     if (!$user_receiver) {
       return response()->json(['response' => 'No user found'], 401);
     }
-    $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id, $user_receiver->user_id);
+    $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id, $user_receiver->user_id, 1);
     if ($duplicated_meeting > 0) {
       return response()->json(['response' => 'Meeting on the same date found'], 401);
     }
@@ -129,30 +130,7 @@ class MeetingController extends Controller
     if (!$user_sender) {
       return response()->json(['response' => 'No user found'], 401);
     }
-
-    if ($status == 1) {
-      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
-      if ($tableFix) {
-          $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
-      } else if ($nb_meeting_tables > 0) {
-        $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
-      }
-      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
-      if (sizeof($conflicts) > 0) {
-        $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
-      }
-      $this->sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver);
-    } else if (($user_meeting->status == 1) && ($status == -1)) {
-      if ($mailtype = $this->congressServices->getMailType('annulation_meeting')) {
-        $this->sendAnnulationMail($congress, $mailtype, $user_sender, $meeting, $user_receiver);
-      }
-    } else {
-      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
-      if ($mailtype = $this->congressServices->getMailType('decline_meeting')) {
-        $this->sendDeclineMail($congress, $mailtype, $user_sender, $meeting, $user_receiver);
-      }
-    }
-    $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
+    $meeting = $this->handleModifyMeetingStatus($status, $congressId, $user_receiver, $user_sender, $request, $nb_meeting_tables, $meeting, $user_meeting, $congress);
     if ($request->has('verification_code')) {
       $linkFrontOffice = UrlUtils::getUserMeetingLinkFrontoffice($congressId);
       return redirect($linkFrontOffice);
@@ -160,13 +138,13 @@ class MeetingController extends Controller
     return response()->json($meeting, 200);
   }
 
-  public function sendDeclineMail($congress, $mailtype, $user_sender, $meeting, $user_receiver)
+  public function sendDeclineMailToUserSender($congress, $mailtype, $user_sender, $meeting, $user_receiver)
   {
     if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
       $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
       $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, $userMail, null, null);
     } else {
-      if ($mail = $this->congressServices->getMailOutOfCongress(26)) {
+      if ($mail = $this->congressServices->getMailOutOfCongress($mailtype->mail_type_id)) {
         $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_sender, $congress, $mail->object, null, $userMail, null, null);
       }
@@ -204,7 +182,7 @@ class MeetingController extends Controller
     foreach ($conflicts as $conflict_meeting) {
       $conflict_meeting = $this->meetingServices->declineMeeting($conflict_meeting['user_meeting']->first());
       $user_sender_conflict = $this->userServices->getUserById($user_meeting->user_sender_id);
-      $this->sendDeclineMail($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
+      $this->sendDeclineMailToUserSender($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
     }
   }
 
@@ -433,5 +411,86 @@ class MeetingController extends Controller
     $search = $request->query('search', '');
     $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage, $search);
     return response()->json($fixTables, 200);
+  }
+
+   function modifyStatusByOrganizer($meetingId, Request $request)
+  {
+    if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
+      return response()->json('no admin found', 404);
+    }
+    if (!$meetingId) {
+      return response()->json(['meeting required!'], 400);
+    }
+    if (!$request->has('status')) {
+      return response()->json(['required value' => ['status']], 400);
+    }
+    $status = $request->input('status');
+    if (!$meeting = $this->meetingServices->getMeetingById($meetingId)) {
+      return response()->json(['response' => 'Meeting not found'], 404);
+    }
+    $user_meeting = $meeting['user_meeting']->first();
+    $congressId = $meeting->congress_id;
+    if (!$congress = $this->congressServices->getCongressDetailsById($congressId)) {
+      return response()->json(["message" => "congress not found"], 404);
+    }
+    $nb_meeting_tables = $congress['config']['nb_meeting_table'];
+
+    $user_meeting = $meeting['user_meeting']->first();
+    $user_receiver = $this->userServices->getUserById($user_meeting->user_receiver_id);
+    if (!$user_receiver) {
+      return response()->json(['response' => 'receiver not found'], 401);
+    }
+    $user_sender = $this->userServices->getUserById($user_meeting->user_sender_id);
+    if (!$user_sender) {
+      return response()->json(['response' => 'sender not found'], 401);
+    }
+
+    $meeting = $this->handleModifyMeetingStatus($status, $congressId, $user_receiver, $user_sender, $request, $nb_meeting_tables, $meeting, $user_meeting, $congress);
+    if ($mailtype = $this->congressServices->getMailType('decline_meeting')) {
+      $this->sendDeclineMailToUserReciever($congress, $mailtype, $user_sender, $meeting, $user_receiver);
+    }
+    return response()->json($meeting, 200);
+  }
+
+  public function handleModifyMeetingStatus($status, $congressId, $user_receiver, $user_sender, $request, $nb_meeting_tables, $meeting, $user_meeting, $congress)
+  {
+    if ($status == 1) {
+      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
+      if ($tableFix) {
+          $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
+      } else if ($nb_meeting_tables > 0) {
+        $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
+      }
+      $conflicts = $this->meetingServices->getMeetingConflicts($meeting, $user_sender->user_id, $user_receiver->user_id);
+      if (sizeof($conflicts) > 0) {
+        $this->declineConflictsMeetings($conflicts, $user_meeting, $congress, $user_receiver);
+      }
+      $this->sendAcceptMeetingsMail($congress, $user_sender, $meeting, $user_receiver);
+    } else if (($user_meeting->status == 1) && ($status == -1)) {
+      if ($mailtype = $this->congressServices->getMailType('annulation_meeting')) {
+        $this->sendAnnulationMail($congress, $mailtype, $user_sender, $meeting, $user_receiver);
+      }
+    } else {
+      $meeting = $this->meetingServices->removeTableFromMeeting($meeting);
+      if ($mailtype = $this->congressServices->getMailType('decline_meeting')) {
+        $this->sendDeclineMailToUserSender($congress, $mailtype, $user_sender, $meeting, $user_receiver);
+      }
+    }
+    $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
+   
+    return $meeting;
+  }
+
+  public function sendDeclineMailToUserReciever($congress, $mailtype, $user_sender, $meeting, $user_receiver)
+  {
+    if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
+      $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
+      $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, $userMail, null, null);
+    } else {
+      if ($mail = $this->congressServices->getMailOutOfCongress($mailtype->mail_type_id)) {
+        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user_receiver->user_id, null, $meeting->meeting_id);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, $userMail, null, null);
+      }
+    }
   }
 }
