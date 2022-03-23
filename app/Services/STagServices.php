@@ -19,6 +19,7 @@ class STagServices
     {
         $stag = new STag();
         $stag->label = $request->input('label');
+        $stag->color = $request->input('color');
         $stag->gstag_id = $request->input('gstag_id');
         $stag->congress_id = $congress_id;
         $stag->save();
