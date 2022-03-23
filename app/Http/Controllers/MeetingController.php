@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -130,6 +131,10 @@ class MeetingController extends Controller
       return response()->json(['response' => 'No user found'], 401);
     }
     $meeting = $this->handleModifyMeetingStatus($status, $congressId, $user_receiver, $user_sender, $request, $nb_meeting_tables, $meeting, $user_meeting, $congress);
+    if ($request->has('verification_code')) {
+      $linkFrontOffice = UrlUtils::getUserMeetingLinkFrontoffice($congressId);
+      return redirect($linkFrontOffice);
+    }
     return response()->json($meeting, 200);
   }
 
@@ -472,10 +477,7 @@ class MeetingController extends Controller
       }
     }
     $user_meeting = $this->meetingServices->updateMeetingStatus($user_meeting, $request, $status);
-    if ($request->has('verification_code')) {
-      $linkFrontOffice = UrlUtils::getUserMeetingLinkFrontoffice($congressId);
-      return redirect($linkFrontOffice);
-    }
+   
     return $meeting;
   }
 
