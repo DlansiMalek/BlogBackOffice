@@ -226,7 +226,10 @@ class MeetingServices
 
     public function countUsedMeetingTablesByCongressId($congress_id)
     {
-        return MeetingTable::whereHas('meetings')->where('congress_id', '=', $congress_id)->count();
+        return MeetingTable::whereHas('meetings')
+        ->where('congress_id', '=', $congress_id)
+        ->where('user_id', '=', null)
+        ->count();
     }
 
     public function getMeetingTablesByCongressId($congress_id)
