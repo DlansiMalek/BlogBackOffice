@@ -275,7 +275,7 @@ class MeetingServices
     {
         $meetingtables = $this->deleteMeetingTablesWithNoMeeting($congressId);
         for ($i = 1; $i <= $nbMeetingTable; $i++) {
-            $label = "Table " . $i;
+            $label = "TV" . $i;
             $MeetTable = $this->addMeetingTable($label, $congressId);
         }
         if (count($meetingtables) != 0) {
@@ -471,7 +471,7 @@ class MeetingServices
     public function InsertFixTable($nbFixTable, $tableFix)
     {
         for ($i = 1; $i <= $nbFixTable; $i++) {
-            $label = "Table " . $i;
+            $label = "TF" . $i;
             $tableFix[$i - 1]->label = $label;
             $tableFix[$i - 1]->update();
         }
