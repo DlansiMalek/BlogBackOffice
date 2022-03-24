@@ -27,7 +27,9 @@ class AddWaitingColorAndWaitingOpacityToConfigLpTable extends Migration
     public function down()
     {
         Schema::table('Config_LP', function (Blueprint $table) {
-            //
+            $table->removeColumn('waiting_color');
+            $table->removeColumn('waiting_opacity');
+            
         });
     }
 }
