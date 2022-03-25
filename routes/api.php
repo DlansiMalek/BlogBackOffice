@@ -304,6 +304,13 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
     Route::get('user/all/pagination', 'SubmissionController@getSubmissionByUserId');
 });
 
+Route::group(['prefix' => 'services'], function () {
+    Route::post('add-new-service', 'SubmissionController@addNewService');
+});
+Route::group(['prefix' => 'establishments'], function () {
+    Route::post('add-new-etablissement', 'SubmissionController@addNewEtablissement');
+});
+
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], function () {
     Route::get('all/{congressId}', 'ThemeController@getAllThemes');
     Route::post('add/{congressId}', 'ThemeController@addExternalTheme');

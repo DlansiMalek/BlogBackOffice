@@ -1026,4 +1026,17 @@ class SubmissionController extends Controller
         }
         return response()->json(['Changes done successfully'], 200);
     }
+
+    public function addNewEtablissement(Request $request)
+    {        
+        $etablissement =  $this->establishmentServices->addEstablishment($request->label);
+        return response()->json([$etablissement]);
+    }
+
+    public function addNewService(Request $request)
+    {
+        $service =  $this->authorServices->addService($request->label);
+        return response()->json([$service]);
+    }
+
 }
