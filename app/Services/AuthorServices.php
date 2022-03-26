@@ -183,10 +183,11 @@ class AuthorServices
             ->first();
     }
 
-    public function addService($label)
+    public function addService($request)
     {
         $service = new Service();
-        $service->label = $label;
+        $service->label = $request->label;
+        $service->congress_id = $request->congressId;
         $service->save();
         return $service;
     }
@@ -260,4 +261,13 @@ class AuthorServices
 
         return $mailAuthor;
     }
+
+    public function getServicesByCongressId($congressId)
+    {
+        $services = Service::where('congress_id', '=', $congressId)
+        ->orWhere('congress_id', '=', null)
+        ->get();
+        return $services;
+    }
+
 }

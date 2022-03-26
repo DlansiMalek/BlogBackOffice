@@ -306,9 +306,11 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
 
 Route::group(['prefix' => 'services'], function () {
     Route::post('add-new-service', 'SubmissionController@addNewService');
+    Route::get('{congressId}/get-services-by-congress', 'SubmissionController@getServicesByCongressId');
 });
 Route::group(['prefix' => 'establishments'], function () {
     Route::post('add-new-etablissement', 'SubmissionController@addNewEtablissement');
+    Route::get('{congressId}/get-etablissement-by-congress', 'SubmissionController@getEtablissementsByCongressId');
 });
 
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], function () {

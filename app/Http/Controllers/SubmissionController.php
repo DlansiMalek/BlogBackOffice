@@ -1028,15 +1028,26 @@ class SubmissionController extends Controller
     }
 
     public function addNewEtablissement(Request $request)
-    {        
-        $etablissement =  $this->establishmentServices->addEstablishment($request->label);
+    {
+        $etablissement =  $this->establishmentServices->addEstablishment($request);
         return response()->json([$etablissement]);
     }
 
     public function addNewService(Request $request)
     {
-        $service =  $this->authorServices->addService($request->label);
+        $service =  $this->authorServices->addService($request);
         return response()->json([$service]);
     }
 
+    public function getServicesByCongressId($congressId)
+    {
+        $services =  $this->authorServices->getServicesByCongressId($congressId);
+        return $services;
+    }
+
+    public function getEtablissementsByCongressId($congressId)
+    {
+        $etablissements =  $this->establishmentServices->getEtablissementsByCongressId($congressId);
+        return $etablissements;
+    }
 }

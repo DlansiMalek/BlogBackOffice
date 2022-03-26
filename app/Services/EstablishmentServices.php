@@ -6,9 +6,11 @@ use App\Models\Etablissement;
 
 class EstablishmentServices {
 
-    public function addEstablishment($label) {
+    public function addEstablishment($request)
+    {
         $etablissement = new Etablissement();
-        $etablissement->label = $label;
+        $etablissement->label = $request->label;
+        $etablissement->congress_id = $request->congressId;
         $etablissement->save();
         return $etablissement;
     }
@@ -30,5 +32,12 @@ class EstablishmentServices {
         return $etablissementsIds;
     }
 
+    public function getEtablissementsByCongressId($congressId)
+    {
+        $etablissements = Etablissement::where('congress_id', '=', $congressId)
+        ->orWhere('congress_id', '=', null)
+        ->get();
+        return $etablissements;
+    }
 
 }
