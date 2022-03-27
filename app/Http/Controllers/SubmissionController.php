@@ -1027,15 +1027,15 @@ class SubmissionController extends Controller
         return response()->json(['Changes done successfully'], 200);
     }
 
-    public function addNewEtablissement(Request $request)
+    public function addNewEtablissement(Request $request, $congressId)
     {
-        $etablissement =  $this->establishmentServices->addEstablishment($request);
+        $etablissement =  $this->establishmentServices->addExternalEstablishment($request, $congressId);
         return response()->json([$etablissement]);
     }
 
-    public function addNewService(Request $request)
+    public function addNewService(Request $request, $congressId)
     {
-        $service =  $this->authorServices->addService($request);
+        $service =  $this->authorServices->addExternalService($request, $congressId);
         return response()->json([$service]);
     }
 

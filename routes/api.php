@@ -304,13 +304,22 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
     Route::get('user/all/pagination', 'SubmissionController@getSubmissionByUserId');
 });
 
-Route::group(['prefix' => 'services'], function () {
-    Route::post('add-new-service', 'SubmissionController@addNewService');
-    Route::get('{congressId}/get-services-by-congress', 'SubmissionController@getServicesByCongressId');
+Route::group(['prefix' => 'congress'], function () {
+    Route::group(['prefix' => '{congressId}'], function () {
+        Route::group(['prefix' => 'services'], function () {
+            Route::post('add', 'SubmissionController@addNewService');
+            Route::get('all', 'SubmissionController@getServicesByCongressId');
+        });
+    });
 });
-Route::group(['prefix' => 'establishments'], function () {
-    Route::post('add-new-etablissement', 'SubmissionController@addNewEtablissement');
-    Route::get('{congressId}/get-etablissement-by-congress', 'SubmissionController@getEtablissementsByCongressId');
+
+Route::group(['prefix' => 'congress'], function () {
+    Route::group(['prefix' => '{congressId}'], function () {
+        Route::group(['prefix' => 'etablissements'], function () {
+            Route::get('all', 'SubmissionController@getEtablissementsByCongressId');
+            Route::post('add', 'SubmissionController@addNewEtablissement');
+        });
+    });
 });
 
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], function () {
@@ -365,7 +374,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
             Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');
             Route::get('random-users-pwa', 'UserController@getRandomUsers')->middleware('assign.guard:users');              
-            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');      
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');

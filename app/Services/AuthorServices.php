@@ -183,11 +183,10 @@ class AuthorServices
             ->first();
     }
 
-    public function addService($request)
+    public function addService($label)
     {
         $service = new Service();
-        $service->label = $request->label;
-        $service->congress_id = $request->congressId;
+        $service->label = $label;
         $service->save();
         return $service;
     }
@@ -270,4 +269,12 @@ class AuthorServices
         return $services;
     }
 
+    public function addExternalService($request, $congressId)
+    {
+        $service = new Service();
+        $service->label = $request->label;
+        $service->congress_id = $congressId;
+        $service->save();
+        return $service;
+    }
 }
