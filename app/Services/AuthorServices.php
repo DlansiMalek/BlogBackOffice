@@ -260,4 +260,21 @@ class AuthorServices
 
         return $mailAuthor;
     }
+
+    public function getServicesByCongressId($congressId)
+    {
+        $services = Service::where('congress_id', '=', $congressId)
+        ->orWhere('congress_id', '=', null)
+        ->get();
+        return $services;
+    }
+
+    public function addExternalService($request, $congressId)
+    {
+        $service = new Service();
+        $service->label = $request->label;
+        $service->congress_id = $congressId;
+        $service->save();
+        return $service;
+    }
 }

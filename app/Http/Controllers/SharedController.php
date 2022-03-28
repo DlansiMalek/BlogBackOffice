@@ -79,16 +79,6 @@ class SharedController extends Controller
         return response()->json($this->sharedServices->getAllCongressTypes());
     }
 
-    public function getAllServices()
-    {
-        return $this->sharedServices->getAllServices();
-    }
-
-    public function getAllEtablissements()
-    {
-        return $this->sharedServices->getAllEtablissements();
-    }
-
     public function encrypt($password)
     {
         return bcrypt($password);
