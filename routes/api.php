@@ -698,3 +698,5 @@ Route::group(["prefix" => "3D"], function () {
     });
 }); 
 
+Route::get('clearCache','DevController@clearCache');
+
