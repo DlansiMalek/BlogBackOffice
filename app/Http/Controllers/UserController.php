@@ -355,6 +355,7 @@ class UserController extends Controller
         $payment = $request->query('payment', '');
         $search = strtolower($request->query('search', ''));
         $status = $request->query('status', '');
+        $all = $request->query('all', 0);
         $questionsArray = explode(',', $request->query('question', ''));
         $questionsIds = [];
         $questionString = [];
@@ -367,7 +368,7 @@ class UserController extends Controller
         }
         $perPage = $request->query('perPage', 10);
         $page = $request->query('page', 1);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $page);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all);
 
         return response()->json($users);
     }
@@ -1523,7 +1524,7 @@ class UserController extends Controller
     {
         if (!$user = $this->userServices->getUserIdAndByCongressId($user_id, $congress_id)) {
             return response()->json(['response' => 'user not found'], 404);
-        }
+    }
 
         if (!$mail = $this->congressServices->getEmailById($mail_id)) {
             return response()->json(['response' => 'mail not found'], 404);
@@ -1533,6 +1534,28 @@ class UserController extends Controller
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
+    
+    public function sendEmailToSelectedUsers($mail_id, $congress_id, Request $request){
+         
+     if (!$mail = $this->congressServices->getEmailById($mail_id)) {
+       return response()->json(['response' => 'mail not found'], 404);
+        }
+    if (! $congress = $this->congressServices->getCongressById($congress_id)){
+       return response()->json(['response' => 'Congress not found'], 404); 
+        }
+        $users = $request->input('users');
+        foreach((array)$users as $user){
+
+    if (!$user = $this->userServices->getUserIdAndByCongressId($user, $congress_id)) {
+        return response()->json(['response' => 'user not found'], 404);
+     }
+       $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+       $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
+    }
+     return response()->json(['response' => 'success'], 200);
+    }
+        
+
 
     public function userConnect($qrCode)
     {
@@ -1774,8 +1797,8 @@ class UserController extends Controller
                 $chat_info = $this->userServices->getResponseFormInput($user->user_id, $form_input->form_input_id);
                 $user_congress->chat_info = $chat_info[0]['response'] . ";" .  $user_congress->chat_info;    
             }  
-           }    
-    }}
+           }
+        }
         $user_congress->save();
 
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
@@ -1892,7 +1915,7 @@ class UserController extends Controller
         $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
     }
-
+    }
 
     public function trackingUser(Request $request)
     {

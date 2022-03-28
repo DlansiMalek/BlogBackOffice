@@ -258,6 +258,7 @@ class CongressController extends Controller
         }
 
         $configCongress = $this->congressServices->getCongressConfigById($congressId);
+        $oldShowInFixTable = $configCongress->show_in_fix_table ;
 
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
 
@@ -282,7 +283,7 @@ class CongressController extends Controller
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
         $nbMeetingTable = $configCongress['nb_meeting_table'];
         if ($nbMeetingTable != 0) {
-            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId,);
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
@@ -316,7 +317,9 @@ class CongressController extends Controller
         // Config OnlineAccess Allowed
         $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
         $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
-
+        if ($oldShowInFixTable != $request->input("congress")['show_in_fix_table']) {
+            $this->userServices->editFixTableInfo($request->input("congress")['show_in_fix_table'], $congressId);
+        }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
     }
@@ -1237,5 +1240,4 @@ class CongressController extends Controller
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
     }   
-
 }

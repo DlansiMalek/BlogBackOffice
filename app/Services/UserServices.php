@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class UserServices
 {
@@ -524,10 +523,13 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null)
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null, $all = 0, $privilegeIds = null, $withAttestation = null, $admin_id = null)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
+            if ($privilegeIds != null) {
+                $query->whereIn('privilege_id', $privilegeIds);
+            }
         })
             ->where(function ($query) use ($search, $congressId) {
                 if ($search) {
@@ -558,7 +560,7 @@ class UserServices
                     });
                 }
             })
-            ->where(function ($query) use ($questions, $congressId) {
+            ->where(function ($query) use ($questions) {
                 if (sizeof($questions) != 0) {
                     foreach ($questions as $ques) {
                         $query->whereHas('responses', function ($query) use ($ques) {
@@ -591,14 +593,32 @@ class UserServices
         ->with([
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'responses.form_input', 'responses.values', 'responses.values.val', 'organization', 'user_congresses.privilege', 'country', 'payments' => function ($query) use ($congressId) {
+            },'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }
+            }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
+                $query->where('congress_id', '=', $congressId);
+                if ($withAttestation != null) {
+                    $query->where("with_attestation", "=", $withAttestation);
+                }
+            }, 'accesses.attestations', 'responses' => function ($query) use ($congressId) {
+                $query->whereHas('form_input', function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                });
+            }, 'responses.form_input', 'responses.values', 'responses.values.val',
+            'inscription_evaluation' => function ($query) use ($congressId, $admin_id) {
+                    if ($admin_id) {
+                        $query->where('admin_id', '=', $admin_id)->where('congress_id', '=', $congressId);
+                    } else {
+                        $query->where('congress_id', '=', $congressId);
+                    }
+                },'organization', 'user_congresses.privilege', 'country'
+        ]);
 
-        ])->paginate($perPage);
+        $users = $all == 1 ? $users->get() : $users->paginate($perPage);
       
         return $users;
     }
+
 
     public function getAllUsersByCongress($congressId, $privilegeId = null, $isTracked = null)
     {
@@ -2000,6 +2020,17 @@ class UserServices
         return  $users->paginate($perPage);  
     }
 
+    public function getNumberOfUsersHavingMeeting($congressId) 
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })->whereHas('meetingsOrganizer', function ($query) use ($congressId) {
+            $query->where('Meeting.congress_id', '=', $congressId);
+        })->orWhereHas('meetingsParticipant', function ($query) use ($congressId) {
+            $query->where('Meeting.congress_id', '=', $congressId);
+        })
+        ->count();
+    }
     public function getRandomUsers($congressId,$user_id)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id) {
@@ -2020,6 +2051,34 @@ class UserServices
 
     }
 
+    public function editFixTableInfo($fix_table_info, $congress_id)
+    {
+        $userCongress = UserCongress::where('congress_id', '=', $congress_id)
+        ->whereHas('user', function ($query) use ($congress_id) {
+            $query->whereHas('table', function ($q) use ($congress_id) {
+                $q->where('congress_id', '=', $congress_id);
+            });
+        })->get();
+        $form_input = $this->getQuestionByKey($congress_id, $fix_table_info);
+        foreach ($userCongress as $fixTableInfo) {
+            if ($fix_table_info == null) {
+                $fixTableInfo->fix_table_info = null;
+                $fixTableInfo->update();
+            } else {
+                if ($form_input) {
+                    if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
+                        $fix_table_info = $this->getValueResponse($fixTableInfo->user_id, $form_input->form_input_id);
+                        $fixTableInfo->fix_table_info = $fix_table_info[0]['values'][0]['val']['value'];
+                    } else {
+                        $fix_table_info = $this->getResponseFormInput($fixTableInfo->user_id, $form_input->form_input_id);
+                        $fixTableInfo->fix_table_info = $fix_table_info[0]['response'];
+                    }
+                }
+                $fixTableInfo->update();
+            }
+        }
+        return $userCongress;
+    }
 }
 
 
