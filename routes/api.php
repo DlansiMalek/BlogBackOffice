@@ -27,8 +27,6 @@ Route::get('updateTokens/{congressId}', 'AccessController@updateTokensJitsi');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
-Route::get('/services', 'SharedController@getAllServices');
-Route::get('/etablissements', 'SharedController@getAllEtablissements');
 Route::get('/communication_type', 'SharedController@getAllCommunicationTypes');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
@@ -42,6 +40,16 @@ Route::get('/action', 'SharedController@getAllActions');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+    Route::group(['prefix' => '{congressId}'], function () {
+        Route::group(['prefix' => 'services'], function () {
+            Route::post('add', 'SubmissionController@addNewService');
+            Route::get('all', 'SubmissionController@getServicesByCongressId');
+        });
+        Route::group(['prefix' => 'etablissements'], function () {
+            Route::get('all', 'SubmissionController@getEtablissementsByCongressId');
+            Route::post('add', 'SubmissionController@addNewEtablissement');
+        });
+    });
 });
 Route::group(['prefix' => 'contact-us'], function () {
     Route::post('/send', 'ContactUsController@addContactUs');
@@ -302,24 +310,6 @@ Route::group(['middleware' => ['assign.guard:users'], 'prefix' => 'submission'],
         Route::put('/edit', 'SubmissionController@editSubmssion');
     });
     Route::get('user/all/pagination', 'SubmissionController@getSubmissionByUserId');
-});
-
-Route::group(['prefix' => 'congress'], function () {
-    Route::group(['prefix' => '{congressId}'], function () {
-        Route::group(['prefix' => 'services'], function () {
-            Route::post('add', 'SubmissionController@addNewService');
-            Route::get('all', 'SubmissionController@getServicesByCongressId');
-        });
-    });
-});
-
-Route::group(['prefix' => 'congress'], function () {
-    Route::group(['prefix' => '{congressId}'], function () {
-        Route::group(['prefix' => 'etablissements'], function () {
-            Route::get('all', 'SubmissionController@getEtablissementsByCongressId');
-            Route::post('add', 'SubmissionController@addNewEtablissement');
-        });
-    });
 });
 
 Route::group(['middleware' => ['assign.guard:admins'], 'prefix' => 'theme'], function () {
