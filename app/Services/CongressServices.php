@@ -536,8 +536,8 @@ class CongressServices
             $configCongress->show_in_chat = $showInChat;
         }
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
-        $configCongress->registration_description = $configCongressRequest['registration_description'];
-        $configCongress->registration_description_en = $configCongressRequest['registration_description_en'];
+        $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
+        $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
         
         $configCongress->update();
 
