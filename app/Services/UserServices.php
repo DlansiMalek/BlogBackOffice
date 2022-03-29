@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Artisan;
 
 class UserServices
 {
@@ -2078,6 +2079,11 @@ class UserServices
             }
         }
         return $userCongress;
+    }
+
+    public function clearCache()
+    {
+        return Artisan::call('cache:clear');
     }
 }
 

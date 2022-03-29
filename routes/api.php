@@ -358,6 +358,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
+        Route::get('clear-cache','UserController@clearCache');
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::post('{user_id}/changeScore', 'UserController@affectScoreToUser');
             Route::get('list-all', 'UserController@getAllUsersByCongress');
@@ -697,6 +698,3 @@ Route::group(["prefix" => "3D"], function () {
         });
     });
 }); 
-
-Route::get('clearCache','DevController@clearCache');
-
