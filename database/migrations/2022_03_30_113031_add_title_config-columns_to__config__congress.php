@@ -19,7 +19,7 @@ class AddTitleConfigColumnsToConfigCongress extends Migration
             $table->string("access_title")->default("Veuillez sélectionner un (des) ticket(s)");
             $table->string("access_title_en")->default("Choose Ticket");
             $table->string("prise_charge_title")->default("Prise en charge");
-            $table->string("prise_charge_title_en")->default(" Supported by");
+            $table->string("prise_charge_title_en")->default("Supported by");
         });
     }
 
