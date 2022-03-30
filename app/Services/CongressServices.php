@@ -531,6 +531,13 @@ class CongressServices
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
+        $configCongress->pack_title = $configCongressRequest['pack_title'];
+        $configCongress->pack_title_en = $configCongressRequest['pack_title_en'];
+        $configCongress->access_title = $configCongressRequest['access_title'];
+        $configCongress->access_title_en = $configCongressRequest['access_title_en'];
+        $configCongress->prise_charge_title = $configCongressRequest['prise_charge_title'];
+        $configCongress->prise_charge_title_en = $configCongressRequest['prise_charge_title_en'];
+        
         if($configCongressRequest['show_in_chat']){
             $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
             $configCongress->show_in_chat = $showInChat;
