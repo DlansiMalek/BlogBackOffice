@@ -101,16 +101,12 @@ class SubmissionController extends Controller
                 $request->input('submission.key_words'),
 
             );
-            $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
-            $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
             $this->authorServices->saveAuthorsBySubmission(
                 $request->input('authors'),
                 $submission->submission_id,
-                $etablissements,
-                $services
+                $request->input('submission.congress_id')
 
             );
-
             $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
 
             $this->submissionServices->affectSubmissionToEvaluators(
@@ -182,15 +178,12 @@ class SubmissionController extends Controller
                 $code,
                 $request->input('submission.key_words')
             );
-            $etablissements = $this->establishmentServices->addMultipleEstablishmentsFromAuthors($request->input('authors'));
-            $services = $this->serviceServices->addMultipleServicesFromAuthors($request->input('authors'));
             $existingAuthors = $this->authorServices->getAuthorsBySubmissionId($submission->submission_id);
             $this->authorServices->editAuthors(
                 $existingAuthors,
                 $request->input('authors'),
                 $submission->submission_id,
-                $services,
-                $etablissements
+                $submission->congress_id
             );
             if ($changedTheme) { // le cas ou  il n'ya pas eu d'évaluation et le utilisateur veut changer le theme de sa soumission
                 $evaluators = $this->adminServices->getEvaluatorsBySubmissionId($submission_id);
@@ -1025,18 +1018,6 @@ class SubmissionController extends Controller
             }
         }
         return response()->json(['Changes done successfully'], 200);
-    }
-
-    public function addNewEtablissement(Request $request, $congressId)
-    {
-        $etablissement =  $this->establishmentServices->addExternalEstablishment($request, $congressId);
-        return response()->json([$etablissement]);
-    }
-
-    public function addNewService(Request $request, $congressId)
-    {
-        $service =  $this->authorServices->addExternalService($request, $congressId);
-        return response()->json([$service]);
     }
 
     public function getServicesByCongressId($congressId)

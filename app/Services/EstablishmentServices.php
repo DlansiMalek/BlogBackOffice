@@ -39,13 +39,4 @@ class EstablishmentServices {
         return $etablissements;
     }
 
-    public function addExternalEstablishment($request ,$congressId)
-    {
-        $etablissement = new Etablissement();
-        $etablissement->label = $request->label;
-        $etablissement->congress_id = $congressId;
-        $etablissement->save();
-        return $etablissement;
-    }
-
 }
