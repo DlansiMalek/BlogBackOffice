@@ -42,12 +42,10 @@ Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
     Route::group(['prefix' => '{congressId}'], function () {
         Route::group(['prefix' => 'services'], function () {
-            Route::post('add', 'SubmissionController@addNewService');
             Route::get('all', 'SubmissionController@getServicesByCongressId');
         });
         Route::group(['prefix' => 'etablissements'], function () {
             Route::get('all', 'SubmissionController@getEtablissementsByCongressId');
-            Route::post('add', 'SubmissionController@addNewEtablissement');
         });
     });
 });
