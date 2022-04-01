@@ -536,6 +536,7 @@ class CongressServices
             $configCongress->show_in_chat = $showInChat;
         }
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
+        $configCongress->email_signature = $configCongressRequest['email_signature'];
         
         $configCongress->update();
 
@@ -785,6 +786,8 @@ class CongressServices
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
             $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
             $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ; 
+            $signature=$congress->config->email_signature;
+            $template = str_replace('{{$congress-&gt;config-&gt;email_signature}}', $signature .'' , $template);
         }
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
