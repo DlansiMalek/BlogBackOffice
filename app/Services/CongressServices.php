@@ -537,6 +537,8 @@ class CongressServices
         $configCongress->access_title_en = $configCongressRequest['access_title_en'];
         $configCongress->prise_charge_title = $configCongressRequest['prise_charge_title'];
         $configCongress->prise_charge_title_en = $configCongressRequest['prise_charge_title_en'];
+        $configCongress->pack_description = $configCongressRequest['pack_description'];
+        $configCongress->pack_description_en = $configCongressRequest['pack_description_en'];
         
         if($configCongressRequest['show_in_chat']){
             $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
