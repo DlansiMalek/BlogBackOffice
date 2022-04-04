@@ -27,8 +27,6 @@ Route::get('updateTokens/{congressId}', 'AccessController@updateTokensJitsi');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
-Route::get('/services', 'SharedController@getAllServices');
-Route::get('/etablissements', 'SharedController@getAllEtablissements');
 Route::get('/communication_type', 'SharedController@getAllCommunicationTypes');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
@@ -42,6 +40,14 @@ Route::get('/action', 'SharedController@getAllActions');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+    Route::group(['prefix' => '{congressId}'], function () {
+        Route::group(['prefix' => 'services'], function () {
+            Route::get('all', 'SubmissionController@getServicesByCongressId');
+        });
+        Route::group(['prefix' => 'etablissements'], function () {
+            Route::get('all', 'SubmissionController@getEtablissementsByCongressId');
+        });
+    });
 });
 Route::group(['prefix' => 'contact-us'], function () {
     Route::post('/send', 'ContactUsController@addContactUs');
@@ -377,7 +383,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
             Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');
             Route::get('random-users-pwa', 'UserController@getRandomUsers')->middleware('assign.guard:users');              
-            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');      
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
