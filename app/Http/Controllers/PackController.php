@@ -45,7 +45,9 @@ class PackController extends Controller
             $request->input('label'),
             $request->input('description'),
             $request->input('price'),
-            $request->input('accessIds')
+            $request->input('accessIds'),
+            $request->input('label_en'),
+            $request->input('description_en')
         );
         $acesss = $this->accessServices->getByCongressId($congressId);
         $this->accessServices->ChangeAccessPacklessZeroToOne(
