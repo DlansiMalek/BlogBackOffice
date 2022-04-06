@@ -15,21 +15,21 @@ class MenuChildrenSeed06 extends Seeder
     public function run()
     {
         DB::table('Menu_Children')->insert([
-            'menu_children_id' => 44,
+            'menu_children_id' => 46,
             'key' => 'configSubmission',
             'url' => '/configuration/:congress_id/config-Submission',
             'menu_id' => 18,
             'index' => 2
         ]);
         DB::table('Menu_Children')->insert([
-            'menu_children_id' => 45,
+            'menu_children_id' => 47,
             'key' => 'OnlineEvent',
             'url' => '/configuration/:congress_id/Online-Event',
             'menu_id' => 18,
             'index' => 3
         ]);
         DB::table('Menu_Children')->insert([
-            'menu_children_id' => 46,
+            'menu_children_id' => 48,
             'key' => 'Meetings',
             'url' => '/configuration/:congress_id/Meetings',
             'menu_id' => 18,
