@@ -140,6 +140,16 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Tracking::class, 'user_id', 'user_id');
     }
+    function meetingsOrganizer()
+    {
+        return $this->belongsToMany(Meeting::class,'User_Meeting','user_sender_id','meeting_id');
+    }
+
+    function meetingsParticipant()
+    {
+        return $this->belongsToMany(Meeting::class,'User_Meeting','user_sender_id','meeting_id');
+    }
+
     function meetings()
     {
         return $this->belongsToMany(Meeting::class,'User_Meeting','user_id','meeting_id');
@@ -148,5 +158,9 @@ class User extends Authenticatable implements JWTSubject
     function network_member()
     {
         return $this->belongsToMany(User::class, 'User_Network', 'fav_id', 'user_id');
+    }
+
+    function table() {
+        return $this->hasMany(MeetingTable::class,'user_id','user_id');
     }
 }

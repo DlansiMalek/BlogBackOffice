@@ -531,10 +531,22 @@ class CongressServices
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
+        $configCongress->pack_title = $configCongressRequest['pack_title'];
+        $configCongress->pack_title_en = $configCongressRequest['pack_title_en'];
+        $configCongress->access_title = $configCongressRequest['access_title'];
+        $configCongress->access_title_en = $configCongressRequest['access_title_en'];
+        $configCongress->prise_charge_title = $configCongressRequest['prise_charge_title'];
+        $configCongress->prise_charge_title_en = $configCongressRequest['prise_charge_title_en'];
+        $configCongress->pack_description = $configCongressRequest['pack_description'];
+        $configCongress->pack_description_en = $configCongressRequest['pack_description_en'];
+        
         if($configCongressRequest['show_in_chat']){
             $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
             $configCongress->show_in_chat = $showInChat;
         }
+        $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
+        $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
+        $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
         
         $configCongress->update();
 
@@ -590,8 +602,8 @@ class CongressServices
         $configSubmission->start_submission_date = $submissionData['start_submission_date'];
         $configSubmission->end_submission_date = $submissionData['end_submission_date'];
         $configSubmission->show_file_upload = $submissionData['show_file_upload'];
-        $configSubmission->explanatory_paragraph = $submissionData['explanatory_paragraph'];
-        $configSubmission->explanatory_paragraph_en = $submissionData['explanatory_paragraph_en'];
+        $configSubmission->explanatory_paragraph = array_key_exists('explanatory_paragraph', $submissionData)?$submissionData['explanatory_paragraph']: null;
+        $configSubmission->explanatory_paragraph_en = array_key_exists('explanatory_paragraph_en', $submissionData)?$submissionData['explanatory_paragraph_en']: null;
         $configSubmission->save();
         return $configSubmission;
 
@@ -1136,6 +1148,8 @@ class CongressServices
         $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
         $config_landing_page->waiting_title_en = $request->has("waiting_title_en") ? $request->input('waiting_title_en') : null;
         $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
+
+        $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
