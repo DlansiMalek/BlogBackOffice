@@ -26,7 +26,7 @@ class ModifyMeetingNameColumnInMeetingTable extends Migration
     public function down()
     {
         Schema::table('Meeting', function (Blueprint $table) {
-            $table->dropColumn('name');
+            $table->string('name')->change();
         });
     }
 }
