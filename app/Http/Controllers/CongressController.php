@@ -1239,5 +1239,18 @@ class CongressController extends Controller
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
+    }
+
+    public function updateChatInfo(Request $request, $congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(["message" => "congress not found"], 404);
+
+        $oldShowInChat = $this->userServices->getShowInChat($congress_id);
+        if ($oldShowInChat != $request->input('showInChat')) {
+
+            $updatedShowInChat =  $this->userServices->editShowInChat($request->input('showInChat'), $congress_id);
+        }
+        return response()->json($updatedShowInChat, 200);
     }   
 }
