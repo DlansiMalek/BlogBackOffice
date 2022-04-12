@@ -2105,12 +2105,16 @@ class UserServices
                     if ($form_input) {
                         if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
                             $chat_info = $this->getValueResponse($userCongress->user->user_id, $form_input->form_input_id);
-                            $userCongress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $userCongress->chat_info;
-                            $userCongress->update();
+                            if (count($chat_info) > 0) {
+                                $userCongress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $userCongress->chat_info;
+                                $userCongress->update();
+                            }
                         } else {
                             $chat_info = $this->getResponseFormInput($userCongress->user->user_id, $form_input->form_input_id);
-                            $userCongress->chat_info = $chat_info[0]['response'] . ";" .  $userCongress->chat_info;
-                            $userCongress->update();
+                            if (count($chat_info) > 0) {
+                                $userCongress->chat_info = $chat_info[0]['response'] . ";" .  $userCongress->chat_info;
+                                $userCongress->update();
+                            }
                         }
                     }
                 }
