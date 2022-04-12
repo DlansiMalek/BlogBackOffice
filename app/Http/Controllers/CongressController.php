@@ -320,6 +320,12 @@ class CongressController extends Controller
         if ($oldShowInFixTable != $request->input("congress")['show_in_fix_table']) {
             $this->userServices->editFixTableInfo($request->input("congress")['show_in_fix_table'], $congressId);
         }
+
+        $oldShowInChat = $this->userServices->getShowInChat($congressId);
+        if ($oldShowInChat != $request->input('congress')['show_in_chat']) {
+            $this->userServices->editShowInChat($request->input('congress')['show_in_chat'], $congressId);
+        }
+
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
     }
@@ -1239,5 +1245,5 @@ class CongressController extends Controller
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
-    }   
+    } 
 }
