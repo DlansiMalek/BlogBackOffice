@@ -31,6 +31,7 @@ use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Services\MeetingServices;
 
 class CongressController extends Controller
@@ -322,7 +323,7 @@ class CongressController extends Controller
         }
 
         $oldShowInChat = $this->userServices->getShowInChat($congressId);
-        if ($oldShowInChat != $request->input('congress')['show_in_chat']) {
+        if ($oldShowInChat != $request->input('congress')['show_in_chat'] && $request->input('congress')['show_in_chat']) {
             $this->userServices->editShowInChat($request->input('congress')['show_in_chat'], $congressId);
         }
 
