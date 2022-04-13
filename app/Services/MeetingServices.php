@@ -577,7 +577,7 @@ class MeetingServices
             $query->where('user_receiver_id', '=', $user_id)
                 ->where('status', '=',  $status);
         })->where('congress_id', '=', $congress_id)
-            ->count();
+        ->count();
     }
   
 }
