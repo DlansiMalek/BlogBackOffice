@@ -37,16 +37,6 @@ class SharedServices
       ->get();
   }
 
-  public function getAllServices()
-  {
-    return Service::all();
-  }
-
-  public function getAllEtablissements()
-  {
-    return Etablissement::all();
-  }
-
   public function saveAttestationsSubmissionsInPublic(array $request)
   {
     if ($request) {

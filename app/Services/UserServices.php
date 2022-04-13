@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class UserServices
 {
@@ -1919,8 +1921,10 @@ class UserServices
     {
         $show_in_chat =ConfigCongress::where('congress_id', '=', $congress_id)
             ->get('show_in_chat')->pluck('show_in_chat'); 
-        $show_in_chat = substr($show_in_chat,2);
-        $show_in_chat=substr_replace($show_in_chat ,"", -2);
+        if ($show_in_chat[0] != null) {
+            $show_in_chat = substr($show_in_chat,2);
+            $show_in_chat=substr_replace($show_in_chat ,"", -2);
+        }
         return  $show_in_chat ;    
         }
 
@@ -2079,6 +2083,51 @@ class UserServices
         }
         return $userCongress;
     }
+
+    public function editShowInChat($show_in_chat, $congress_id)
+    {
+        $usersCongress = UserCongress::where('congress_id', '=', $congress_id)
+            ->whereHas('user', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            })->with(['user'])
+            ->get();
+
+        $form_input = $this->getQuestionByKey($congress_id, $show_in_chat);
+        foreach ($usersCongress as $userCongress) {
+            if ($show_in_chat[0] == null) {
+                $userCongress->chat_info = null;
+                $userCongress->update();
+            }
+            $userCongress->chat_info = null;
+            if ($show_in_chat[0] != null) {
+                for ($i = 0; $i < sizeof($show_in_chat); $i++) {
+                    if (Schema::hasColumn('User', $show_in_chat[$i])) {
+                        $userCongress->chat_info = $userCongress->user[$show_in_chat[$i]] . ';' . $userCongress->chat_info;
+                        $userCongress->update();
+                    } else {
+                        $form_input = $this->getQuestionByKey($congress_id, $show_in_chat[$i]);
+                        if ($form_input) {
+                            if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
+                                $chat_info = $this->getValueResponse($userCongress->user->user_id, $form_input->form_input_id);
+                                if (count($chat_info) > 0) {
+                                    $userCongress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $userCongress->chat_info;
+                                    $userCongress->update();
+                                }
+                            } else {
+                                $chat_info = $this->getResponseFormInput($userCongress->user->user_id, $form_input->form_input_id);
+                                if (count($chat_info) > 0) {
+                                    $userCongress->chat_info = $chat_info[0]['response'] . ";" .  $userCongress->chat_info;
+                                    $userCongress->update();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $usersCongress;
+    }
+
 }
 
 

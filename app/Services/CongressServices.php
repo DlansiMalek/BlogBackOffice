@@ -534,11 +534,23 @@ class CongressServices
         $configCongress->nb_fix_table = $configCongressRequest['nb_fix_table'];
         $configCongress->label_fix_table = $configCongressRequest['label_fix_table'];
         $configCongress->label_meeting_table = $configCongressRequest['label_meeting_table'];
+        $configCongress->pack_title = $configCongressRequest['pack_title'];
+        $configCongress->pack_title_en = $configCongressRequest['pack_title_en'];
+        $configCongress->access_title = $configCongressRequest['access_title'];
+        $configCongress->access_title_en = $configCongressRequest['access_title_en'];
+        $configCongress->prise_charge_title = $configCongressRequest['prise_charge_title'];
+        $configCongress->prise_charge_title_en = $configCongressRequest['prise_charge_title_en'];
+        $configCongress->pack_description = $configCongressRequest['pack_description'];
+        $configCongress->pack_description_en = $configCongressRequest['pack_description_en'];
+        $configCongress->meetings_location = $configCongressRequest['meetings_location'];
+        
         if($configCongressRequest['show_in_chat']){
             $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
             $configCongress->show_in_chat = $showInChat;
         }
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
+        $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
+        $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
         
         $configCongress->update();
 
@@ -596,7 +608,6 @@ class CongressServices
         $configSubmission->show_file_upload = $submissionData['show_file_upload'];
         $configSubmission->explanatory_paragraph = array_key_exists('explanatory_paragraph', $submissionData)?$submissionData['explanatory_paragraph']: null;
         $configSubmission->explanatory_paragraph_en = array_key_exists('explanatory_paragraph_en', $submissionData)?$submissionData['explanatory_paragraph_en']: null;
-        
         $configSubmission->save();
         return $configSubmission;
 
