@@ -597,6 +597,15 @@ class MeetingServices
             ->get('response');
     }
 
+    public function getNumberOfWaitingMeetings($congress_id, $user_id, $status)
+    {
+        return Meeting::whereHas('user_meeting', function ($query) use ($user_id, $status) {
+            $query->where('user_receiver_id', '=', $user_id)
+                ->where('status', '=',  $status);
+        })->where('congress_id', '=', $congress_id)
+        ->count();
+    }
+    
     public function renameTables($tables, $newLabel)
     {
         foreach( $tables as $table) {
