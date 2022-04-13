@@ -14,7 +14,7 @@ class AddFixtableCounterConfigurationToConfigCongressTable extends Migration
     public function up()
     {
         Schema::table('Config_Congress', function (Blueprint $table) {
-            $table->tinyInteger('nb_fix_table')->nullable()->default(null);
+            $table->tinyInteger('nb_fix_table')->nullable()->default(0);
             $table->string('label_fix_table')->nullable()->default(null);
             $table->string('label_meeting_table')->nullable()->default(null);
         });
