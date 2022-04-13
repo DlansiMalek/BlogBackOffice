@@ -16,11 +16,12 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 class MeetingServices
 {
-
-    function __construct()
+    function __construct( )
     {
+
     }
  
     public function addMeeting($meeting, $request)
@@ -62,13 +63,35 @@ class MeetingServices
     {
         return Meeting::with(['meeting_evaluation' => function ($query) use ($user_id) {
             $query->where('user_id', '=', $user_id);
-        },'meetingtable', 'user_meeting' => function ($query) {
+        },'meetingtable', 'user_meeting' => function ($query)  use ($congress_id) {
             $query->with([
-                'organizer' => function ($q) {
-                    $q->with(['profile_img']);
-                }, 'participant' => function ($q) {
-                    $q->with(['profile_img']);
-                }
+                'organizer' => function ($q)  use ($congress_id) {
+                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    }]);
+                },
+                'organizer.responses' => function ($query) use ($congress_id) {
+                    $query->whereHas('form_input', function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    });
+                },
+                'organizer.responses.form_input', 'organizer.responses.form_input.values', 'organizer.responses.form_input.type',
+                'organizer.responses.values' => function ($query) {
+                    $query->with(['val']);
+                },
+                'participant' => function ($q) use ($congress_id) {
+                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    }]);
+                },
+                'participant.responses' => function ($query) use ($congress_id) {
+                    $query->whereHas('form_input', function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    });
+                }, 'participant.responses.values' => function ($query) {
+                    $query->with(['val']);
+                },
+                'participant.responses.form_input.values', 'participant.responses.form_input.type', 'participant.responses.form_input',
             ]);
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
@@ -271,11 +294,14 @@ class MeetingServices
         return $meeting;
     }
 
-    public function InsertMeetingTable($nbMeetingTable, $congressId)
+    public function InsertMeetingTable($nbMeetingTable, $congressId, $congress)
     {
         $meetingtables = $this->deleteMeetingTablesWithNoMeeting($congressId);
-        for ($i = 1; $i <= $nbMeetingTable; $i++) {
-            $label = "TV" . $i;
+        $labelVarTables = $congress->config->label_meeting_table != null ? $congress->config->label_meeting_table : 'TV';
+        $nbFixTable = $congress->config->nb_fix_table;
+
+        for ($i = $nbFixTable + 1 ; $i <= $nbMeetingTable + $nbFixTable ; $i++) {
+            $label = $labelVarTables . ' ' . $i;
             $MeetTable = $this->addMeetingTable($label, $congressId);
         }
         if (count($meetingtables) != 0) {
@@ -468,10 +494,10 @@ class MeetingServices
         return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete,  'InvalidUser' => $invalidUser];
     }
 
-    public function InsertFixTable($nbFixTable, $tableFix)
+    public function InsertFixTable($nbFixTable, $tableFix, $labelFixTables)
     {
         for ($i = 1; $i <= $nbFixTable; $i++) {
-            $label = "TF" . $i;
+            $label = $labelFixTables . ' ' . $i;
             $tableFix[$i - 1]->label = $label;
             $tableFix[$i - 1]->update();
         }
@@ -578,6 +604,30 @@ class MeetingServices
                 ->where('status', '=',  $status);
         })->where('congress_id', '=', $congress_id)
             ->count();
+    }
+    public function renameTables($tables, $newLabel)
+    {
+        foreach( $tables as $table) {
+            $int = (int) filter_var($table->label, FILTER_SANITIZE_NUMBER_INT);
+            $table->label = $newLabel . ' ' . $int;
+            $table->update();
+        }
+    }
+
+    public function getVariableTables($congressId)
+    {
+        return MeetingTable::where('congress_id', '=', $congressId)
+        ->where('user_id', '=', null)
+        ->get();
+    }
+
+    public function resetTablesCounter($tables, $newLabel, $counter)
+    {
+        foreach( $tables as $table) {
+            $counter +=1;
+            $table->label = $newLabel . ' ' . $counter;
+            $table->update();
+        }
     }
   
 }
