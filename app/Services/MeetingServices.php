@@ -18,9 +18,10 @@ use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
 class MeetingServices
 {
-
-    function __construct()
+    protected $congressServices;
+    function __construct(CongressServices $congressServices )
     {
+        $this->congressServices = $congressServices;
     }
  
     public function addMeeting($meeting, $request)
@@ -274,8 +275,12 @@ class MeetingServices
     public function InsertMeetingTable($nbMeetingTable, $congressId)
     {
         $meetingtables = $this->deleteMeetingTablesWithNoMeeting($congressId);
-        for ($i = 1; $i <= $nbMeetingTable; $i++) {
-            $label = "TV" . $i;
+        $congress = $this->congressServices->getCongressById($congressId);
+        $labelVarTables = $congress->config->label_meeting_table != null ? $congress->config->label_meeting_table : 'TV';
+        $nbFixTable = $congress->config->nb_fix_table;
+
+        for ($i = $nbFixTable + 1 ; $i <= $nbMeetingTable + $nbFixTable ; $i++) {
+            $label = $labelVarTables . $i;
             $MeetTable = $this->addMeetingTable($label, $congressId);
         }
         if (count($meetingtables) != 0) {
@@ -468,10 +473,10 @@ class MeetingServices
         return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete,  'InvalidUser' => $invalidUser];
     }
 
-    public function InsertFixTable($nbFixTable, $tableFix)
+    public function InsertFixTable($nbFixTable, $tableFix, $labelFixTables)
     {
         for ($i = 1; $i <= $nbFixTable; $i++) {
-            $label = "TF" . $i;
+            $label = $labelFixTables . $i;
             $tableFix[$i - 1]->label = $label;
             $tableFix[$i - 1]->update();
         }

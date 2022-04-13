@@ -531,6 +531,9 @@ class CongressServices
         $configCongress->nb_meeting_table = $configCongressRequest['nb_meeting_table'];
         $configCongress->title_description = $configCongressRequest['title_description'];
         $configCongress->support_img = $configCongressRequest['support_img'];
+        $configCongress->nb_fix_table = $configCongressRequest['nb_fix_table'];
+        $configCongress->label_fix_table = $configCongressRequest['label_fix_table'];
+        $configCongress->label_meeting_table = $configCongressRequest['label_meeting_table'];
         if($configCongressRequest['show_in_chat']){
             $showInChat = collect($configCongressRequest['show_in_chat'])->implode(';');
             $configCongress->show_in_chat = $showInChat;
