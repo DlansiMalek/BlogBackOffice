@@ -493,4 +493,18 @@ class MeetingController extends Controller
       }
     }
   }
+
+  public function getNumberWaitingMeetings($congressId)
+  {
+    $user = $this->userServices->retrieveUserFromToken();
+    if (!$user) {
+      return response()->json(['response' => 'No user found'], 401);
+    }
+    $congress = $this->congressServices->getCongressById($congressId);
+    if (!$congress) {
+      return response()->json(['response' => 'No congress found'], 401);
+    }
+    $NumberOfwaitingMeetings = $this->meetingServices->getNumberOfWaitingMeetings($congress->congress_id, $user->user_id, 0);
+    return response()->json($NumberOfwaitingMeetings, 200);
+  }
 }
