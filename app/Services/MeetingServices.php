@@ -16,11 +16,12 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 class MeetingServices
 {
-
-    function __construct()
+    function __construct( )
     {
+
     }
  
     public function addMeeting($meeting, $request)
@@ -293,11 +294,14 @@ class MeetingServices
         return $meeting;
     }
 
-    public function InsertMeetingTable($nbMeetingTable, $congressId)
+    public function InsertMeetingTable($nbMeetingTable, $congressId, $congress)
     {
         $meetingtables = $this->deleteMeetingTablesWithNoMeeting($congressId);
-        for ($i = 1; $i <= $nbMeetingTable; $i++) {
-            $label = "TV" . $i;
+        $labelVarTables = $congress->config->label_meeting_table != null ? $congress->config->label_meeting_table : 'TV';
+        $nbFixTable = $congress->config->nb_fix_table;
+
+        for ($i = $nbFixTable + 1 ; $i <= $nbMeetingTable + $nbFixTable ; $i++) {
+            $label = $labelVarTables . ' ' . $i;
             $MeetTable = $this->addMeetingTable($label, $congressId);
         }
         if (count($meetingtables) != 0) {
@@ -490,10 +494,10 @@ class MeetingServices
         return ['InvalidUpdate' => $invalidUpdate, 'InvalidDelete' => $invalidDelete,  'InvalidUser' => $invalidUser];
     }
 
-    public function InsertFixTable($nbFixTable, $tableFix)
+    public function InsertFixTable($nbFixTable, $tableFix, $labelFixTables)
     {
         for ($i = 1; $i <= $nbFixTable; $i++) {
-            $label = "TF" . $i;
+            $label = $labelFixTables . ' ' . $i;
             $tableFix[$i - 1]->label = $label;
             $tableFix[$i - 1]->update();
         }
@@ -591,6 +595,31 @@ class MeetingServices
         return FormInputResponse::where('user_id', '=', $user_id)
             ->where('form_input_id', '=', $form_input_id)   
             ->get('response');
+    }
+
+    public function renameTables($tables, $newLabel)
+    {
+        foreach( $tables as $table) {
+            $int = (int) filter_var($table->label, FILTER_SANITIZE_NUMBER_INT);
+            $table->label = $newLabel . ' ' . $int;
+            $table->update();
+        }
+    }
+
+    public function getVariableTables($congressId)
+    {
+        return MeetingTable::where('congress_id', '=', $congressId)
+        ->where('user_id', '=', null)
+        ->get();
+    }
+
+    public function resetTablesCounter($tables, $newLabel, $counter)
+    {
+        foreach( $tables as $table) {
+            $counter +=1;
+            $table->label = $newLabel . ' ' . $counter;
+            $table->update();
+        }
     }
   
 }

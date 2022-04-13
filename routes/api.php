@@ -295,6 +295,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('admin');
         Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
     });
+
 });
 
 Route::group(['prefix' => 'stand', "middleware" => ['assign.guard:admins']], function () {
