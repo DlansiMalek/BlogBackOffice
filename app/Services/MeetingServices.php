@@ -62,13 +62,35 @@ class MeetingServices
     {
         return Meeting::with(['meeting_evaluation' => function ($query) use ($user_id) {
             $query->where('user_id', '=', $user_id);
-        },'meetingtable', 'user_meeting' => function ($query) {
+        },'meetingtable', 'user_meeting' => function ($query)  use ($congress_id) {
             $query->with([
-                'organizer' => function ($q) {
-                    $q->with(['profile_img']);
-                }, 'participant' => function ($q) {
-                    $q->with(['profile_img']);
-                }
+                'organizer' => function ($q)  use ($congress_id) {
+                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    }]);
+                },
+                'organizer.responses' => function ($query) use ($congress_id) {
+                    $query->whereHas('form_input', function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    });
+                },
+                'organizer.responses.form_input', 'organizer.responses.form_input.values', 'organizer.responses.form_input.type',
+                'organizer.responses.values' => function ($query) {
+                    $query->with(['val']);
+                },
+                'participant' => function ($q) use ($congress_id) {
+                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    }]);
+                },
+                'participant.responses' => function ($query) use ($congress_id) {
+                    $query->whereHas('form_input', function ($query) use ($congress_id) {
+                        $query->where('congress_id', '=', $congress_id);
+                    });
+                }, 'participant.responses.values' => function ($query) {
+                    $query->with(['val']);
+                },
+                'participant.responses.form_input.values', 'participant.responses.form_input.type', 'participant.responses.form_input',
             ]);
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
