@@ -47,7 +47,8 @@ class ConfigCongress extends Model
         'nb_meeting_table',
         'is_visible_price',
         'registration_description',
-        'registration_description_en'
+        'registration_description_en',
+        'location_link'
 
         
     ];
