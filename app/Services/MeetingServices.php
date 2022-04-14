@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\MeetingEvaluation;
+use App\Models\MeetingDates;
 
 
 
@@ -16,6 +17,7 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
+
 class MeetingServices
 {
 
@@ -591,6 +593,45 @@ class MeetingServices
         return FormInputResponse::where('user_id', '=', $user_id)
             ->where('form_input_id', '=', $form_input_id)   
             ->get('response');
+    }
+
+    public function editConfigMeetingDates($newMeetingDates, $congress_id)
+    {
+        $oldDates = $this->getMeetingDates($congress_id);
+
+        foreach ($oldDates as  $old) {
+            $exists = false;
+            foreach ($newMeetingDates->all() as $new) {
+                if ($old->meeting_dates_id == $new['meeting_dates_id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists) {
+                $old->delete();
+                break;
+            }
+        }
+        foreach ($newMeetingDates->all() as $new) {
+            $meetingDates = null;
+            foreach ($oldDates as $old) {
+                if ($old->meeting_dates_id == $new['meeting_dates_id']) {
+                    $meetingDates = $old;
+                    break;
+                }
+            }
+            if (!$meetingDates) $meetingDates = new MeetingDates();
+            $meetingDates->congress_id = $congress_id;
+            $meetingDates->start_date = $new["start_date"];
+            $meetingDates->end_date = $new["end_date"];
+            $meetingDates->save();
+        }
+    }
+
+    public function getMeetingDates($congress_id)
+    {
+        return MeetingDates::where('congress_id', '=', $congress_id)         
+            ->get();
     }
   
 }
