@@ -1155,6 +1155,8 @@ class CongressServices
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
 
+        $config_landing_page->prg_file = $request->has("prg_file") ? $request->input('prg_file') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
