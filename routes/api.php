@@ -69,6 +69,7 @@ Route::group(['prefix' => 'meetings'], function () {
         Route::get('get-fix-tables', 'MeetingController@getFixTables');
         Route::get('get-meetings-dates', 'MeetingController@getMeetingsDates');
         Route::get('get-meeting-tables', 'MeetingController@getMeetingTableByCongress');
+        Route::get('get-number-waiting-meeting', 'MeetingController@getNumberWaitingMeetings')->middleware('assign.guard:users');
     });
     Route::group(['prefix' => '{meeting_id}'], function () {
         Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
@@ -77,6 +78,7 @@ Route::group(['prefix' => 'meetings'], function () {
         Route::put('statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
         Route::put('statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
     });
+   
 });
 
 //SMS API
@@ -296,6 +298,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('admin');
         Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
     });
+
 });
 
 Route::group(['prefix' => 'stand', "middleware" => ['assign.guard:admins']], function () {
