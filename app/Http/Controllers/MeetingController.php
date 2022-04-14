@@ -380,9 +380,10 @@ class MeetingController extends Controller
     $errorTables = $this->meetingServices->setFixTables($request, $congress_id, $isSelected);
     $fixTables = $this->meetingServices->getFixTables($congress_id);
     $nbTableFix = $fixTables->count();
+    $labelFixTables = $congress->config->label_fix_table != null ? $congress->config->label_fix_table : 'TF';
 
     if ($nbTableFix != 0) {
-      $this->meetingServices->InsertFixTable($nbTableFix, $fixTables);
+      $this->meetingServices->InsertFixTable($nbTableFix, $fixTables, $labelFixTables);
     }
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
   }
@@ -492,5 +493,19 @@ class MeetingController extends Controller
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user_sender, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null, null, $meeting, $user_receiver, $user_sender), $user_receiver, $congress, $mail->object, null, $userMail, null, null);
       }
     }
+  }
+
+  public function getNumberWaitingMeetings($congressId)
+  {
+    $user = $this->userServices->retrieveUserFromToken();
+    if (!$user) {
+      return response()->json(['response' => 'No user found'], 401);
+    }
+    $congress = $this->congressServices->getCongressById($congressId);
+    if (!$congress) {
+      return response()->json(['response' => 'No congress found'], 401);
+    }
+    $NumberOfwaitingMeetings = $this->meetingServices->getNumberOfWaitingMeetings($congress->congress_id, $user->user_id, 0);
+    return response()->json($NumberOfwaitingMeetings, 200);
   }
 }

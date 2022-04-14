@@ -31,6 +31,7 @@ use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Services\MeetingServices;
 
 class CongressController extends Controller
@@ -258,7 +259,10 @@ class CongressController extends Controller
         }
 
         $configCongress = $this->congressServices->getCongressConfigById($congressId);
-        $oldShowInFixTable = $configCongress->show_in_fix_table ;
+        $oldShowInFixTable = $configCongress->show_in_fix_table;
+        $oldLabelFixTable = $configCongress->label_fix_table;
+        $oldLabelMeetingTable = $configCongress->label_meeting_table;
+        $oldNumberFixTable = $configCongress->nb_fix_table;
 
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
 
@@ -281,9 +285,16 @@ class CongressController extends Controller
             return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
         }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
+        $congress = $this->congressServices->getCongressById($congressId);
         $nbMeetingTable = $configCongress['nb_meeting_table'];
+
+        if ($oldNumberFixTable != $request->input('congress')['nb_fix_table']) {
+            $variableTables = $this->meetingServices->getVariableTables($congressId);
+            $this->meetingServices->resetTablesCounter($variableTables, $request->input('congress')['label_meeting_table'], $request->input('congress')['nb_fix_table']);
+        }
+
         if ($nbMeetingTable != 0) {
-            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId, $congress);
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
@@ -317,8 +328,24 @@ class CongressController extends Controller
         // Config OnlineAccess Allowed
         $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
         $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
+
         if ($oldShowInFixTable != $request->input("congress")['show_in_fix_table']) {
             $this->userServices->editFixTableInfo($request->input("congress")['show_in_fix_table'], $congressId);
+        }
+
+        $oldShowInChat = $this->userServices->getShowInChat($congressId);
+        if ($oldShowInChat != $request->input('congress')['show_in_chat'] && $request->input('congress')['show_in_chat']) {
+            $this->userServices->editShowInChat($request->input('congress')['show_in_chat'], $congressId);
+        }
+
+        if ($oldLabelFixTable != $request->input('congress')['label_fix_table']) {
+            $fixTables = $this->meetingServices->getFixTables($congressId);
+            $this->meetingServices->renameTables($fixTables, $request->input('congress')['label_fix_table']);
+        }
+
+        if ($oldLabelMeetingTable != $request->input('congress')['label_meeting_table']) {
+            $variableTables = $this->meetingServices->getVariableTables($congressId);
+            $this->meetingServices->renameTables($variableTables, $request->input('congress')['label_meeting_table']);
         }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
@@ -1239,5 +1266,5 @@ class CongressController extends Controller
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
-    }   
+    } 
 }
