@@ -1155,8 +1155,8 @@ class CongressServices
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
 
-        $config_landing_page->home_btn_text = $request->has("home_btn_text") ? $request->input('home_btn_text') : null;
-        $config_landing_page->home_btn_link = $request->has("home_btn_link") ? $request->input('home_btn_link') : null;
+        $config_landing_page->home_btn_text = $request->input('home_btn_text');
+        $config_landing_page->home_btn_link = $request->input('home_btn_link');
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
