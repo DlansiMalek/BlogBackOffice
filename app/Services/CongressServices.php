@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\LPOrganizer;
-
+use Symfony\Component\Console\Question\Question;
 
 /**
  * @property OrganizationServices $organizationServices
@@ -752,7 +752,7 @@ class CongressServices
         return Mail::find($id);
     }
     
-    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
+    function renderMail($template, $congress, $participant,$link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
                         $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null, $meetingtable = null, $submissionTheme = null)
     { 
         $accesses = "";
@@ -798,8 +798,9 @@ class CongressServices
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
             $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
-            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ; 
+            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ;
         }
+        $template = str_replace('{{$user_congress-&gt;chat_info}}', '{{$participant->chat_info}}',$template);
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
