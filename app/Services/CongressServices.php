@@ -1155,7 +1155,7 @@ class CongressServices
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
 
-        $config_landing_page->is_b2b_btn = $request->has("is_b2b_btn") ? $request->input('is_b2b_btn') : null;
+        $config_landing_page->is_b2b_btn = $request->has("is_b2b_btn") ? $request->input('is_b2b_btn') : 0;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
