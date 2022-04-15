@@ -15,7 +15,7 @@ class AddHomeBtnTextAndHomeBtnLinkToConfigLPTable extends Migration
     {
         Schema::table('Config_LP', function (Blueprint $table) {
             $table->string('home_btn_text')->default('LOGIN');
-            $table->string('home_btn_link')->default('/#/landingpage/{congressId}/login');
+            $table->string('home_btn_link')->default('/landingpage/{congressId}/login');
         });
     }
 
