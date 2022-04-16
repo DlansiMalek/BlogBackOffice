@@ -15,8 +15,8 @@ class CreateMeetingDatesMigration extends Migration
     {
         Schema::create('Meeting_Dates', function (Blueprint $table) {
             $table->increments('meeting_dates_id');
-            $table->dateTime("start_date")->nullable()->default(null);
-            $table->dateTime("end_date")->nullable()->default(null);
+            $table->dateTime("start_date");
+            $table->dateTime("end_date");
             $table->unsignedInteger("congress_id");
             $table->foreign("congress_id")->references('congress_id')->on('Congress')
                 ->onDelete('cascade');
