@@ -1908,6 +1908,8 @@ class UserServices
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"]);
+               
             }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
