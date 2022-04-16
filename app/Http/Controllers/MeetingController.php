@@ -500,8 +500,8 @@ class MeetingController extends Controller
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
       return response()->json(['response' => 'Congress not found', 404]);
     }
-    $fixTables = $this->meetingServices->getmeetingDates($congress_id);
-    return response()->json($fixTables, 200);
+    $meetingDates = $this->meetingServices->getmeetingDates($congress_id);
+    return response()->json($meetingDates, 200);
   }
 
   public function setMeetingsDate(Request $request, $congress_id)
@@ -528,5 +528,14 @@ class MeetingController extends Controller
     }
     $NumberOfwaitingMeetings = $this->meetingServices->getNumberOfWaitingMeetings($congress->congress_id, $user->user_id, 0);
     return response()->json($NumberOfwaitingMeetings, 200);
+  }
+
+  public function getMeetingsDatesByStartDate($congress_id, $startDate)
+  {
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json(['response' => 'Congress not found', 404]);
+    }
+    $meetingDates = $this->meetingServices->getMeetingsDatesByStartDate($congress_id,$startDate);
+    return response()->json($meetingDates, 200);
   }
 }

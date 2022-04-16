@@ -68,6 +68,7 @@ Route::group(['prefix' => 'meetings'], function () {
         Route::get('meetings-between-two-dates-by-status', 'MeetingController@getMeetingsBetweenTwoDatesByStatus');
         Route::get('get-fix-tables', 'MeetingController@getFixTables');
         Route::get('get-meetings-dates', 'MeetingController@getMeetingsDates');
+        Route::get('get-meetingsBydate', 'MeetingController@getMeetingsDatesByStartDate');
         Route::get('get-meeting-tables', 'MeetingController@getMeetingTableByCongress');
         Route::get('get-number-waiting-meeting', 'MeetingController@getNumberWaitingMeetings')->middleware('assign.guard:users');
     });
