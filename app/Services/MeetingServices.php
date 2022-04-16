@@ -80,7 +80,7 @@ class MeetingServices
                     $query->with(['val']);
                 },
                 'participant' => function ($q) use ($congress_id) {
-                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                    $q->with(['country', 'profile_img', 'user_congresses' => function ($query) use ($congress_id) {
                         $query->where('congress_id', '=', $congress_id);
                     }]);
                 },
