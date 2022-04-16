@@ -800,7 +800,6 @@ class CongressServices
             $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
             $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ;
         }
-        $template = str_replace('{{$user_congress-&gt;chat_info}}', '{{$participant->chat_info}}',$template);
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
         $template = str_replace('{{$participant-&gt;first_name}}', '{{$participant->first_name}}', $template);
@@ -831,6 +830,8 @@ class CongressServices
         $template = str_replace('{{$meeting-&gt;start_date}}', '{{$meeting->start_date}}', $template);
         $template = str_replace('{{$meeting-&gt;name}}', '{{$meeting->name}}', $template);
         $template = str_replace('{{%24linkSubmission}}', '{{$linkSubmission}}', $template);
+        $template = str_replace('{{%24receiver_chat_info}}', '{{$user_receiver->user_congresses[0]->chat_info}}', $template);
+        $template = str_replace('{{%24sender_chat_info}}', '{{$user_sender->user_congresses[0]->chat_info}}', $template);
 
         $linkAccept = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/1' : null;
         $linkRefuse = $participant != null ? UrlUtils::getBaseUrl() . '/confirm/' . $congress->congress_id . '/' . $participant->user_id . '/-1' : null;

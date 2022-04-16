@@ -2128,6 +2128,14 @@ class UserServices
         return $usersCongress;
     }
 
+    public function getUserMinByCongress($userId, $congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })->where('userId', '=', $userId)
+        ->get();
+    }
+
 }
 
 
