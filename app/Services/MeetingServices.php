@@ -138,9 +138,6 @@ class MeetingServices
         ->where('congress_id', '=', $meet->congress_id)
         ->where('start_date', '=', $meet->start_date)
         ->with('user_meeting')
-        ->whereHas("user_meeting", function ($query) {
-            $query->where('status', '=', 1);
-        })
         ->whereHas("user_meeting", function ($query) use ($user_sender_id, $user_receiver_id) {
             $query->where('user_sender_id', '=', $user_sender_id)
             ->orwhere('user_receiver_id', '=', $user_sender_id)
@@ -311,13 +308,16 @@ class MeetingServices
         }
     }
 
-    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id, $user_reveiver_id, $status)
+    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id)
     {
-        return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id, $status) {
+        return UserMeeting::where(function ($query) use ($user_sender_id) {
             $query->where('user_sender_id', '=', $user_sender_id)
-            ->where('user_receiver_id','=',$user_reveiver_id)
-            ->where('status', '=',  $status);
-        })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
+                ->orWhere('user_receiver_id', '=', $user_sender_id);
+        })->where('status', '=', 1)
+        ->whereHas('meeting', function ($query) use ($congress_id, $date) {
+            $query->where('congress_id', '=', $congress_id)
+                ->where('start_date', '=', $date);
+        })->count();
     }
 
     public function addMeetingEvaluation($request , $user_id)
