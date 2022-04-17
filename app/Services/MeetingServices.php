@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\MeetingEvaluation;
+use App\Models\MeetingDates;
 
 
 
@@ -16,7 +17,6 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 class MeetingServices
 {
     function __construct( )
@@ -597,13 +597,51 @@ class MeetingServices
             ->get('response');
     }
 
+    public function editConfigMeetingDates($newMeetingDates, $congress_id)
+    {
+        $oldDates = $this->getMeetingDates($congress_id);
+
+        foreach ($oldDates as  $old) {
+            $exists = false;
+            foreach ($newMeetingDates->all() as $new) {
+                if ($old->meeting_dates_id == $new['meeting_dates_id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists) {
+                $old->delete();
+                break;
+            }
+        }
+        foreach ($newMeetingDates->all() as $new) {
+            $meetingDates = null;
+            foreach ($oldDates as $old) {
+                if ($old->meeting_dates_id == $new['meeting_dates_id']) {
+                    $meetingDates = $old;
+                    break;
+                }
+            }
+            if (!$meetingDates) $meetingDates = new MeetingDates();
+            $meetingDates->congress_id = $congress_id;
+            $meetingDates->start_date = $new["start_date"];
+            $meetingDates->end_date = $new["end_date"];
+            $meetingDates->save();
+        }
+    }
+
+    public function getMeetingDates($congress_id)
+    {
+        return MeetingDates::where('congress_id', '=', $congress_id)
+            ->get();
+    }
     public function getNumberOfWaitingMeetings($congress_id, $user_id, $status)
     {
         return Meeting::whereHas('user_meeting', function ($query) use ($user_id, $status) {
             $query->where('user_receiver_id', '=', $user_id)
                 ->where('status', '=',  $status);
         })->where('congress_id', '=', $congress_id)
-        ->count();
+            ->count();
     }
     
     public function renameTables($tables, $newLabel)
@@ -629,6 +667,13 @@ class MeetingServices
             $table->label = $newLabel . ' ' . $counter;
             $table->update();
         }
+    }
+
+    public function getMeetingsDatesByStartDate($congress_id, $startDate)
+    {
+        return MeetingDates::where('congress_id', '=', $congress_id)
+            ->where('start_date', '=', $startDate)
+            ->get();
     }
   
 }
