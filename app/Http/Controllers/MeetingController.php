@@ -49,20 +49,20 @@ class MeetingController extends Controller
   function addMeeting(Request $request)
   {
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
-    $user_sender  = $this->userServices->retrieveUserFromToken();
+    $userConnected = $this->userServices->retrieveUserFromToken();
     $user_receiver = $this->userServices->getUserMinByCongress($request->input('user_received_id'), $request->input('congress_id'));
     if (!$request->has('start_date')) {
       return response()->json(['response' => 'Meeting date not found'], 401);
     }
     $meeting_date = $request->input('start_date');
-    if (!$user_sender) {
+    if (!$userConnected) {
       return response()->json(['response' => 'No user found'], 401);
     }
+    $user_sender = $this->userServices->getUserMinByCongress($userConnected->user_id, $request->input('congress_id'));
     if (!$user_receiver) {
       return response()->json(['response' => 'No user found'], 401);
     }
     $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id);
-    Log::info($duplicated_meeting);
     if ($duplicated_meeting > 0) {
       return response()->json(['response' => 'Meeting on the same date found'], 401);
     }
@@ -113,8 +113,10 @@ class MeetingController extends Controller
       return response()->json(["message" => "congress not found"], 404);
     }
     $nb_meeting_tables = $congress['config']['nb_meeting_table'];
-    if (!$user_receiver = $this->userServices->retrieveUserFromToken()) {
-      if ($user_receiver = $this->userServices->getUserMinByCongress($user_meeting->user_receiver_id, $congressId)) {
+    $userConnected = $this->userServices->retrieveUserFromToken();
+    $user_receiver = $this->userServices->getUserMinByCongress($user_meeting->user_receiver_id, $congressId);
+    if (!$userConnected) {
+      if ($user_receiver) {
         if ($request->has('verification_code')) {
           $verification_code = $request->input('verification_code');
           if (!$user_receiver->meeting_code == $verification_code) {
