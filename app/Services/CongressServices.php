@@ -272,6 +272,7 @@ class CongressServices
                 'accesss.sub_accesses',
                 'accesss.topic',
                 'accesss.type',
+                'meeting_dates',
             ])
             ->where("congress_id", "=", $congressId)
             ->first();
