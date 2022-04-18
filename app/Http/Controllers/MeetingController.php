@@ -50,7 +50,7 @@ class MeetingController extends Controller
   {
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
     $user_sender  = $this->userServices->retrieveUserFromToken();
-    $user_receiver = $this->userServices->getUserById($request->input('user_received_id'));
+    $user_receiver = $this->userServices->getUserMinByCongress($request->input('user_received_id'), $request->input('congress_id'));
     if (!$request->has('start_date')) {
       return response()->json(['response' => 'Meeting date not found'], 401);
     }
@@ -114,7 +114,7 @@ class MeetingController extends Controller
     }
     $nb_meeting_tables = $congress['config']['nb_meeting_table'];
     if (!$user_receiver = $this->userServices->retrieveUserFromToken()) {
-      if ($user_receiver = $this->userServices->getUserById($user_meeting->user_receiver_id)) {
+      if ($user_receiver = $this->userServices->getUserMinByCongress($user_meeting->user_receiver_id, $congressId)) {
         if ($request->has('verification_code')) {
           $verification_code = $request->input('verification_code');
           if (!$user_receiver->meeting_code == $verification_code) {
@@ -127,7 +127,7 @@ class MeetingController extends Controller
       return response()->json(['response' => 'No user found'], 401);
     }
     $user_meeting = $meeting['user_meeting']->first();
-    $user_sender = $this->userServices->getUserById($user_meeting->user_sender_id);
+    $user_sender = $this->userServices->getUserMinByCongress($user_meeting->user_sender_id, $congressId);
     if (!$user_sender) {
       return response()->json(['response' => 'No user found'], 401);
     }
@@ -182,7 +182,7 @@ class MeetingController extends Controller
     $mailtype = $this->congressServices->getMailType('decline_meeting');
     foreach ($conflicts as $conflict_meeting) {
       $conflict_meeting = $this->meetingServices->declineMeeting($conflict_meeting['user_meeting']->first());
-      $user_sender_conflict = $this->userServices->getUserById($user_meeting->user_sender_id);
+      $user_sender_conflict = $this->userServices->getUserMinByCongress($user_meeting->user_sender_id, $congress->congress_id);
       $this->sendDeclineMailToUserSender($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
     }
   }
@@ -438,11 +438,11 @@ class MeetingController extends Controller
     $nb_meeting_tables = $congress['config']['nb_meeting_table'];
 
     $user_meeting = $meeting['user_meeting']->first();
-    $user_receiver = $this->userServices->getUserById($user_meeting->user_receiver_id);
+    $user_receiver = $this->userServices->getUserMinByCongress($user_meeting->user_receiver_id, $congressId);
     if (!$user_receiver) {
       return response()->json(['response' => 'receiver not found'], 401);
     }
-    $user_sender = $this->userServices->getUserById($user_meeting->user_sender_id);
+    $user_sender = $this->userServices->getUserMinByCongress($user_meeting->user_sender_id, $congressId);
     if (!$user_sender) {
       return response()->json(['response' => 'sender not found'], 401);
     }

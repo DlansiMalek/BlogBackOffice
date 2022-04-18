@@ -2142,6 +2142,31 @@ class UserServices
         return $usersCongress;
     }
 
+    public function getUserMinByCongress($userId, $congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })->with([
+            'user_congresses.congress.accesss.speakers',
+            'user_congresses.congress.accesss.chairs',
+            'user_congresses.congress.accesss.sub_accesses',
+            'user_congresses.congress.accesss.topic',
+            'user_congresses.congress.accesss.type',
+            'user_congresses.privilege',
+            'user_congresses.pack',
+            'accesses',
+            'speaker_access',
+            'chair_access',
+            'country',
+            'likes',
+            'profile_img',
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+        ])->where('user_id', '=', $userId)
+        ->first();
+    }
+
 }
 
 
