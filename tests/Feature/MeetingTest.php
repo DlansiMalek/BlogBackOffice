@@ -29,7 +29,7 @@ class MeetingTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testAddUserMeeting()
+   /* public function testAddUserMeeting()
     {
         $congress = factory(Congress::class)->create();
         $userSender = factory(User::class)->create();
@@ -40,7 +40,7 @@ class MeetingTest extends TestCase
         $this->withHeader('Authorization', 'Bearer ' . $token)
             ->post('api/meetings/add?congress_id=' . $congress->congress_id . '&user_received_id=' . $userReceiver->user_id, $meeting)
             ->assertStatus(200);
-    }
+    }*/
 
     public function testUpdateUserMeetingStatus()
     {
