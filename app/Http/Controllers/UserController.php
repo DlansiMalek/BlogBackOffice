@@ -2181,8 +2181,12 @@ class UserController extends Controller
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
         }
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
 
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id);
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $congress->congress_type_id);
 
         return response()->json($users);
     }
@@ -2241,12 +2245,16 @@ class UserController extends Controller
 
     public function getAllUsersByCongressPWAWithPagination($congress_id,Request $request)
     {
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         $page = $request->query('page', 1);
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId);
+        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $congress->congress_type_id);
         return response()->json($users);
     }
 
@@ -2354,9 +2362,13 @@ class UserController extends Controller
 
     public function getRandomUsers($congress_id,Request $request)
     {
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getRandomUsers($congress_id,$userId);
+        $users = $this->userServices->getRandomUsers($congress_id,$userId, $congress->congress_type_id);
         return response()->json($users);
     }
 

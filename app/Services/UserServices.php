@@ -1900,16 +1900,19 @@ class UserServices
         return $userCongress;
     }
 
-    public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id)
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id, $congressTypeId)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id, $congressTypeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
                 $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])->where('congress_id', '=', $congressId);
-               
+            }
+
+            if ($congressTypeId == 1 || $congressTypeId == 2) {
+                $query->where('isSelected', '=', 1);
             }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
@@ -2004,15 +2007,15 @@ class UserServices
         return $user_network->delete();
     }
 
-    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId)
+    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId, $congressTypeId)
 {
-    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId ;
+    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId . $congressTypeId ;
 
     if (Cache::has($cacheKey)) {
         return Cache::get($cacheKey);
     }
 
-    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId);
+    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId, $congressTypeId);
     Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
     return $users;
@@ -2049,12 +2052,14 @@ class UserServices
         })
         ->count();
     }
-    public function getRandomUsers($congressId,$user_id)
+    public function getRandomUsers($congressId,$user_id, $congressTypeId)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id, $congressTypeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
-
+            if ($congressTypeId == 1 || $congressTypeId == 2) {
+                $query->where('isSelected', '=', 1);
+            }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
