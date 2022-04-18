@@ -1900,19 +1900,18 @@ class UserServices
         return $userCongress;
     }
 
-    public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id, $congressTypeId)
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id, $isSelected)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id, $congressTypeId) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id, $isSelected) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
+            $query->where('isSelected', '=', $isSelected);
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
-                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])->where('congress_id', '=', $congressId);
-            }
-
-            if ($congressTypeId == 1 || $congressTypeId == 2) {
-                $query->where('isSelected', '=', 1);
+                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])
+                ->where('congress_id', '=', $congressId)
+                ->where('isSelected', '=', $isSelected);
             }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
@@ -2007,15 +2006,15 @@ class UserServices
         return $user_network->delete();
     }
 
-    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId, $congressTypeId)
+    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId, $isSelected)
 {
-    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId . $congressTypeId ;
+    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId . $isSelected ;
 
     if (Cache::has($cacheKey)) {
         return Cache::get($cacheKey);
     }
 
-    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId, $congressTypeId);
+    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId, $isSelected);
     Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
     return $users;
