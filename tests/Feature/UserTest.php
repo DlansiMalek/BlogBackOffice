@@ -393,7 +393,7 @@ class UserTest extends TestCase
 
     }
     
-    public function testgetAllUsersByCongressFrontOfficeWithPagination()
+   /* public function testgetAllUsersByCongressFrontOfficeWithPagination()
     {
         //  api/user/congress/congress_id/listUsers'
         $user1 = factory(User::class)->create();
@@ -426,7 +426,7 @@ class UserTest extends TestCase
        $this->assertEquals($dataResponse['data'][1]['img_base64'], $userVerification->img_base64);
        $this->assertCount(2, $dataResponse['data']);      
 
-    }
+    }*/
 
     public function testAddUserNetwork() 
     {
