@@ -2185,8 +2185,12 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
+        $isSelected = 0;
+        if ($congress->congress_type_id == 1 || $congress->congress_type_id == 2) {
+            $isSelected = 1;
+        }
 
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $congress->congress_type_id);
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $isSelected);
 
         return response()->json($users);
     }
@@ -2249,12 +2253,16 @@ class UserController extends Controller
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
+        $isSelected = 0;
+        if ($congress->congress_type_id == 1 || $congress->congress_type_id == 2) {
+            $isSelected = 1;
+        }
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         $page = $request->query('page', 1);
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $congress->congress_type_id);
+        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $isSelected);
         return response()->json($users);
     }
 
