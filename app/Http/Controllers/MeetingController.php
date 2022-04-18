@@ -380,12 +380,14 @@ class MeetingController extends Controller
     }
     $errorTables = $this->meetingServices->setFixTables($request, $congress_id, $isSelected);
     $fixTables = $this->meetingServices->getFixTables($congress_id);
+    /* comment set auto label fix table */
+    /*
     $nbTableFix = $fixTables->count();
     $labelFixTables = $congress->config->label_fix_table != null ? $congress->config->label_fix_table : 'TF';
 
     if ($nbTableFix != 0) {
       $this->meetingServices->InsertFixTable($nbTableFix, $fixTables, $labelFixTables);
-    }
+    }*/
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
   }
 
