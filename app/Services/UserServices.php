@@ -1908,11 +1908,25 @@ class UserServices
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])->where('congress_id', '=', $congressId);
+               
             }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
-            }])->with('profile_img')
+            }])->with(['profile_img',
+            'meetingsOrganizer' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            },
+            'meetingsParticipant' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            }])
             ->paginate($perPage);
         return  $users;
     }

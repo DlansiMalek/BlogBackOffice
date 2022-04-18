@@ -2273,6 +2273,18 @@ class UserController extends Controller
             'responses.form_input.type', 'profile_img', 
             'network_member' => function ($query) {
                 $query->select(['fav_id', 'User_Network.user_id', 'user_network_id']);
+            },
+            'meetingsOrganizer' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            },
+            'meetingsParticipant' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
             }
         ]);
 

@@ -61,7 +61,8 @@ class MeetingController extends Controller
     if (!$user_receiver) {
       return response()->json(['response' => 'No user found'], 401);
     }
-    $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id, $user_receiver->user_id, 1);
+    $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id);
+    Log::info($duplicated_meeting);
     if ($duplicated_meeting > 0) {
       return response()->json(['response' => 'Meeting on the same date found'], 401);
     }
@@ -495,6 +496,27 @@ class MeetingController extends Controller
     }
   }
 
+  public function getMeetingsDates($congress_id)
+  {
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json(['response' => 'Congress not found', 404]);
+    }
+    $meetingDates = $this->meetingServices->getmeetingDates($congress_id);
+    return response()->json($meetingDates, 200);
+  }
+
+  public function setMeetingsDate(Request $request, $congress_id)
+  {
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json(["message" => "congress not found"], 404);
+    }
+
+    $this->meetingServices->editConfigMeetingDates($request, $congress_id);
+    $meetingDates = $this->meetingServices->getmeetingDates($congress_id);
+
+    return response()->json([$meetingDates], 200);
+  }
+
   public function getNumberWaitingMeetings($congressId)
   {
     $user = $this->userServices->retrieveUserFromToken();
@@ -507,5 +529,14 @@ class MeetingController extends Controller
     }
     $NumberOfwaitingMeetings = $this->meetingServices->getNumberOfWaitingMeetings($congress->congress_id, $user->user_id, 0);
     return response()->json($NumberOfwaitingMeetings, 200);
+  }
+
+  public function getMeetingsDatesByStartDate($congress_id, $startDate)
+  {
+    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+      return response()->json(['response' => 'Congress not found', 404]);
+    }
+    $meetingDates = $this->meetingServices->getMeetingsDatesByStartDate($congress_id,$startDate);
+    return response()->json($meetingDates, 200);
   }
 }

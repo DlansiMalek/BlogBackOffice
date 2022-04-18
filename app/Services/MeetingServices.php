@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\MeetingTable;
 use App\Models\UserMeeting;
 use App\Models\MeetingEvaluation;
+use App\Models\MeetingDates;
 
 
 
@@ -16,7 +17,6 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 class MeetingServices
 {
     function __construct( )
@@ -66,7 +66,7 @@ class MeetingServices
         },'meetingtable', 'user_meeting' => function ($query)  use ($congress_id) {
             $query->with([
                 'organizer' => function ($q)  use ($congress_id) {
-                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                    $q->with(['country','profile_img', 'user_congresses' => function ($query) use ($congress_id) {
                         $query->where('congress_id', '=', $congress_id);
                     }]);
                 },
@@ -80,7 +80,7 @@ class MeetingServices
                     $query->with(['val']);
                 },
                 'participant' => function ($q) use ($congress_id) {
-                    $q->with(['profile_img', 'user_congresses' => function ($query) use ($congress_id) {
+                    $q->with(['country', 'profile_img', 'user_congresses' => function ($query) use ($congress_id) {
                         $query->where('congress_id', '=', $congress_id);
                     }]);
                 },
@@ -138,9 +138,6 @@ class MeetingServices
         ->where('congress_id', '=', $meet->congress_id)
         ->where('start_date', '=', $meet->start_date)
         ->with('user_meeting')
-        ->whereHas("user_meeting", function ($query) {
-            $query->where('status', '=', 1);
-        })
         ->whereHas("user_meeting", function ($query) use ($user_sender_id, $user_receiver_id) {
             $query->where('user_sender_id', '=', $user_sender_id)
             ->orwhere('user_receiver_id', '=', $user_sender_id)
@@ -311,13 +308,16 @@ class MeetingServices
         }
     }
 
-    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id, $user_reveiver_id, $status)
+    public function countMeetingsByUserOnDate($congress_id, $date, $user_sender_id)
     {
-        return Meeting::whereHas('user_meeting', function ($query) use ($user_sender_id, $user_reveiver_id, $status) {
+        return UserMeeting::where(function ($query) use ($user_sender_id) {
             $query->where('user_sender_id', '=', $user_sender_id)
-            ->where('user_receiver_id','=',$user_reveiver_id)
-            ->where('status', '=',  $status);
-        })->where('start_date', '=', $date)->where('congress_id', '=', $congress_id)->count();
+                ->orWhere('user_receiver_id', '=', $user_sender_id);
+        })->where('status', '=', 1)
+        ->whereHas('meeting', function ($query) use ($congress_id, $date) {
+            $query->where('congress_id', '=', $congress_id)
+                ->where('start_date', '=', $date);
+        })->count();
     }
 
     public function addMeetingEvaluation($request , $user_id)
@@ -597,13 +597,51 @@ class MeetingServices
             ->get('response');
     }
 
+    public function editConfigMeetingDates($newMeetingDates, $congress_id)
+    {
+        $oldDates = $this->getMeetingDates($congress_id);
+
+        foreach ($oldDates as  $old) {
+            $exists = false;
+            foreach ($newMeetingDates->all() as $new) {
+                if ($old->meeting_dates_id == $new['meeting_dates_id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists) {
+                $old->delete();
+                break;
+            }
+        }
+        foreach ($newMeetingDates->all() as $new) {
+            $meetingDates = null;
+            foreach ($oldDates as $old) {
+                if ($old->meeting_dates_id == $new['meeting_dates_id']) {
+                    $meetingDates = $old;
+                    break;
+                }
+            }
+            if (!$meetingDates) $meetingDates = new MeetingDates();
+            $meetingDates->congress_id = $congress_id;
+            $meetingDates->start_date = $new["start_date"];
+            $meetingDates->end_date = $new["end_date"];
+            $meetingDates->save();
+        }
+    }
+
+    public function getMeetingDates($congress_id)
+    {
+        return MeetingDates::where('congress_id', '=', $congress_id)
+            ->get();
+    }
     public function getNumberOfWaitingMeetings($congress_id, $user_id, $status)
     {
         return Meeting::whereHas('user_meeting', function ($query) use ($user_id, $status) {
             $query->where('user_receiver_id', '=', $user_id)
                 ->where('status', '=',  $status);
         })->where('congress_id', '=', $congress_id)
-        ->count();
+            ->count();
     }
     
     public function renameTables($tables, $newLabel)
@@ -629,6 +667,13 @@ class MeetingServices
             $table->label = $newLabel . ' ' . $counter;
             $table->update();
         }
+    }
+
+    public function getMeetingsDatesByStartDate($congress_id, $startDate)
+    {
+        return MeetingDates::where('congress_id', '=', $congress_id)
+            ->where('start_date', '=', $startDate)
+            ->get();
     }
   
 }
