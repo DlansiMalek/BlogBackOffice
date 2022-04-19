@@ -393,6 +393,7 @@ class MeetingServices
         return MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
             ->with(["participant"])
+            ->orderBy('label', 'asc')
             ->get();
     }
 
@@ -594,7 +595,7 @@ class MeetingServices
                             $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
                         });
                 }
-            });
+            })->orderBy('label', 'asc');
         return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
     }
 
