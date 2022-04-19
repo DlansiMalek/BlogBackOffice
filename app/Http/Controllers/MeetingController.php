@@ -461,9 +461,12 @@ class MeetingController extends Controller
   public function handleModifyMeetingStatus($status, $congressId, $user_receiver, $user_sender, $request, $nb_meeting_tables, $meeting, $user_meeting, $congress)
   {
     if ($status == 1) {
-      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
-      if ($tableFix) {
-          $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
+      $tableFixSender = $this->meetingServices->getMeetingTableByUserId($congressId, $user_sender->user_id);
+      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId, $user_receiver->user_id);
+      if ($tableFixSender) {
+        $this->meetingServices->addTableToMeeting($meeting, $tableFixSender->meeting_table_id);
+      } else if ($tableFix) {
+        $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
       } else if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }
