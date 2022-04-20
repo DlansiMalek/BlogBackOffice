@@ -755,31 +755,34 @@ class CongressController extends Controller
         $to_all = $request->query('toAll', 0);
         $questionId = $request->input('question_id');
         $responseId = $request->input('response_id');
+        $status = $request->input('status');
 
-        if ($questionId != null &&  $responseId != null) {
-            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId,$privilege_ids, $mailId);
+        if ($status != null) {
+            $users = $this->userServices->getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $privilegIds = [], $mailId);
+        } else if ($questionId != null &&  $responseId != null) {
+            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId, $privilege_ids, $mailId);
+        } else {
+            $users = $this->userServices->getUsersWithRelations(
+                $congressId,
+                [
+                    'accesses' => function ($query) use ($congressId) {
+                        $query->where("congress_id", "=", $congressId);
+                    },
+                    'user_congresses' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    },
+                    'payments' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    },
+                    'user_mails' => function ($query) use ($mailId) {
+                        $query->where('mail_id', '=', $mailId);
+                    }
+                ],
+                null,
+                $privilege_ids
+            );
         }
-        else
-        {
-        $users = $this->userServices->getUsersWithRelations($congressId,
-            [
-                'accesses' => function ($query) use ($congressId) {
-                    $query->where("congress_id", "=", $congressId);
-                },
-                'user_congresses' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
-                },
-                'payments' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
-                },
-                'user_mails' => function ($query) use ($mailId) {
-                    $query->where('mail_id', '=', $mailId);
-                }
-            ], null, $privilege_ids);
-
-        }
-
-        foreach ($users as $user) {
+         foreach ($users as $user) {
             if (Utils::isValidSendMail($congress, $user, $to_all)) {
                 $userMail = null;
                 if (sizeof($user->user_mails) == 0) {
@@ -789,8 +792,10 @@ class CongressController extends Controller
                 }
                 $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/validate/' . $user->verification_code;
                 if (Utils::isValidStatus($userMail)) {
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null)
-                        , $user, $congress, $mail->object, false, $userMail);
+                    $this->mailServices->sendMail(
+                        $this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null),
+                        $user,$congress,$mail->object,false,$userMail
+                    );
                 }
             }
         }
