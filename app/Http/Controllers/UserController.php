@@ -1695,9 +1695,9 @@ class UserController extends Controller
         $user->update();
         if ($request->id !== null) {
             $congressid = $request->id;
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . '/password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code . '&user_id=' . $user->user_id;
         } else {
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . '/password/reset/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
         } 
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
