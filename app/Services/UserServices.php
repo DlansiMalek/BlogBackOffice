@@ -2142,6 +2142,29 @@ class UserServices
         return $usersCongress;
     }
 
+    public function updateFilterBy($congressId, $FilterKey)
+    {
+        $formInput = $this->getQuestionByKey($congressId, $FilterKey);
+        $formInput->filter_by = 1;
+        $formInput->update();
+    }
+
+    public function getFormInputByFilter($congress_id)
+    {
+        $formInput = FormInput::where('congress_id', '=', $congress_id)
+            ->where('filter_by', '=', 1)
+            ->with(['values'])
+            ->get();
+        return $formInput;
+    }
+
+    public function getOldFormInputByFilter($congress_id)
+    {
+        return FormInput::where('congress_id', '=', $congress_id)
+            ->where('filter_by', '=', 1)
+            ->get('key');  
+    }
+
 }
 
 
