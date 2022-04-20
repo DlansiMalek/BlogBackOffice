@@ -246,7 +246,7 @@ class MeetingServices
                     });
                 }]);
             }]);
-        }])->where(function ($query) use ($startDate, $endDate, $search) {
+        }, "meetingtable"])->where(function ($query) use ($startDate, $endDate, $search) {
             if ($search !== '' && $search !== null && $search !== 'null') {
                 $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
             }
