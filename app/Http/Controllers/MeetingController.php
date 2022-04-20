@@ -256,12 +256,12 @@ class MeetingController extends Controller
 
     for ($i = 0; $i <=  $days; $i++) {
 
-      $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
-      $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
-      $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')));
+      $nombre_meetings_accpeted = $this->meetingServices->getNumberOfMeetings($congress_id, 1, date('Y-m-d', strtotime($congressStartDate->format('Y-m-d') . ' +' . $i . 'days')));
+      $nombre_meetings_Refused = $this->meetingServices->getNumberOfMeetings($congress_id, -1, date('Y-m-d', strtotime($congressStartDate->format('Y-m-d') . ' +' . $i . 'days')));
+      $nombre_meetings_waiting = $this->meetingServices->getNumberOfMeetings($congress_id, 0, date('Y-m-d', strtotime($congressStartDate->format('Y-m-d') . ' +' . $i . 'days')));
       array_push($nombres, [
           "type" => "val3",
-          "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congress->start_date . ' +' . $i . 'days')))),
+          "date" => str_replace('-', '/', strval(date('Y-m-d', strtotime($congressStartDate->format('Y-m-d') . ' +' . $i . 'days')))),
           "Alpha" => strval($nombre_meetings_accpeted), 
           "Delta" => strval($nombre_meetings_Refused),
           "Sigma" => strval($nombre_meetings_waiting)
