@@ -2165,6 +2165,12 @@ class UserServices
             ->get('key');  
     }
 
+    public function getValueFormInputByKey($filterKey)
+    {
+        return FormInputValue::where('value', '=', $filterKey)
+            ->get('form_input_value_id');  
+    }
+
 }
 
 

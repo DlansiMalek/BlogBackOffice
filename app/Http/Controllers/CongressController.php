@@ -1289,4 +1289,12 @@ class CongressController extends Controller
         return response()->json($filterValues, 200);
     }
 
+    public function getValueFormInputByKey($Key)
+    {
+        log::info($Key);
+        $valueId =  $this->userServices->getValueFormInputByKey($Key);
+        return response()->json($valueId, 200);
+    }
+
+
 }
