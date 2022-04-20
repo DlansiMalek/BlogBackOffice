@@ -248,7 +248,17 @@ class MeetingServices
             }]);
         }])->where(function ($query) use ($startDate, $endDate, $search) {
             if ($search !== '' && $search !== null && $search !== 'null') {
-                $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+                $query->whereRaw('lower(name) like (?)', ["%{$search}%"])
+                ->orWhereHas('user_meeting', function ($query) use ($search) {
+                    $query->whereHas('organizer', function ($query) use ($search) {
+                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
+                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    });
+                    $query->orWhereHas('participant', function ($query) use ($search) {
+                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
+                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    });
+                });
             }
             if ($startDate != '' && $startDate != null && $startDate != 'null') {
                 $query->whereDate('start_date', '>=', $startDate)
