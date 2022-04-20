@@ -49,20 +49,20 @@ class MeetingController extends Controller
   function addMeeting(Request $request)
   {
     $congress = $this->congressServices->getCongressDetailsById($request->input('congress_id'));
-    $user_sender  = $this->userServices->retrieveUserFromToken();
-    $user_receiver = $this->userServices->getUserById($request->input('user_received_id'));
+    $userConnected = $this->userServices->retrieveUserFromToken();
+    $user_receiver = $this->userServices->getUserMinByCongress($request->input('user_received_id'), $request->input('congress_id'));
     if (!$request->has('start_date')) {
       return response()->json(['response' => 'Meeting date not found'], 401);
     }
     $meeting_date = $request->input('start_date');
-    if (!$user_sender) {
+    if (!$userConnected) {
       return response()->json(['response' => 'No user found'], 401);
     }
+    $user_sender = $this->userServices->getUserMinByCongress($userConnected->user_id, $request->input('congress_id'));
     if (!$user_receiver) {
       return response()->json(['response' => 'No user found'], 401);
     }
     $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id);
-    Log::info($duplicated_meeting);
     if ($duplicated_meeting > 0) {
       return response()->json(['response' => 'Meeting on the same date found'], 401);
     }
@@ -113,8 +113,10 @@ class MeetingController extends Controller
       return response()->json(["message" => "congress not found"], 404);
     }
     $nb_meeting_tables = $congress['config']['nb_meeting_table'];
-    if (!$user_receiver = $this->userServices->retrieveUserFromToken()) {
-      if ($user_receiver = $this->userServices->getUserById($user_meeting->user_receiver_id)) {
+    $userConnected = $this->userServices->retrieveUserFromToken();
+    $user_receiver = $this->userServices->getUserMinByCongress($user_meeting->user_receiver_id, $congressId);
+    if (!$userConnected) {
+      if ($user_receiver) {
         if ($request->has('verification_code')) {
           $verification_code = $request->input('verification_code');
           if (!$user_receiver->meeting_code == $verification_code) {
@@ -127,7 +129,7 @@ class MeetingController extends Controller
       return response()->json(['response' => 'No user found'], 401);
     }
     $user_meeting = $meeting['user_meeting']->first();
-    $user_sender = $this->userServices->getUserById($user_meeting->user_sender_id);
+    $user_sender = $this->userServices->getUserMinByCongress($user_meeting->user_sender_id, $congressId);
     if (!$user_sender) {
       return response()->json(['response' => 'No user found'], 401);
     }
@@ -182,7 +184,7 @@ class MeetingController extends Controller
     $mailtype = $this->congressServices->getMailType('decline_meeting');
     foreach ($conflicts as $conflict_meeting) {
       $conflict_meeting = $this->meetingServices->declineMeeting($conflict_meeting['user_meeting']->first());
-      $user_sender_conflict = $this->userServices->getUserById($user_meeting->user_sender_id);
+      $user_sender_conflict = $this->userServices->getUserMinByCongress($user_meeting->user_sender_id, $congress->congress_id);
       $this->sendDeclineMailToUserSender($congress, $mailtype, $user_sender_conflict, $conflict_meeting, $user_receiver);
     }
   }
@@ -380,12 +382,14 @@ class MeetingController extends Controller
     }
     $errorTables = $this->meetingServices->setFixTables($request, $congress_id, $isSelected);
     $fixTables = $this->meetingServices->getFixTables($congress_id);
+    /* comment set auto label fix table */
+    /*
     $nbTableFix = $fixTables->count();
     $labelFixTables = $congress->config->label_fix_table != null ? $congress->config->label_fix_table : 'TF';
 
     if ($nbTableFix != 0) {
       $this->meetingServices->InsertFixTable($nbTableFix, $fixTables, $labelFixTables);
-    }
+    }*/
     return response()->json(['fixTables' => $fixTables, 'errorTables' => $errorTables], 200);
   }
 
@@ -439,11 +443,11 @@ class MeetingController extends Controller
     $nb_meeting_tables = $congress['config']['nb_meeting_table'];
 
     $user_meeting = $meeting['user_meeting']->first();
-    $user_receiver = $this->userServices->getUserById($user_meeting->user_receiver_id);
+    $user_receiver = $this->userServices->getUserMinByCongress($user_meeting->user_receiver_id, $congressId);
     if (!$user_receiver) {
       return response()->json(['response' => 'receiver not found'], 401);
     }
-    $user_sender = $this->userServices->getUserById($user_meeting->user_sender_id);
+    $user_sender = $this->userServices->getUserMinByCongress($user_meeting->user_sender_id, $congressId);
     if (!$user_sender) {
       return response()->json(['response' => 'sender not found'], 401);
     }
@@ -458,9 +462,12 @@ class MeetingController extends Controller
   public function handleModifyMeetingStatus($status, $congressId, $user_receiver, $user_sender, $request, $nb_meeting_tables, $meeting, $user_meeting, $congress)
   {
     if ($status == 1) {
-      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId , $user_receiver->user_id);     
-      if ($tableFix) {
-          $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
+      $tableFixSender = $this->meetingServices->getMeetingTableByUserId($congressId, $user_sender->user_id);
+      $tableFix = $this->meetingServices->getMeetingTableByUserId($congressId, $user_receiver->user_id);
+      if ($tableFixSender) {
+        $this->meetingServices->addTableToMeeting($meeting, $tableFixSender->meeting_table_id);
+      } else if ($tableFix) {
+        $this->meetingServices->addTableToMeeting($meeting, $tableFix->meeting_table_id);
       } else if ($nb_meeting_tables > 0) {
         $this->affectTablesToMeeting($meeting, $user_meeting, $congressId, $request);
       }

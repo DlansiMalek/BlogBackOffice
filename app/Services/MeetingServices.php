@@ -81,6 +81,18 @@ class MeetingServices
                 'organizer.responses.values' => function ($query) {
                     $query->with(['val']);
                 },
+                'organizer.meetingsParticipant' => function ($query) use ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id)
+                    ->whereHas('user_meeting', function ($q) {
+                        $q->where('status', '=', 1);
+                    });
+                },
+                'organizer.meetingsOrganizer' => function ($query) use ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id)
+                    ->whereHas('user_meeting', function ($q) {
+                        $q->where('status', '=', 1);
+                    });
+                },
                 'participant' => function ($q) use ($congress_id) {
                     $q->with(['country', 'profile_img', 'user_congresses' => function ($query) use ($congress_id) {
                         $query->where('congress_id', '=', $congress_id);
@@ -94,6 +106,18 @@ class MeetingServices
                     $query->with(['val']);
                 },
                 'participant.responses.form_input.values', 'participant.responses.form_input.type', 'participant.responses.form_input',
+                'participant.meetingsParticipant' => function ($query) use ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id)
+                    ->whereHas('user_meeting', function ($q) {
+                        $q->where('status', '=', 1);
+                    });
+                },
+                'participant.meetingsOrganizer' => function ($query) use ($congress_id) {
+                    $query->where('congress_id', '=', $congress_id)
+                    ->whereHas('user_meeting', function ($q) {
+                        $q->where('status', '=', 1);
+                    });
+                },
             ]);
         }])->whereHas("user_meeting", function ($query) use ($user_id) {
             $query->where('user_sender_id', '=', $user_id)
@@ -371,6 +395,7 @@ class MeetingServices
         return MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
             ->with(["participant"])
+            ->orderBy('label', 'asc')
             ->get();
     }
 
@@ -550,11 +575,22 @@ class MeetingServices
             ->where('user_id', '!=', null)
             ->with(["participant.user_congresses" => function ($query) use ($congress_id){
                 $query->where('congress_id', '=', $congress_id);
-            } ])
-
-          
-      
+               },
+            'participant.meetingsOrganizer' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            },
+            'participant.meetingsParticipant' => function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            }
+            ])
             ->where(function ($query) use ($search , $filterBy) {
+
                 if ($search !== '' && $search != null && $search != 'null') {
                     $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
                     ->orWhereHas('participant', function ($query) use ($search) {
@@ -569,7 +605,8 @@ class MeetingServices
                         $q->where('form_input_response_id', '=', $filterBy);
                     });
                 }
-            });
+            
+            })->orderBy('label', 'asc');
         return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
     }
 

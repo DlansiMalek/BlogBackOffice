@@ -40,6 +40,7 @@ class AccessServices
         $access->start_date = $request->input("start_date");
         $access->end_date = $request->input("end_date");
         $access->access_type_id = $request->input('access_type_id');
+        $access->display_time = $request->input('display_time');
         if ($request->has('price')) $access->price = $request->input("price");
         if ($request->has('packless')) $access->packless = $request->input("packless") ? 1 : 0;
         if ($request->has('description')) $access->description = $request->input("description");
@@ -82,6 +83,7 @@ class AccessServices
         if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         if ($request->has('banner')) $access->banner = $request->input('banner');
+        $access->display_time = $request->input('display_time');
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
 
@@ -91,8 +93,7 @@ class AccessServices
         if ($request->has('is_online'))
             $access->is_online = $request->input('is_online');
             if ($request->has('max_online_participants')) $access->max_online_participants = $request->input('max_online_participants');
-
-
+        
         $access->update();
         return $access;
     }

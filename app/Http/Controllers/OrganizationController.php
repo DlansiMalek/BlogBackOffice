@@ -131,8 +131,12 @@ class OrganizationController extends Controller
         if (!$congress = $this->congressServices->getCongressById($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
-        $admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id);
-        $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id, $admin->email,  $admin_congress->privilege_id);
+        if ($admin) {
+            $admin_congress = $this->adminServices->checkHasPrivilegeByCongress($admin->admin_id, $congress_id);
+            $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id, $admin->email,  $admin_congress->privilege_id);
+        } else {
+            $organizations = $this->organizationServices->getOrganizationsByCongressId($congress_id);
+        }
         return response()->json($organizations);
     }
 
