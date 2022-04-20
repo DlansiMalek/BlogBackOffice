@@ -1291,7 +1291,6 @@ class CongressController extends Controller
 
     public function getValueFormInputByKey($Key)
     {
-        log::info($Key);
         $valueId =  $this->userServices->getValueFormInputByKey($Key);
         return response()->json($valueId, 200);
     }
