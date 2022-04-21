@@ -2172,6 +2172,31 @@ class UserServices
         ->first();
     }
 
+    public function getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $mailId)
+    {
+        $users = User::whereHas('meetingsParticipant', function ($query) use ($congressId, $status) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) use ($status) {
+                    $q->where('status', '=', $status);
+                });
+            })
+            ->with([
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }, 
+                'accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                },
+                'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+            ])->get();
+        return $users;
+    }
+
 }
 
 
