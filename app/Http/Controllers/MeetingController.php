@@ -52,7 +52,7 @@ class MeetingController extends Controller
     $userConnected = $this->userServices->retrieveUserFromToken();
     $user_receiver = $this->userServices->getUserMinByCongress($request->input('user_received_id'), $request->input('congress_id'));
     if (!$request->has('start_date')) {
-      return response()->json(['response' => 'Meeting date not found'], 401);
+      return response()->json(['response' => 'Meeting date not found'], 400);
     }
     $meeting_date = $request->input('start_date');
     if (!$userConnected) {
@@ -64,7 +64,7 @@ class MeetingController extends Controller
     }
     $duplicated_meeting = $this->meetingServices->countMeetingsByUserOnDate($congress->congress_id, $meeting_date, $user_sender->user_id);
     if ($duplicated_meeting > 0) {
-      return response()->json(['response' => 'Meeting on the same date found'], 401);
+      return response()->json(['response' => 'Meeting on the same date found'], 402);
     }
     $user_receiver->meeting_code = Str::random(40);
     $user_receiver->save();
