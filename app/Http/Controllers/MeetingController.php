@@ -412,7 +412,7 @@ class MeetingController extends Controller
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
       return response()->json(['response' => 'Congress not found', 404]);
     }
-    $perPage = $request->query('perPage', 10);
+    $perPage = $request->query('perPage', '');
     $page = $request->query('page', 1);
     $search = $request->query('search', '');
     $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage, $search);
