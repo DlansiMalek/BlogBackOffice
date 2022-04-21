@@ -757,8 +757,8 @@ class CongressController extends Controller
         $responseId = $request->input('response_id');
         $status = $request->input('status');
 
-        if ($status != null) {
-            $users = $this->userServices->getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $privilegIds = [], $mailId);
+        if ($status != 'Null') {
+            $users = $this->userServices->getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $mailId);
         } else if ($questionId != null &&  $responseId != null) {
             $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId, $privilege_ids, $mailId);
         } else {

@@ -2172,34 +2172,27 @@ class UserServices
         ->first();
     }
 
-    public function getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $privilegIds=[], $mailId)
+    public function getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $mailId)
     {
-        $users = User::whereHas('meetingsOrganizer', function ($query) use ($congressId, $status) {
-            $query->where('congress_id', '=', $congressId);
-            $query->whereHas('user_meeting', function ($q)  use ($status) {
-                $q->where('status', '=', $status);
-            });
-        })
-            ->orWhereHas('meetingsParticipant', function ($query) use ($congressId, $status) {
-                $query->where('congress_id', '=', $congressId);
-                $query->whereHas('user_meeting', function ($q) use ($status) {
+        $users = User::whereHas('meetingsParticipant', function ($query) use ($congressId, $status) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) use ($status) {
                     $q->where('status', '=', $status);
                 });
             })
             ->with([
                 'user_mails' => function ($query) use ($mailId) {
                     $query->where('mail_id', '=', $mailId);
-                },  'accesses' => function ($query) use ($congressId) {
+                }, 
+                'accesses' => function ($query) use ($congressId) {
                     $query->where("congress_id", "=", $congressId);
                 },
-                'user_congresses' => function ($query) use ($congressId, $privilegIds) {
+                'user_congresses' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                    if (count($privilegIds) > 0)
-                        $query->whereIn('privilege_id', $privilegIds);
                 },
                 'payments' => function ($query) use ($congressId) {
                     $query->where('congress_id', '=', $congressId);
-                }
+                },
             ])->get();
         return $users;
     }
