@@ -347,6 +347,9 @@ class CongressController extends Controller
             $variableTables = $this->meetingServices->getVariableTables($congressId);
             $this->meetingServices->renameTables($variableTables, $request->input('congress')['label_meeting_table']);
         }
+        if($request->input('congress')['filterKey'] != null){
+            $this->userServices->updateFilterBy($congressId, $request->input('congress')['filterKey']);
+        }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
     }
@@ -1266,5 +1269,34 @@ class CongressController extends Controller
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
-    } 
+    }
+
+    public function getformInputByFilter($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(["message" => "congress not found"], 404);
+
+        $filterValues =  $this->userServices->getFormInputByFilter($congress_id);
+        return response()->json($filterValues, 200);
+    }
+
+    public function getKeyFormInputByFilter($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(["message" => "congress not found"], 404);
+
+        $filterValues =  $this->userServices->getKeyFormInputByFilter($congress_id);
+        return response()->json($filterValues, 200);
+    }
+
+    public function getValueFormInputByKey($congress_id,$formInputId,$Key)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+        return response()->json(["message" => "congress not found"], 404);
+
+        $valueId =  $this->userServices->getValueFormInputByKey($formInputId, $Key);
+        return response()->json($valueId, 200);
+    }
+
+
 }
