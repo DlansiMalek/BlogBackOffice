@@ -1280,18 +1280,21 @@ class CongressController extends Controller
         return response()->json($filterValues, 200);
     }
 
-    public function getOldFormInputByFilter($congress_id)
+    public function getKeyFormInputByFilter($congress_id)
     {
         if (!$congress = $this->congressServices->getCongressById($congress_id))
             return response()->json(["message" => "congress not found"], 404);
 
-        $filterValues =  $this->userServices->getOldFormInputByFilter($congress_id);
+        $filterValues =  $this->userServices->getKeyFormInputByFilter($congress_id);
         return response()->json($filterValues, 200);
     }
 
-    public function getValueFormInputByKey($Key)
+    public function getValueFormInputByKey($congress_id,$formInputId,$Key)
     {
-        $valueId =  $this->userServices->getValueFormInputByKey($Key);
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+        return response()->json(["message" => "congress not found"], 404);
+
+        $valueId =  $this->userServices->getValueFormInputByKey($formInputId, $Key);
         return response()->json($valueId, 200);
     }
 

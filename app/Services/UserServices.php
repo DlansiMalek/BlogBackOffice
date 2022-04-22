@@ -2162,16 +2162,17 @@ class UserServices
         return $formInput;
     }
 
-    public function getOldFormInputByFilter($congress_id)
+    public function getKeyFormInputByFilter($congress_id)
     {
         return FormInput::where('congress_id', '=', $congress_id)
             ->where('filter_by', '=', 1)
             ->get('key');  
     }
 
-    public function getValueFormInputByKey($filterKey)
+    public function getValueFormInputByKey($formInputId,$filterKey)
     {
         return FormInputValue::where('value', '=', $filterKey)
+        ->where('form_input_id','=', $formInputId)
             ->get('form_input_value_id');  
     }
     
