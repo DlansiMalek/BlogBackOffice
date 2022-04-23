@@ -2175,15 +2175,7 @@ class UserServices
         return FormInput::where('congress_id', '=', $congress_id)
             ->where('filter_by', '=', 1)
             ->get('key');  
-    }
-
-    public function getValueFormInputByKey($formInputId,$filterKey)
-    {
-        return FormInputValue::where('value', '=', $filterKey)
-        ->where('form_input_id','=', $formInputId)
-            ->get('form_input_value_id');  
-    }
-    
+    }  
     public function getUserMinByCongress($userId, $congressId)
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId) {

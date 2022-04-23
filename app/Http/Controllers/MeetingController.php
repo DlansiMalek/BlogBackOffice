@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
-use Illuminate\Support\Facades\Log;
 
 
 
@@ -412,7 +411,7 @@ class MeetingController extends Controller
     if (!$congress = $this->congressServices->getCongressById($congress_id)) {
       return response()->json(['response' => 'Congress not found', 404]);
     }
-    $filterBy = $request->query('filterBy', '');
+    $filterBy = $request->query('filterBy',0);
     $perPage = $request->query('perPage', 10);
     $page = $request->query('page', 1);
     $search = $request->query('search', '');

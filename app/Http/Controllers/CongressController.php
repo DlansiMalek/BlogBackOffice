@@ -31,7 +31,6 @@ use App\Services\FMenuServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use App\Services\MeetingServices;
 
 class CongressController extends Controller
@@ -1288,15 +1287,4 @@ class CongressController extends Controller
         $filterValues =  $this->userServices->getKeyFormInputByFilter($congress_id);
         return response()->json($filterValues, 200);
     }
-
-    public function getValueFormInputByKey($congress_id,$formInputId,$Key)
-    {
-        if (!$congress = $this->congressServices->getCongressById($congress_id))
-        return response()->json(["message" => "congress not found"], 404);
-
-        $valueId =  $this->userServices->getValueFormInputByKey($formInputId, $Key);
-        return response()->json($valueId, 200);
-    }
-
-
 }
