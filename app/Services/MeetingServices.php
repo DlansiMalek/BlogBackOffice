@@ -17,7 +17,6 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class MeetingServices
 {
@@ -567,9 +566,8 @@ class MeetingServices
 
     }
 
-    public function getFixTablesWithPagination($congress_id, $perPage = null, $search ,$filterBy = null)
+    public function getFixTablesWithPagination($congress_id, $perPage = null, $search ,$filterBy )
     {
-        log::info($filterBy);
 
         $allFixTables = MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
@@ -600,9 +598,9 @@ class MeetingServices
                             $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
                         });
                 }
-                if($filterBy !== null && $filterBy != 0){
+                if($filterBy != null && $filterBy != 0 && $filterBy != 'null'){
                     $query ->whereHas('participant.responses.values', function($q) use ($filterBy){
-                        $q->where('form_input_response_id', '=', $filterBy);
+                        $q->where('form_input_value_id', '=', $filterBy);
                     });
                 }
             

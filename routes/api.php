@@ -405,7 +405,6 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('participants-number', 'CongressController@getNumberOfParticipants');
             Route::get('filter-values', 'CongressController@getformInputByFilter');
             Route::get('filter-values-byKey', 'CongressController@getKeyFormInputByFilter');
-            Route::get('{formInputId}/{key}/value-id', 'CongressController@getValueFormInputByKey');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });
