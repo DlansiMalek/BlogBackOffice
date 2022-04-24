@@ -17,6 +17,7 @@ use App\Models\ConfigCongress;
 use App\Models\FormInput;
 use App\Models\FormInputResponse;
 use Illuminate\Support\Facades\Cache;
+
 class MeetingServices
 {
     function __construct( )
@@ -562,26 +563,27 @@ class MeetingServices
     return $MeetingPlanning;
     }    
 
-    public function getCachedFixTables($congress_id, $page, $perPage, $search)
+    public function getCachedFixTables($congress_id, $page, $perPage, $search , $filterBy)
     {
 
-        $cacheKey = config('cachedKeys.FixTables') . $congress_id . $page . $perPage . $search;
+        $cacheKey = config('cachedKeys.FixTables') . $congress_id . $page . $perPage . $search . $filterBy;
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
-        $fixTables = $this->getFixTablesWithPagination($congress_id, $perPage, $search);
+        $fixTables = $this->getFixTablesWithPagination($congress_id, $perPage, $search , $filterBy);
         Cache::put($cacheKey, $fixTables, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         return $fixTables;
 
     }
 
-    public function getFixTablesWithPagination($congress_id, $perPage = null, $search)
+    public function getFixTablesWithPagination($congress_id, $perPage = null, $search ,$filterBy )
     {
+
         $allFixTables = MeetingTable::where('congress_id', '=', $congress_id)
             ->where('user_id', '!=', null)
             ->with(["participant.user_congresses" => function ($query) use ($congress_id){
                 $query->where('congress_id', '=', $congress_id);
-            },
+               },
             'participant.meetingsOrganizer' => function ($query) use ($congress_id) {
                 $query->where('congress_id', '=', $congress_id)
                 ->whereHas('user_meeting', function ($q) {
@@ -595,7 +597,8 @@ class MeetingServices
                 });
             }
             ])
-            ->where(function ($query) use ($search) {
+            ->where(function ($query) use ($search , $filterBy) {
+
                 if ($search !== '' && $search != null && $search != 'null') {
                     $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
                     ->orWhereHas('participant', function ($query) use ($search) {
@@ -605,6 +608,12 @@ class MeetingServices
                             $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
                         });
                 }
+                if($filterBy != null && $filterBy != 0 && $filterBy != 'null'){
+                    $query ->whereHas('participant.responses.values', function($q) use ($filterBy){
+                        $q->where('form_input_value_id', '=', $filterBy);
+                    });
+                }
+            
             })->orderBy('label', 'asc');
         return  $allFixTables = $perPage ? $allFixTables->paginate($perPage) : $allFixTables->get();
     }
