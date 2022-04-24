@@ -403,6 +403,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('stands', 'StandController@getStandsByCongress');
             Route::get('random-stands-pwa', 'StandController@getRandomStands');
             Route::get('participants-number', 'CongressController@getNumberOfParticipants');
+            Route::get('filter-values', 'CongressController@getformInputByFilter');
+            Route::get('filter-values-byKey', 'CongressController@getKeyFormInputByFilter');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });

@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use App\Services\UrlUtils;
 use App\Services\Utils;
 use DateTime;
-use Illuminate\Support\Facades\Log;
 
 
 
@@ -413,9 +412,10 @@ class MeetingController extends Controller
       return response()->json(['response' => 'Congress not found', 404]);
     }
     $perPage = $request->query('perPage', '');
+    $filterBy = $request->query('filterBy',0);
     $page = $request->query('page', 1);
     $search = $request->query('search', '');
-    $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage, $search);
+    $fixTables = $this->meetingServices->getCachedFixTables($congress_id, $page, $perPage, $search , $filterBy);
     return response()->json($fixTables, 200);
   }
 

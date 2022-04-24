@@ -28,7 +28,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
 
 class UserServices
 {
@@ -1915,7 +1914,15 @@ class UserServices
                 ->where('isSelected', '=', $isSelected);
             }
         })
-            ->with(['user_congresses'=> function ($query) use ($congressId){
+            ->with([
+                'country', 'responses' => function ($query) use ($congressId) {
+                    $query->whereHas('form_input', function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    });
+                }, 'responses.form_input', 'responses.values' => function ($query) {
+                    $query->with(['val']);
+                }, 'responses.form_input.values',
+                'responses.form_input.type', 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }])->with(['profile_img',
             'meetingsOrganizer' => function ($query) use ($congressId) {
@@ -2147,6 +2154,28 @@ class UserServices
         return $usersCongress;
     }
 
+    public function updateFilterBy($congressId, $FilterKey)
+    {
+        $formInput = $this->getQuestionByKey($congressId, $FilterKey);
+        $formInput->filter_by = 1;
+        $formInput->update();
+    }
+
+    public function getFormInputByFilter($congress_id)
+    {
+        $formInput = FormInput::where('congress_id', '=', $congress_id)
+            ->where('filter_by', '=', 1)
+            ->with(['values'])
+            ->get();
+        return $formInput;
+    }
+
+    public function getKeyFormInputByFilter($congress_id)
+    {
+        return FormInput::where('congress_id', '=', $congress_id)
+            ->where('filter_by', '=', 1)
+            ->get('key');  
+    }  
     public function getUserMinByCongress($userId, $congressId)
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId) {
