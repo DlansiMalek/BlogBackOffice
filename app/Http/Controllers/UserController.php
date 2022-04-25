@@ -2177,6 +2177,7 @@ class UserController extends Controller
     public function getAllUsersByCongressFrontOfficeWithPagination($congress_id, Request $request)
     {
         $perPage = $request->query('perPage', 10);
+        $filterBy = $request->query('filterBy', 0);
         $search = Str::lower($request->query('search', ''));
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
@@ -2190,7 +2191,7 @@ class UserController extends Controller
             $isSelected = 1;
         }
 
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $isSelected);
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $isSelected, $filterBy);
 
         return response()->json($users);
     }
@@ -2260,9 +2261,10 @@ class UserController extends Controller
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         $page = $request->query('page', 1);
+        $filterBy = $request->query('filterBy',0);
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $isSelected);
+        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $isSelected, $filterBy);
         return response()->json($users);
     }
 
