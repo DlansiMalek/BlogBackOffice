@@ -1939,11 +1939,11 @@ class UserServices
                     $q->where('status', '=', 1);
                 });
             }])
-            ->whereHas('user_congresses.user.responses.values', function($q) use ($filterBy){
-                if($filterBy != null && $filterBy != 0 && $filterBy != 'null'){
+            ->whereHas('user_congresses.user.responses.values', function ($q) use ($filterBy) {
+                if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
                     $q->where('form_input_value_id', '=', $filterBy);
                 }
-                })
+            })
             ->paginate($perPage);
         return  $users;
     }
