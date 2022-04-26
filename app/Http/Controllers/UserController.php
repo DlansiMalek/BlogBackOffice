@@ -2303,7 +2303,7 @@ class UserController extends Controller
                 ->whereHas('user_meeting', function ($q) {
                     $q->where('status', '=', 1);
                 });
-            }
+            }, "country"
         ]);
 
         return response()->json($user);
