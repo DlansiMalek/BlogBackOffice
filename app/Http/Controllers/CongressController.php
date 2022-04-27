@@ -258,7 +258,10 @@ class CongressController extends Controller
         }
 
         $configCongress = $this->congressServices->getCongressConfigById($congressId);
-        $oldShowInFixTable = $configCongress->show_in_fix_table ;
+        $oldShowInFixTable = $configCongress->show_in_fix_table;
+        $oldLabelFixTable = $configCongress->label_fix_table;
+        $oldLabelMeetingTable = $configCongress->label_meeting_table;
+        $oldNumberFixTable = $configCongress->nb_fix_table;
 
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
 
@@ -281,9 +284,16 @@ class CongressController extends Controller
             return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
         }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
+        $congress = $this->congressServices->getCongressById($congressId);
         $nbMeetingTable = $configCongress['nb_meeting_table'];
+
+        if ($oldNumberFixTable != $request->input('congress')['nb_fix_table']) {
+            $variableTables = $this->meetingServices->getVariableTables($congressId);
+            $this->meetingServices->resetTablesCounter($variableTables, $request->input('congress')['label_meeting_table'], $request->input('congress')['nb_fix_table']);
+        }
+
         if ($nbMeetingTable != 0) {
-            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId);
+            $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId, $congress);
         }
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
@@ -317,8 +327,27 @@ class CongressController extends Controller
         // Config OnlineAccess Allowed
         $this->congressServices->deleteAllAllowedAccessByCongressId($congressId);
         $this->congressServices->addAllAllowedAccessByCongressId($request->input("congress")['privileges'], $congressId);
+
         if ($oldShowInFixTable != $request->input("congress")['show_in_fix_table']) {
             $this->userServices->editFixTableInfo($request->input("congress")['show_in_fix_table'], $congressId);
+        }
+
+        $oldShowInChat = $this->userServices->getShowInChat($congressId);
+        if ($oldShowInChat != $request->input('congress')['show_in_chat'] && $request->input('congress')['show_in_chat']) {
+            $this->userServices->editShowInChat($request->input('congress')['show_in_chat'], $congressId);
+        }
+
+        if ($oldLabelFixTable != $request->input('congress')['label_fix_table']) {
+            $fixTables = $this->meetingServices->getFixTables($congressId);
+            $this->meetingServices->renameTables($fixTables, $request->input('congress')['label_fix_table']);
+        }
+
+        if ($oldLabelMeetingTable != $request->input('congress')['label_meeting_table']) {
+            $variableTables = $this->meetingServices->getVariableTables($congressId);
+            $this->meetingServices->renameTables($variableTables, $request->input('congress')['label_meeting_table']);
+        }
+        if($request->input('congress')['filterKey'] != null){
+            $this->userServices->updateFilterBy($congressId, $request->input('congress')['filterKey']);
         }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
 
@@ -728,31 +757,34 @@ class CongressController extends Controller
         $to_all = $request->query('toAll', 0);
         $questionId = $request->input('question_id');
         $responseId = $request->input('response_id');
+        $status = $request->input('status');
 
-        if ($questionId != null &&  $responseId != null) {
-            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId,$privilege_ids, $mailId);
+        if ($status != 'Null') {
+            $users = $this->userServices->getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $mailId);
+        } else if ($questionId != null &&  $responseId != null) {
+            $users = $this->userServices->getAllUsersByCongressWithSameResponse($congressId, $questionId, $responseId, $privilege_ids, $mailId);
+        } else {
+            $users = $this->userServices->getUsersWithRelations(
+                $congressId,
+                [
+                    'accesses' => function ($query) use ($congressId) {
+                        $query->where("congress_id", "=", $congressId);
+                    },
+                    'user_congresses' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    },
+                    'payments' => function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    },
+                    'user_mails' => function ($query) use ($mailId) {
+                        $query->where('mail_id', '=', $mailId);
+                    }
+                ],
+                null,
+                $privilege_ids
+            );
         }
-        else
-        {
-        $users = $this->userServices->getUsersWithRelations($congressId,
-            [
-                'accesses' => function ($query) use ($congressId) {
-                    $query->where("congress_id", "=", $congressId);
-                },
-                'user_congresses' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
-                },
-                'payments' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
-                },
-                'user_mails' => function ($query) use ($mailId) {
-                    $query->where('mail_id', '=', $mailId);
-                }
-            ], null, $privilege_ids);
-
-        }
-
-        foreach ($users as $user) {
+         foreach ($users as $user) {
             if (Utils::isValidSendMail($congress, $user, $to_all)) {
                 $userMail = null;
                 if (sizeof($user->user_mails) == 0) {
@@ -762,8 +794,10 @@ class CongressController extends Controller
                 }
                 $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congressId . '/validate/' . $user->verification_code;
                 if (Utils::isValidStatus($userMail)) {
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null)
-                        , $user, $congress, $mail->object, false, $userMail);
+                    $this->mailServices->sendMail(
+                        $this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null),
+                        $user,$congress,$mail->object,false,$userMail
+                    );
                 }
             }
         }
@@ -1239,5 +1273,23 @@ class CongressController extends Controller
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
         return response()->json($participants, 200);
-    }   
+    }
+
+    public function getformInputByFilter($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(["message" => "congress not found"], 404);
+
+        $filterValues =  $this->userServices->getFormInputByFilter($congress_id);
+        return response()->json($filterValues, 200);
+    }
+
+    public function getKeyFormInputByFilter($congress_id)
+    {
+        if (!$congress = $this->congressServices->getCongressById($congress_id))
+            return response()->json(["message" => "congress not found"], 404);
+
+        $filterValues =  $this->userServices->getKeyFormInputByFilter($congress_id);
+        return response()->json($filterValues, 200);
+    }
 }

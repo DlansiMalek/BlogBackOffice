@@ -1695,9 +1695,9 @@ class UserController extends Controller
         $user->update();
         if ($request->id !== null) {
             $congressid = $request->id;
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . '/password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code . '&user_id=' . $user->user_id;
         } else {
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . '/password/reset/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
         } 
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
@@ -2177,12 +2177,21 @@ class UserController extends Controller
     public function getAllUsersByCongressFrontOfficeWithPagination($congress_id, Request $request)
     {
         $perPage = $request->query('perPage', 10);
+        $filterBy = $request->query('filterBy', 0);
         $search = Str::lower($request->query('search', ''));
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
         }
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
+        $isSelected = 0;
+        if ($congress->congress_type_id == 1 || $congress->congress_type_id == 2) {
+            $isSelected = 1;
+        }
 
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id);
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $isSelected, $filterBy);
 
         return response()->json($users);
     }
@@ -2241,12 +2250,21 @@ class UserController extends Controller
 
     public function getAllUsersByCongressPWAWithPagination($congress_id,Request $request)
     {
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
+        $isSelected = 0;
+        if ($congress->congress_type_id == 1 || $congress->congress_type_id == 2) {
+            $isSelected = 1;
+        }
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         $page = $request->query('page', 1);
+        $filterBy = $request->query('filterBy',0);
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId);
+        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $isSelected, $filterBy);
         return response()->json($users);
     }
 
@@ -2273,7 +2291,19 @@ class UserController extends Controller
             'responses.form_input.type', 'profile_img', 
             'network_member' => function ($query) {
                 $query->select(['fav_id', 'User_Network.user_id', 'user_network_id']);
-            }
+            },
+            'meetingsOrganizer' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            },
+            'meetingsParticipant' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            }, "country"
         ]);
 
         return response()->json($user);
@@ -2342,9 +2372,13 @@ class UserController extends Controller
 
     public function getRandomUsers($congress_id,Request $request)
     {
+        $congress = $this->congressServices->getCongressById($congress_id);
+        if (!$congress) {
+            return response()->json(['response' => 'No congress found'], 401);
+        }
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getRandomUsers($congress_id,$userId);
+        $users = $this->userServices->getRandomUsers($congress_id,$userId, $congress->congress_type_id);
         return response()->json($users);
     }
 

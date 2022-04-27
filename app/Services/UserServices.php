@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+
 
 class UserServices
 {
@@ -1898,19 +1900,50 @@ class UserServices
         return $userCongress;
     }
 
-    public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id)
-    {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id) {
+    public function getAllUsersByCongressFrontOfficeWithPagination($congressId, $perPage, $search, $user_id, $isSelected, $filterBy =null)
+    {   
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id, $isSelected) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
+            $query->where('isSelected', '=', $isSelected);
 
             if ($search != "") {
-                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
+                ->where('isSelected', '=', $isSelected);
+                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])
+                ->where('congress_id', '=', $congressId)
+                ->where('isSelected', '=', $isSelected);             
             }
+          
         })
-            ->with(['user_congresses'=> function ($query) use ($congressId){
+            ->with([
+                'country', 'responses' => function ($query) use ($congressId) {
+                    $query->whereHas('form_input', function ($query) use ($congressId) {
+                        $query->where('congress_id', '=', $congressId);
+                    });
+                }, 'responses.form_input', 'responses.values' => function ($query) {
+                    $query->with(['val']);
+                }, 'responses.form_input.values',
+                'responses.form_input.type', 'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }])->with('profile_img')
+            }])->with(['profile_img',
+            'meetingsOrganizer' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            },
+            'meetingsParticipant' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) {
+                    $q->where('status', '=', 1);
+                });
+            }])
+            ->whereHas('user_congresses.user.responses.values', function ($q) use ($filterBy) {
+                if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
+                    $q->where('form_input_value_id', '=', $filterBy);
+                }
+            })
             ->paginate($perPage);
         return  $users;
     }
@@ -1919,8 +1952,10 @@ class UserServices
     {
         $show_in_chat =ConfigCongress::where('congress_id', '=', $congress_id)
             ->get('show_in_chat')->pluck('show_in_chat'); 
-        $show_in_chat = substr($show_in_chat,2);
-        $show_in_chat=substr_replace($show_in_chat ,"", -2);
+        if ($show_in_chat[0] != null) {
+            $show_in_chat = substr($show_in_chat,2);
+            $show_in_chat=substr_replace($show_in_chat ,"", -2);
+        }
         return  $show_in_chat ;    
         }
 
@@ -1986,15 +2021,15 @@ class UserServices
         return $user_network->delete();
     }
 
-    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId)
+    public function getCachedUsers($congress_id, $page, $perPage ,$search,$userId, $isSelected, $filterBy)
 {
-    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId ;
+    $cacheKey = config('cachedKeys.Users') . $congress_id . $page . $perPage . $search . $userId . $isSelected . $filterBy;
 
     if (Cache::has($cacheKey)) {
         return Cache::get($cacheKey);
     }
 
-    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId);
+    $users = $this->getAllUsersByCongressFrontOfficeWithPagination($congress_id,$perPage,$search, $userId, $isSelected, $filterBy);
     Cache::put($cacheKey, $users, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
 
     return $users;
@@ -2031,12 +2066,14 @@ class UserServices
         })
         ->count();
     }
-    public function getRandomUsers($congressId,$user_id)
+    public function getRandomUsers($congressId,$user_id, $congressTypeId)
     {
-        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id) {
+        $users = User::whereHas('user_congresses', function ($query) use ($congressId, $user_id, $congressTypeId) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
-
+            if ($congressTypeId == 1 || $congressTypeId == 2) {
+                $query->where('isSelected', '=', 1);
+            }
         })
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
@@ -2079,6 +2116,123 @@ class UserServices
         }
         return $userCongress;
     }
+
+    public function editShowInChat($show_in_chat, $congress_id)
+    {
+        $usersCongress = UserCongress::where('congress_id', '=', $congress_id)
+            ->whereHas('user', function ($query) use ($congress_id) {
+                $query->where('congress_id', '=', $congress_id);
+            })->with(['user'])
+            ->get();
+
+        $form_input = $this->getQuestionByKey($congress_id, $show_in_chat);
+        foreach ($usersCongress as $userCongress) {
+            if ($show_in_chat[0] == null) {
+                $userCongress->chat_info = null;
+                $userCongress->update();
+            }
+            $userCongress->chat_info = null;
+            if ($show_in_chat[0] != null) {
+                for ($i = 0; $i < sizeof($show_in_chat); $i++) {
+                    if (Schema::hasColumn('User', $show_in_chat[$i])) {
+                        $userCongress->chat_info = $userCongress->user[$show_in_chat[$i]] . ';' . $userCongress->chat_info;
+                        $userCongress->update();
+                    } else {
+                        $form_input = $this->getQuestionByKey($congress_id, $show_in_chat[$i]);
+                        if ($form_input) {
+                            if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
+                                $chat_info = $this->getValueResponse($userCongress->user->user_id, $form_input->form_input_id);
+                                if (count($chat_info) > 0) {
+                                    $userCongress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $userCongress->chat_info;
+                                    $userCongress->update();
+                                }
+                            } else {
+                                $chat_info = $this->getResponseFormInput($userCongress->user->user_id, $form_input->form_input_id);
+                                if (count($chat_info) > 0) {
+                                    $userCongress->chat_info = $chat_info[0]['response'] . ";" .  $userCongress->chat_info;
+                                    $userCongress->update();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $usersCongress;
+    }
+
+    public function updateFilterBy($congressId, $FilterKey)
+    {
+        $formInput = $this->getQuestionByKey($congressId, $FilterKey);
+        $formInput->filter_by = 1;
+        $formInput->update();
+    }
+
+    public function getFormInputByFilter($congress_id)
+    {
+        $formInput = FormInput::where('congress_id', '=', $congress_id)
+            ->where('filter_by', '=', 1)
+            ->with(['values'])
+            ->get();
+        return $formInput;
+    }
+
+    public function getKeyFormInputByFilter($congress_id)
+    {
+        return FormInput::where('congress_id', '=', $congress_id)
+            ->where('filter_by', '=', 1)
+            ->get('key');  
+    }  
+    public function getUserMinByCongress($userId, $congressId)
+    {
+        return User::whereHas('user_congresses', function ($query) use ($congressId) {
+            $query->where('congress_id', '=', $congressId);
+        })->with([
+            'user_congresses.congress.accesss.speakers',
+            'user_congresses.congress.accesss.chairs',
+            'user_congresses.congress.accesss.sub_accesses',
+            'user_congresses.congress.accesss.topic',
+            'user_congresses.congress.accesss.type',
+            'user_congresses.privilege',
+            'user_congresses.pack',
+            'accesses',
+            'speaker_access',
+            'chair_access',
+            'country',
+            'likes',
+            'profile_img',
+            'user_congresses' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            },
+        ])->where('user_id', '=', $userId)
+        ->first();
+    }
+
+    public function getAllUsersByCongressWithSameStatusMeeting($congressId, $status, $mailId)
+    {
+        $users = User::whereHas('meetingsParticipant', function ($query) use ($congressId, $status) {
+                $query->where('congress_id', '=', $congressId)
+                ->whereHas('user_meeting', function ($q) use ($status) {
+                    $q->where('status', '=', $status);
+                });
+            })
+            ->with([
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }, 
+                'accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                },
+                'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+            ])->get();
+        return $users;
+    }
+
 }
 
 
