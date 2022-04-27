@@ -61,6 +61,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'MeetingController@getUserMeetingById');
         Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
+        Route::get('total-meetings', 'MeetingController@getTotalNumberOfMeetingsByCongress');
         Route::get('number-meetings', 'MeetingController@getNumberOfMeetings');
         Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
         Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
