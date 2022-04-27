@@ -135,4 +135,8 @@ class Congress extends Model
     function config_landing() {
         return $this->hasOne('App\Models\ConfigLP', 'congress_id', 'congress_id');
     }
+
+    function meeting_dates() {
+        return $this->hasMany('App\Models\MeetingDates', 'congress_id', 'congress_id');
+    }
 }
