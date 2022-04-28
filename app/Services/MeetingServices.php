@@ -192,14 +192,10 @@ class MeetingServices
 
     public function getNumberOfMeetings($congress_id, $status = null,$start_date = null)
     {
-        return Meeting::whereHas("user_meeting", function ($query) use ($status) {
-                $query->where('status', '=', $status);
+        return Meeting::whereHas("user_meeting", function ($query) use ($status, $start_date) {
+                $query->where('status', '=', $status)
+                ->whereDate('updated_at', $start_date);
         })->where('congress_id', '=', $congress_id)
-        ->where(function ($query) use ($start_date) {
-            if ($start_date != '' && $start_date != 'null'){
-            $query->whereDate('start_date', $start_date);
-        }
-        })
         ->count();
     }
 
