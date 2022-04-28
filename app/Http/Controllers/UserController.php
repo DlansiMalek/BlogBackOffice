@@ -1530,8 +1530,12 @@ class UserController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         }
         $congress = $this->congressServices->getCongressById($congress_id);
+         //get Payement Ligne
+         if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
+            $userPayment = $this->paymentServices->getPaymentByUserAndCongressID($congress_id, $user->user_id);
+        }
         $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
     
