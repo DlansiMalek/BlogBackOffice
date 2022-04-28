@@ -57,6 +57,8 @@ class RegistrationFormServices
             $input->label = $new["label"];
             $input->label_en = $new["label_en"];
             $input->required = $new["required"];
+            $input->public_label = $new["public_label"];
+            $input->public_label_en = $new["public_label_en"];
             $input->key = $new["key"] ? $new["key"] : substr($new["label"], 180);
             $input->save();
             $val = $newInputs[$key];

@@ -15,7 +15,7 @@ class FormInput extends Model
     public $timestamps = true;
     protected $table = 'Form_Input';
     protected $primaryKey = 'form_input_id';
-    protected $fillable = ['label', 'congress_id', 'form_input_type_id', 'required'];
+    protected $fillable = ['label', 'congress_id', 'form_input_type_id','required', 'public_label', 'public_label_en'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     public function type()
