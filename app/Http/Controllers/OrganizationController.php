@@ -70,15 +70,17 @@ class OrganizationController extends Controller
         $stand = null;
         $request['organization_id'] = $organization->organization_id;
         if ($request->has('stand')) {
-            if ($request->input('stands')['0']['stand_id']) {
-                $stand = $this->standServices->getStandById($request->input('stands')['0']['stand_id']);
-            } else {
-                $stand = $this->standServices->addStand(null, $congress_id, $request);
-            } 
-            if ($stand) {
-                $standDocs = $request->input('stand')['docs'];
-                $this->standServices->saveResourceStand($standDocs, $stand->stand_id);
-            }
+            if (count($request->input('stands'))) {
+                if ($request->input('stands')['0']['stand_id']) {
+                    $stand = $this->standServices->getStandById($request->input('stands')['0']['stand_id']);
+                } else {
+                    $stand = $this->standServices->addStand(null, $congress_id, $request);
+                } 
+                if ($stand) {
+                    $standDocs = $request->input('stand')['docs'];
+                    $this->standServices->saveResourceStand($standDocs, $stand->stand_id);
+                }
+            }            
         } 
         $privilegeId = 7;
         $password = Str::random(8);
