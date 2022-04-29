@@ -1287,4 +1287,8 @@ class CongressServices
         
         return $participants;
     }
+
+    public function countWillBePresentUserCongress($congress_id) {
+        return UserCongress::where('congress_id', $congress_id)->where('will_be_present', 1)->count();
+    }
 }
