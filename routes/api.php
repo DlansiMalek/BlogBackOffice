@@ -174,6 +174,8 @@ Route::group(['prefix' => 'users'], function () {
 
     //API PER CONGRESS
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
+
+        Route::get('/count-present', 'CongressController@countWillBePresentUserCongress');
         Route::group(['prefix' => 'privilege'], function () {
             Route::post('', 'UserController@getUserByTypeAndCongressId');
         });

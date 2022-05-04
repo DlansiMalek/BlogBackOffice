@@ -1292,4 +1292,8 @@ class CongressController extends Controller
         $filterValues =  $this->userServices->getKeyFormInputByFilter($congress_id);
         return response()->json($filterValues, 200);
     }
+
+    public function countWillBePresentUserCongress($congress_id) {
+        return $this->congressServices->countWillBePresentUserCongress($congress_id);
+    }
 }
