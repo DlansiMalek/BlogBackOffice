@@ -1166,6 +1166,9 @@ class CongressServices
         $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
+        $config_landing_page->prp_link = $request->has("prp_link") ? $request->input('prp_link') : null;
+        $config_landing_page->prp_btn_text = $request->has("prp_btn_text") ? $request->input('prp_btn_text') : null;
+        $config_landing_page->prp_btn_text_en = $request->has("prp_btn_text_en") ? $request->input('prp_btn_text_en') : null;
 
         $config_landing_page->is_b2b_btn = $request->has("is_b2b_btn") ? $request->input('is_b2b_btn') : 0;
         $config_landing_page->home_btn_text = $request->has("home_btn_text") ? $request->input('home_btn_text') : 'LOGIN';
