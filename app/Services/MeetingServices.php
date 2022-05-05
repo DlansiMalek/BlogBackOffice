@@ -730,5 +730,13 @@ class MeetingServices
             ->where('start_date', '=', $startDate)
             ->get();
     }
+
+    public function getMeetingDatesByDate($congressId, $date)
+    {
+        return MeetingDates::where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->where('congress_id', '=', $congressId)
+            ->first();
+    }
   
 }
