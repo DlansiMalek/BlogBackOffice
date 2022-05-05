@@ -126,7 +126,7 @@ class MeetingServices
                 $query->where('status', '=' , $status);
             }
         })->where('congress_id', '=', $congress_id)
-        ->orderBy('start_date', 'DESC')->get();
+        ->orderBy('start_date', 'ASC')->get();
         
         
     }
