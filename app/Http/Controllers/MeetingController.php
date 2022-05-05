@@ -11,6 +11,7 @@ use App\Services\CongressServices;
 use Illuminate\Support\Str;
 use App\Services\UrlUtils;
 use App\Services\Utils;
+use Illuminate\Support\Facades\Log;
 use DateTime;
 
 
@@ -54,6 +55,15 @@ class MeetingController extends Controller
       return response()->json(['response' => 'Meeting date not found'], 400);
     }
     $meeting_date = $request->input('start_date');
+    
+    if (count($congress->meeting_dates) > 0) 
+    {
+      $meetingDate = $this->meetingServices->getMeetingDatesByDate($request->input('congress_id'), new DateTime($meeting_date));
+      if (!$meetingDate)
+      {
+        return response()->json('unvalid date', 406);
+      }
+    }
     if (!$userConnected) {
       return response()->json(['response' => 'No user found'], 401);
     }
