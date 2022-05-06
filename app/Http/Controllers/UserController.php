@@ -1531,6 +1531,7 @@ class UserController extends Controller
         }
         $congress = $this->congressServices->getCongressById($congress_id);
          //get Payement Ligne
+         $userPayment = null;
          if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
             $userPayment = $this->paymentServices->getPaymentByUserAndCongressID($congress_id, $user->user_id);
         }
