@@ -346,7 +346,7 @@ class CongressController extends Controller
             $variableTables = $this->meetingServices->getVariableTables($congressId);
             $this->meetingServices->renameTables($variableTables, $request->input('congress')['label_meeting_table']);
         }
-        if($request->input('congress')['filterKey'] != null){
+        if (!empty($request->input('congress')['filterKey'])) {
             $this->userServices->updateFilterBy($congressId, $request->input('congress')['filterKey']);
         }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
