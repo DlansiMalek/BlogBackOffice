@@ -490,7 +490,6 @@ class CongressServices
         if (!$configCongress) {
             $configCongress = new ConfigCongress();
         }
-        
         $configCongress->logo = $configCongressRequest['logo'];
         $configCongress->banner = $configCongressRequest['banner'];
         $configCongress->free = $configCongressRequest['free'];

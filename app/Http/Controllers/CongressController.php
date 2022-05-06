@@ -262,15 +262,10 @@ class CongressController extends Controller
         $oldLabelFixTable = $configCongress->label_fix_table;
         $oldLabelMeetingTable = $configCongress->label_meeting_table;
         $oldNumberFixTable = $configCongress->nb_fix_table;
-
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congressId);
-
-        $configSubmission = $this->congressServices->getCongressConfigSubmissionById($congressId);
-
         $newConfig = $request->input("congress");
-
         $token = null;
-
+       
         if ($newConfig['is_online']) {
             $token = $this->roomServices->createToken(
                 $loggedadmin->email,
@@ -295,25 +290,6 @@ class CongressController extends Controller
         if ($nbMeetingTable != 0) {
             $this->meetingServices->InsertMeetingTable($nbMeetingTable, $congressId, $congress);
         }
-        $submissionData = $request->input("submission");
-        $theme_ids = $request->input("themes_id_selected");
-
-        if (sizeof($submissionData) > 1) {
-            $this->congressServices->addCongressSubmission(
-                $configSubmission,
-                $submissionData,
-                $congressId
-            );
-        } else if($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
-            $this->congressServices->deleteConfigsubmission($configSubmission);
-            $this->congressServices->deleteAllThemes($congressId);
-        }
-        if ($theme_ids && sizeof($submissionData) > 0) {
-            $this->congressServices->addSubmissionThemeCongress(
-                $theme_ids,
-                $congressId);
-        }
-
         // Config Location
         $eventLocation = $request->input("eventLocation");
 
@@ -350,7 +326,6 @@ class CongressController extends Controller
             $this->userServices->updateFilterBy($congressId, $request->input('congress')['filterKey']);
         }
         return response()->json(['message' => 'edit configs success', 'config_congress' => $configCongress]);
-
     }
 
     public function addPaymentToUser($root, $user, $congress, $price)
@@ -377,7 +352,6 @@ class CongressController extends Controller
         $token = null;
         // update the is_submission_enabled column of the Config_Congress table
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
-
         $submissionData = $request->input("submission");
         $theme_ids = $request->input("themes_id_selected");
         if (sizeof($submissionData) > 1) {
@@ -385,7 +359,7 @@ class CongressController extends Controller
                 $configSubmission,
                 $submissionData,
                 $congressId
-            );
+         );
         } else 
         if ($configSubmission = $this->congressServices->getConfigSubmission($congressId)) {
             $this->congressServices->deleteConfigsubmission($configSubmission);

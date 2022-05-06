@@ -16,25 +16,24 @@ class MenuChildrenSeed06 extends Seeder
     {
         DB::table('Menu_Children')->insert([
             'menu_children_id' => 46,
-            'key' => 'configSubmission',
-            'url' => '/configuration/:congress_id/config-Submission',
+            'key' => 'ConfigSubmission',
+            'url' => '/manage-congress/:congress_id/config-submission',
             'menu_id' => 18,
             'index' => 2
         ]);
         DB::table('Menu_Children')->insert([
             'menu_children_id' => 47,
             'key' => 'OnlineEvent',
-            'url' => '/configuration/:congress_id/Online-Event',
+            'url' => '/manage-congress/:congress_id/online-event',
             'menu_id' => 18,
             'index' => 3
         ]);
         DB::table('Menu_Children')->insert([
             'menu_children_id' => 48,
             'key' => 'Meetings',
-            'url' => '/configuration/:congress_id/Meetings',
+            'url' => '/manage-congress/:congress_id/meetings',
             'menu_id' => 18,
             'index' => 4
         ]);
-        
     }
 }
