@@ -209,7 +209,8 @@ class CongressServices
             'accesss.participants.user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
                 $query->where('privilege_id', '=', config('privilege.Participant'));
-            }
+            },
+            "theme"
         ])
             ->where("congress_id", "=", $congressId)
             ->first();
