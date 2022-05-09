@@ -163,4 +163,8 @@ class User extends Authenticatable implements JWTSubject
     function table() {
         return $this->hasMany(MeetingTable::class,'user_id','user_id');
     }
+
+    function userResponses() {
+        return $this->hasMany(Response::class,'user_id','user_id');
+    }
 }

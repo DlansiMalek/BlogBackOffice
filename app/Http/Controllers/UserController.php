@@ -743,6 +743,33 @@ class UserController extends Controller
             $this->userServices->deleteAccess($user->user_id, $userAccessIds);
         }
 
+        $userResponses= $this->userServices->getResponseByUserCongress($user->user_id,$congressId);
+        $responses = null;
+        $formInputs=  $this->userServices->getFormInputByCongress($congressId);
+        if (Schema::hasColumn('User', 'country_id')) {
+            $country= $this->userServices->getUserCountry($user->country_id);
+            if($country){
+                $responses = $country->name . ' '. $responses ;
+            }
+        }
+        if (Schema::hasColumn('User', 'mobile' )) {
+            $responses = $user['mobile']. ' '. $responses ;
+        }
+        if($formInputs) {
+            $count = count($formInputs) ;
+            for($i=0 ; $i< $count; $i++){
+            if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
+                $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
+                $responses = $info[0]['values'][0]['val']['value'] . " " . $responses ; 
+            } else {
+                $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
+                $responses = $info[0]['response'] . " " . $responses;    
+            }  
+           }
+        }
+
+        $this->userServices->EditUserResponses($userResponses,$responses);
+         
         return response()->json($user, 200);
     }
 
@@ -1005,6 +1032,7 @@ class UserController extends Controller
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 0);
         $accessInRegister = $this->accessServices->getAllAccessByRegisterParams($congressId, 1);
         $accessIds = $this->accessServices->getAccessIdsByAccess($accessNotInRegister);
+        $formInputs = $this->registrationFormServices->getForm($congressId);
 
         foreach ($users as $userData) {
             if (isset($userData['email'])) {
@@ -1031,6 +1059,21 @@ class UserController extends Controller
                             $query->where('congress_id', '=', $congressId);
                         },
                     ]);
+                    $userResponses = null;
+                    if ($userData['country'] != null) {
+                        $userResponses = $userData['country'] . ' ' . $userResponses;
+                    }
+                    if ($userData['mobile'] != null) {
+                        $userResponses = $userData['mobile'] . ' ' . $userResponses;
+                    }
+                    if ($formInputs) {
+                        foreach ($formInputs as $formInput) {
+                            $userResponses = $userData[$formInput['key']] . ' ' . $userResponses;
+                        }
+                    }
+
+                    $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId);  
+                
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
                     $organizationExist=null;
@@ -1149,7 +1192,6 @@ class UserController extends Controller
             }
         }
 
-        $formInputs = $this->registrationFormServices->getForm($congressId);
 
         foreach ($users as $user) {
             foreach ($formInputs as $input) {
@@ -1800,7 +1842,29 @@ class UserController extends Controller
            }
         }
         $user_congress->save();
-
+        $userResponses = null;
+        $formInputs=  $this->userServices->getFormInputByCongress($congress_id);
+        if (Schema::hasColumn('User', 'country_id')) {
+            $country= $this->userServices->getUserCountry($user->country_id);
+            $userResponses = $country->name . ' '. $userResponses ;
+        }
+        if (Schema::hasColumn('User', 'mobile' )) {
+            $userResponses = $user['mobile']. ' '. $userResponses ;
+        }
+        if($formInputs) {
+            $count = count($formInputs) ;
+            for($i=0 ; $i< $count; $i++){
+            if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
+                $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
+                $userResponses = $info[0]['values'][0]['val']['value'] . " " . $userResponses;
+            } else {
+                $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
+                $userResponses = $info[0]['response'] . " " .  $userResponses;    
+            }  
+           }
+        }
+         
+        $this->userServices->addUserResponses($userResponses,$user->user_id,$congress_id);
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 

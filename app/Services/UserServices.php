@@ -12,7 +12,9 @@ use App\Models\FormInput;
 use App\Models\Payment;
 use App\Models\ResponseValue;
 use App\Models\Tracking;
+use App\Models\Country;
 use App\Models\User;
+use App\Models\Response;
 use App\Models\UserAccess;
 use App\Models\UserCongress;
 use App\Models\ConfigCongress;
@@ -28,6 +30,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
+
 
 class UserServices
 {
@@ -1575,6 +1579,7 @@ class UserServices
         }
 
         $userData->save();
+        log::info($userData);
         if (array_key_exists('accesss', $user)) {
             foreach ($user['accesss'] as $accessId) {
                 if ($accessId != 0) {
@@ -1912,10 +1917,17 @@ class UserServices
                 $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])
                 ->where('congress_id', '=', $congressId)
                 ->where('isSelected', '=', $isSelected);
+               
             }
         })
+            ->orWhereHas('userResponses', function ($q) use ($congressId, $search) {
+                if ($search != "") {
+                    $q->where('congress_id', '=', $congressId);
+                    $q->whereRaw('lower(response) like (?)', ["%{$search}%"]);
+                }
+            })
             ->with([
-                'country', 'responses' => function ($query) use ($congressId) {
+                'country',  'responses' => function ($query) use ($congressId) {
                     $query->whereHas('form_input', function ($query) use ($congressId) {
                         $query->where('congress_id', '=', $congressId);
                     });
@@ -2200,6 +2212,41 @@ class UserServices
         ])->where('user_id', '=', $userId)
         ->first();
     }
+
+    public function getFormInputByCongress($congress_id)
+    {
+        return FormInput::where('congress_id', '=', $congress_id)
+         ->get();
+    }
+
+    public function getUserCountry($country_id)
+    {
+        return Country::where('alpha3code', '=', $country_id)
+        ->first();
+    }
+
+    public function addUserResponses($userResponses, $user_id, $congress_id)
+    {
+        $response = new Response();
+        $response->user_id = $user_id;
+        $response->congress_id = $congress_id; 
+        $response->response = $userResponses ;
+        $response->save();
+    }
+
+    public function getResponseByUserCongress($user_id, $congress_id)
+    {
+        return Response::where('user_id', '=', $user_id)
+        ->where('congress_id', '=', $congress_id)
+        ->first();
+    }
+
+    public function EditUserResponses($userResponses , $responses)
+    {
+        $userResponses->response = $responses ;
+        $userResponses->update();
+    }
+
 
 }
 
