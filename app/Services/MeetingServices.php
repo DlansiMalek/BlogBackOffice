@@ -595,7 +595,7 @@ class MeetingServices
                 });
             }
             ])
-            ->where(function ($query) use ($search , $filterBy) {
+            ->where(function ($query) use ($search , $filterBy, $congress_id) {
 
                 if ($search !== '' && $search != null && $search != 'null') {
                     $query->whereRaw('lower(label) like (?)', ["%{$search}%"])
@@ -604,7 +604,10 @@ class MeetingServices
                         ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
                     })->orWhereHas('participant.user_congresses', function ($query) use ($search) {
                             $query->whereRaw('lower(fix_table_info) like (?)', ["%{$search}%"]);
-                        });
+                        })
+                        ->orWhereHas('participant.userResponses', function ($q) use ($search, $congress_id) {
+                            $q->where('congress_id', '=', $congress_id);
+                            $q->whereRaw('lower(response) like (?)', ["%{$search}%"]);                        });
                 }
                 if($filterBy != null && $filterBy != 0 && $filterBy != 'null'){
                     $query ->whereHas('participant.responses.values', function($q) use ($filterBy){
