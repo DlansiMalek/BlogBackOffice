@@ -1166,6 +1166,9 @@ class CongressServices
         $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
+        $config_landing_page->prp_link = $request->has("prp_link") ? $request->input('prp_link') : null;
+        $config_landing_page->prp_btn_text = $request->has("prp_btn_text") ? $request->input('prp_btn_text') : null;
+        $config_landing_page->prp_btn_text_en = $request->has("prp_btn_text_en") ? $request->input('prp_btn_text_en') : null;
 
         $config_landing_page->is_b2b_btn = $request->has("is_b2b_btn") ? $request->input('is_b2b_btn') : 0;
         $config_landing_page->home_btn_text = $request->has("home_btn_text") ? $request->input('home_btn_text') : 'LOGIN';
@@ -1286,5 +1289,9 @@ class CongressServices
         Cache::put($cacheKey, $participants, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         
         return $participants;
+    }
+
+    public function countWillBePresentUserCongress($congress_id) {
+        return UserCongress::where('congress_id', $congress_id)->where('will_be_present', 1)->count();
     }
 }

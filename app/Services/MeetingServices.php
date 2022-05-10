@@ -126,7 +126,7 @@ class MeetingServices
                 $query->where('status', '=' , $status);
             }
         })->where('congress_id', '=', $congress_id)
-        ->get();
+        ->orderBy('start_date', 'ASC')->get();
         
         
     }
@@ -192,14 +192,10 @@ class MeetingServices
 
     public function getNumberOfMeetings($congress_id, $status = null,$start_date = null)
     {
-        return Meeting::whereHas("user_meeting", function ($query) use ($status) {
-                $query->where('status', '=', $status);
+        return Meeting::whereHas("user_meeting", function ($query) use ($status, $start_date) {
+                $query->where('status', '=', $status)
+                ->whereDate('updated_at', $start_date);
         })->where('congress_id', '=', $congress_id)
-        ->where(function ($query) use ($start_date) {
-            if ($start_date != '' && $start_date != 'null'){
-            $query->whereDate('start_date', $start_date);
-        }
-        })
         ->count();
     }
 
@@ -240,16 +236,28 @@ class MeetingServices
     public function getRequestDetailsPagination($congress_id, $per_page, $startDate, $endDate, $search)
     {
         return Meeting::with(['user_meeting' => function ($query) use ($congress_id) {
-            $query->with(['organizer', 'participant' => function ($query) use ($congress_id) {
+            $query->with(['organizer'  => function ($query) {
+                $query->with(['country']);
+            }, 'participant' => function ($query) use ($congress_id) {
                 $query->with(['user_mails' => function($q) use ($congress_id) {
                     $q->whereHas('meeting', function($q) use ($congress_id) {
                         $q->where('congress_id','=', $congress_id);
                     });
-                }]);
+                }, 'country']);
             }]);
-        }])->where(function ($query) use ($startDate, $endDate, $search) {
+        }, "meetingtable"])->where(function ($query) use ($startDate, $endDate, $search) {
             if ($search !== '' && $search !== null && $search !== 'null') {
-                $query->whereRaw('lower(name) like (?)', ["%{$search}%"]);
+                $query->whereRaw('lower(name) like (?)', ["%{$search}%"])
+                ->orWhereHas('user_meeting', function ($query) use ($search) {
+                    $query->whereHas('organizer', function ($query) use ($search) {
+                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
+                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    });
+                    $query->orWhereHas('participant', function ($query) use ($search) {
+                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
+                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                    });
+                });
             }
             if ($startDate != '' && $startDate != null && $startDate != 'null') {
                 $query->whereDate('start_date', '>=', $startDate)
@@ -721,6 +729,14 @@ class MeetingServices
         return MeetingDates::where('congress_id', '=', $congress_id)
             ->where('start_date', '=', $startDate)
             ->get();
+    }
+
+    public function getMeetingDatesByDate($congressId, $date)
+    {
+        return MeetingDates::where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->where('congress_id', '=', $congressId)
+            ->first();
     }
   
 }

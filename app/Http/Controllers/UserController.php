@@ -1530,8 +1530,13 @@ class UserController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         }
         $congress = $this->congressServices->getCongressById($congress_id);
+         //get Payement Ligne
+         $userPayment = null;
+         if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
+            $userPayment = $this->paymentServices->getPaymentByUserAndCongressID($congress_id, $user->user_id);
+        }
         $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
+        $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
     
@@ -1695,9 +1700,9 @@ class UserController extends Controller
         $user->update();
         if ($request->id !== null) {
             $congressid = $request->id;
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->verification_code . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . '/password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code . '&user_id=' . $user->user_id;
         } else {
-            $activationLink = UrlUtils::getBaseUrlFrontOffice() . 'password/reset/' . $congressid . '/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
+            $activationLink = UrlUtils::getBaseUrlFrontOffice() . '/password/reset/' . $user->user_id . '?verification_code=' . $user->password_code  . '&user_id=' . $user->user_id;
         } 
         $userMail = $this->mailServices->addingUserMailAdmin($mail->mail_admin_id, $user->user_id);
         $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, null, null, $activationLink), $user, null, $mail->object, null, $userMail);
@@ -2177,6 +2182,7 @@ class UserController extends Controller
     public function getAllUsersByCongressFrontOfficeWithPagination($congress_id, Request $request)
     {
         $perPage = $request->query('perPage', 10);
+        $filterBy = $request->query('filterBy', 0);
         $search = Str::lower($request->query('search', ''));
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
@@ -2190,7 +2196,7 @@ class UserController extends Controller
             $isSelected = 1;
         }
 
-        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $isSelected);
+        $users = $this->userServices->getAllUsersByCongressFrontOfficeWithPagination($congress_id, $perPage, $search, $user->user_id, $isSelected, $filterBy);
 
         return response()->json($users);
     }
@@ -2260,9 +2266,10 @@ class UserController extends Controller
         $perPage = $request->query('perPage', 10);
         $search = Str::lower($request->query('search', ''));
         $page = $request->query('page', 1);
+        $filterBy = $request->query('filterBy',0);
         $user = $this->userServices->retrieveUserFromToken(); 
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $isSelected);
+        $users = $this->userServices->getCachedUsers($congress_id,$page,$perPage,$search ,$userId, $isSelected, $filterBy);
         return response()->json($users);
     }
 
@@ -2301,7 +2308,7 @@ class UserController extends Controller
                 ->whereHas('user_meeting', function ($q) {
                     $q->where('status', '=', 1);
                 });
-            }
+            }, "country"
         ]);
 
         return response()->json($user);
