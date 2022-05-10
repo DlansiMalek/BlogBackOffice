@@ -2475,9 +2475,7 @@ class UserController extends Controller
         }
         $formInputs =  $this->userServices->getFormInputByCongress($congressId);
         $users = $this->userServices->getUsersForResponses($congressId);
-        Log::info($users);
         foreach ($users as $user) {
-            Log::info($user);
             $responses = null;
             if (Schema::hasColumn('User', 'country_id')) {
                 $country = $this->userServices->getUserCountry($user->country_id);
