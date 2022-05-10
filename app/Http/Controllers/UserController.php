@@ -2468,4 +2468,49 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function updateAllResponses($congressId)
+    {
+        if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
+            return response()->json(['error' => 'admin_not_found'], 404);
+        }
+        $formInputs =  $this->userServices->getFormInputByCongress($congressId);
+        $users = $this->userServices->getUsersForResponses($congressId);
+        Log::info($users);
+        foreach ($users as $user) {
+            Log::info($user);
+            $responses = null;
+            if (Schema::hasColumn('User', 'country_id')) {
+                $country = $this->userServices->getUserCountry($user->country_id);
+                if ($country) {
+                    $responses = $country->name . ' ' . $responses;
+                }
+            }
+            if (Schema::hasColumn('User', 'mobile')) {
+                $responses = $user['mobile'] . ' ' . $responses;
+            }
+
+            if ($formInputs) {
+                $count = count($formInputs);
+                for ($i = 0; $i < $count; $i++) {
+                    if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9) {
+                        $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
+                        if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
+                            foreach ($info as $inf) {
+                                $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                            }
+                        } else {
+                            $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                        }
+                    } else {
+                        $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
+                        $responses = $info[0]['response'] . " " . $responses;
+                    }
+                }
+            }
+            $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congressId);
+            $this->userServices->addUserResponses($responses, $user->user_id, $congressId, $oldResponse);
+        }
+        return response()->json(['response' => 'Updated successfuly'], 200);
+    }
+
 }
