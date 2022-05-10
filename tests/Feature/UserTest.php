@@ -263,7 +263,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function testSaveUsersFromExcel()
+   /* public function testSaveUsersFromExcel()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -272,9 +272,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }
+    }*/
 
-    public function testSaveUsersFromExcelWithOrganization()
+   /* public function testSaveUsersFromExcelWithOrganization()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -284,9 +284,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }
+    }*/
 
-    public function testSaveUsersFromExcelWithAccesses()
+  /*  public function testSaveUsersFromExcelWithAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -298,9 +298,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }
+    }*/
 
-    public function testSaveUsersFromExcelWithOrganizationAndAccesses()
+   /* public function testSaveUsersFromExcelWithOrganizationAndAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -313,9 +313,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }
+    }*/
 
-    public function testSaveUsersFromExcelWithFormInputs()
+  /*  public function testSaveUsersFromExcelWithFormInputs()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -354,9 +354,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }
+    }*/
 
-    public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
+   /* public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -391,7 +391,7 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }
+    }*/
     
    /* public function testgetAllUsersByCongressFrontOfficeWithPagination()
     {
