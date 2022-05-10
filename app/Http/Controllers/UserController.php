@@ -760,7 +760,13 @@ class UserController extends Controller
             for($i=0 ; $i< $count; $i++){
             if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
                 $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
-                $responses = $info[0]['values'][0]['val']['value'] . " " . $responses ; 
+                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
+                    foreach ($info as $inf) {
+                        $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                    }
+                } else {
+                    $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                }
             } else {
                 $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
                 $responses = $info[0]['response'] . " " . $responses;    
@@ -768,7 +774,7 @@ class UserController extends Controller
            }
         }
 
-        $this->userServices->EditUserResponses($userResponses,$responses);
+        $this->userServices->editUserResponses($userResponses,$responses);
          
         return response()->json($user, 200);
     }
@@ -1059,6 +1065,7 @@ class UserController extends Controller
                             $query->where('congress_id', '=', $congressId);
                         },
                     ]);
+                    $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congressId);
                     $userResponses = null;
                     if ($userData['country'] != null) {
                         $userResponses = $userData['country'] . ' ' . $userResponses;
@@ -1068,11 +1075,12 @@ class UserController extends Controller
                     }
                     if ($formInputs) {
                         foreach ($formInputs as $formInput) {
-                            $userResponses = $userData[$formInput['key']] . ' ' . $userResponses;
+                            $response = str_replace(';', ' ', $userData[$formInput['key']]);
+                            $userResponses = $response . ' ' . $userResponses;
                         }
                     }
 
-                    $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId);  
+                    $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId, $oldResponse);  
                 
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
@@ -1846,7 +1854,9 @@ class UserController extends Controller
         $formInputs=  $this->userServices->getFormInputByCongress($congress_id);
         if (Schema::hasColumn('User', 'country_id')) {
             $country= $this->userServices->getUserCountry($user->country_id);
-            $userResponses = $country->name . ' '. $userResponses ;
+            if ($country) {
+                $userResponses = $country->name . ' '. $userResponses ;
+            }
         }
         if (Schema::hasColumn('User', 'mobile' )) {
             $userResponses = $user['mobile']. ' '. $userResponses ;
@@ -1856,15 +1866,22 @@ class UserController extends Controller
             for($i=0 ; $i< $count; $i++){
             if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
                 $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
-                $userResponses = $info[0]['values'][0]['val']['value'] . " " . $userResponses;
+                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
+                    foreach ($info as $inf) {
+                        $userResponses = $inf['values'][0]['val']['value'] . " " . $userResponses;
+                    }
+                } else {
+                    $userResponses = $info[0]['values'][0]['val']['value'] . " " . $userResponses;
+                }
             } else {
                 $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
                 $userResponses = $info[0]['response'] . " " .  $userResponses;    
             }  
            }
         }
-         
-        $this->userServices->addUserResponses($userResponses,$user->user_id,$congress_id);
+
+        $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congress_id);
+        $this->userServices->addUserResponses($userResponses,$user->user_id,$congress_id, $oldResponse);
         $accessNotInRegister = $this->accessServices->getAllAccessByRegisterParams($congress_id, 0, 0);
         $this->userServices->affectAccessElement($user->user_id, $accessNotInRegister);
 

@@ -2225,9 +2225,11 @@ class UserServices
         ->first();
     }
 
-    public function addUserResponses($userResponses, $user_id, $congress_id)
+    public function addUserResponses($userResponses, $user_id, $congress_id, $response)
     {
-        $response = new Response();
+        if (!$response) {
+            $response = new Response();
+        }
         $response->user_id = $user_id;
         $response->congress_id = $congress_id; 
         $response->response = $userResponses ;
@@ -2241,7 +2243,7 @@ class UserServices
         ->first();
     }
 
-    public function EditUserResponses($userResponses , $responses)
+    public function editUserResponses($userResponses , $responses)
     {
         $userResponses->response = $responses ;
         $userResponses->update();
