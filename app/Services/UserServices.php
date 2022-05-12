@@ -2240,7 +2240,7 @@ class UserServices
         }
         $response->user_id = $user_id;
         $response->congress_id = $congress_id; 
-        $response->response = $userResponses ;
+        $response->response = $userResponses;
         $response->save();
     }
 

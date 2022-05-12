@@ -1080,7 +1080,10 @@ class UserController extends Controller
                         }
                     }
 
-                    $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId, $oldResponse);  
+                    if ($userResponses) {
+                        $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId, $oldResponse); 
+                    }
+                     
                 
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
