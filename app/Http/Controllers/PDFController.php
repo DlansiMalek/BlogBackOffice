@@ -74,8 +74,9 @@ class PDFController extends Controller
 
     function generateBadgePDF($congress_id, Request $request)
     {
+       ini_set('max_execution_time', 1500); //9 minutes
        $client = new \GuzzleHttp\Client();
-        $res = $client->request('POST',
+       $res = $client->request('POST',
             UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro', [
                 'json' => [
                     'participants' => $request['participants'],
