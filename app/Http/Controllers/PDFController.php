@@ -12,7 +12,8 @@ use App\Services\UrlUtils;
 use Illuminate\Support\Facades\Storage;
 use ZanySoft\Zip\Zip;
 use File;    
-
+use Illuminate\Support\Facades\Log;
+use Response;
 
 class PDFController extends Controller
 {
@@ -106,9 +107,10 @@ class PDFController extends Controller
                 'format' => 'A4-L',
                 'display_mode'     => 'fullpage'
               ]);
-            $pdf->save(public_path() . "/program.$cataloguesNumber.pdf");
-            $k++;
-            for ($j = 0; $j <= 8; $j++) {
+            $pdf->save(public_path() . "/catalogue.$cataloguesNumber.pdf");
+            $cataloguesNumber++;
+            $toremove =  8 - sizeof($allMedia);
+            for ($j = 0; $j <= $toremove; $j++) {
                 if(File::exists(public_path('uncompressed/media/generate_participant/'.$j.'.png'))){
                     File::delete(public_path('uncompressed/media/generate_participant/'.$j.'.png'));
                     }
@@ -116,18 +118,19 @@ class PDFController extends Controller
             $allMedia  = array_splice($allMedia, 8);
         } while (sizeof($allMedia) > 0);
       }
-      File::delete(public_path('badges/badges.zip'));
-      File::deleteDirectory(public_path('badges'));
-      File::deleteDirectory(public_path('uncompressed'));
- 
-      $zip = Zip::create('file.zip');
-      for ($y = 0; $y <= 8; $y++) {
-       $zip->add(public_path("/program.$y.pdf"));
+        $zip = Zip::create(storage_path() . '/file.zip');
+        for ($y = 0; $y <= $cataloguesNumber; $y++) {
+            $zip->add(public_path("/catalogue.$y.pdf"));
+        }
+        $pathZip = storage_path("file.zip");
+        if ($pathZip) {
+            File::delete(public_path('badges/badges.zip'));
+            File::deleteDirectory(public_path('badges'));
+            File::deleteDirectory(public_path('uncompressed'));
+            if ($zip) {
+                return response()->download($pathZip);
             }
-            $pathZip ="file.zip";
-
-                return response()->download($pathZip)
-                    ->deleteFileAfterSend(true);
+        }
     }
      
 }
