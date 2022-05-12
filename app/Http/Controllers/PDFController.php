@@ -7,6 +7,11 @@ use App\Services\MeetingServices;
 use Dompdf\Dompdf;
 use Illuminate\Filesystem\Filesystem;
 use PDF;
+use Illuminate\Http\Request;
+use App\Services\UrlUtils;
+use Illuminate\Support\Facades\Storage;
+use ZanySoft\Zip\Zip;
+use File;    
 
 class PDFController extends Controller
 {
@@ -66,4 +71,65 @@ class PDFController extends Controller
             return response()->json(["error" => "dossier vide"]);
         }
     }
+
+    function generateBadgePDF($congress_id, Request $request)
+    {
+       ini_set('max_execution_time', 1500); //9 minutes
+       $client = new \GuzzleHttp\Client();
+       $res = $client->request('POST',
+            UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro', [
+                'json' => [
+                    'participants' => $request['participants'],
+                    'badgeIdGenerator' => $request['badgeIdGenerator']
+                ]
+            ]); 
+         Storage::disk('public_uploads')->put( 'badges.zip', $res->getBody());
+         $zip = Zip::open(public_path() . '/badges/badges.zip');
+         $zip->extract(public_path() . '/uncompressed', '/media/generate_participant'); 
+      $path = public_path('uncompressed');
+      $filesInFolder = File::allFiles($path);
+      foreach($filesInFolder as $key => $path){
+        $files = pathinfo($path);
+        $allMedia[] = $files['basename'];
+      }
+      if(sizeof($allMedia) > 7){
+        $cataloguesNumber = 0 ;
+        do {
+            $take8 = array_slice($allMedia, 0, 8);
+            $i = 0 ;
+            foreach ($take8 as $badge) {
+               rename(public_path('uncompressed/media/generate_participant/'. $badge), public_path('uncompressed/media/generate_participant/'.$i.'.png'));
+             $i++;
+            }
+            $data = [];
+            $pdf = PDF::loadView('badge-catalogue', $data, [
+                'format' => 'A4-L',
+                'display_mode'     => 'fullpage'
+              ]);
+            $pdf->save(public_path() . "/catalogue.$cataloguesNumber.pdf");
+            $cataloguesNumber++;
+            $toremove =  8 - sizeof($allMedia);
+            for ($j = 0; $j <= $toremove; $j++) {
+                if(File::exists(public_path('uncompressed/media/generate_participant/'.$j.'.png'))){
+                    File::delete(public_path('uncompressed/media/generate_participant/'.$j.'.png'));
+                    }
+            }
+            $allMedia  = array_splice($allMedia, 8);
+        } while (sizeof($allMedia) > 0);
+      }
+        $zip = Zip::create(storage_path() . '/file.zip');
+        for ($y = 0; $y <= $cataloguesNumber; $y++) {
+            $zip->add(public_path("/catalogue.$y.pdf"));
+        }
+        $pathZip = storage_path("file.zip");
+        if ($pathZip) {
+            File::delete(public_path('badges/badges.zip'));
+            File::deleteDirectory(public_path('badges'));
+            File::deleteDirectory(public_path('uncompressed'));
+            if ($zip) {
+                return response()->download($pathZip);
+            }
+        }
+    }
+     
 }
