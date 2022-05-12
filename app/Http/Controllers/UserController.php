@@ -1075,8 +1075,10 @@ class UserController extends Controller
                     }
                     if ($formInputs) {
                         foreach ($formInputs as $formInput) {
-                            $response = str_replace(';', ' ', $userData[$formInput['key']]);
-                            $userResponses = $response . ' ' . $userResponses;
+                            if (isset($userData[$formInput['key']])) {
+                                $response = str_replace(';', ' ', $userData[$formInput['key']]);
+                                $userResponses = $response . ' ' . $userResponses;
+                            }
                         }
                     }
 
