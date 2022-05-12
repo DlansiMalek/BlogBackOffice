@@ -1067,10 +1067,10 @@ class UserController extends Controller
                     ]);
                     $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congressId);
                     $userResponses = null;
-                    if ($userData['country'] != null) {
+                    if (isset($userData['country'])) {
                         $userResponses = $userData['country'] . ' ' . $userResponses;
                     }
-                    if ($userData['mobile'] != null) {
+                    if (isset($userData['mobile'])) {
                         $userResponses = $userData['mobile'] . ' ' . $userResponses;
                     }
                     if ($formInputs) {
