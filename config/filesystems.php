@@ -72,6 +72,11 @@ return [
             'bucket' => env('DIGITALOCEAN_SPACES_BUCKET'),
         ],
 
+        'public_uploads' => [
+            'driver' => 'local',
+            'root'   => public_path() . '/badges',
+        ],
+
     ],
 
     
