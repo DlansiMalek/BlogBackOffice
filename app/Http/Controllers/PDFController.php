@@ -126,15 +126,16 @@ class PDFController extends Controller
         $zip = Zip::create(storage_path() . '/file.zip');
         for ($y = 0; $y <= $cataloguesNumber; $y++) {
             $zip->add(public_path("/catalogue.$y.pdf"));
+            //  File::delete(public_path("/catalogue.$y.pdf"));
         }
+        File::delete(public_path('badges/badges.zip'));
+        File::deleteDirectory(public_path('badges'));
+        File::deleteDirectory(public_path('uncompressed'));
+
         $pathZip = storage_path("file.zip");
         if ($pathZip) {
-            File::delete(public_path('badges/badges.zip'));
-            File::deleteDirectory(public_path('badges'));
-            File::deleteDirectory(public_path('uncompressed'));
-
-                return response()->download($pathZip)->deleteFileAfterSend(true);
-        } 
+            return response()->download($pathZip)->deleteFileAfterSend(true);
+        }
     }
      
 }

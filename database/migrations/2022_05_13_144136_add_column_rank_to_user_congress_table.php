@@ -13,7 +13,7 @@ class AddColumnRankToUserCongressTable extends Migration
      */
     public function up()
     {
-        Schema::table('user_congress', function (Blueprint $table) {
+        Schema::table('User_Congress', function (Blueprint $table) {
             $table->integer('rank')->nullable()->default(null);
         });
     }
@@ -25,7 +25,7 @@ class AddColumnRankToUserCongressTable extends Migration
      */
     public function down()
     {
-        Schema::table('user_congress', function (Blueprint $table) {
+        Schema::table('User_Congress', function (Blueprint $table) {
             $table->dropColumn(['rank']);
         });
     }
