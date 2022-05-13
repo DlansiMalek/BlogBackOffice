@@ -87,17 +87,21 @@ class PDFController extends Controller
         // save badges
         $this->sharedServices->saveCatalogBadges($request);
 
-        // open zip file
-        $zip = Zip::open(public_path() . '/badges/badges.zip');
-        $zip->extract(public_path() . '/uncompressed', '/media/generate_participant');
-        $path = public_path('uncompressed');
-        $filesInFolder = File::allFiles($path);
+        // extract zip
+        $uncompressedDir = public_path() . '/uncompressed';
+        $pathUncompressed = '/media/generate_participant';
+        $zipPath = public_path() . '/badges/badges.zip';
+        $zip = Zip::open($zipPath);
+        $zip->extract($uncompressedDir, $pathUncompressed);
+
+        $filesInFolder = File::allFiles($uncompressedDir);        
         foreach ($filesInFolder as $key => $path) {
             $files = pathinfo($path);
             $allMedia[] = $files['basename'];
         }
+        $pathFiles = public_path('uncompressed/media/generate_participant/');
         for ($re = 0; $re <= sizeof($allMedia) - 1; $re++) {
-            rename(public_path('uncompressed/media/generate_participant/' . $allMedia[$re]), public_path('uncompressed/media/generate_participant/' . strstr($allMedia[$re], '_')));
+            rename($pathFiles . $allMedia[$re], $pathFiles . strstr($allMedia[$re], '_'));
             $allMedia[$re] = strstr($allMedia[$re], '_');
         }
         natsort($allMedia);
@@ -107,11 +111,10 @@ class PDFController extends Controller
                 $take8 = array_slice($allMedia, 0, 8);
                 $i = 0;
                 foreach ($take8 as $badge) {
-                    rename(public_path('uncompressed/media/generate_participant/' . $badge), public_path('uncompressed/media/generate_participant/' . $i . '.png'));
+                    rename($pathFiles . $badge, $pathFiles . $i . '.png');
                     $i++;
                 }
-                $data = [];
-                $pdf = PDF::loadView('badge-catalogue', $data, [
+                $pdf = PDF::loadView('badge-catalogue', [], [
                     'format' => 'A4-L',
                     'display_mode'     => 'fullpage'
                 ]);
@@ -119,8 +122,9 @@ class PDFController extends Controller
                 $cataloguesNumber++;
                 $toremove =  8 - sizeof($allMedia);
                 for ($j = 0; $j <= $toremove; $j++) {
-                    if (File::exists(public_path('uncompressed/media/generate_participant/' . $j . '.png'))) {
-                        File::delete(public_path('uncompressed/media/generate_participant/' . $j . '.png'));
+                    $pathImg = $pathFiles . $j . '.png';
+                    if (File::exists($pathImg)) {
+                        File::delete($pathImg);
                     }
                 }
                 $allMedia  = array_splice($allMedia, 8);
