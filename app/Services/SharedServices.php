@@ -37,6 +37,31 @@ class SharedServices
       ->get();
   }
 
+  public function saveCatalogBadges($request)
+  {
+    if ($request) {
+      try {
+        $zipName = 'badges.zip';
+        $client = new \GuzzleHttp\Client();
+        $res = $client->request(
+          'POST',
+          UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro',
+          [
+            'json' => [
+              'participants' => $request['participants'],
+              'badgeIdGenerator' => $request['badgeIdGenerator']
+            ]
+          ]
+        );
+        Storage::disk('public_uploads')->put($zipName, $res->getBody());
+        return $zipName;
+      } catch (ClientException $e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
   public function saveAttestationsSubmissionsInPublic(array $request)
   {
     if ($request) {

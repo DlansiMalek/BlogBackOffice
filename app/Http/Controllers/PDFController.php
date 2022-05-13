@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CongressServices;
 use App\Services\MeetingServices;
+use App\Services\SharedServices;
 use Illuminate\Filesystem\Filesystem;
 use PDF;
 use Illuminate\Http\Request;
@@ -17,11 +18,14 @@ class PDFController extends Controller
 
     protected $congressServices;
     protected $meetingServices;
+    protected $sharedServices;
 
-    public function __construct(CongressServices $congressServices, MeetingServices $meetingServices )
+    public function __construct(CongressServices $congressServices, MeetingServices $meetingServices,
+        SharedServices $sharedServices)
     {
         $this->congressServices = $congressServices;
         $this->meetingServices = $meetingServices;
+        $this->sharedServices = $sharedServices;
     }
 
     function generateProgramPDF($congress_id)
@@ -81,18 +85,7 @@ class PDFController extends Controller
         mkdir($folderPath);
 
         // save badges
-        $client = new \GuzzleHttp\Client();
-        $res = $client->request(
-            'POST',
-            UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro',
-            [
-                'json' => [
-                    'participants' => $request['participants'],
-                    'badgeIdGenerator' => $request['badgeIdGenerator']
-                ]
-            ]
-        );
-        Storage::disk('public_uploads')->put('badges.zip', $res->getBody());
+        $this->sharedServices->saveCatalogBadges($request);
 
         // open zip file
         $zip = Zip::open(public_path() . '/badges/badges.zip');
