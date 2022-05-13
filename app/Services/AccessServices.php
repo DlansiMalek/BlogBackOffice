@@ -459,6 +459,14 @@ class AccessServices
             $accesss->nb_participants = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0;
             }));
+            $accesss->nb_confirmed = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                if (sizeof($item['user_congresses']) > 0) {
+                    $isConfirmed = array_filter($item['user_congresses'], function ($q) {
+                        return $q['will_be_present'] == 1;
+                    });
+                    return $isConfirmed;
+                }
+            }));
             $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent'] == 1;
             }));

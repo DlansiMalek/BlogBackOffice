@@ -974,7 +974,7 @@ class UserController extends Controller
                 $linkPrincipalRoom = UrlUtils::getBaseUrlFrontOffice() . "/room/" . $congress->congress_id . '/event-room';
                 if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
                     $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice, null, null, null, null, null, null, null, [], null, null, null, null, $linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
+                    $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, null, null, $userPayement, null, $linkFrontOffice, null, null, null, null, null, null, null, [], null, null, $linkPrincipalRoom), $user, $congress, $mail->object, $fileAttached, $userMail, null, $fileName);
                 }
             }
             $this->smsServices->sendSmsToUsers($congress->congress_id, $user, $congress);
@@ -1067,20 +1067,25 @@ class UserController extends Controller
                     ]);
                     $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congressId);
                     $userResponses = null;
-                    if ($userData['country'] != null) {
+                    if (isset($userData['country'])) {
                         $userResponses = $userData['country'] . ' ' . $userResponses;
                     }
-                    if ($userData['mobile'] != null) {
+                    if (isset($userData['mobile'])) {
                         $userResponses = $userData['mobile'] . ' ' . $userResponses;
                     }
                     if ($formInputs) {
                         foreach ($formInputs as $formInput) {
-                            $response = str_replace(';', ' ', $userData[$formInput['key']]);
-                            $userResponses = $response . ' ' . $userResponses;
+                            if (isset($userData[$formInput['key']])) {
+                                $response = str_replace(';', ' ', $userData[$formInput['key']]);
+                                $userResponses = $response . ' ' . $userResponses;
+                            }
                         }
                     }
 
-                    $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId, $oldResponse);  
+                    if ($userResponses) {
+                        $this->userServices->addUserResponses($userResponses, $user->user_id, $congressId, $oldResponse); 
+                    }
+                     
                 
                     // Check if User already registed to congress
                     $user_congress = $this->userServices->getUserCongress($congressId, $user->user_id);
