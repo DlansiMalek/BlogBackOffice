@@ -75,8 +75,11 @@ class PDFController extends Controller
     function generateBadgePDF($congress_id, Request $request)
     {
        ini_set('max_execution_time', 1500); //9 minutes
-       $file = new Filesystem();
-       $client = new \GuzzleHttp\Client();
+        $file = new Filesystem();
+        $folderPath = public_path('pdf');
+        File::deleteDirectory($folderPath);
+        $response = mkdir($folderPath);
+        $client = new \GuzzleHttp\Client();
        $res = $client->request('POST',
             UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro', [
                 'json' => [
@@ -112,7 +115,7 @@ class PDFController extends Controller
                 'format' => 'A4-L',
                 'display_mode'     => 'fullpage'
               ]);
-            $pdf->save(public_path() . "/catalogue.$cataloguesNumber.pdf");
+            $pdf->save(public_path() . "/pdf/catalogue.$cataloguesNumber.pdf");
             $cataloguesNumber++;
             $toremove =  8 - sizeof($allMedia);
             for ($j = 0; $j <= $toremove; $j++) {
@@ -122,15 +125,15 @@ class PDFController extends Controller
             }
             $allMedia  = array_splice($allMedia, 8);
         } while (sizeof($allMedia) > 0);
-      }
+        }
         $zip = Zip::create(storage_path() . '/file.zip');
         for ($y = 0; $y <= $cataloguesNumber; $y++) {
-            $zip->add(public_path("/catalogue.$y.pdf"));
-            //  File::delete(public_path("/catalogue.$y.pdf"));
+            $zip->add($folderPath . "/catalogue.$y.pdf");
         }
         File::delete(public_path('badges/badges.zip'));
         File::deleteDirectory(public_path('badges'));
         File::deleteDirectory(public_path('uncompressed'));
+        $file->deleteDirectory(public_path('pdf'));
 
         $pathZip = storage_path("file.zip");
         if ($pathZip) {
