@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use App\Services\UrlUtils;
 use Illuminate\Support\Facades\Storage;
 use ZanySoft\Zip\Zip;
-use File;          use Illuminate\Support\Facades\Log;
+use File;
 
 class PDFController extends Controller
 {
