@@ -80,7 +80,7 @@ class PDFController extends Controller
         ini_set('max_execution_time', 1500); //9 minutes
 
         // create pdf folder
-        $folderPath = public_path('pdf');
+        $folderPath = storage_path('pdf');
         File::deleteDirectory($folderPath);
         mkdir($folderPath);
 
@@ -88,9 +88,9 @@ class PDFController extends Controller
         $this->sharedServices->saveCatalogBadges($request);
 
         // extract zip
-        $uncompressedDir = public_path() . '/uncompressed';
+        $uncompressedDir = public_path('uncompressed');
         $pathUncompressed = '/media/generate_participant';
-        $zipPath = public_path() . '/badges/badges.zip';
+        $zipPath = storage_path('app/badges.zip');
         $zip = Zip::open($zipPath);
         $zip->extract($uncompressedDir, $pathUncompressed);
 
@@ -118,7 +118,7 @@ class PDFController extends Controller
                     'format' => 'A4-L',
                     'display_mode'     => 'fullpage'
                 ]);
-                $pdf->save(public_path() . "/pdf/catalogue.$cataloguesNumber.pdf");
+                $pdf->save(storage_path() . "/pdf/catalogue.$cataloguesNumber.pdf");
                 $cataloguesNumber++;
                 $toremove =  8 - sizeof($allMedia);
                 for ($j = 0; $j <= $toremove; $j++) {
@@ -132,21 +132,20 @@ class PDFController extends Controller
         }
 
         // build zip file
-        $zip = Zip::create(storage_path() . '/file.zip');
+        $resultFilePath = storage_path('file.zip');
+        $zip = Zip::create($resultFilePath);
         for ($y = 0; $y <= $cataloguesNumber; $y++) {
             $zip->add($folderPath . "/catalogue.$y.pdf");
         }
         $zip->close();
 
         // delete temp directories
-        File::delete(public_path('badges/badges.zip'));
-        File::deleteDirectory(public_path('badges'));
+        File::delete($zipPath);
         File::deleteDirectory(public_path('uncompressed'));
-        File::deleteDirectory(public_path('pdf'));
+        File::deleteDirectory(storage_path('pdf'));
 
-        $pathZip = storage_path("file.zip");
-        if ($pathZip) {
-            return response()->download($pathZip)->deleteFileAfterSend(true);
+        if ($resultFilePath) {
+            return response()->download($resultFilePath)->deleteFileAfterSend(true);
         }
     }
      

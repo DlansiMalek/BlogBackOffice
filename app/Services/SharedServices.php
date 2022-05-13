@@ -53,7 +53,7 @@ class SharedServices
             ]
           ]
         );
-        Storage::disk('public_uploads')->put($zipName, $res->getBody());
+        Storage::put($zipName, $res->getBody(), 'public');
         return $zipName;
       } catch (ClientException $e) {
         return null;
