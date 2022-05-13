@@ -405,7 +405,7 @@ class UserServices
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
-            if ($privilegeId != null) {
+            if ($privilegeId != null && $privilegeId != 'null') {
                 $query->where('privilege_id', '=', $privilegeId);
             }
         })->with(['profile_img', 'user_congresses', 'responses.form_input', 'responses.values', 'responses.values.val'])->get();
