@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use App\Services\UrlUtils;
 use Illuminate\Support\Facades\Storage;
 use ZanySoft\Zip\Zip;
-use File;    
+use File;          use Illuminate\Support\Facades\Log;
 
 class PDFController extends Controller
 {
@@ -75,6 +75,7 @@ class PDFController extends Controller
     function generateBadgePDF($congress_id, Request $request)
     {
        ini_set('max_execution_time', 1500); //9 minutes
+       $file = new Filesystem();
        $client = new \GuzzleHttp\Client();
        $res = $client->request('POST',
             UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro', [
@@ -92,7 +93,12 @@ class PDFController extends Controller
         $files = pathinfo($path);
         $allMedia[] = $files['basename'];
       }
-      if(sizeof($allMedia) > 7){
+        for ($re = 0; $re <= sizeof($allMedia) - 1; $re++) {
+            rename(public_path('uncompressed/media/generate_participant/' . $allMedia[$re]), public_path('uncompressed/media/generate_participant/' . strstr($allMedia[$re], '_')));
+            $allMedia[$re] = strstr($allMedia[$re], '_');
+        }
+        natsort($allMedia);
+       if(sizeof($allMedia) > 7){
         $cataloguesNumber = 0 ;
         do {
             $take8 = array_slice($allMedia, 0, 8);
@@ -126,10 +132,9 @@ class PDFController extends Controller
             File::delete(public_path('badges/badges.zip'));
             File::deleteDirectory(public_path('badges'));
             File::deleteDirectory(public_path('uncompressed'));
-            if ($zip) {
-                return response()->download($pathZip);
-            }
-        }
+
+                return response()->download($pathZip)->deleteFileAfterSend(true);
+        } 
     }
      
 }
