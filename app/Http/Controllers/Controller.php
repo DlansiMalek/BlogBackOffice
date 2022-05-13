@@ -250,3 +250,21 @@ WHERE congress_id = 384
 /*
 SELECT * FROM Author WHERE email <> '' AND email NOT LIKE '%_@__%.__%'
 */
+
+/*
+SET @code=0
+SELECT 
+  user_id,
+  @code:=@code+1 AS rank
+ FROM user_congress
+ WHERE congress_id = 381
+ ORDER BY user_id
+
+SET @code=0;
+ UPDATE user_congress
+ SET rank = @code:=@code+1
+ WHERE congress_id = 381
+ ORDER BY user_id
+
+ */
+
