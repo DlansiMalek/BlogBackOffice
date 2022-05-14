@@ -762,10 +762,14 @@ class UserController extends Controller
                 $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
                 if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
                     foreach ($info as $inf) {
-                        $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                        if (isset($inf['values']) && sizeof($inf['values']) > 0) {
+                            $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                        }
                     }
                 } else {
-                    $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                    if (isset($info) && sizeof($info) > 0) {
+                        $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                    }
                 }
             } else {
                 $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
@@ -2508,10 +2512,14 @@ class UserController extends Controller
                         $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
                         if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
                             foreach ($info as $inf) {
-                                $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                                if (isset($inf['values']) && sizeof($inf['values']) > 0) {
+                                    $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                                }
                             }
                         } else {
-                            $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                            if (isset($info) && sizeof($info) > 0) {
+                                $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                            }
                         }
                     } else {
                         $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
