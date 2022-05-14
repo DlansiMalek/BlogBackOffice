@@ -2251,10 +2251,13 @@ class UserServices
         ->first();
     }
 
-    public function editUserResponses($userResponses , $responses)
+    public function editUserResponses($userResponses, $responses)
     {
-        $userResponses->response = $responses ;
-        $userResponses->update();
+        if ($userResponses) {
+            $userResponses->response = $responses ;
+            $userResponses->update();
+        }
+
     }
 
 
