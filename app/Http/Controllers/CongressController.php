@@ -998,7 +998,7 @@ class CongressController extends Controller
         }
         $objectMail = 'Confirmation du présence';
         $this->mailServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, null), null, null, $objectMail, false, null, $admin->email);
-        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/success-page';
         return redirect($linkFrontOffice);
     }
 
