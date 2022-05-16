@@ -553,6 +553,7 @@ class CongressServices
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
         $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
         $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
+        $configCongress->location_link  = $configCongressRequest['location_link'];
         $configCongress->networking_fixe_msg = $configCongressRequest['networking_fixe_msg'];
         $configCongress->networking_fixe_msg_en = array_key_exists ('networking_fixe_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_fixe_msg_en']: null ;
         $configCongress->networking_libre_msg = $configCongressRequest['networking_libre_msg'];
