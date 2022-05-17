@@ -561,8 +561,8 @@ class UserServices
             })
             ->where(function ($query) use ($packs) {
                 if ($packs != '' && $packs != null) {
-                    $query->whereHas('user_access', function ($query) use ($packs) {
-                        $query->whereIn('access_id', $packs);
+                    $query->whereHas('user_packs', function ($query) use ($packs) {
+                        $query->whereIn('User_Pack.pack_id', $packs);
                     });
                 }
             })
