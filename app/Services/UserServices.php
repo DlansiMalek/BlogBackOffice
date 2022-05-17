@@ -529,7 +529,7 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null, $all = 0, $privilegeIds = null, $withAttestation = null, $admin_id = null)
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null, $all = 0, $packs = null, $privilegeIds = null, $withAttestation = null, $admin_id = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
@@ -557,6 +557,13 @@ class UserServices
                     $query->whereHas('user_access', function ($query) use ($access) {
                             $query->whereIn('access_id', $access);
                         });
+                }
+            })
+            ->where(function ($query) use ($packs) {
+                if ($packs != '' && $packs != null) {
+                    $query->whereHas('user_access', function ($query) use ($packs) {
+                        $query->whereIn('access_id', $packs);
+                    });
                 }
             })
             ->where(function ($query) use ($payment) {
