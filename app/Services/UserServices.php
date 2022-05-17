@@ -447,7 +447,7 @@ class UserServices
             })
             ->with([
                 'user_congresses' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
+                    $query->where('congress_id', '=', $congressId)->with(['organization']);
                 }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                     $query->where('congress_id', '=', $congressId);
                     if ($withAttestation != null) {
