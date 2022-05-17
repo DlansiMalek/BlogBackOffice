@@ -649,7 +649,9 @@ class UserServices
             }, 'responses.values', 'user_congresses.privilege', 'country','user_congresses.organization'])
             ->with(['accesses'  => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
-            }, 'profile_img'])
+            }, 'profile_img', 'packs' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
             ->get();
         return $users;
     }
