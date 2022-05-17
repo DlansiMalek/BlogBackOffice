@@ -352,6 +352,7 @@ class UserController extends Controller
     public function getUsersByCongressFilter($congressId, Request $request)
     {
         $access = (array)$request->query('access', '');
+        $packs = (array)$request->query('packs', '');
         $payment = $request->query('payment', '');
         $search = strtolower($request->query('search', ''));
         $status = $request->query('status', '');
@@ -368,7 +369,7 @@ class UserController extends Controller
         }
         $perPage = $request->query('perPage', 10);
         $page = $request->query('page', 1);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all, $packs);
 
         return response()->json($users);
     }
