@@ -179,7 +179,7 @@ class CongressServices
             ->get();
     }
 
-    public function getMinimalCongressById($congressId)
+    public function getMinimalCongressById($congressId, $only_access_register)
     {
 
         return Congress::with([
@@ -202,8 +202,8 @@ class CongressServices
             "accesss.packs" => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             },
-            "accesss" => function ($query) use ($congressId) {
-                $query->where('show_in_register', '=', 1);
+            "accesss" => function ($query) use ($congressId, $only_access_register) {
+                if($only_access_register==1) {$query->where('show_in_register', '=', 1);}
                 $query->whereNull('parent_id');
             },
             'accesss.participants.user_congresses' => function ($query) use ($congressId) {
