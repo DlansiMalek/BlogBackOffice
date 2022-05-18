@@ -625,7 +625,10 @@ class UserServices
                     } else {
                         $query->where('congress_id', '=', $congressId);
                     }
-                },'organization', 'user_congresses.privilege', 'country'
+                },'organization', 'user_congresses.privilege', 'country',
+                'packs' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }
         ]);
 
         $users = $all == 1 ? $users->get() : $users->paginate($perPage);
