@@ -690,4 +690,10 @@ class AccessServices
         
         return $accesses;
     }
+
+    public function getAllUserAccessByAccessId($accessId)
+    {
+        return UserAccess::where('access_id', '=', $accessId)
+            ->get();
+    }
 }

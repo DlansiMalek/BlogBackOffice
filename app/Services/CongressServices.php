@@ -1294,4 +1294,14 @@ class CongressServices
     public function countWillBePresentUserCongress($congress_id) {
         return UserCongress::where('congress_id', $congress_id)->where('will_be_present', 1)->count();
     }
+
+    public function getAllUserCongressByCongressIdAndAccessId($congressId, $accessId)
+    {
+        return UserCongress::where('congress_id', '=', $congressId)
+        ->whereHas('user', function ($query) use ($accessId) {
+            $query->whereHas('user_access', function ($q) use ($accessId) {
+                $q->where('access_id', '=', $accessId);
+            });
+        })->get();
+    }
 }
