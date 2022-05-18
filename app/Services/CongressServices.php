@@ -179,7 +179,7 @@ class CongressServices
             ->get();
     }
 
-    public function getMinimalCongressById($congressId, $only_access_register)
+    public function getMinimalCongressById($congressId, $only_access_register = null)
     {
 
         return Congress::with([
