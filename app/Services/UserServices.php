@@ -566,10 +566,11 @@ class UserServices
                     });
                 }
             })
-            ->where(function ($query) use ($payment) {
+            ->where(function ($query) use ($payment, $congressId) {
                 if ($payment != '' && $payment != null) {
-                    $query->whereHas('payments', function ($query) use ($payment) {
-                        $query->where('isPaid', '=', $payment);
+                    $query->whereHas('payments', function ($query) use ($payment, $congressId) {
+                        $query->where('congress_id', '=', $congressId)
+                            ->where('isPaid', '=', $payment);
                     });
                 }
             })
