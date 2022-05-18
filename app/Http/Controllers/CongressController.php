@@ -385,9 +385,10 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
-    public function getMinimalCongressById($congressId)
+    public function getMinimalCongressById($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getMinimalCongressById($congressId)) {
+        $only_access_register = $request->query('only_access_register', null);
+        if (!$congress = $this->congressServices->getMinimalCongressById($congressId, $only_access_register)) {
             return response()->json(["error" => "congress not found"], 404);
         }
 
