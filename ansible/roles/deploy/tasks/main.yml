@@ -23,6 +23,14 @@
     group: "{{ ansible_ssh_user }}"
   become: true
 
+- name: Copy schedular laravel-worker
+  template:
+    src: laravel-worker.conf.j2
+    dest: "{{ project_dir }}/laravel-worker.conf"
+    owner: "root"
+    group: "root"
+  become: true
+
 - name: Run Eventizer API
   docker_compose:
     project_name: "{{ project_name }}-{{project_version}}"
@@ -62,6 +70,7 @@
           volumes:
             - "{{ project_dir }}/.env:/var/www/.env"
             - "{{ project_dir }}/data:/var/www/storage/app"
+            - "{{ project_dir }}/laravel-worker.conf:/etc/supervisor/conf.d/laravel-worker.conf"
           env_file: "{{ project_dir }}/.env"
           environment:
             ELASTIC_APM_SERVER_URL: "{{ apm_server_name }}"
@@ -80,6 +89,15 @@
 - name: Migrate BD
   command: |
     docker exec {{ project_name }}-{{ project_version }}-app php artisan migrate
+
+- name: Run supervisor
+  command: >
+    docker exec {{ project_name }}-{{ project_version }}-app service supervisor start
+    docker exec {{ project_name }}-{{ project_version }}-app supervisorctl reread
+    docker exec {{ project_name }}-{{ project_version }}-app supervisorctl update
+    docker exec {{ project_name }}-{{ project_version }}-app supervisorctl start laravel-worker:*
+    docker exec {{ project_name }}-{{ project_version }}-app php artisan queue:restart
+# supervisorctl status laravel-worker:*
 
 - name: Change Dir Permission
   command: docker exec {{ project_name }}-{{ project_version }}-app chown -R www-data.www-data .
