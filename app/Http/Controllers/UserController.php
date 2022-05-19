@@ -548,7 +548,7 @@ class UserController extends Controller
 
     public function registerUser(Request $request)
     {
-        if (!$request->has(['email', 'first_name', 'last_name', 'password'])) {
+        if (!$request->has(['email', 'first_name', 'last_name', 'password']) && !$request->has(['password_hash']) ) {
             return response()->json(['response' => 'bad request', 'required fields' => ['email', 'first_name', 'last_name', 'password']], 400);
         }
 

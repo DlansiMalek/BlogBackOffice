@@ -1191,8 +1191,14 @@ class UserServices
         if ($request->has('last_name')) $user->last_name = $request->input('last_name');
         if ($request->has('gender')) $user->gender = $request->input('gender');
         if ($request->has('mobile')) $user->mobile = $request->input('mobile');
-        $user->passwordDecrypt = $password;
-        $user->password = bcrypt($password);
+        if ($request->has('password_hash')) {
+            $user->passwordDecrypt = '';
+            $user->password = $request->input('password_hash');
+        } else {
+            $user->passwordDecrypt = $password;
+            $user->password = bcrypt($password);
+        }
+
         if ($request->has('country_id')) $user->country_id = $request->country_id;
         if ($request->has('avatar_id')) $user->avatar_id = $request->input('avatar_id');
         if ($request->has('resource_id')) {
