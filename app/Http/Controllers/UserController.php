@@ -760,7 +760,8 @@ class UserController extends Controller
             for($i=0 ; $i< $count; $i++){
             if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
                 $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
-                if (($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) && sizeof($info)>0) {
+                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
+                    if(sizeof($info)>0) {
                     foreach ($info as $inf) {
                         if (isset($inf['values']) && sizeof($inf['values']) > 0) {
                             $responses = $inf['values'][0]['val']['value'] . " " . $responses;
@@ -771,10 +772,12 @@ class UserController extends Controller
                         $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
                     }
                 }
+            
             } else {
                 $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
                 $responses = $info[0]['response'] . " " . $responses;    
-            }  
+            }
+        }
            }
         }
 
@@ -1883,7 +1886,10 @@ class UserController extends Controller
             for($i=0 ; $i< $count; $i++){
             if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
                 $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
-                if (($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) && sizeof($info)>0) {
+                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8 ) {
+                    if(sizeof($info)>0) {
+
+                    
                     foreach ($info as $inf) {
                         if (isset($inf['values']) && sizeof($inf['values']) > 0) {
                             $userResponses = $inf['values'][0]['val']['value'] . " " . $userResponses;
@@ -1899,7 +1905,8 @@ class UserController extends Controller
             } else {
                 $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
                 $userResponses = $info[0]['response'] . " " .  $userResponses;    
-            }  
+            }
+        }  
            }
         }
 
