@@ -756,7 +756,7 @@ class UserController extends Controller
             $responses = $user['mobile']. ' '. $responses ;
         }
         if($formInputs) {
-            $this->getUserResponses($formInputs, $user, $responses);
+            $responses = $this->getUserResponses($formInputs, $user, $responses);
         }
             
 
@@ -1861,7 +1861,7 @@ class UserController extends Controller
             $userResponses = $user['mobile']. ' '. $userResponses ;
         }
         if($formInputs) {
-            $this->getUserResponses($formInputs, $user, $userResponses);
+            $userResponses =  $this->getUserResponses($formInputs, $user, $userResponses);
         }
 
         $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congress_id);
