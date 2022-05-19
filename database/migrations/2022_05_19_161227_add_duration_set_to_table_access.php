@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnDurationToUserCongress extends Migration
+class AddDurationSetToTableAccess extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddColumnDurationToUserCongress extends Migration
      */
     public function up()
     {
-        Schema::table('User_Congress', function (Blueprint $table) {
-            $table->float('duration')->nullable()->default(0);
+        Schema::table('Access', function (Blueprint $table) {
+            $table->tinyInteger('duration_set')->default(0);
         });
     }
 
@@ -25,8 +25,8 @@ class AddColumnDurationToUserCongress extends Migration
      */
     public function down()
     {
-        Schema::table('User_Congress', function (Blueprint $table) {
-            $table->dropColumn(['duration']);
+        Schema::table('Access', function (Blueprint $table) {
+            $table->dropColumn(['duration_set']);
         });
     }
 }

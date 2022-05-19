@@ -14,7 +14,7 @@ class AddColumnDurationToUserAccess extends Migration
     public function up()
     {
         Schema::table('User_Access', function (Blueprint $table) {
-            $table->integer('duration')->nullable()->default(0);
+            $table->float('duration')->nullable()->default(0);
         });
     }
 

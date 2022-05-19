@@ -11,6 +11,8 @@ use App\Services\RoomServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\ProcessAccessDuration;
 
 class AccessController extends Controller
 {
@@ -50,11 +52,9 @@ class AccessController extends Controller
         if ($access->start_date == null) {
             $access->start_date = date('Y-m-d H:i:s');
             $access->update();
-        } else {
-            $userAccesses = $this->accessServices->getAllUserAccessByAccessId($accessId);
-            $userCongresses = $this->congressServices->getAllUserCongressByCongressIdAndAccessId($access->congress_id, $accessId);
-            $durationInAccess = date('Y-m-d H:i:s', $access->start_date);
-            
+        } else if ($access->duration_set != 1) {
+            $processAccessDuration = new ProcessAccessDuration($access);
+            dispatch($processAccessDuration);
         }
 
         return response()->json($access);
