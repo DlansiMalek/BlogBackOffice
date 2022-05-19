@@ -11,6 +11,8 @@ use App\Services\RoomServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\ProcessAccessDuration;
 
 class AccessController extends Controller
 {
@@ -47,18 +49,12 @@ class AccessController extends Controller
             return response()->json(['error' => 'access not found'], 404);
         }
 
-        //DENTAIRE SHIT
-        if ($accessId == 8) {
-            $accessShit = $this->accessServices->getById(25);
-            if ($accessShit->start_date == null) {
-                $accessShit->start_date = date('Y-m-d H:i:s');
-                $accessShit->update();
-            }
-        }
-
         if ($access->start_date == null) {
             $access->start_date = date('Y-m-d H:i:s');
             $access->update();
+        } else if ($access->duration_set != 1) {
+            $processAccessDuration = new ProcessAccessDuration($access);
+            dispatch($processAccessDuration);
         }
 
         return response()->json($access);

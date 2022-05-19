@@ -23,6 +23,7 @@ use App\Models\Stand;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\UserAccess;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -1293,5 +1294,34 @@ class CongressServices
 
     public function countWillBePresentUserCongress($congress_id) {
         return UserCongress::where('congress_id', $congress_id)->where('will_be_present', 1)->count();
+    }
+
+    public function getAllUserCongressByCongressIdAndAccessId($congressId, $accessId)
+    {
+        return UserCongress::where('congress_id', '=', $congressId)
+        ->whereHas('user', function ($query) use ($accessId) {
+            $query->whereHas('user_access', function ($q) use ($accessId) {
+                $q->where('access_id', '=', $accessId)->where('isPresent', '=', 1);
+            });
+        })->get();
+    }
+
+    public function updateUserCongressDuration($congressId, $access)
+    {
+        $userCongresses = $this->getAllUserCongressByCongressIdAndAccessId($congressId, $access->access_id);
+        foreach($userCongresses as $userCongress) {
+            $userAccess  = $this->getUserAccess($userCongress->user_id, $access->access_id);
+            $userCongress->duration = $userCongress->duration + $userAccess->duration;
+            $userCongress->update();
+        }
+        $access->duration_set = 1;
+        $access->update();
+    }
+
+    public function getUserAccess($userId, $accessId)
+    {
+        return UserAccess::where('user_id', '=', $userId)
+        ->where('access_id', '=', $accessId)
+        ->first();
     }
 }
