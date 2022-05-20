@@ -170,8 +170,8 @@ class PackServices
         return $pack;
     }
 
-    public function getPackByLabel($packLabel)
+    public function getPackByLabel($packLabel, $congressId)
     {
-        return Pack::whereRaw('lower(label) like (?)', ["%{$packLabel}%"])->with(['users', 'accesses'])->first();
+        return Pack::whereRaw('lower(label) like (?)', ["%{$packLabel}%"])->with(['users', 'accesses'])->where('congress_id', '=', $congressId)->first();
     }
 }
