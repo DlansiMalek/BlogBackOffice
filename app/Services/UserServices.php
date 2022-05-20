@@ -1154,7 +1154,7 @@ class UserServices
 
     public function affectAllAccess($user_id, $accesss)
     {                 
-        foreach ($accesss as $access) {    Log::info( $access->access_id);
+        foreach ($accesss as $access) {
             $userAccess = new UserAccess();
             $userAccess->user_id = $user_id;
             $userAccess->access_id = $access->access_id;
