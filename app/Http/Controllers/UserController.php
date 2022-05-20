@@ -1192,6 +1192,20 @@ class UserController extends Controller
                         }
                     }
                 }
+                if (isset($userData['pack']) && ($userData['pack'] != '-')) {
+                    $packArray = explode(',', $userData['pack']);
+                    foreach ($packArray as $packName) {
+                        if ($pack = $this->packServices->getPackByLabel($packName)) {
+                            if (!array_key_exists($pack->pack_id, $user->packs)) {
+                                $userPack = $this->packServices->affectPackToUser($user->user_id, $pack->pack_id);
+                                $userAccessByPack = $this->userServices->affectAllAccess($user->user_id, $pack->accesses);
+                            }
+                        } else {
+                            $newPack = $this->packServices->addPack($congressId, $packName, $packName, 0, null);
+                            $userPack = $this->packServices->affectPackToUser($user->user_id, $newPack->pack_id);
+                        }
+                    }
+                }
             }
         }
 
