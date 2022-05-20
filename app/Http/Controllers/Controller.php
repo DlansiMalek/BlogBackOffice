@@ -261,7 +261,8 @@ SELECT
  WHERE congress_id = 381
  ORDER BY user_id
 
-UPDATE user_congress
+SET @code=0;
+ UPDATE User_Congress
  SET rank = @code:=@code+1
  WHERE congress_id = 410
  ORDER BY privilege_id, user_id
