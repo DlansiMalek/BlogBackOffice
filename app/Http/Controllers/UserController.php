@@ -1192,16 +1192,24 @@ class UserController extends Controller
                         }
                     }
                 }
-                if (isset($userData['pack']) && ($userData['pack'] != '-')) {
-                    $packArray = explode(',', $userData['pack']);
-                    $userPacksDelete = $this->userServices->deleteUserPacks($user->user_id, $congressId);
-                    foreach ($packArray as $packName) {
-                        if ($pack = $this->packServices->getPackByLabel($packName, $congressId)) {
-                                $userPack = $this->packServices->affectPackToUser($user->user_id, $pack->pack_id);
-                                $userAccessByPack = $this->userServices->affectAllAccess($user->user_id, $pack->accesses);
-                        } else {
-                            $newPack = $this->packServices->addPack($congressId, $packName, $packName, 0, null);
-                            $userPack = $this->packServices->affectPackToUser($user->user_id, $newPack->pack_id);
+                if (isset($userData['pack'])) {
+                    if ($privilegeId != 3) {
+                        $allPacks = $this->packServices->getPackSByCongressId($congressId);
+                        foreach ($allPacks as $pack) {
+                            $userPack = $this->packServices->affectPackToUser($user->user_id, $pack->pack_id);
+                        }
+                    } else {
+                        if ($userData['pack'] != '-') {
+                            $packArray = explode(',', $userData['pack']);
+                            $userPacksDelete = $this->userServices->deleteUserPacks($user->user_id, $congressId);
+                            foreach ($packArray as $packName) {
+                                if ($pack = $this->packServices->getPackByLabel($packName, $congressId)) {
+                                    $userPack = $this->packServices->affectPackToUser($user->user_id, $pack->pack_id);
+                                } else {
+                                    $newPack = $this->packServices->addPack($congressId, $packName, $packName, 0, null);
+                                    $userPack = $this->packServices->affectPackToUser($user->user_id, $newPack->pack_id);
+                                }
+                            }
                         }
                     }
                 }
