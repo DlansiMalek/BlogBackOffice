@@ -254,6 +254,7 @@ class SubmissionController extends Controller
         $tri = $request->query('tri', '');
         $order = $request->query('order', '');
         $status = $request->query('status');
+        $theme = $request->query('theme');
 
         if (!($congress = $this->congressServices->getCongressById($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
@@ -265,7 +266,7 @@ class SubmissionController extends Controller
             }
             $privilege_id = $adminCongress->privilege_id;
 
-            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id, $status, $perPage, $search, $tri, $order);
+            $submissions = $this->submissionServices->getCongressSubmissionForAdmin($admin, $congressId, $privilege_id, $status, $perPage, $search, $tri, $order, $theme);
 
             return response()->json($submissions, 200);
         } catch (Exception $e) {

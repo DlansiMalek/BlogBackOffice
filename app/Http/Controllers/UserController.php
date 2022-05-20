@@ -352,6 +352,7 @@ class UserController extends Controller
     public function getUsersByCongressFilter($congressId, Request $request)
     {
         $access = (array)$request->query('access', '');
+        $packs = (array)$request->query('packs', '');
         $payment = $request->query('payment', '');
         $search = strtolower($request->query('search', ''));
         $status = $request->query('status', '');
@@ -368,7 +369,7 @@ class UserController extends Controller
         }
         $perPage = $request->query('perPage', 10);
         $page = $request->query('page', 1);
-        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all);
+        $users = $this->userServices->getUsersByFilter($congressId, $access, $payment,  $status, $questionsIds, $perPage, $search, $questionString, $all, $packs);
 
         return response()->json($users);
     }
@@ -756,25 +757,14 @@ class UserController extends Controller
             $responses = $user['mobile']. ' '. $responses ;
         }
         if($formInputs) {
-            $count = count($formInputs) ;
-            for($i=0 ; $i< $count; $i++){
-            if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
-                $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
-                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
-                    foreach ($info as $inf) {
-                        $responses = $inf['values'][0]['val']['value'] . " " . $responses;
-                    }
-                } else {
-                    $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
-                }
-            } else {
-                $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
-                $responses = $info[0]['response'] . " " . $responses;    
-            }  
-           }
+            $responses = $this->getUserResponses($formInputs, $user, $responses);
         }
+            
 
-        $this->userServices->editUserResponses($userResponses,$responses);
+        if ($responses) {
+            $this->userServices->editUserResponses($userResponses, $responses);
+        }
+        
          
         return response()->json($user, 200);
     }
@@ -1872,22 +1862,7 @@ class UserController extends Controller
             $userResponses = $user['mobile']. ' '. $userResponses ;
         }
         if($formInputs) {
-            $count = count($formInputs) ;
-            for($i=0 ; $i< $count; $i++){
-            if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
-                $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
-                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
-                    foreach ($info as $inf) {
-                        $userResponses = $inf['values'][0]['val']['value'] . " " . $userResponses;
-                    }
-                } else {
-                    $userResponses = $info[0]['values'][0]['val']['value'] . " " . $userResponses;
-                }
-            } else {
-                $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
-                $userResponses = $info[0]['response'] . " " .  $userResponses;    
-            }  
-           }
+            $userResponses =  $this->getUserResponses($formInputs, $user, $userResponses);
         }
 
         $oldResponse = $this->userServices->getResponseByUserCongress($user->user_id, $congress_id);
@@ -2499,10 +2474,14 @@ class UserController extends Controller
                         $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
                         if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
                             foreach ($info as $inf) {
-                                $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                                if (isset($inf['values']) && sizeof($inf['values']) > 0) {
+                                    $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                                }
                             }
                         } else {
-                            $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                            if (isset($info) && sizeof($info) > 0) {
+                                $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                            }
                         }
                     } else {
                         $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
@@ -2515,5 +2494,37 @@ class UserController extends Controller
         }
         return response()->json(['response' => 'Updated successfuly'], 200);
     }
+
+    function getUserResponses($formInputs, $user, $userResponses) {
+
+            $count = count($formInputs) ;
+            for($i=0 ; $i< $count; $i++){
+            if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9){    
+                $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
+                if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8 ) {
+                    if(sizeof($info)>0) {
+
+                    
+                    foreach ($info as $inf) {
+                        if (isset($inf['values']) && sizeof($inf['values']) > 0) {
+                            $userResponses = $inf['values'][0]['val']['value'] . " " . $userResponses;
+                        }
+                        
+                    }
+                } else {
+                    if (isset($info) && sizeof($info) > 0) {
+                        $userResponses = $info[0]['values'][0]['val']['value'] . " " . $userResponses;
+                    }
+                    
+                }
+            } else {
+                $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
+                $userResponses = $info[0]['response'] . " " .  $userResponses;    
+            }
+        }  
+           }
+
+        return $userResponses;
+        }
 
 }

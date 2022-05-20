@@ -405,7 +405,7 @@ class UserServices
     {
         return User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeId) {
             $query->where('congress_id', '=', $congressId);
-            if ($privilegeId != null) {
+            if ($privilegeId != null && $privilegeId != 'null') {
                 $query->where('privilege_id', '=', $privilegeId);
             }
         })->with(['profile_img', 'user_congresses', 'responses.form_input', 'responses.values', 'responses.values.val'])->get();
@@ -447,7 +447,7 @@ class UserServices
             })
             ->with([
                 'user_congresses' => function ($query) use ($congressId) {
-                    $query->where('congress_id', '=', $congressId);
+                    $query->where('congress_id', '=', $congressId)->with(['organization']);
                 }, 'accesses' => function ($query) use ($congressId, $withAttestation) {
                     $query->where('congress_id', '=', $congressId);
                     if ($withAttestation != null) {
@@ -529,7 +529,7 @@ class UserServices
         return $perPage ? $users->paginate($perPage) : $users->get();
     }
 
-    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null, $all = 0, $privilegeIds = null, $withAttestation = null, $admin_id = null)
+    public function getUsersByFilter($congressId, $access = null, $payment = null, $status = null , $questions = null, $perPage = null , $search = null, $questionString = null, $all = 0, $packs = null, $privilegeIds = null, $withAttestation = null, $admin_id = null)
     {
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $privilegeIds) {
             $query->where('congress_id', '=', $congressId);
@@ -559,10 +559,18 @@ class UserServices
                         });
                 }
             })
-            ->where(function ($query) use ($payment) {
+            ->where(function ($query) use ($packs) {
+                if ($packs != '' && $packs != null) {
+                    $query->whereHas('user_packs', function ($query) use ($packs) {
+                        $query->whereIn('User_Pack.pack_id', $packs);
+                    });
+                }
+            })
+            ->where(function ($query) use ($payment, $congressId) {
                 if ($payment != '' && $payment != null) {
-                    $query->whereHas('payments', function ($query) use ($payment) {
-                        $query->where('isPaid', '=', $payment);
+                    $query->whereHas('payments', function ($query) use ($payment, $congressId) {
+                        $query->where('congress_id', '=', $congressId)
+                            ->where('isPaid', '=', $payment);
                     });
                 }
             })
@@ -617,7 +625,10 @@ class UserServices
                     } else {
                         $query->where('congress_id', '=', $congressId);
                     }
-                },'organization', 'user_congresses.privilege', 'country'
+                },'organization', 'user_congresses.privilege', 'country',
+                'packs' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }
         ]);
 
         $users = $all == 1 ? $users->get() : $users->paginate($perPage);
@@ -640,7 +651,11 @@ class UserServices
             }, 'payments' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
             }, 'responses.values', 'user_congresses.privilege', 'country','user_congresses.organization'])
-            ->with(['accesses', 'profile_img'])
+            ->with(['accesses'  => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }, 'profile_img', 'packs' => function ($query) use ($congressId) {
+                $query->where('congress_id', '=', $congressId);
+            }])
             ->get();
         return $users;
     }
@@ -2257,10 +2272,13 @@ class UserServices
         ->first();
     }
 
-    public function editUserResponses($userResponses , $responses)
+    public function editUserResponses($userResponses, $responses)
     {
-        $userResponses->response = $responses ;
-        $userResponses->update();
+        if ($userResponses) {
+            $userResponses->response = $responses ;
+            $userResponses->update();
+        }
+
     }
 
 

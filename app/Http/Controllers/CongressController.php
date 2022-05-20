@@ -385,9 +385,10 @@ class CongressController extends Controller
         return response()->json($congress);
     }
 
-    public function getMinimalCongressById($congressId)
+    public function getMinimalCongressById($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getMinimalCongressById($congressId)) {
+        $only_access_register = $request->query('only_access_register', null);
+        if (!$congress = $this->congressServices->getMinimalCongressById($congressId, $only_access_register)) {
             return response()->json(["error" => "congress not found"], 404);
         }
 
@@ -998,7 +999,7 @@ class CongressController extends Controller
         }
         $objectMail = 'Confirmation du présence';
         $this->mailServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, null), null, null, $objectMail, false, null, $admin->email);
-        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice();
+        $linkFrontOffice = UrlUtils::getBaseUrlFrontOffice() . '/success-page';
         return redirect($linkFrontOffice);
     }
 
