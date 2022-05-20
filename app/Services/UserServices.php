@@ -929,7 +929,7 @@ class UserServices
             if ($congress_id) {
                 $query->where('congress_id', '=', $congress_id);
             }
-        }, 'profile_img'])
+        }, 'profile_img','packs'])
             ->first();
     }
 
@@ -1153,8 +1153,8 @@ class UserServices
     }
 
     public function affectAllAccess($user_id, $accesss)
-    {
-        foreach ($accesss as $access) {
+    {                 
+        foreach ($accesss as $access) {    Log::info( $access->access_id);
             $userAccess = new UserAccess();
             $userAccess->user_id = $user_id;
             $userAccess->access_id = $access->access_id;

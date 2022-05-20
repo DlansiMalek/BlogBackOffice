@@ -37,8 +37,9 @@ class PackServices
         $pack->price = $price;
         $pack->congress_id = $congressId;
         $pack->save();
-        $this->addAccessPack($pack->pack_id, $accessIds);
-
+        if ($accessIds) {
+            $this->addAccessPack($pack->pack_id, $accessIds);
+        }
         return $pack;
     }
 
@@ -74,7 +75,7 @@ class PackServices
         }
     }
 
-    private function affectPackToUser($user_id, $packId)
+    public function affectPackToUser($user_id, $packId)
     {
         $user_pack = new UserPack();
         $user_pack->user_id = $user_id;
@@ -169,4 +170,8 @@ class PackServices
         return $pack;
     }
 
+    public function getPackByLabel($packLabel)
+    {
+        return Pack::whereRaw('lower(label) like (?)', ["%{$packLabel}%"])->with(['users', 'accesses'])->first();
+    }
 }
