@@ -472,10 +472,7 @@ class UserServices
             ])
             ->where(function ($query) use ($search, $payed, $unpayed, $accepted, $inProgress, $refused, $congressId) {
                 if ($search != "" && !$payed && !$unpayed && !$accepted && !$inProgress && !$refused) {
-                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                    $query->whereRaw('CONCAT(lower(first_name), " ", lower(last_name), " ",  lower(email), " ", lower(mobile)) like (?)', ["%{$search}%"]);
                     $query->orWhereHas('country', function ($q) use ($search) {
                         $q->whereRaw('lower(name) like (?)', ["%{$search}%"]);
                     });
