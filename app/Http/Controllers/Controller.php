@@ -33,11 +33,11 @@ class Controller extends BaseController
  *
  *
 INSERT IGNORE INTO `User_Access`( `isPresent`, `user_id`, `access_id`)
-SELECT 0 , U.user_id , 1178 FROM User as U
+SELECT 0 , U.user_id , 1141 FROM User as U
      INNER JOIN User_Congress ON User_Congress.user_id = U.user_id
      WHERE User_Congress.congress_id = 457 AND U.user_id NOT IN
         (SELECT UA.user_id FROM User_Access AS UA
-         WHERE UA.access_id = 1178);
+         WHERE UA.access_id = 1141);
  *
  *
  */

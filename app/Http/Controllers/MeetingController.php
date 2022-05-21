@@ -252,7 +252,7 @@ class MeetingController extends Controller
 
   public function getNumberOfMeetings($congress_id, Request $request)
   {
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+    if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
       return response()->json('no congress found', 404);
     }
     $startDate = $request->query('startDate', '');
@@ -294,7 +294,7 @@ class MeetingController extends Controller
     if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
       return response()->json('no admin found', 404);
     }
-    if (!$congress = $this->congressServices->getCongressById($congressId)) {
+    if (!$congress = $this->congressServices->getCachedMinimalCongressById($congressId)) {
       return response()->json('no congress found', 404);
     }
     // number of participants per event
@@ -332,7 +332,7 @@ class MeetingController extends Controller
     if (!$status && $status != 0) {
       return response()->json('status required', 400);
     }
-    if (!$congress = $this->congressServices->getCongressById($congressId)) {
+    if (!$congress = $this->congressServices->isExistCongress($congressId)) {
       return response()->json('congress not found', 404);
     }
     $numberOfMeetings = $this->meetingServices->getTotalNumberOfMeetingsWithSatuts($congressId, $status);
@@ -344,7 +344,7 @@ class MeetingController extends Controller
     if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
       return response()->json('no admin found', 404);
     }
-    if (!$congress = $this->congressServices->getCongressById($congressId)) {
+    if (!$congress = $this->congressServices->isExistCongress($congressId)) {
       return response()->json('congress not found', 404);
     }
     $startDate = $request->input('startDate');
@@ -382,7 +382,7 @@ class MeetingController extends Controller
 
   public function setFixTables(Request $request, $congress_id)
   {
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+    if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
       return response()->json(["message" => "congress not found"], 404);
     }
     $isSelected = null;
@@ -418,7 +418,7 @@ class MeetingController extends Controller
   
   public function getFixTables($congress_id, Request $request)
   {
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+    if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
       return response()->json(['response' => 'Congress not found', 404]);
     }
     $perPage = $request->query('perPage', '');
@@ -516,7 +516,7 @@ class MeetingController extends Controller
 
   public function getMeetingsDates($congress_id)
   {
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+    if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
       return response()->json(['response' => 'Congress not found', 404]);
     }
     $meetingDates = $this->meetingServices->getmeetingDates($congress_id);
@@ -525,7 +525,7 @@ class MeetingController extends Controller
 
   public function setMeetingsDate(Request $request, $congress_id)
   {
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+    if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
       return response()->json(["message" => "congress not found"], 404);
     }
 
@@ -541,7 +541,7 @@ class MeetingController extends Controller
     if (!$user) {
       return response()->json(['response' => 'No user found'], 401);
     }
-    $congress = $this->congressServices->getCongressById($congressId);
+    $congress = $this->congressServices->isExistCongress($congressId);
     if (!$congress) {
       return response()->json(['response' => 'No congress found'], 401);
     }
@@ -551,7 +551,7 @@ class MeetingController extends Controller
 
   public function getMeetingsDatesByStartDate($congress_id, $startDate)
   {
-    if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+    if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
       return response()->json(['response' => 'Congress not found', 404]);
     }
     $meetingDates = $this->meetingServices->getMeetingsDatesByStartDate($congress_id,$startDate);

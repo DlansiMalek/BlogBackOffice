@@ -42,6 +42,11 @@ class CongressServices
         $this->geoServices = $geoServices;
     }
 
+    public function isExistCongress($congressId) {
+        return Congress::where('congress_id', '=', $congressId)
+            ->first();
+    }
+
     public function getById($congressId)
     {
         return Congress::where('congress_id', '=', $congressId)
