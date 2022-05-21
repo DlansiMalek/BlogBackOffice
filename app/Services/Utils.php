@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Facades\Cache;
 
 
 class Utils
@@ -321,5 +322,9 @@ class Utils
     public static function convertTimeTo24HoursFormat($time)
     {
         return date("H:i:s", strtotime($time));
+    }
+
+    public static function putCacheData ($key, $data) {
+        Cache::put($key, $data, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
     }
 }

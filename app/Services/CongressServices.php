@@ -179,43 +179,52 @@ class CongressServices
             ->get();
     }
 
+    public function getCachedMinimalCongressById ($congressId, $only_access_register = null) {
+        $cacheKey = 'congress-min' . $congressId . $only_access_register;
+
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->getMinimalCongressById($congressId, $only_access_register);
+            Utils::putCacheData($cacheKey, $congress);
+        }
+
+        return $congress;
+    }
+
     public function getMinimalCongressById($congressId, $only_access_register = null)
     {
-
+        // WARNING : DO NOT ADD ANY NEW FIELD relationship
         return Congress::with([
-            "mails.type",
-            "attestation",
-            "form_inputs.type",
-            "form_inputs.values",
-            "form_inputs.question_reference"=> function ($query) {
-                $query->with(['reference', 
-                'response_reference'  => function ($q) {
-                    $q->with(['value']);
-                } ]);
-            },
-            "config",
-            "config_selection",
-            "badges" => function ($query) use ($congressId) {
-                $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
-            },
-            "packs",
-            "accesss.packs" => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
-            "accesss" => function ($query) use ($congressId, $only_access_register) {
-                if($only_access_register==1) {
-                    $query->where('show_in_register', '=', 1);
-                }
-                $query->whereNull('parent_id');
-            },
-            'accesss.participants.user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-                $query->where('privilege_id', '=', config('privilege.Participant'));
-            },
-            "theme"
-        ])
-            ->where("congress_id", "=", $congressId)
-            ->first();
+                "mails.type",
+                "attestation",
+                "form_inputs.type",
+                "form_inputs.values",
+                "form_inputs.question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
+                },
+                "config",
+                "config_selection",
+                "badges" => function ($query) use ($congressId) {
+                    $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
+                },
+                "packs",
+                "accesss.packs" => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                "accesss" => function ($query) use ($congressId, $only_access_register) {
+                    if($only_access_register==1) {
+                        $query->where('show_in_register', '=', 1);
+                    }
+                    $query->whereNull('parent_id');
+                },
+                "theme"
+            ])
+                ->where("congress_id", "=", $congressId)
+                ->first();
     }
 
     public function getCongressById($id_Congress)

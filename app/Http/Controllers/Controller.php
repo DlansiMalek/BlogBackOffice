@@ -269,3 +269,14 @@ SET @code=0;
 
  */
 
+
+/*
+
+SELECT Submission.submission_id , Submission.code, CONCAT(User.first_name, ' ', User.last_name) as "User", Submission.title , CONCAT('https://eventizer-prod.s3.eu-west-3.amazonaws.com/', Resource.path) AS "Fichier"
+FROM Resource_Submission
+inner join Submission ON Submission.submission_id = Resource_Submission.submission_id
+inner join Resource ON Resource.resource_id = Resource_Submission.resource_id
+inner join User On User.user_id = Submission.user_id
+
+WHERE Submission.congress_id = 437 AND Submission.status = 1
+*/
