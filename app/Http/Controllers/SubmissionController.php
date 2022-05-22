@@ -117,7 +117,7 @@ class SubmissionController extends Controller
 
             $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
 
-            $congress = $this->congressServices->getCongressById($submission->congress_id);
+            $congress = $this->congressServices->isExistCongress($submission->congress_id);
 
             $mailtype = $this->congressServices->getMailType('save_submission', $this->type);
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
@@ -192,7 +192,7 @@ class SubmissionController extends Controller
                 }
                 $admins = $this->adminServices->getEvaluatorsByThemeOrByCongress($submission->theme_id, $submission->congress_id, 11);
 
-                $congress = $this->congressServices->getCongressById($submission->congress_id);
+                $congress = $this->congressServices->isExistCongress($submission->congress_id);
                 $this->submissionServices->affectSubmissionToEvaluators(
                     $this->congressServices->getConfigSubmission($submission->congress_id),
                     $submission->submission_id,
@@ -205,7 +205,7 @@ class SubmissionController extends Controller
             ) {
                 $this->submissionServices->saveResourceSubmission($request->input('resourceIds'), $submission->submission_id);
             }
-            $congress = $this->congressServices->getCongressById($submission->congress_id);
+            $congress = $this->congressServices->isExistCongress($submission->congress_id);
             $mailtype = $this->congressServices->getMailType($name, $this->type);
             $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
 
@@ -256,7 +256,7 @@ class SubmissionController extends Controller
         $status = $request->query('status');
         $theme = $request->query('theme');
 
-        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+        if (!($congress = $this->congressServices->isExistCongress($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
         }
         try {
@@ -289,7 +289,7 @@ class SubmissionController extends Controller
             $privilege_id = $adminCongress->privilege_id;
             $submission_detail = $this->submissionServices->getSubmissionDetailById($admin, $submissionId, $privilege_id);
             $user = $submission_detail['user'];
-            $congress = $this->congressServices->getCongressById($congressId);
+            $congress = $this->congressServices->isExistCongress($congressId);
             if ($privilege_id == config('privilege.Comite_scientifique')) {
                 $mail_type = $this->congressServices->getMailType('bloc_edit_submission', $this->type);
                 $mail = $this->congressServices->getMail($congressId, $mail_type->mail_type_id);
@@ -363,7 +363,7 @@ class SubmissionController extends Controller
         $this->congressServices->getMailType('accept_submission', $this->type) :
         $this->congressServices->getMailType('refuse_submission', $this->type);
         $mail = $this->congressServices->getMail($congress_id, $mail_type->mail_type_id);
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->isExistCongress($congress_id);
         if ($mail) {
           $userMail = $this->mailServices->getMailByUserIdAndMailId($mail->mail_id, $user->user_id, $submission_id);
           if (!$userMail) {
@@ -448,7 +448,7 @@ class SubmissionController extends Controller
                     . '/user-profile/submission/submit-resources/' . $submission->submission_id . '?code=' . $file_upload_code;
                 }
                 $user = $this->userServices->getUserById($submission->user_id);
-                $congress = $this->congressServices->getCongressById($submission->congress_id);
+                $congress = $this->congressServices->isExistCongress($submission->congress_id);
                 $this->mailServices->sendMail(
                     $this->congressServices->renderMail(
                         $mail->template,
@@ -572,7 +572,7 @@ class SubmissionController extends Controller
         $perPage = $request->query('perPage', 5);
         $communication_type_id = $request->query('communication_type_id','');
         $theme_id = $request->query('theme_id','');
-        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+        if (!($congress = $this->congressServices->isExistCongress($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
         $submissions = $this->submissionServices->getAllSubmissionsCachedByCongress($congressId, $search, $offset, $perPage, $communication_type_id, $theme_id);
@@ -584,7 +584,7 @@ class SubmissionController extends Controller
     public function getAttestationSubmissionByCongress($congressId)
     {
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
 
@@ -607,7 +607,7 @@ class SubmissionController extends Controller
     public function activateAttestationByCongressByType($congressId, Request $request)
     {
         $attestationSubmissionId = $request->input('attestationSubmissionId');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$attestationSubmission = $this->submissionServices->getAttestationSubmissionById($attestationSubmissionId)) {
@@ -635,7 +635,7 @@ class SubmissionController extends Controller
     public function deleteAttestationByCongress($congressId, Request $request)
     {
         $attestationSubmissionId = $request->input('attestationSubmissionId');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$attestationSubmission = $this->submissionServices->getAttestationSubmissionById($attestationSubmissionId)) {
@@ -665,7 +665,7 @@ class SubmissionController extends Controller
         $IdGeneratorBlank = $request->input('IdGeneratorBlank', '');
         $communicationTypeId = $request->input('communicationTypeId');
         $attestationType = $request->input('attestationType', '0');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$communicationType = $this->submissionServices->getCommunicationTypeById($communicationTypeId)) {
@@ -730,7 +730,7 @@ class SubmissionController extends Controller
     public function getSubmissionByStatus(Request $request, $congressId, $status)
     {
         $eligible = $request->input('eligible', '');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         try {
@@ -749,7 +749,7 @@ class SubmissionController extends Controller
     public function getAttestationSubmissionEnabled($congressId)
     {
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         try {
@@ -769,7 +769,7 @@ class SubmissionController extends Controller
 
     public function makeSubmissionEligible($submissionId, $congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$submission = $this->submissionServices->getSubmissionByIdWithRelation(
@@ -798,7 +798,7 @@ class SubmissionController extends Controller
 
     public function sendMailAttestationAllSubmission($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         try {
@@ -875,7 +875,7 @@ class SubmissionController extends Controller
 
     public function sendMailAttestationById($submissionId, $congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$submission = $this->submissionServices->getSubmissionByIdWithRelation(
@@ -990,7 +990,7 @@ class SubmissionController extends Controller
 
     public function getEpostersByCongressPeacksource($congressId, Request $request)
     {
-        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+        if (!($congress = $this->congressServices->isExistCongress($congressId))) {
             return response()->json(['response' => 'congress not found'], 400);
         }
 
@@ -1004,7 +1004,7 @@ class SubmissionController extends Controller
     public function makeMassSubmissionEligible($congressId, $eligibility, Request $request)
     {
         $subs = $request->all();
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         foreach ($subs as $submissionId) {

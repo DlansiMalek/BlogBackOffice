@@ -622,7 +622,7 @@ class AdminController extends Controller
 
         $congressId = $request->input('congressId');
 
-        if (!$congress = $this->congressService->getCongressById($congressId)) {
+        if (!$congress = $this->congressService->getCachedMinimalCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 

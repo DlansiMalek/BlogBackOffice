@@ -100,7 +100,7 @@ class OffreController extends Controller
         if (!$privilege = $this->privilegeServices->getPrivilegeById($privilege_id)) {
             return response()->json(['message' => 'privilege not found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
         $this->offreServices->addAllPrivilegeMenuChildren($request->input('menus'),  $privilege_id, $congress_id);
@@ -112,7 +112,7 @@ class OffreController extends Controller
         if (!$privilege = $this->privilegeServices->getPrivilegeById($privilege_id)) {
             return response()->json(['message' => 'privilege not found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
         $menus = $this->offreServices->getMenusByPrivilegeByCongress($congress_id, $privilege_id);
@@ -124,7 +124,7 @@ class OffreController extends Controller
         if (!$privilege = $this->privilegeServices->getPrivilegeById($privilege_id)) {
             return response()->json(['message' => 'privilege not found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
         $this->offreServices->editPrivilegeMenuChildren($request->input('menus'),  $privilege_id, $congress_id);

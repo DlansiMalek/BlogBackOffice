@@ -43,6 +43,7 @@ class CongressServices
     }
 
     public function isExistCongress($congressId) {
+        // WARNING : DO NOT ADD ANY FIELD/Relationship to this method
         return Congress::where('congress_id', '=', $congressId)
             ->first();
     }
@@ -232,52 +233,12 @@ class CongressServices
                 ->first();
     }
 
-    public function getCongressById($id_Congress)
-    {
-        $congress = Congress::withCount('users')
-            ->with([
-                'users.responses.form_input',
-                'users.accesses' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
-                },
-                'config',
-                'config_selection',
-                "badges",
-                "attestation",
-                "packs.accesses",
-                "form_inputs.type",
-                "form_inputs.values",
-                "mails.type",
-                'accesss.attestations',
-                'accesss.participants.payments' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
-                },
-                'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
-                },
-                'ConfigSubmission' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
-                },
-                'location.city.country',
-                'accesss.speakers',
-                'accesss.chairs',
-                'accesss.sub_accesses',
-                'accesss.topic',
-                'accesss.type',
-                'accesss.votes',
-                'attestation',
-            ])
-            ->where("congress_id", "=", $id_Congress)
-            ->first();
-        return $congress;
-    }
-
     public function getCongressDetailsById($congressId)
     {
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-            'config_landing',
+                'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -726,7 +687,7 @@ class CongressServices
         $config_selection->congress_id = $congress->congress_id;
         $config_selection->update();
 
-        return $this->getCongressById($congress->congress_id);
+        return $this->getMinimalCongressById($congress->congress_id);
     }
 
     public function getUsersByStatus($congressId, int $status)

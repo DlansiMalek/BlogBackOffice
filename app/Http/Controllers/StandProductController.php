@@ -79,7 +79,7 @@ class StandProductController extends Controller
     }
 
     public function getProductsBy3DBooth($congressId, $boothId) {
-        if (!$this->congressServices->getCongressById($congressId)) {
+        if (!$this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 

@@ -389,7 +389,7 @@ class UserController extends Controller
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response('no admin found', 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json('no congress found');
         }
         if (!$request->has('users') || sizeof($request->input('users')) === 0) {
@@ -437,7 +437,7 @@ class UserController extends Controller
         $user = $this->userServices->getUserByIdWithRelations($user_id, ['accesses' => function ($query) use ($congress_id) {
             $query->where('congress_id', '=', $congress_id);
         }]);
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->isExistCongress($congress_id);
         $this->acceptOrRefuseUser($status, $congress, $user, $user_congress);
         return response()->json(['message' => 'change status success'], 200);
     }
@@ -528,7 +528,7 @@ class UserController extends Controller
     {
 
         $accessIds = $request->input("accessIds");
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 
@@ -581,7 +581,7 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['response' => 'No user found'], 404);
         }
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->getMinimalCongressById($congress_id);
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
         }
@@ -626,7 +626,7 @@ class UserController extends Controller
             return response()->json(['error' => 'user registred congress'], 405);
         }
 
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->getMinimalCongressById($congress_id);
 
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 404);
@@ -776,7 +776,7 @@ class UserController extends Controller
             return response()->json(['response' => 'No user found'], 401);
         }
         $userId = $user->user_id;
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
         $user = $this->userServices->getUserByIdWithRelations($userId, [
             'user_congresses' => function ($query) use ($congressId) {
                 $query->where('congress_id', '=', $congressId);
@@ -890,7 +890,7 @@ class UserController extends Controller
 
     public function getUserStatusPresences($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $autorisation = $request->input('autorisation');
@@ -932,7 +932,7 @@ class UserController extends Controller
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $congress = $this->congressServices->getCongressById($userPayement->congress_id);
+        $congress = $this->congressServices->getCachedMinimalCongressById($userPayement->congress_id);
 
         $userCongress = $this->userServices->getUserCongress($congress->congress_id, $user->user_id);
 
@@ -1296,7 +1296,7 @@ class UserController extends Controller
 
     public function redirectToLinkFormSondage($userId, $congressId)
     {
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
         $mailtype = $this->congressServices->getMailType('attestation');
         $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
         $mailId = $mail->mail_id;
@@ -1409,7 +1409,7 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserByIdWithRelations($userId, [])) {
             return response()->json(['error' => 'user not found'], 404);
         }
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->isExistCongress($congressId);
 
         if ($user->email != null && $user->email != "-" && $user->email != "") {
 
@@ -1450,7 +1450,7 @@ class UserController extends Controller
             return response()->json(['error' => 'user not found'], 404);
         }
 
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
         $request = array();
         if ($user->email != null && $user->email != "-" && $user->email != "") {
             if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isPresent == 1 && $congress->attestation) {
@@ -1544,7 +1544,7 @@ class UserController extends Controller
 
         if ($mailtype = $this->congressServices->getMailType('upload')) {
             if ($mail = $this->congressServices->getMail($paymentUser->congress_id, $mailtype->mail_type_id)) {
-                $congress = $this->congressServices->getCongressById($paymentUser->congress_id);
+                $congress = $this->congressServices->isExistCongress($paymentUser->congress_id);
                 $userMail = $this->mailServices->addingMailUser($mail->mail_id, $paymentUser->user_id);
                 $this->mailServices->sendMail(
                     $this->congressServices
@@ -1587,7 +1587,7 @@ class UserController extends Controller
         if (!$mail = $this->congressServices->getEmailById($mail_id)) {
             return response()->json(['response' => 'mail not found'], 404);
         }
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congress_id);
          //get Payement Ligne
          $userPayment = null;
          if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
@@ -1597,25 +1597,26 @@ class UserController extends Controller
         $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, $userPayment), $user, $congress, $mail->object, false);
         return response()->json(['response' => 'success'], 200);
     }
-    
-    public function sendEmailToSelectedUsers($mail_id, $congress_id, Request $request){
-         
-     if (!$mail = $this->congressServices->getEmailById($mail_id)) {
-       return response()->json(['response' => 'mail not found'], 404);
+
+    public function sendEmailToSelectedUsers($mail_id, $congress_id, Request $request)
+    {
+
+        if (!$mail = $this->congressServices->getEmailById($mail_id)) {
+            return response()->json(['response' => 'mail not found'], 404);
         }
-    if (! $congress = $this->congressServices->getCongressById($congress_id)){
-       return response()->json(['response' => 'Congress not found'], 404); 
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congress_id)) {
+            return response()->json(['response' => 'Congress not found'], 404);
         }
         $users = $request->input('users');
-        foreach((array)$users as $user){
+        foreach ((array)$users as $user) {
 
-    if (!$user = $this->userServices->getUserIdAndByCongressId($user, $congress_id)) {
-        return response()->json(['response' => 'user not found'], 404);
-     }
-       $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
-       $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
-    }
-     return response()->json(['response' => 'success'], 200);
+            if (!$user = $this->userServices->getUserIdAndByCongressId($user, $congress_id)) {
+                return response()->json(['response' => 'user not found'], 404);
+            }
+            $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
+            $this->mailServices->sendMail($this->congressServices->renderMail($mail->template, $congress, $user, $link, null, null), $user, $congress, $mail->object, false);
+        }
+        return response()->json(['response' => 'success'], 200);
     }
         
 
@@ -2016,7 +2017,7 @@ class UserController extends Controller
 
         $congressId = $request->input("congress_id");
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -2164,7 +2165,7 @@ class UserController extends Controller
         $stand = $this->standServices->getStandById($standId);
 
         $userId = $user->user_id;
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
 
 
         $user = $this->userServices->getUserByIdWithRelations($userId, [
@@ -2261,7 +2262,7 @@ class UserController extends Controller
         if (!$user = $this->userServices->retrieveUserFromToken()) {
             return response()->json('no user found', 404);
         }
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->isExistCongress($congress_id);
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
@@ -2282,7 +2283,7 @@ class UserController extends Controller
             return response()->json(['response' => 'No user found'], 401);
         }
         $userId = $user->user_id;
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
@@ -2329,7 +2330,7 @@ class UserController extends Controller
 
     public function getAllUsersByCongressPWAWithPagination($congress_id,Request $request)
     {
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congress_id);
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
@@ -2352,7 +2353,7 @@ class UserController extends Controller
         if (!$user = $this->userServices->getUserById($user_id)) {
             return response()->json(['response' => 'user not found'], 404);
         } 
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->isExistCongress($congressId);
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
@@ -2449,15 +2450,15 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function getRandomUsers($congress_id,Request $request)
+    public function getRandomUsers($congress_id, Request $request)
     {
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->isExistCongress($congress_id);
         if (!$congress) {
             return response()->json(['response' => 'No congress found'], 401);
         }
-        $user = $this->userServices->retrieveUserFromToken(); 
+        $user = $this->userServices->retrieveUserFromToken();
         $userId = $user ? $user->user_id : null;
-        $users = $this->userServices->getRandomUsers($congress_id,$userId, $congress->congress_type_id);
+        $users = $this->userServices->getRandomUsers($congress_id, $userId, $congress->congress_type_id);
         return response()->json($users);
     }
 

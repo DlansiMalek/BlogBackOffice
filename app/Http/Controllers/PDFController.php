@@ -31,7 +31,7 @@ class PDFController extends Controller
     function generateProgramPDF($congress_id)
     {
         $file = new Filesystem();
-        $congress = $this->congressServices->getCongressById($congress_id);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congress_id);
 
         $days_in_french = array("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche");
         foreach ($congress->accesss as $a) {
@@ -59,7 +59,7 @@ class PDFController extends Controller
         $file = new Filesystem();
         $meetingPlanning = $this->meetingServices->getMeetingPlanning($meeting_id);
         $congressId = $meetingPlanning->congress_id;
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
 
         $data = [
             'congress' => $congress,

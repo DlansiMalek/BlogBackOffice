@@ -26,7 +26,7 @@ class PackController extends Controller
 
     public function getAllPackByCongress($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 
@@ -36,7 +36,7 @@ class PackController extends Controller
     public function addPack($congressId, Request $request)
     {
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'No congress found'], 400);
         }
 
