@@ -253,6 +253,9 @@ SELECT * FROM Author WHERE email <> '' AND email NOT LIKE '%_@__%.__%'
 */
 
 /*
+
+Make rank badge generation
+
 SET @code=0
 SELECT 
   user_id,
@@ -279,4 +282,17 @@ inner join Resource ON Resource.resource_id = Resource_Submission.resource_id
 inner join User On User.user_id = Submission.user_id
 
 WHERE Submission.congress_id = 437 AND Submission.status = 1
+*/
+
+/*
+
+Fusion meeting user table fixe
+
+UPDATE Meeting
+INNER JOIN User_Meeting ON Meeting.meeting_id = User_Meeting.meeting_id
+INNER JOIN User ON User.user_id = User_Meeting.user_receiver_id
+SET Meeting.meeting_table_id = 1930 , -- TF29
+    User_Meeting.user_receiver_id = 17463 -- afdtunis@afd.fr
+WHERE User.email = 'roumyi@afd.fr' AND User_Meeting.status = 1;
+
 */
