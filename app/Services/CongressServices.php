@@ -1153,6 +1153,12 @@ class CongressServices
         $config_landing_page->home_btn_text = $request->has("home_btn_text") ? $request->input('home_btn_text') : 'LOGIN';
         $config_landing_page->home_btn_link = $request->has("home_btn_link") ? $request->input('home_btn_link') : '/landingpage/{congressId}/login';
 
+        $config_landing_page->live_link = $request->has("live_link") ? $request->input('live_link') : null;
+        $config_landing_page->live_title_en = $request->has("live_title_en") ? $request->input('live_title_en') : null;
+        $config_landing_page->live_title = $request->has("live_title") ? $request->input('live_title') : null;
+        $config_landing_page->live_title_btn_en = $request->has("live_title_btn_en") ? $request->input('live_title_btn_en') : null;
+        $config_landing_page->live_title_btn = $request->has("live_title_btn") ? $request->input('live_title_btn') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
