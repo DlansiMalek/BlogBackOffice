@@ -42,7 +42,9 @@ class MeetingController extends Controller
   public function getUserMeetingById($congress_id, Request $request)
   {
     $status = $request->query("status", '');
-    return $this->meetingServices->getMeetingByUserId($request->input('user_id'), $congress_id, $status);
+    $qr_code = $request->query("qr_code", '');
+    $user_id = $qr_code != '' ? $this->userServices->getUserByQrCode($qr_code)->user_id : $request->input('user_id');
+    return $this->meetingServices->getMeetingByUserId($user_id, $congress_id, $status);
   }
 
   
