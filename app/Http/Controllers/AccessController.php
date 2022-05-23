@@ -68,7 +68,7 @@ class AccessController extends Controller
                 'required fields' => ['name', 'start_date', 'end_date', 'access_type_id']], 400);
         }
 
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
 
@@ -120,7 +120,7 @@ class AccessController extends Controller
 
     public function getByCongressId($congressId)
     {
-        return $this->accessServices->getByCongressId($congressId);
+        return $this->accessServices->getCachedByCongressId($congressId);
     }
 
     public function deleteAccess($access_id)
@@ -224,7 +224,7 @@ class AccessController extends Controller
 
     public function editAccessStatus($congress_id, Request $request)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -377,7 +377,7 @@ class AccessController extends Controller
 
     public function getUserAccessesByCongressId($congress_id)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $user = $this->userServices->retrieveUserFromToken();

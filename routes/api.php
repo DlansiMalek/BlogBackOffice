@@ -200,7 +200,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     });
     Route::post('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers');
     Route::group(['prefix' => '{congress_id}'], function () {
-        Route::get('', 'CongressController@getCongressById');
+        Route::get('', 'CongressController@getMinimalCongressById');
         Route::get('update-reponses', 'UserController@updateAllResponses');
         Route::get('/details', 'CongressController@getCongressDetailsById');
         Route::post('switchRoom', 'CongressController@switchUsersRoom');

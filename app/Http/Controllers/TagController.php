@@ -21,7 +21,7 @@ class TagController extends Controller
 
     public function addTag($congress_id, Request $request)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $this->tagServices->addTag($request, $congress_id);
@@ -31,7 +31,7 @@ class TagController extends Controller
 
     public function getTags($congress_id)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $tags = $this->tagServices->getTags($congress_id);

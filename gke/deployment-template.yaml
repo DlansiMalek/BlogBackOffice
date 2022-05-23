@@ -167,7 +167,7 @@ spec:
     kind: Deployment
     name: backend-${CI_COMMIT_REF_NAME}
   minReplicas: 3
-  maxReplicas: 10
+  maxReplicas: 16
   metrics:
     - type: Resource
       resource:

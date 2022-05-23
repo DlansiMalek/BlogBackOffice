@@ -43,6 +43,12 @@ class CongressServices
         $this->geoServices = $geoServices;
     }
 
+    public function isExistCongress($congressId) {
+        // WARNING : DO NOT ADD ANY FIELD/Relationship to this method
+        return Congress::where('congress_id', '=', $congressId)
+            ->first();
+    }
+
     public function getById($congressId)
     {
         return Congress::where('congress_id', '=', $congressId)
@@ -180,83 +186,52 @@ class CongressServices
             ->get();
     }
 
-    public function getMinimalCongressById($congressId, $only_access_register = null)
-    {
+    public function getCachedMinimalCongressById ($congressId, $only_access_register = null) {
+        $cacheKey = 'congress-min' . $congressId . $only_access_register;
 
-        return Congress::with([
-            "mails.type",
-            "attestation",
-            "form_inputs.type",
-            "form_inputs.values",
-            "form_inputs.question_reference"=> function ($query) {
-                $query->with(['reference', 
-                'response_reference'  => function ($q) {
-                    $q->with(['value']);
-                } ]);
-            },
-            "config",
-            "config_selection",
-            "badges" => function ($query) use ($congressId) {
-                $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
-            },
-            "packs",
-            "accesss.packs" => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
-            "accesss" => function ($query) use ($congressId, $only_access_register) {
-                if($only_access_register==1) {
-                    $query->where('show_in_register', '=', 1);
-                }
-                $query->whereNull('parent_id');
-            },
-            'accesss.participants.user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-                $query->where('privilege_id', '=', config('privilege.Participant'));
-            },
-            "theme"
-        ])
-            ->where("congress_id", "=", $congressId)
-            ->first();
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->getMinimalCongressById($congressId, $only_access_register);
+            Utils::putCacheData($cacheKey, $congress);
+        }
+
+        return $congress;
     }
 
-    public function getCongressById($id_Congress)
+    public function getMinimalCongressById($congressId, $only_access_register = null)
     {
-        $congress = Congress::withCount('users')
-            ->with([
-                'users.responses.form_input',
-                'users.accesses' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
-                },
-                'config',
-                'config_selection',
-                "badges",
+        // WARNING : DO NOT ADD ANY NEW FIELD relationship
+        return Congress::with([
+                "mails.type",
                 "attestation",
-                "packs.accesses",
                 "form_inputs.type",
                 "form_inputs.values",
-                "mails.type",
-                'accesss.attestations',
-                'accesss.participants.payments' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
+                "form_inputs.question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
                 },
-                'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
+                "config",
+                "config_selection",
+                "badges" => function ($query) use ($congressId) {
+                    $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
                 },
-                'ConfigSubmission' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
+                "packs",
+                "accesss.packs" => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
                 },
-                'location.city.country',
-                'accesss.speakers',
-                'accesss.chairs',
-                'accesss.sub_accesses',
-                'accesss.topic',
-                'accesss.type',
-                'accesss.votes',
-                'attestation',
+                "accesss" => function ($query) use ($congressId, $only_access_register) {
+                    if($only_access_register==1) {
+                        $query->where('show_in_register', '=', 1);
+                    }
+                    $query->whereNull('parent_id');
+                },
+                "theme"
             ])
-            ->where("congress_id", "=", $id_Congress)
-            ->first();
-        return $congress;
+                ->where("congress_id", "=", $congressId)
+                ->first();
     }
 
     public function getCongressDetailsById($congressId)
@@ -264,7 +239,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-            'config_landing',
+                'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -713,7 +688,7 @@ class CongressServices
         $config_selection->congress_id = $congress->congress_id;
         $config_selection->update();
 
-        return $this->getCongressById($congress->congress_id);
+        return $this->getMinimalCongressById($congress->congress_id);
     }
 
     public function getUsersByStatus($congressId, int $status)

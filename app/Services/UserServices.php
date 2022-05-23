@@ -472,10 +472,7 @@ class UserServices
             ])
             ->where(function ($query) use ($search, $payed, $unpayed, $accepted, $inProgress, $refused, $congressId) {
                 if ($search != "" && !$payed && !$unpayed && !$accepted && !$inProgress && !$refused) {
-                    $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(email) like (?)', ["%{$search}%"]);
-                    $query->orWhereRaw('lower(mobile) like (?)', ["%{$search}%"]);
+                    $query->whereRaw('CONCAT(lower(first_name), " ", lower(last_name), " ",  lower(email), " ", lower(mobile)) like (?)', ["%{$search}%"]);
                     $query->orWhereHas('country', function ($q) use ($search) {
                         $q->whereRaw('lower(name) like (?)', ["%{$search}%"]);
                     });
@@ -929,7 +926,7 @@ class UserServices
             if ($congress_id) {
                 $query->where('congress_id', '=', $congress_id);
             }
-        }, 'profile_img'])
+        }, 'profile_img','packs'])
             ->first();
     }
 
@@ -1153,7 +1150,7 @@ class UserServices
     }
 
     public function affectAllAccess($user_id, $accesss)
-    {
+    {                 
         foreach ($accesss as $access) {
             $userAccess = new UserAccess();
             $userAccess->user_id = $user_id;

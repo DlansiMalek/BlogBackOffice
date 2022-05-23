@@ -21,7 +21,7 @@ use App\Models\AccessPresence;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Cache;
 
 class AccessServices
 {
@@ -195,6 +195,19 @@ class AccessServices
                 'speakers', 'chairs', 'topic', 'resources', 'type',
                 'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->find($access_id);
+    }
+
+    public function getCachedByCongressId ($congress_id) {
+        $cacheKey = 'accesses-congress-' . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->getByCongressId($congress_id);
+            Utils::putCacheData($cacheKey, $congress);
+        }
+
+        return $congress;
     }
 
     public function getByCongressId($congress_id)

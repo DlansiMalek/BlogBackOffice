@@ -250,12 +250,10 @@ class MeetingServices
                 $query->whereRaw('lower(name) like (?)', ["%{$search}%"])
                 ->orWhereHas('user_meeting', function ($query) use ($search) {
                     $query->whereHas('organizer', function ($query) use ($search) {
-                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
-                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                        $query->whereRaw('CONCAT(lower(first_name), " ", lower(last_name)) like (?)', ["%{$search}%"]);
                     });
                     $query->orWhereHas('participant', function ($query) use ($search) {
-                        $query->whereRaw('lower(first_name) like (?)', ["%{$search}%"])
-                        ->orWhereRaw('lower(last_name) like (?)', ["%{$search}%"]);
+                        $query->whereRaw('CONCAT(lower(first_name), " ", lower(last_name)) like (?)', ["%{$search}%"]);
                     });
                 });
             }

@@ -284,7 +284,7 @@ class CongressController extends Controller
             return response()->json(['error' => 'Insufficient tables' , 'nb_reserved_table' => $reservedMeetingTables], 405);
         }
         $configCongress = $this->congressServices->editConfigCongress($configCongress, $request->input("congress"), $congressId, $token);
-        $congress = $this->congressServices->getCongressById($congressId);
+        $congress = $this->congressServices->getMinimalCongressById($congressId);
         $nbMeetingTable = $configCongress['nb_meeting_table'];
 
         if ($oldNumberFixTable != $request->input('congress')['nb_fix_table']) {
@@ -371,7 +371,7 @@ class CongressController extends Controller
     {
         if (!$request->has(['name', 'start_date']))
             return response()->json(['message' => 'bad request'], 400);
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
 
@@ -386,13 +386,11 @@ class CongressController extends Controller
     }
 
     public function getMinimalCongressById($congressId, Request $request)
-    {
+    {   
         $only_access_register = $request->query('only_access_register', null);
-        if (!$congress = $this->congressServices->getMinimalCongressById($congressId, $only_access_register)) {
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congressId, $only_access_register)) {
             return response()->json(["error" => "congress not found"], 404);
         }
-
-        $congress = $this->congressServices->updateWithParticipantsCount($congress);
 
         return response()->json($congress);
     }
@@ -451,8 +449,7 @@ class CongressController extends Controller
 
     public function getCongressById($congress_id)
     {
-        ini_set('memory_limit', '-1');
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congress_id)) {
             return response()->json(["error" => "congress not found"], 404);
         }
         return response()->json($congress);
@@ -536,7 +533,7 @@ class CongressController extends Controller
     public function sendMailAllParticipants($congressId)
     {
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getCongressDetailsById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $mailtype = $this->congressServices->getMailType('confirmation');
@@ -593,24 +590,16 @@ class CongressController extends Controller
 
     public function getAttestationDiversByCongress($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 
         return response()->json($this->badgeServices->getAttestationDiversByCongress($congressId));
     }
 
-    private function isAllowedEdit($congress_id)
-    {
-        $users = User::where('congress_id', '=', $congress_id)
-            ->get();
-
-        return sizeof($users) == 0;
-    }
-
     public function sendMailAllParticipantsSondage($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $mailtype = $this->congressServices->getMailType('sondage');
@@ -655,7 +644,7 @@ class CongressController extends Controller
     {
 
         // $strict = 0;
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $mailtype = $this->congressServices->getMailType('attestation');
@@ -753,7 +742,7 @@ class CongressController extends Controller
             return response()->json(['response' => 'mail not found'], 404);
         $congressId = $mail->congress_id;
         $mailId = $mail->mail_id;
-        $congress = $this->congressServices->getCongressById($mail->congress_id);
+        $congress = $this->congressServices->isExistCongress($mail->congress_id);
         $privilege_ids = $request->input('privilege_ids');
         $to_all = $request->query('toAll', 0);
         $questionId = $request->input('question_id');
@@ -809,7 +798,7 @@ class CongressController extends Controller
     public function setProgramLink(Request $request, $congress_id)
     {
         if (!$request->has("programLink")) return response()->json(['error' => 'invalid request'], 400);
-        if (!$congress = $this->congressServices->getCongressById($congress_id))
+        if (!$congress = $this->congressServices->isExistCongress($congress_id))
             return response()->json(['error' => 'congress not found'], 402);
         $congress->program_link = $request->input('programLink');
         $congress->update();
@@ -820,7 +809,7 @@ class CongressController extends Controller
     {
         $result = [];
         foreach ($request->all() as $congress_id) {
-            if (!$this->congressServices->getCongressById($congress_id))
+            if (!$this->congressServices->isExistCongress($congress_id))
                 return response()->json(['message' => 'congresses not found'], 404);
             array_push($result, (object)[
                 'congress_id' => $congress_id,
@@ -894,7 +883,7 @@ class CongressController extends Controller
 
     public function getStatsByCongressId($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json('no congress found', 404);
         }
         $totalUsers = $this->congressServices->getParticipantsCount($congressId, null, null);
@@ -933,7 +922,7 @@ class CongressController extends Controller
     public function getStatsAccessByCongressId($congressId)
     {
         //Cette stats concerne les participants et les ateliers qui ont choisit.
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json('no congress found', 404);
         }
 
@@ -974,7 +963,7 @@ class CongressController extends Controller
 
     public function confirmPresence($congress_id, $user_id, $present)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         if (!$user = $this->userServices->getUserById($user_id)) {
@@ -1202,13 +1191,13 @@ class CongressController extends Controller
         if (!$this->adminServices->retrieveAdminFromToken())
             return response()->json(['error' => 'admin_not_found'], 404);
 
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) 
             return response()->json(["message" => "congress not found"], 404);
         
         if (!$config_congress = $this->congressServices->getCongressConfigById($congress_id))
                 return response()->json(["error" => "congress not found"], 404);
         
-        $config_landing_page = $this->congressServices->syncronizeLandingPage($congress_id, $congress,$config_congress, $this->congressServices->getConfigLandingPageById($congress_id));
+        $config_landing_page = $this->congressServices->syncronizeLandingPage($congress_id, $congress, $config_congress, $this->congressServices->getConfigLandingPageById($congress_id));
         $configLocation = $this->congressServices->getConfigLocationByCongressId($congress_id);
         return response()->json(['config_landing_page' => $config_landing_page, 'configLocation' => $configLocation], 200);
     }
@@ -1269,7 +1258,7 @@ class CongressController extends Controller
 
     public function getNumberOfParticipants($congress_id)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) 
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) 
             return response()->json(["message" => "congress not found"], 404);
         
         $participants = $this->congressServices->getParticipantsCachedCount($congress_id);
@@ -1278,7 +1267,7 @@ class CongressController extends Controller
 
     public function getformInputByFilter($congress_id)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id))
+        if (!$congress = $this->congressServices->isExistCongress($congress_id))
             return response()->json(["message" => "congress not found"], 404);
 
         $filterValues =  $this->userServices->getFormInputByFilter($congress_id);
@@ -1287,7 +1276,7 @@ class CongressController extends Controller
 
     public function getKeyFormInputByFilter($congress_id)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id))
+        if (!$congress = $this->congressServices->isExistCongress($congress_id))
             return response()->json(["message" => "congress not found"], 404);
 
         $filterValues =  $this->userServices->getKeyFormInputByFilter($congress_id);
