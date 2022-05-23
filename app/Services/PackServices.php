@@ -174,4 +174,9 @@ class PackServices
     {
         return Pack::whereRaw('lower(label) like (?)', ["%{$packLabel}%"])->with(['users', 'accesses'])->where('congress_id', '=', $congressId)->first();
     }
+
+    public function getPackSByCongressId($congressId)
+    {
+        return Pack::where('congress_id', '=', $congressId)->get();
+    }
 }
