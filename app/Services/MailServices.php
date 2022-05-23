@@ -318,6 +318,8 @@ class MailServices
         }
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
         $replyTo = $congress != null && $congress->config != null && $congress->config->replyto_mail!= null ? $congress->config->replyto_mail : env('MAIL_USERNAME', 'contact@eventizer.io');
+        $tags = $congress != null ? $congress->congress_id : -1;
+        
         /* 
             TODO removing  
             $logMail = env('MAIL_LOG', 'logs@eventizer.io');
@@ -340,7 +342,7 @@ class MailServices
             /*'bcc' => array(
                 array('email' => $logMail)
             ),*/
-            'tags' => array(strval($congress->congress_id))
+            'tags' => array(strval($tags))
         );
         if ($fileAttached) {
             $file = array('attachment' => array(
