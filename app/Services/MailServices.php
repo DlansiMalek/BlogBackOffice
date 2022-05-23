@@ -190,7 +190,7 @@ class MailServices
     }
 
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null )
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null)
     {
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;
@@ -208,7 +208,10 @@ class MailServices
             $userMail->status = 2;
             $userMail->update();
         }
-        if ($offre != null && $offre->is_mail_pro == 1) {
+
+        $useSendInBlue = env('USE_SENDINBLUE', false);
+
+        if ($useSendInBlue || ($offre != null && $offre->is_mail_pro == 1)) {
             $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
         } else {
             $this->sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
