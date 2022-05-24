@@ -1932,12 +1932,16 @@ class UserServices
             }
           
         })
-            ->orWhere(function ($query) use ($congressId, $search, $user_id) {
+            ->orWhere(function ($query) use ($congressId, $search, $user_id, $isSelected) {
                 if ($search != "") {
                     $query->orWhereHas('userResponses', function ($q) use ($congressId, $search, $user_id) {
                         $q->where('congress_id', '=', $congressId)
                         ->where('user_id', '!=', $user_id);
                         $q->whereRaw('lower(response) like (?)', ["%{$search}%"]);
+                    })->whereHas('user_congresses', function ($query) use ($congressId, $user_id, $isSelected) {
+                        $query->where('congress_id', '=', $congressId);
+                        $query->where('user_id', '!=', $user_id);
+                        $query->where('isSelected', '=', $isSelected);
                     });
                 }
             })
