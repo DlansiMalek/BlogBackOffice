@@ -1925,10 +1925,7 @@ class UserServices
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
-                ->where('isSelected', '=', $isSelected);
-                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])
-                ->where('congress_id', '=', $congressId)
-                ->where('isSelected', '=', $isSelected);             
+                ->where('isSelected', '=', $isSelected);           
             }
           
         })
