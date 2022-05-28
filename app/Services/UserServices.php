@@ -1921,7 +1921,10 @@ class UserServices
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id, $isSelected) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
-            $query->where('isSelected', '=', $isSelected);
+            if ($isSelected) {
+                $query->where('isSelected', '=', $isSelected);
+            }
+            
 
             if ($search != "") {
                 $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
