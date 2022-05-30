@@ -2506,7 +2506,9 @@ class UserController extends Controller
                             }                            
                         } else {
                             if (isset($info) && sizeof($info) > 0) {
-                                $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                                if (isset($info[0]['values']) && sizeof($info[0]['values']) > 0) {
+                                    $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                                }
                             }
                         }
                     } else {
