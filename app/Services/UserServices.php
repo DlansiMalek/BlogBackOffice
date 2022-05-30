@@ -1973,7 +1973,7 @@ class UserServices
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
                     $q->where('form_input_value_id', '=', $filterBy);
                 }
-            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
+            })
             ->paginate($perPage);
         return  $users;
     }
