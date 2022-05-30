@@ -22,6 +22,7 @@ use App\Models\UserMail;
 use App\Models\UserPack;
 use App\Models\WhiteList;
 use App\Models\FormInputValue;
+use App\Models\MeetingTable;
 use App\Models\UserNetwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -1972,7 +1973,7 @@ class UserServices
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
                     $q->where('form_input_value_id', '=', $filterBy);
                 }
-            })
+            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
             ->paginate($perPage);
         return  $users;
     }
