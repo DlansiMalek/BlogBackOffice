@@ -1976,7 +1976,7 @@ class UserServices
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
                     $q->where('form_input_value_id', '=', $filterBy);
                 }
-            })
+            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
             ->paginate($perPage);
         return  $users;
     }
@@ -2107,7 +2107,7 @@ class UserServices
             if ($congressTypeId == 1 || $congressTypeId == 2) {
                 $query->where('isSelected', '=', 1);
             }
-        })
+        })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
             }])
