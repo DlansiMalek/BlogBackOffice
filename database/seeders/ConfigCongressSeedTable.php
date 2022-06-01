@@ -27,6 +27,7 @@ class ConfigCongressSeedTable extends Seeder
             'has_payment' => 1,
             'voting_token' => "feb1de9a-0e87-4606-bb18-7a44ef9d175c3",
             'congress_id' => 3
+           
         ]);
     }
 }

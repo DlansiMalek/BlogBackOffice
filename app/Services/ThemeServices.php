@@ -26,6 +26,8 @@ class ThemeServices {
         $theme->label = $externalTheme['label'];
         $theme->external = $congressId;
         $theme->description = $externalTheme['description'];
+        $theme->label_en = $externalTheme['label_en'];
+        $theme->description_en = $externalTheme['description_en'];
         $theme->save();
     }
 

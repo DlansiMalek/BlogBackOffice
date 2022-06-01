@@ -31,7 +31,7 @@ class BadgeController extends Controller
     function affectBadgeToCongress($congressId, Request $request)
     {
         $badgeIdGenerator = $request->input('badgeIdGenerator');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$privilege = $this->privilegeServices->getPrivilegeById($request->input('privilegeId'))) {
@@ -65,7 +65,7 @@ class BadgeController extends Controller
     function affectNewBadgeToCongress($congressId, Request $request)
     {
         $badgeIdGenerator = $request->input('badgeIdGenerator');
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if (!$privilege = $this->privilegeServices->getPrivilegeById($request->input('privilegeId'))) {
@@ -87,7 +87,7 @@ class BadgeController extends Controller
         $attestationGenerator = $request->input('badgeIdGenerator');
         $attestationTypeId = $request->input('attestationTypeId');
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 
@@ -107,7 +107,7 @@ class BadgeController extends Controller
     {
         $attesationIdGenerator = $request->input('badgeIdGenerator');
         $privilegeId = $request->input("privilegeId");
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         if ($accessId) {
@@ -135,7 +135,7 @@ class BadgeController extends Controller
 
     function getBadgesByCongress($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
 
@@ -191,7 +191,7 @@ class BadgeController extends Controller
 
     function deleteBadge($congressId, $badgeId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response(['error' => "congress not found"], 404);
         }
         $admin = $this->adminServices->retrieveAdminFromToken();

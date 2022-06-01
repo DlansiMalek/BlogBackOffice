@@ -37,14 +37,29 @@ class SharedServices
       ->get();
   }
 
-  public function getAllServices()
+  public function saveCatalogBadges($request)
   {
-    return Service::all();
-  }
-
-  public function getAllEtablissements()
-  {
-    return Etablissement::all();
+    if ($request) {
+      try {
+        $zipName = 'badges.zip';
+        $client = new \GuzzleHttp\Client();
+        $res = $client->request(
+          'POST',
+          UrlUtils::getUrlBadge() . '/badge/generateParticipantsPro',
+          [
+            'json' => [
+              'participants' => $request['participants'],
+              'badgeIdGenerator' => $request['badgeIdGenerator']
+            ]
+          ]
+        );
+        Storage::put($zipName, $res->getBody(), 'public');
+        return $zipName;
+      } catch (ClientException $e) {
+        return null;
+      }
+    }
+    return null;
   }
 
   public function saveAttestationsSubmissionsInPublic(array $request)

@@ -27,8 +27,6 @@ Route::get('updateTokens/{congressId}', 'AccessController@updateTokensJitsi');
 //Shared API
 Route::get('/lieu/all', 'SharedController@getAllLieux');
 Route::get('/privileges', 'SharedController@getAllPrivileges');
-Route::get('/services', 'SharedController@getAllServices');
-Route::get('/etablissements', 'SharedController@getAllEtablissements');
 Route::get('/communication_type', 'SharedController@getAllCommunicationTypes');
 Route::get('/countries', 'SharedController@getAllCountries');
 Route::get('/types-attestation', 'SharedController@getAllTypesAttestation');
@@ -42,6 +40,14 @@ Route::get('/action', 'SharedController@getAllActions');
 //Front Office Congress
 Route::group(['prefix' => 'congress'], function () {
     Route::get('list/pagination', 'CongressController@getCongressPagination');
+    Route::group(['prefix' => '{congressId}'], function () {
+        Route::group(['prefix' => 'services'], function () {
+            Route::get('all', 'SubmissionController@getServicesByCongressId');
+        });
+        Route::group(['prefix' => 'etablissements'], function () {
+            Route::get('all', 'SubmissionController@getEtablissementsByCongressId');
+        });
+    });
 });
 Route::group(['prefix' => 'contact-us'], function () {
     Route::post('/send', 'ContactUsController@addContactUs');
@@ -51,6 +57,29 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::put('{meetingId}/update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
     Route::get('{meetingId}/update-status', 'MeetingController@modiyStatus');
     Route::get('{congress_id}', 'MeetingController@getUserMeetingById');
+    Route::post('/add-evaluation-meeting-PWA', 'MeetingController@addMeetingEvaluation')->middleware('assign.guard:users');
+    Route::group(['prefix' => '{congress_id}'], function () {
+        Route::get('', 'MeetingController@getUserMeetingById');
+        Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
+        Route::get('number-meetings', 'MeetingController@getNumberOfMeetings');
+        Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
+        Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
+        Route::get('meeting-per-status', 'MeetingController@getTotalNumberOfMeetingsWithSatuts');
+        Route::get('meetings-between-two-dates-by-status', 'MeetingController@getMeetingsBetweenTwoDatesByStatus');
+        Route::get('get-fix-tables', 'MeetingController@getFixTables');
+        Route::get('get-meetings-dates', 'MeetingController@getMeetingsDates');
+        Route::get('get-meetingsBydate', 'MeetingController@getMeetingsDatesByStartDate');
+        Route::get('get-meeting-tables', 'MeetingController@getMeetingTableByCongress');
+        Route::get('get-number-waiting-meeting', 'MeetingController@getNumberWaitingMeetings')->middleware('assign.guard:users');
+    });
+    Route::group(['prefix' => '{meeting_id}'], function () {
+        Route::put('update-status', 'MeetingController@modiyStatus')->middleware('assign.guard:users');
+        Route::get('update-status', 'MeetingController@modiyStatus');
+        Route::get('update-status-by-admin', 'MeetingController@modifyStatusByOrganizer')->middleware('assign.guard:admins');
+        Route::put('statMeetingOrganizer', 'MeetingController@makeOrganizerPresent')->middleware('assign.guard:users');
+        Route::put('statMeetingParticipant', 'MeetingController@makeParticipantPresent')->middleware('assign.guard:users');
+    });
+   
 });
 
 //SMS API
@@ -116,6 +145,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('password/reset/{userId}', 'UserController@resetUserPassword');
     Route::post('/upload-users', 'UserController@uploadUsers');
     Route::post('by-email', 'UserController@getUserByEmail');
+    Route::post('send-mail-to-selected-users/{mail_id}/{congress_id}', 'UserController@sendEmailToSelectedUsers');
     Route::get('congress/{congressId}/all-access', 'UserController@getAllUserAccess')
         ->middleware('assign.guard:users');
 
@@ -144,6 +174,8 @@ Route::group(['prefix' => 'users'], function () {
 
     //API PER CONGRESS
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
+
+        Route::get('/count-present', 'CongressController@countWillBePresentUserCongress');
         Route::group(['prefix' => 'privilege'], function () {
             Route::post('', 'UserController@getUserByTypeAndCongressId');
         });
@@ -168,7 +200,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     });
     Route::post('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers');
     Route::group(['prefix' => '{congress_id}'], function () {
-        Route::get('', 'CongressController@getCongressById');
+        Route::get('', 'CongressController@getMinimalCongressById');
+        Route::get('update-reponses', 'UserController@updateAllResponses');
         Route::get('/details', 'CongressController@getCongressDetailsById');
         Route::post('switchRoom', 'CongressController@switchUsersRoom');
         Route::post('addItemsEvaluation', 'CongressController@addItemsEvaluation')->middleware('assign.guard:admins');
@@ -190,6 +223,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+        Route::post('badge/catalogues', 'PDFController@generateBadgePDF');
         Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
         Route::post('attestation-submission/activate', 'SubmissionController@activateAttestationByCongressByType')->middleware("admin");
         Route::post('attestation-submission/delete', 'SubmissionController@deleteAttestationByCongress')->middleware("admin");
@@ -207,6 +241,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
 
 
         Route::get('program_pdf', 'PDFController@generateProgramPDF');
+        Route::get('/{meeting_id}/planning-program-pdf', 'PDFController@generateMeetingPlanningPDF');
         Route::group(['prefix' => 'stand'], function () {
             Route::get('', 'StandController@getStands');
             Route::get('/getStandById/{stand_id}', 'StandController@getStandById');
@@ -268,6 +303,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('feedback-start', 'FeedbackController@setFeedbackStart')->middleware('admin');
         Route::get('feedback-responses', 'FeedbackController@getFeedbackResponses')->middleware('admin');
     });
+
 });
 
 Route::group(['prefix' => 'stand', "middleware" => ['assign.guard:admins']], function () {
@@ -356,7 +392,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('listUsers', 'UserController@getAllUsersByCongressFrontOfficeWithPagination')->middleware('assign.guard:users');
             Route::get('listUsersPWA', 'UserController@getAllUsersByCongressPWAWithPagination')->middleware('assign.guard:users');
             Route::get('random-users-pwa', 'UserController@getRandomUsers')->middleware('assign.guard:users');              
-            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');      
+            Route::get('user-details/{user_id}', 'UserController@getResponseUserInformations');
             Route::group(['prefix' => 'access'], function () {
                 Route::group(['prefix' => '{access_id}'], function () {
                     Route::get('list', 'UserController@getUsersByAccess');
@@ -371,6 +407,8 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
             Route::get('stands', 'StandController@getStandsByCongress');
             Route::get('random-stands-pwa', 'StandController@getRandomStands');
             Route::get('participants-number', 'CongressController@getNumberOfParticipants');
+            Route::get('filter-values', 'CongressController@getformInputByFilter');
+            Route::get('filter-values-byKey', 'CongressController@getKeyFormInputByFilter');
         });
         Route::get('set-attestation-request-status/{user_id}/{done}', 'UserController@setAttestationRequestStatus');
     });
@@ -424,7 +462,8 @@ Route::group(['prefix' => 'admin', "middleware" => ["assign.guard:admins"]], fun
                 Route::get('attestation-divers', 'CongressController@getAttestationDiversByCongress');
                 Route::get('get-fmenus', 'CongressController@getGenericFmenus');
                 Route::post('edit-fmenus', 'CongressController@editFmenus');
-
+                Route::post('set-fix-tables', 'MeetingController@setFixTables');
+                Route::post('set-meetings-dates', 'MeetingController@setMeetingsDate');
                 Route::group(['prefix' => 'landing-page'], function () {
                     Route::post('edit-config', 'CongressController@editConfigLandingPage');
                     Route::get('get-config', 'CongressController@getConfigLandingPage');

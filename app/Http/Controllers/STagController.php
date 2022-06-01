@@ -21,7 +21,7 @@ class STagController extends Controller
 
     public function addSTag($congress_id, Request $request)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $this->stagServices->addSTag($request, $congress_id);
@@ -31,7 +31,7 @@ class STagController extends Controller
 
     public function getSTags($congress_id)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $stags = $this->stagServices->getSTags($congress_id);

@@ -74,6 +74,12 @@ class SubmissionTest extends TestCase
             'meeting_duration' => $this->faker->numberBetween(0, 60),
             'pause_duration' => $this->faker->numberBetween(0, 30),
             'nb_meeting_table' => $this->faker->numberBetween(0, 1),
+            'pack_title' => "Choisir un pack",
+            'pack_title_en' => "Choose a pack",
+            'access_title' => "Veuillez sélectionner un (des) ticket(s)",
+            'access_title_en' => "Choose Ticket",
+            'prise_charge_title' => "Prise en charge",
+            'prise_charge_title_en' => "Supported by"
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -112,7 +118,12 @@ class SubmissionTest extends TestCase
             'meeting_duration' => $this->faker->numberBetween(0, 60),
             'pause_duration' => $this->faker->numberBetween(0, 30),
             'nb_meeting_table' => $this->faker->numberBetween(0, 1),
-
+            'pack_title' => "Choisir un pack",
+            'pack_title_en' => "Choose a pack",
+            'access_title' => "Veuillez sélectionner un (des) ticket(s)",
+            'access_title_en' => "Choose Ticket",
+            'prise_charge_title' => "Prise en charge",
+            'prise_charge_title_en' => "Supported by"
         ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
@@ -154,6 +165,8 @@ class SubmissionTest extends TestCase
             'max_words' => $this->faker->numberBetween(100, 500),
             'num_evaluators' => $this->faker->numberBetween(1, 5),
             'show_file_upload' => $this->faker->numberBetween(0, 1),
+            'explanatory_paragraph' => $this->faker->paragraph,
+            'explanatory_paragraph_en' => $this->faker->paragraph
         ];
     }
 }

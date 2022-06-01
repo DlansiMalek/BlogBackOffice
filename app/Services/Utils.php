@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Facades\Cache;
 
 
 class Utils
@@ -311,5 +312,19 @@ class Utils
         $object['first_name'] = isset($name[0]) ? $name[0] : '-';
         $object['last_name']  = isset($name[1]) ? $name[1] : '-';
         return $object;
+    }
+
+    public static function convertDateTimeToTime($date)
+    {
+        return (new DateTime($date))->format('h:i:s A');
+    }
+
+    public static function convertTimeTo24HoursFormat($time)
+    {
+        return date("H:i:s", strtotime($time));
+    }
+
+    public static function putCacheData ($key, $data) {
+        Cache::put($key, $data, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
     }
 }

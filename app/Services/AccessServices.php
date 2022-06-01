@@ -17,10 +17,11 @@ use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
 use App\Models\UserAccess;
+use App\Models\AccessPresence;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Mpdf\Tag\Select;
+use Illuminate\Support\Facades\Cache;
 
 class AccessServices
 {
@@ -40,6 +41,7 @@ class AccessServices
         $access->start_date = $request->input("start_date");
         $access->end_date = $request->input("end_date");
         $access->access_type_id = $request->input('access_type_id');
+        $access->display_time = $request->input('display_time');
         if ($request->has('price')) $access->price = $request->input("price");
         if ($request->has('packless')) $access->packless = $request->input("packless") ? 1 : 0;
         if ($request->has('description')) $access->description = $request->input("description");
@@ -82,6 +84,7 @@ class AccessServices
         if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         if ($request->has('banner')) $access->banner = $request->input('banner');
+        $access->display_time = $request->input('display_time');
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
 
@@ -91,8 +94,7 @@ class AccessServices
         if ($request->has('is_online'))
             $access->is_online = $request->input('is_online');
             if ($request->has('max_online_participants')) $access->max_online_participants = $request->input('max_online_participants');
-
-
+        
         $access->update();
         return $access;
     }
@@ -193,6 +195,19 @@ class AccessServices
                 'speakers', 'chairs', 'topic', 'resources', 'type',
                 'sub_accesses.speakers', 'sub_accesses.chairs', 'sub_accesses.topic', 'sub_accesses.resources', 'sub_accesses.type', 'speaker'])
             ->find($access_id);
+    }
+
+    public function getCachedByCongressId ($congress_id) {
+        $cacheKey = 'accesses-congress-' . $congress_id;
+
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->getByCongressId($congress_id);
+            Utils::putCacheData($cacheKey, $congress);
+        }
+
+        return $congress;
     }
 
     public function getByCongressId($congress_id)
@@ -458,6 +473,14 @@ class AccessServices
             $accesss->nb_participants = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0;
             }));
+            $accesss->nb_confirmed = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
+                if (sizeof($item['user_congresses']) > 0) {
+                    $isConfirmed = array_filter($item['user_congresses'], function ($q) {
+                        return $q['will_be_present'] == 1;
+                    });
+                    return $isConfirmed;
+                }
+            }));
             $accesss->nb_presence = sizeof(array_filter(json_decode($accesss->participants, true), function ($item) {
                 return sizeof($item['user_congresses']) > 0 && $item['pivot']['isPresent'] == 1;
             }));
@@ -680,5 +703,36 @@ class AccessServices
         ->offset($offset)->paginate($perPage);
         
         return $accesses;
+    }
+
+    public function getAllPresentUserAccessByAccessId($accessId)
+    {
+        return UserAccess::where('access_id', '=', $accessId)
+            ->where('isPresent', '=', 1)
+            ->get();
+    }
+
+    public function updateUserAccessDuration($accessId, $accessEndDate)
+    {
+        $userAccesses = $this->getAllPresentUserAccessByAccessId($accessId);
+        foreach($userAccesses as $userAccess) {
+            $accessPresence  = $this->getAccessPresence($userAccess->user_id, $userAccess->access_id);
+            if ($accessPresence) {
+                if ($accessPresence->left_at) {
+                    $timeDiff = Utils::diffMinutes($accessPresence->left_at, $accessPresence->entered_at);
+                } else {
+                    $timeDiff = Utils::diffMinutes($accessEndDate, $accessPresence->entered_at);
+                }
+            }
+            $userAccess->duration = $userAccess->duration + $timeDiff;
+            $userAccess->update();
+        }
+    }
+
+    public function getAccessPresence($userId, $accessId)
+    {
+        return AccessPresence::where('user_id', '=', $userId)
+        ->where('access_id', '=', $accessId)
+        ->first();
     }
 }
