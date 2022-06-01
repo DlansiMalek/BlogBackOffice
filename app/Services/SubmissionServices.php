@@ -169,12 +169,15 @@ class SubmissionServices
         ]);
     }
 
-    public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id, $status, $perPage = null, $search = null, $tri = null, $order = null)
+    public function getCongressSubmissionForAdmin($admin, $congress_id, $privilege_id, $status, $perPage = null, $search = null, $tri = null, $order = null, $theme_id = null)
     {
         if ($privilege_id == config('privilege.Admin') || $privilege_id == config('privilege.Comite_d_organisation')) {
             $allSubmission = $this->renderSubmissionForAdmin()
                 ->when($status !== 'null', function ($query) use ($status) {
                     $query->where('status', '=', $status);
+                })
+                ->when($theme_id !== 'null', function ($query) use ($theme_id) {
+                    $query->where('theme_id', '=', $theme_id);
                 })
                 ->where('congress_id', '=', $congress_id)
                 ->where(function ($query) use ($search) {

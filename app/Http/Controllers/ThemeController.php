@@ -33,7 +33,7 @@ class ThemeController extends Controller
         return $this->themeServices->getThemesByCongressId($congressId);
     }
     public function addExternalTheme($congressId, Request $request) {
-        if (!($congress = $this->congressServices->getCongressById($congressId))) {
+        if (!($congress = $this->congressServices->isExistCongress($congressId))) {
             return response()->json(['response' => 'bad request'], 400);
         }
         try {

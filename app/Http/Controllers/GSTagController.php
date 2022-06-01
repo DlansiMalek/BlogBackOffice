@@ -21,7 +21,7 @@ class GSTagController extends Controller
 
     public function addGSTag($congress_id, Request $request)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $this->gstagServices->addGSTag($request, $congress_id);
@@ -31,7 +31,7 @@ class GSTagController extends Controller
 
     public function getGSTags($congress_id)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $gstags = $this->gstagServices->getGSTags($congress_id);

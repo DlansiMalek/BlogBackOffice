@@ -19,6 +19,7 @@ use GuzzleHttp\Client;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Exception;
 
@@ -319,22 +320,34 @@ class AdminController extends Controller
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
-        if ($admin->privilege_id == config('privilege.Admin')) {
-            $menus = $this->getAdminMenus($admin->admin_id);
-        } else {
-            if (count($admin->admin_congresses) > 0) {
-                $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
-                if (count($menus) == 0) {
-                    if ($admin->admin_congresses[0]->privilege_id == config('privilege.Organisme')) {
-                        $menus = $this->offreServices->getMenusByPrivilegeByCongress(null, $admin->admin_congresses[0]->privilege_id);
-                    } else {
-                    $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
-                    $menus = $this->getAdminMenus($admin_congress->admin_id);
+
+        $cacheKeyAdmin = 'admin-info' . $congress_id;
+        $cacheKeyMenu = 'menu-info' . $congress_id;
+
+        if (Cache::has($cacheKeyAdmin) && Cache::has($cacheKeyMenu)) {
+            $admin = Cache::get($cacheKeyAdmin);
+            $menus = Cache::get($cacheKeyMenu);
+        }else {
+            $admin = $this->adminServices->getAdminWithCurrentCongressFirst($admin->admin_id, $congress_id);
+            if ($admin->privilege_id == config('privilege.Admin')) {
+                $menus = $this->getAdminMenus($admin->admin_id);
+            } else {
+                if (count($admin->admin_congresses) > 0) {
+                    $menus = $this->offreServices->getMenusByPrivilegeByCongress($admin->admin_congresses[0]->congress_id, $admin->admin_congresses[0]->privilege_id);
+                    if (count($menus) == 0) {
+                        if ($admin->admin_congresses[0]->privilege_id == config('privilege.Organisme')) {
+                            $menus = $this->offreServices->getMenusByPrivilegeByCongress(null, $admin->admin_congresses[0]->privilege_id);
+                        } else {
+                        $admin_congress = $this->adminServices->getAdminOfCongress($congress_id);
+                        $menus = $this->getAdminMenus($admin_congress->admin_id);
+                        }
                     }
                 }
             }
+            Utils::putCacheData($cacheKeyAdmin, $admin);
+            Utils::putCacheData($cacheKeyMenu, $menus);
         }
+
         return response()->json(['admin' => $admin, 'menus' => $menus]);
     }
 
@@ -609,7 +622,7 @@ class AdminController extends Controller
 
         $congressId = $request->input('congressId');
 
-        if (!$congress = $this->congressService->getCongressById($congressId)) {
+        if (!$congress = $this->congressService->getCachedMinimalCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 

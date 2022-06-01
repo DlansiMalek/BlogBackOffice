@@ -45,7 +45,11 @@ class ConfigCongress extends Model
         'pause_duration',
         'default_country',
         'nb_meeting_table',
-        'is_visible_price'
+        'is_visible_price',
+        'registration_description',
+        'registration_description_en',
+        'location_link'
+
         
     ];
 

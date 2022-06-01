@@ -1,7 +1,7 @@
 FROM php:7.3-fpm
 
 # Set the locale
-RUN apt-get clean && apt-get update && apt-get install -y locales locales-all wget
+RUN apt-get clean && apt-get update && apt-get install -y locales locales-all wget supervisor
 RUN locale-gen fr_FR
 RUN locale-gen fr_FR.UTF-8
 RUN update-locale
