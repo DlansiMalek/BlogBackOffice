@@ -107,7 +107,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }
 
-    /* TODO Verify
+    // TODO Verify
     public function testSaveUserInscriptionEventWithPack()
     {
     $congress = factory(Congress::class)->create();
@@ -124,7 +124,6 @@ class UserTest extends TestCase
     ['packIds' => [$pack->pack_id]])
     ->assertStatus(200);
     }
-     */
 
     public function testSaveUserInscriptionEventAccessObligated()
     {
@@ -176,7 +175,7 @@ class UserTest extends TestCase
         $this->assertCount(1, $dataResponse['data']);
     }
 
-    /* public function testGetUsersByCongressPaginationWithSearchPayment()
+ public function testGetUsersByCongressPaginationWithSearchPayment()
     {
         // 1 user has payed and the other one didn't
         $search = "payé";
@@ -198,8 +197,8 @@ class UserTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(1, $dataResponse['data']);
     }
- */
-/*     public function testGetUsersByCongressPaginationWithSearchStatus()
+ 
+     public function testGetUsersByCongressPaginationWithSearchStatus()
     {
         // 2 users are accepted
         $status = "accepted";
@@ -226,8 +225,8 @@ class UserTest extends TestCase
         log::info($dataResponse);
         $this->assertCount(2, $dataResponse['data']);
     }
- */
- /*    public function testGetUsersByCongressPaginationWithSearchCountry()
+ 
+    public function testGetUsersByCongressPaginationWithSearchCountry()
     {
         // Only one user is from tunisia
         $search = "Tunisia";
@@ -250,7 +249,7 @@ class UserTest extends TestCase
         $dataResponse = json_decode($response->getContent(), true);
         $this->assertCount(1, $dataResponse['data']);
     }
-*/ 
+
     public function testSaveUserRegistration()
     {
         $congress = factory(Congress::class)->create();
@@ -263,7 +262,7 @@ class UserTest extends TestCase
             ->assertStatus(200);
     }
 
-   /* public function testSaveUsersFromExcel()
+    public function testSaveUsersFromExcel()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -272,9 +271,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }*/
+    }
 
-   /* public function testSaveUsersFromExcelWithOrganization()
+    public function testSaveUsersFromExcelWithOrganization()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -284,9 +283,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }*/
+    }
 
-  /*  public function testSaveUsersFromExcelWithAccesses()
+    public function testSaveUsersFromExcelWithAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -298,9 +297,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }*/
+    }
 
-   /* public function testSaveUsersFromExcelWithOrganizationAndAccesses()
+    public function testSaveUsersFromExcelWithOrganizationAndAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -313,9 +312,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }*/
+    }
 
-  /*  public function testSaveUsersFromExcelWithFormInputs()
+    public function testSaveUsersFromExcelWithFormInputs()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -354,9 +353,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }*/
+    }
 
-   /* public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
+    public function testSaveUsersFromExcelWithFormInputsAndOrganizationAndAccesses()
     {
         $congress = factory(Congress::class)->create();
         $congressConfig = factory(ConfigCongress::class)
@@ -391,9 +390,9 @@ class UserTest extends TestCase
         $this->post('api/user/congress/' . $congress->congress_id . '/save-excel', $data)
             ->assertStatus(200);
 
-    }*/
+    }
     
-   /* public function testgetAllUsersByCongressFrontOfficeWithPagination()
+    public function testgetAllUsersByCongressFrontOfficeWithPagination()
     {
         //  api/user/congress/congress_id/listUsers'
         $user1 = factory(User::class)->create();
@@ -426,7 +425,7 @@ class UserTest extends TestCase
        $this->assertEquals($dataResponse['data'][1]['img_base64'], $userVerification->img_base64);
        $this->assertCount(2, $dataResponse['data']);      
 
-    }*/
+    }
 
     public function testAddUserNetwork() 
     {
@@ -515,7 +514,7 @@ class UserTest extends TestCase
     }
 
     // TODO Verify
-    /*public function testSaveUserInscriptionEventWithQuestionsNotRequired()
+    public function testSaveUserInscriptionEventWithQuestionsNotRequired()
     {
     $congress = factory(Congress::class)->create();
     $congressConfig = factory(ConfigCongress::class)
@@ -526,10 +525,10 @@ class UserTest extends TestCase
     $this->withHeader('Authorization', 'Bearer ' . $token)
     ->post('api/user/congress/' . $congress->congress_id . '/registerV2')
     ->assertStatus(200);
-    }*/
+    }
 
     // TODO Verify
-    /*public function testSaveUserInscriptionEventWithQuestionsRequired()
+    public function testSaveUserInscriptionEventWithQuestionsRequired()
 {
 $congress = factory(Congress::class)->create();
 $congressConfig = factory(ConfigCongress::class)
@@ -552,7 +551,7 @@ $this->withHeader('Authorization', 'Bearer ' . $token)
 'values' => []
 ]
 ])->assertStatus(200);
-}*/
+}
 
     public function testGetUsersByCongressPaginationWithSearchName()
     {
