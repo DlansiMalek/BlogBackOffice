@@ -190,7 +190,7 @@ class MailServices
     }
 
 
-    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null )
+    public function sendMail($view, $user, $congress, $objectMail, $fileAttached, $userMail = null, $toSendEmail = null, $fileName = null)
     {
         //TODO detect email sended user
         $email = $toSendEmail ? $toSendEmail : $user->email;
@@ -208,7 +208,10 @@ class MailServices
             $userMail->status = 2;
             $userMail->update();
         }
-        if ($offre != null && $offre->is_mail_pro == 1) {
+
+        $useSendInBlue = env('USE_SENDINBLUE', false);
+
+        if ($useSendInBlue || ($offre != null && $offre->is_mail_pro == 1)) {
             $this->sendMailPro($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
         } else {
             $this->sendMailBasic($view, $congress, $objectMail, $fileAttached, $email, $pathToFile, $userMail, $fileName);
@@ -315,6 +318,8 @@ class MailServices
         }
         $fromMailName = $congress != null && $congress->config && $congress->config->from_mail ? $congress->config->from_mail : env('MAIL_FROM_NAME', 'Eventizer');
         $replyTo = $congress != null && $congress->config != null && $congress->config->replyto_mail!= null ? $congress->config->replyto_mail : env('MAIL_USERNAME', 'contact@eventizer.io');
+        $tags = $congress != null ? $congress->congress_id : -1;
+        
         /* 
             TODO removing  
             $logMail = env('MAIL_LOG', 'logs@eventizer.io');
@@ -337,7 +342,7 @@ class MailServices
             /*'bcc' => array(
                 array('email' => $logMail)
             ),*/
-            'tags' => array(strval($congress->congress_id))
+            'tags' => array(strval($tags))
         );
         if ($fileAttached) {
             $file = array('attachment' => array(

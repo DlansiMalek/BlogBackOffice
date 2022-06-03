@@ -22,6 +22,7 @@ use App\Models\UserMail;
 use App\Models\UserPack;
 use App\Models\WhiteList;
 use App\Models\FormInputValue;
+use App\Models\MeetingTable;
 use App\Models\UserNetwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -1927,23 +1928,30 @@ class UserServices
         $users = User::whereHas('user_congresses', function ($query) use ($congressId, $search, $user_id, $isSelected) {
             $query->where('congress_id', '=', $congressId);
             $query->where('user_id', '!=', $user_id);
-            $query->where('isSelected', '=', $isSelected);
-
+            if ($isSelected) {
+                $query->where('isSelected', '=', $isSelected);
+            }
+            
             if ($search != "") {
-                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%')
-                ->where('isSelected', '=', $isSelected);
-                $query->orWhereRaw('lower(chat_info) like (?)', ["%{$search}%"])
-                ->where('congress_id', '=', $congressId)
-                ->where('isSelected', '=', $isSelected);             
+                $query->where(DB::raw('CONCAT(first_name," ",last_name)'), 'like', '%' . $search . '%');
+                if ($isSelected) {
+                    $query->where('isSelected', '=', $isSelected);
+                }           
             }
           
         })
-            ->orWhere(function ($query) use ($congressId, $search, $user_id) {
+            ->orWhere(function ($query) use ($congressId, $search, $user_id, $isSelected) {
                 if ($search != "") {
                     $query->orWhereHas('userResponses', function ($q) use ($congressId, $search, $user_id) {
                         $q->where('congress_id', '=', $congressId)
                         ->where('user_id', '!=', $user_id);
                         $q->whereRaw('lower(response) like (?)', ["%{$search}%"]);
+                    })->whereHas('user_congresses', function ($query) use ($congressId, $user_id, $isSelected) {
+                        $query->where('congress_id', '=', $congressId);
+                        $query->where('user_id', '!=', $user_id);
+                        if ($isSelected) {
+                            $query->where('isSelected', '=', $isSelected);
+                        }
                     });
                 }
             })
@@ -1974,7 +1982,7 @@ class UserServices
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
                     $q->where('form_input_value_id', '=', $filterBy);
                 }
-            })
+            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
             ->paginate($perPage);
         return  $users;
     }
@@ -2105,7 +2113,7 @@ class UserServices
             if ($congressTypeId == 1 || $congressTypeId == 2) {
                 $query->where('isSelected', '=', 1);
             }
-        })
+        })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
             ->with(['user_congresses'=> function ($query) use ($congressId){
                 $query->where('congress_id', '=', $congressId);
             }])
