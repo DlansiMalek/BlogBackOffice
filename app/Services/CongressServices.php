@@ -6,6 +6,7 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
+use App\Models\UserAccess;
 use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
@@ -23,7 +24,6 @@ use App\Models\Stand;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
-use App\Models\UserAccess;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -207,6 +207,9 @@ class CongressServices
                 "attestation",
                 "form_inputs.type",
                 "form_inputs.values",
+                'ConfigSubmission' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
                 "form_inputs.question_reference"=> function ($query) {
                     $query->with(['reference', 
                     'response_reference'  => function ($q) {
