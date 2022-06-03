@@ -1232,7 +1232,7 @@ class UserController extends Controller
 
                         if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8 || $input->form_input_type_id == 7 || $input->form_input_type_id == 9) {
                             $formInputValues = $this->userServices->getFormInputValues($input->form_input_id);
-                            if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8) {
+                            if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8 || $input->form_input_type_id == 7) {
                                 $reponse->response = '';
                                 $reponse->save();
                                 $user_responses = explode(";", $user[$key]);
