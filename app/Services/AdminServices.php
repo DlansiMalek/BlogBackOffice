@@ -438,29 +438,6 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail = null)
-    {
-
-        $email = $admin ? $admin->email : $customEmail;
-        $pathToFile = storage_path() . "/app/badge.png";
-
-        try {
-            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
-                $message->subject($objectMail);
-                $message->setBody($view, 'text/html');
-                if ($fileAttached)
-                    $message->attach($pathToFile);
-                $message->to($email)->subject($objectMail);
-            });
-        } catch (\Exception $exception) {
-            Storage::delete('app/badge.png');
-            return 1;
-        }
-        Storage::delete('app/badge.png');
-        return 1;
-    }
-
     public function addClient($admin, $request)
     {
         if (!$admin)

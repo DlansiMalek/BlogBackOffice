@@ -30,7 +30,7 @@ class ContactUsController extends Controller
         if (!$mailAdmin) {
             return response()->json(['message' => 'Mail not found'], 400);
         }
-        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, null, null, null, null, null, $contact), null, $contact->subject, null, null, env('MAIL_USERNAME', 'contact@eventizer.io'));
+        $this->mailServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, null, null, null, null, null, $contact), null, null, $contact->subject, false, null, env('MAIL_USERNAME', 'contact@eventizer.io'));
         return response()->json(['message' => 'mail sent with success']);
     }
 }

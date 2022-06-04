@@ -537,7 +537,7 @@ class AdminController extends Controller
             }
            
             $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-            $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
+            $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $admin, $congress, $mail->object, false);
         }
 
         return response()->json($admin_congress);
@@ -651,7 +651,8 @@ class AdminController extends Controller
                     );
                 }
                 $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-                $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, $fileAttached);
+                $filename = 'badge.png';
+                $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $admin, $congress, $mail->object, $fileAttached, null, null, $filename);
             }
         }
         return response()->json(['message' => 'sending credentials mails']);
@@ -754,8 +755,7 @@ class AdminController extends Controller
         $admin = $this->adminServices->addClient($admin, $request);
 
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
-
-        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), null, $mailAdmin->object, $admin, null, null);
+        $this->mailServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, $linkBackOffice), $admin, null, $mailAdmin->object, false);
 
         return response()->json(['message' => 'Client added success', 'admin' => $admin]);
     }

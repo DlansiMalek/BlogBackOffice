@@ -72,7 +72,7 @@ class OffreController extends Controller
         $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
         if ($mailAdmin) {
             $paymentLink = UrlUtils::getUrlEventizerWeb() . "/#/auth/admin/" . $admin->admin_id . "/upload-payement";
-            $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, null, $paymentLink), null, $mailAdmin->object, $admin, null, null);
+            $this->mailServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, null, $paymentLink), $admin, null, $mailAdmin->object, false);
         }
         return response()->json(['messsage' => 'offre created successfully', 'offre' => $offre], 200);
     }

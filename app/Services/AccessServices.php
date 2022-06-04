@@ -17,10 +17,12 @@ use App\Models\AccessType;
 use App\Models\Topic;
 use App\Models\User;
 use App\Models\UserAccess;
+use App\Models\AccessPresence;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+
 class AccessServices
 {
 
@@ -701,5 +703,36 @@ class AccessServices
         ->offset($offset)->paginate($perPage);
         
         return $accesses;
+    }
+
+    public function getAllPresentUserAccessByAccessId($accessId)
+    {
+        return UserAccess::where('access_id', '=', $accessId)
+            ->where('isPresent', '=', 1)
+            ->get();
+    }
+
+    public function updateUserAccessDuration($accessId, $accessEndDate)
+    {
+        $userAccesses = $this->getAllPresentUserAccessByAccessId($accessId);
+        foreach($userAccesses as $userAccess) {
+            $accessPresence  = $this->getAccessPresence($userAccess->user_id, $userAccess->access_id);
+            if ($accessPresence) {
+                if ($accessPresence->left_at) {
+                    $timeDiff = Utils::diffMinutes($accessPresence->left_at, $accessPresence->entered_at);
+                } else {
+                    $timeDiff = Utils::diffMinutes($accessEndDate, $accessPresence->entered_at);
+                }
+            }
+            $userAccess->duration = $userAccess->duration + $timeDiff;
+            $userAccess->update();
+        }
+    }
+
+    public function getAccessPresence($userId, $accessId)
+    {
+        return AccessPresence::where('user_id', '=', $userId)
+        ->where('access_id', '=', $accessId)
+        ->first();
     }
 }
