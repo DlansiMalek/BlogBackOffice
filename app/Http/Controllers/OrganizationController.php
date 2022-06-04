@@ -107,10 +107,10 @@ class OrganizationController extends Controller
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
         if ($mailtype = $this->congressServices->getMailType('organization')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
+                $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $admin, $congress, $mail->object, false);
             } else {
                 if ($mail = $this->congressServices->getMailOutOfCongress($mailtype->mail_type_id)) {
-                    $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
+                    $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $admin, $congress, $mail->object, false);
                 }
             }
         }

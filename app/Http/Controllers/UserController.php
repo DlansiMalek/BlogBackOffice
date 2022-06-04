@@ -2000,7 +2000,7 @@ class UserController extends Controller
             $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
             $template = Utils::getDefaultMailNotifNewRegister();
             $objectMail = "Nouvelle Inscription";
-            $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
+            $this->mailServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), null, $congress, $objectMail, false, null, $mail);
         }
         $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
