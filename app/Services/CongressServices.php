@@ -604,11 +604,11 @@ class CongressServices
             $configSubmission = new ConfigSubmission();
         }
         $configSubmission->congress_id = $congressId;
-        $configSubmission->max_words = $submissionData['max_words'];
-        $configSubmission->num_evaluators = $submissionData['num_evaluators'];
-        $configSubmission->start_submission_date = $submissionData['start_submission_date'];
-        $configSubmission->end_submission_date = $submissionData['end_submission_date'];
-        $configSubmission->show_file_upload = $submissionData['show_file_upload'];
+        $configSubmission->max_words = array_key_exists('max_words', $submissionData)?$submissionData['max_words']: null;
+        $configSubmission->num_evaluators = array_key_exists('num_evaluators', $submissionData)?$submissionData['num_evaluators']: null;
+        $configSubmission->start_submission_date = array_key_exists('start_submission_date', $submissionData)?$submissionData['start_submission_date']: null;
+        $configSubmission->end_submission_date = array_key_exists('end_submission_date', $submissionData)?$submissionData['end_submission_date']: null;
+        $configSubmission->show_file_upload = array_key_exists('show_file_upload', $submissionData)?$submissionData['show_file_upload']: null;
         $configSubmission->explanatory_paragraph = array_key_exists('explanatory_paragraph', $submissionData)?$submissionData['explanatory_paragraph']: null;
         $configSubmission->explanatory_paragraph_en = array_key_exists('explanatory_paragraph_en', $submissionData)?$submissionData['explanatory_paragraph_en']: null;
         $configSubmission->save();
