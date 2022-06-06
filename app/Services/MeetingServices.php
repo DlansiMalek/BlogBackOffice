@@ -237,13 +237,13 @@ class MeetingServices
     {
         return Meeting::with(['user_meeting' => function ($query) use ($congress_id, $search) {
             $query->with(['organizer'  => function ($query) use ($search) {
-                $query->with(['country']);
+                $query->with(['country', 'user_congresses']);
             }, 'participant' => function ($query) use ($congress_id, $search) {
                 $query->with(['user_mails' => function($q) use ($congress_id) {
                     $q->whereHas('meeting', function($q) use ($congress_id) {
                         $q->where('congress_id','=', $congress_id);
                     });
-                }, 'country']);
+                }, 'country','user_congresses']);
             }]);
         }, "meetingtable"])->where(function ($query) use ($startDate, $endDate, $search) {
             if ($search !== '' && $search !== null && $search !== 'null') {
