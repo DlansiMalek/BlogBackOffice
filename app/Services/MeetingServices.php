@@ -236,14 +236,18 @@ class MeetingServices
     public function getRequestDetailsPagination($congress_id, $per_page, $startDate, $endDate, $search)
     {
         return Meeting::with(['user_meeting' => function ($query) use ($congress_id, $search) {
-            $query->with(['organizer'  => function ($query) use ($search) {
-                $query->with(['country', 'user_congresses']);
+            $query->with(['organizer'  => function ($query) use ($congress_id) {
+                $query->with(['country', 'user_congresses' => function ($query) use ($congress_id) {
+                    $query->where('congress_id','=', $congress_id);
+                }]);
             }, 'participant' => function ($query) use ($congress_id, $search) {
                 $query->with(['user_mails' => function($q) use ($congress_id) {
                     $q->whereHas('meeting', function($q) use ($congress_id) {
                         $q->where('congress_id','=', $congress_id);
                     });
-                }, 'country','user_congresses']);
+                }, 'country','user_congresses'  => function ($query) use ($congress_id) {
+                    $query->where('congress_id','=', $congress_id);
+                }]);
             }]);
         }, "meetingtable"])->where(function ($query) use ($startDate, $endDate, $search) {
             if ($search !== '' && $search !== null && $search !== 'null') {
