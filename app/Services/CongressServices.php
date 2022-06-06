@@ -608,7 +608,7 @@ class CongressServices
         $configSubmission->num_evaluators = array_key_exists('num_evaluators', $submissionData)?$submissionData['num_evaluators']: null;
         $configSubmission->start_submission_date = array_key_exists('start_submission_date', $submissionData)?$submissionData['start_submission_date']: null;
         $configSubmission->end_submission_date = array_key_exists('end_submission_date', $submissionData)?$submissionData['end_submission_date']: null;
-        $configSubmission->show_file_upload = array_key_exists('show_file_upload', $submissionData)?$submissionData['show_file_upload']: null;
+        $configSubmission->show_file_upload = array_key_exists('show_file_upload', $submissionData)?$submissionData['show_file_upload']: 1;
         $configSubmission->explanatory_paragraph = array_key_exists('explanatory_paragraph', $submissionData)?$submissionData['explanatory_paragraph']: null;
         $configSubmission->explanatory_paragraph_en = array_key_exists('explanatory_paragraph_en', $submissionData)?$submissionData['explanatory_paragraph_en']: null;
         $configSubmission->save();
