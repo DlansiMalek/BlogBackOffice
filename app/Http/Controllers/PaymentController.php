@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Payment;
 use App\Services\CongressServices;
 use App\Services\MailServices;
 use App\Services\PaymentServices;
@@ -89,7 +90,8 @@ class PaymentController extends Controller
                     $fileAttached = $this->sharedServices->saveBadgeInPublic($badge,
                         $user,
                         $user->qr_code,
-                        $userCongress->privilege_id);
+                        $userCongress->privilege_id,
+                        $congress->congress_id);
 
                 }
 
@@ -136,4 +138,36 @@ class PaymentController extends Controller
 
         return "";
     }
+
+
+    public function getPaymentsPagination(Request $request)
+    {
+        if (!$user = $this->userServices->retrieveUserFromToken()) {
+            return response()->json(['message' => 'user not found']);
+        }
+        $user_id = $user->user_id;
+        $offset = $request->query('offset', 0);
+        $perPage = $request->query('perPage', 6);
+        $search = $request->query('search', '');
+        $status = $request->query('status');
+        $method = $request->query('method');
+        $min = $request->query('min',null);
+        $max = $request->query('max',null);
+        return $this->paymentServices->getPaymentPagination($user_id, $offset, $perPage, $search, $status, $method, $min, $max);
+    }
+    
+    public function getPaymentByID($paymentID)
+    {
+        return $this->userServices->getPaymentByID($paymentID);
+    }
+
+    public function getPaymentByUserAndCongressID($congressID, $userID)
+    {
+        return $this->paymentServices->getPaymentByUserAndCongressID($congressID, $userID);
+    }
+
+
+
+
+
 }

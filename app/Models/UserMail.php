@@ -25,4 +25,16 @@ class UserMail extends Model
     public function mail(){
         return $this->belongsTo('App\Models\Mail','mail_id','mail_id');
     }
+
+    public function meeting(){
+        return $this->belongsTo('App\Models\Meeting','meeting_id','meeting_id');
+    }
 }
+
+/*
+--> status:
+0 : creation
+1 : success
+2 : waiting
+-1: error
+*/

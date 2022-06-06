@@ -40,9 +40,15 @@ class ConfigLP extends Model
         'link_partenaire',
         'show_date',
         'background_color',
-        'opacity_color'
+        'opacity_color',
+        'organizers_title',
+        'organizers_description',
+        'organizers_title_en',
+        'organizers_description_en',
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
+
+
 }

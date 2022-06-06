@@ -21,27 +21,46 @@ class AuthorServices
     {
     }
 
-    public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id, $email)
+    public function saveAuthor($first_name, $last_name, $rank, $submission_id, $service_id, $etablissement_id, $email ,$otherService = null, $otherEstablishment = null, $congressId = null)
     {
-
         $author = new Author();
         $author->first_name = $first_name;
         $author->last_name = $last_name;
         $author->email = $email;
         $author->rank = $rank;
         $author->submission_id = $submission_id;
-        $author->service_id = $service_id;
+        if ($service_id == -1) {
+            $newService = $this->addExternalService($otherService, $congressId);
+            $service_id = $newService->service_id;
+        }
+        $author->service_id =  $service_id;
+        if ($etablissement_id == -1) {
+            $newEtablissement = $this->addExternalEstablishment($otherEstablishment, $congressId);
+            $etablissement_id = $newEtablissement->etablissement_id;
+        }
         $author->etablissement_id = $etablissement_id;
         $author->save();
         return $author;
     }
 
-    public function editAuthor($existingAuthor, $author, $service, $etablissement)
+    public function editAuthor($existingAuthor, $author,$congressId)
     {
 
+        $existingAuthor->first_name = $author['first_name'];
+        $existingAuthor->last_name = $author['last_name'];
+        $existingAuthor->email = $author['email'];
         $existingAuthor->rank = $author['rank'];
-        $existingAuthor->service_id = $author['service_id'] == -1 ? $service : $author['service_id'];
-        $existingAuthor->etablissement_id = $author['etablissement_id'] == -1 ? $etablissement : $author['etablissement_id'];
+        if ($author['service_id'] == -1) {
+            $newService = $this->addExternalService($author['otherService'], $congressId);
+            $author['service_id'] = $newService->service_id;
+        }
+        $existingAuthor->service_id = $author['service_id'];
+
+        if ($author['etablissement_id'] == -1) {
+            $newEstablishment = $this->addExternalEstablishment($author['otherEstablishment'], $congressId);
+            $author['etablissement_id'] = $newEstablishment->etablissement_id;
+        }
+        $existingAuthor->etablissement_id = $author['etablissement_id'];
         $existingAuthor->update();
         return $existingAuthor;
     }
@@ -51,7 +70,7 @@ class AuthorServices
         $author->delete();
     }
 
-    public function saveAuthorsBySubmission($authors, $submission_id, $etablissements, $services)
+    public function saveAuthorsBySubmission($authors, $submission_id, $congressId = null)
     {
 
 
@@ -61,14 +80,17 @@ class AuthorServices
                 $authors[$i]['last_name'],
                 $authors[$i]['rank'],
                 $submission_id,
-                $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'],
-                $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id'],
-                $authors[$i]['email']
+                $authors[$i]['service_id'],
+                $authors[$i]['etablissement_id'],
+                $authors[$i]['email'],
+                $authors[$i]['otherService'],
+                $authors[$i]['otherEstablishment'],
+                $congressId
             );
         }
     }
 
-    public function editAuthors($existingAuthors, $authors, $submission_id, $services, $etablissements)
+    public function editAuthors($existingAuthors, $authors, $submission_id,$congressId)
     {
         //test si il exist que l'utilisateur seuelement
         if (sizeof($authors) >= 1) {
@@ -79,7 +101,7 @@ class AuthorServices
                     if (isset($authors[$i]['author_id'])) {
                         if ($existingAuthor['author_id'] == $authors[$i]['author_id']) {
                             $isExist = true;
-                            $this->editAuthor($existingAuthor, $authors[$i], $services[$i], $etablissements[$i]);
+                            $this->editAuthor($existingAuthor, $authors[$i], $congressId);
                         }
                     }
                 }
@@ -95,9 +117,12 @@ class AuthorServices
                         $authors[$i]['last_name'],
                         $authors[$i]['rank'],
                         $submission_id,
-                        $authors[$i]['service_id'] == -1 ? $services[$i] : $authors[$i]['service_id'],
-                        $authors[$i]['etablissement_id'] == -1 ? $etablissements[$i] : $authors[$i]['etablissement_id'],
-                        $authors[$i]['email']);
+                        $authors[$i]['service_id'],
+                        $authors[$i]['etablissement_id'],
+                        $authors[$i]['email'],
+                        $authors[$i]['otherService'],
+                        $authors[$i]['otherEstablishment'],
+                        $congressId);
                 }
             }
 
@@ -256,5 +281,57 @@ class AuthorServices
         $mailAuthor->save();
 
         return $mailAuthor;
+    }
+
+    public function getServicesByCongressId($congressId)
+    {
+        $services = Service::where('congress_id', '=', $congressId)
+        ->orWhere('congress_id', '=', null)
+        ->get();
+        return $services;
+    }
+
+    public function addExternalService($label, $congressId)
+    {
+        $serviceExist = $this->getServiceByLabelByCongressId($label, $congressId);
+        if (!$serviceExist) {
+            $service = new Service();
+            $service->label = $label;
+            $service->congress_id = $congressId;
+            $service->save();
+        } else {
+            $service = $serviceExist;
+        }
+        return $service;
+    }
+
+    public function getServiceByLabelByCongressId($label, $congressId)
+    {
+        $name = strtolower($label);
+        return Service::whereRaw('lower(label) like (?)', ["%{$name}%"])
+        ->where('congress_id', '=', $congressId)
+            ->first();
+    }
+
+    public function getEstablishmentByLabelByCongressId($label, $congressId)
+    {
+        $name = strtolower($label);
+        return Etablissement::whereRaw('lower(label) like (?)', ["%{$name}%"])
+        ->where('congress_id', '=', $congressId)
+            ->first();
+    }
+
+    public function addExternalEstablishment($label, $congressId)
+    {
+        $existEstablishment = $this->getEstablishmentByLabelByCongressId($label, $congressId);
+        if (!$existEstablishment) {
+            $etablissement = new Etablissement();
+            $etablissement->label = $label;
+            $etablissement->congress_id = $congressId;
+            $etablissement->save();
+        } else {
+            $etablissement = $existEstablishment;
+        }
+        return $etablissement;
     }
 }

@@ -72,7 +72,7 @@ class OffreController extends Controller
         $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
         if ($mailAdmin) {
             $paymentLink = UrlUtils::getUrlEventizerWeb() . "/#/auth/admin/" . $admin->admin_id . "/upload-payement";
-            $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, null, $paymentLink), null, $mailAdmin->object, $admin, null, null);
+            $this->mailServices->sendMAil($this->adminServices->renderMail($mailAdmin->template, $admin, null, null, null, $paymentLink), $admin, null, $mailAdmin->object, false);
         }
         return response()->json(['messsage' => 'offre created successfully', 'offre' => $offre], 200);
     }
@@ -100,7 +100,7 @@ class OffreController extends Controller
         if (!$privilege = $this->privilegeServices->getPrivilegeById($privilege_id)) {
             return response()->json(['message' => 'privilege not found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
         $this->offreServices->addAllPrivilegeMenuChildren($request->input('menus'),  $privilege_id, $congress_id);
@@ -112,7 +112,7 @@ class OffreController extends Controller
         if (!$privilege = $this->privilegeServices->getPrivilegeById($privilege_id)) {
             return response()->json(['message' => 'privilege not found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
         $menus = $this->offreServices->getMenusByPrivilegeByCongress($congress_id, $privilege_id);
@@ -124,7 +124,7 @@ class OffreController extends Controller
         if (!$privilege = $this->privilegeServices->getPrivilegeById($privilege_id)) {
             return response()->json(['message' => 'privilege not found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
         $this->offreServices->editPrivilegeMenuChildren($request->input('menus'),  $privilege_id, $congress_id);

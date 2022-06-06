@@ -11,7 +11,7 @@ class User extends Authenticatable implements JWTSubject
     use Notifiable;
     protected $table = 'User';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'code', 'email_verified', 'verification_code', 'rfid', 'country_id'];
+    protected $fillable = ['first_name', 'last_name', 'gender', 'mobile', 'qr_code', 'code', 'email_verified', 'verification_code', 'rfid', 'country_id', 'password_code', 'meeting_code'];
     public $timestamps = true;
 
     protected $hidden = ["password", "passwordDecrypt"];
@@ -140,8 +140,31 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Tracking::class, 'user_id', 'user_id');
     }
+    function meetingsOrganizer()
+    {
+        return $this->belongsToMany(Meeting::class,'User_Meeting','user_sender_id','meeting_id');
+    }
+
+    function meetingsParticipant()
+    {
+        return $this->belongsToMany(Meeting::class,'User_Meeting','user_receiver_id','meeting_id');
+    }
+
     function meetings()
     {
         return $this->belongsToMany(Meeting::class,'User_Meeting','user_id','meeting_id');
+    }
+
+    function network_member()
+    {
+        return $this->belongsToMany(User::class, 'User_Network', 'fav_id', 'user_id');
+    }
+
+    function table() {
+        return $this->hasMany(MeetingTable::class,'user_id','user_id');
+    }
+
+    function userResponses() {
+        return $this->hasMany(Response::class,'user_id','user_id');
     }
 }

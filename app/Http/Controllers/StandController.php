@@ -8,6 +8,7 @@ use App\Services\StandServices;
 use App\Services\VotingServices;
 use App\Services\AccessServices;
 use App\Services\AdminServices;
+use App\Services\STagServices;
 use Illuminate\Http\Request;
 
 class StandController extends Controller
@@ -17,26 +18,34 @@ class StandController extends Controller
     protected $congressServices;
     protected $votingServices;
     protected $adminServices;
+    protected $stagServices;
 
     function __construct(
         StandServices $standServices,
         CongressServices $congressServices,
         VotingServices $votingServices,
         AccessServices $accessServices,
-        AdminServices $adminServices
+        AdminServices $adminServices,
+        STagServices $stagServices
     ) {
         $this->standServices = $standServices;
         $this->congressServices = $congressServices;
         $this->votingServices = $votingServices;
         $this->accessServices = $accessServices;
         $this->adminServices = $adminServices;
+        $this->stagServices = $stagServices;
     }
 
-
-    public function getStands($congress_id)
+    
+    public function getStands($congress_id, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
+        }
+        if ($request->input('organization_id') && $request->input('organization_id') != "null") {
+            $organization_id = $request->input('organization_id');
+            $stands = $this->standServices->getStands($congress_id, null,  null,  null,  null,  null, $organization_id);
+            return response()->json($stands, 200);
         }
         $stands = $this->standServices->getStands($congress_id);
         return response()->json($stands, 200);
@@ -47,7 +56,7 @@ class StandController extends Controller
             return response()->json(["message" => "invalid request", "required inputs" => ['name', 'organization_id']], 404);
         }
 
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(["message" => "congress not found"], 404);
         }
 
@@ -56,7 +65,9 @@ class StandController extends Controller
             $stand = $this->standServices->getStandById($request->input('stand_id'));
         }
         $stand = $this->standServices->addStand($stand, $congressId, $request);
-        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id);
+        $this->stagServices->deleteOldSTags($stand->stand_id);
+        $this->stagServices->addAllStandTags($request->input('tag_id_selected'), $stand->stand_id);
+        $this->standServices->saveResourceStand($request->input('docs'), $stand->stand_id); 
         return response()->json($stand, 200);
     }
 
@@ -76,7 +87,7 @@ class StandController extends Controller
 
     public function getDocsByCongress($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -91,7 +102,7 @@ class StandController extends Controller
 
     public function getAllUrlsByCongressId($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -110,7 +121,7 @@ class StandController extends Controller
 
     public function modiyStatusStand($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -129,7 +140,7 @@ class StandController extends Controller
 
     public function getStatusStand($congressId, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -145,7 +156,7 @@ class StandController extends Controller
 
     public function getAllAccessStandByCongressId($congress_id)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
         $stands = $this->standServices->getAllStandByCongressId($congress_id);
@@ -153,19 +164,23 @@ class StandController extends Controller
         return response()->json(['stands' => $stands, 'accesses' => $accesses]);
     }
 
-    public function getStandsByCongress($congress_id)
+    public function getStandsByCongress($congress_id, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
-        $stands = $this->standServices->getCachedStands($congress_id);
+        $perPage = $request->query('perPage', 10);
+        $page = $request->query('page', 1);
+        $search = $request->query('search', '');
+        $stag_id = $request->query('stag_id','');
+        $stands = $this->standServices->getCachedStands($congress_id,$page,$perPage,$search,$stag_id);
         return response()->json($stands, 200);
     }
 
     public function get3DBooths($congressId, Request $request) {
 
         $perPage = $request->query('perPage', 10);
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -209,5 +224,15 @@ class StandController extends Controller
         $contentFile = $this->standServices->getStandContentFile($stand_content_file_id);
         $contentFile->delete();
         return response()->json(['response' => 'deleted successfully'], 200);
+    }
+
+    public function getRandomStands($congress_id, Request $request)
+    {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
+            return response()->json(['response' => 'Congress not found', 404]);
+        }
+        
+        $stands = $this->standServices->getRandomStands($congress_id);
+        return response()->json($stands, 200);
     }
 }

@@ -42,6 +42,3 @@ Tous les tests héritent du classe `TestCase.php` qui contient les initialisatio
 Les data sets sert à ajouter des données fake qu'on est besoin lors de tests. Ce sont des tests unitaires donc on va tester unitairement un WS et pas des WS ensemble dans le méme fonction.
 
 Pour créer un dataSet il suffit d'aller vers `database/factories` et créer une nouvelle classe avec le nommage `DomaineFactory.php`
-
-
-

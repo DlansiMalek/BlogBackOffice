@@ -327,15 +327,15 @@ class AdminServices
         return $personnel;
     }
 
-    public function editPersonnel($admin)
+    public function editPersonnel($admin, $oldAdmin)
     {
-        return Admin::where("admin_id", "=", $admin['admin_id'])
-            ->update([
-                'name' => $admin["name"],
-                'email' => $admin["email"],
-                'mobile' => $admin["mobile"]
-            ]);
+        $oldAdmin->name = $admin["name"];
+        $oldAdmin->email = $admin["email"];
+        $oldAdmin->mobile = $admin["mobile"];
+        $oldAdmin->update();
+        return $oldAdmin;
     }
+
 
     public function deleteAdminById($admin)
     {
@@ -438,29 +438,6 @@ class AdminServices
         $adminCongress->save();
     }
 
-    public function sendMail($view, $congress, $objectMail, $admin, $fileAttached, $customEmail = null)
-    {
-
-        $email = $admin ? $admin->email : $customEmail;
-        $pathToFile = storage_path() . "/app/badge.png";
-
-        try {
-            Mail::send([], [], function ($message) use ($email, $congress, $pathToFile, $fileAttached, $objectMail, $view) {
-                $message->from(env('MAIL_USERNAME', 'contact@eventizer.io'), env('MAIL_FROM_NAME', 'Eventizer'));
-                $message->subject($objectMail);
-                $message->setBody($view, 'text/html');
-                if ($fileAttached)
-                    $message->attach($pathToFile);
-                $message->to($email)->subject($objectMail);
-            });
-        } catch (\Exception $exception) {
-            Storage::delete('app/badge.png');
-            return 1;
-        }
-        Storage::delete('app/badge.png');
-        return 1;
-    }
-
     public function addClient($admin, $request)
     {
         if (!$admin)
@@ -505,6 +482,7 @@ class AdminServices
     {
         $template = str_replace('{{$admin-&gt;email}}', '{{$admin->email}}', $template);
         $template = str_replace('{{$admin-&gt;passwordDecrypt}}', '{{$admin->passwordDecrypt}}', $template);
+        $template = str_replace('{{$admin-&gt;password}}', '{{$admin->passwordDecrypt}}', $template);
         $template = str_replace('{{$admin-&gt;name}}', '{{$admin->name}}', $template);
         $template = str_replace('{{$user-&gt;first_name}}', '{{$user->first_name}}', $template);
         $template = str_replace('{{$user-&gt;last_name}}', '{{$user->last_name}}', $template);

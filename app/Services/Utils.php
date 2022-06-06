@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Facades\Cache;
 
 
 class Utils
@@ -221,9 +222,13 @@ class Utils
         return $res;
     }
 
-    public static function isValidSendMail($congress, $user)
+    public static function isValidSendMail($congress, $user, $to_all = 0)
     {
-        $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        if ($to_all == 1) {
+            $isUserValid = true;
+        } else {
+            $isUserValid = $congress->congress_type_id === 3 ? sizeof($user->user_congresses) > 0 : sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isSelected == 1 && (sizeof($user->payments) === 0 || $user->payments[0]->isPaid === 1);
+        }
         return $user->email != null && $user->email != "-" && $user->email != "" && $isUserValid;
     }
 
@@ -297,4 +302,29 @@ class Utils
         return $privilegeExpiredTs;
     }
 
+    public static function isValidStatus ($userMail) {
+        return $userMail->status != 1 && $userMail->status != 2;
+    }
+
+    public static function explodeString($object)
+    {
+        $name = explode(" ", $object['name']);
+        $object['first_name'] = isset($name[0]) ? $name[0] : '-';
+        $object['last_name']  = isset($name[1]) ? $name[1] : '-';
+        return $object;
+    }
+
+    public static function convertDateTimeToTime($date)
+    {
+        return (new DateTime($date))->format('h:i:s A');
+    }
+
+    public static function convertTimeTo24HoursFormat($time)
+    {
+        return date("H:i:s", strtotime($time));
+    }
+
+    public static function putCacheData ($key, $data) {
+        Cache::put($key, $data, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
+    }
 }

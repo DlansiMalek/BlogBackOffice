@@ -68,6 +68,11 @@ class Congress extends Model
         return $this->belongsToMany('App\Models\Admin', 'Admin_Congress', 'congress_id', 'admin_id');
     }
 
+    public function stags()
+    {
+        return $this->hasMany('App\Models\STag',  'stag_id', 'congress_id');
+    }
+
     public function payments()
     {
         return $this->hasMany('App\Models\Payment', 'congress_id', 'congress_id');
@@ -132,5 +137,9 @@ class Congress extends Model
     }
     function config_landing() {
         return $this->hasOne('App\Models\ConfigLP', 'congress_id', 'congress_id');
+    }
+
+    function meeting_dates() {
+        return $this->hasMany('App\Models\MeetingDates', 'congress_id', 'congress_id');
     }
 }

@@ -60,5 +60,6 @@ class MailAdminSeedTable extends Seeder
             'mail_type_admin_id' => 10
         ]);
       
+        
     }
 }

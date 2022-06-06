@@ -27,7 +27,7 @@ metadata:
 spec:
   revisionHistoryLimit: 2
   minReadySeconds: 5
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: backend
@@ -62,12 +62,12 @@ spec:
           envFrom:
             - secretRef:
                 name: backend-config
-          image: eu.gcr.io/eventizer/backend:app-${CI_COMMIT_REF_NAME}
+          image: ${AWS_DOCKER_REGISTRY}/eventizer/backend:app-${CI_COMMIT_REF_NAME}
           imagePullPolicy: Always
           name: artisan
       containers:
         - name: backend-app
-          image: eu.gcr.io/eventizer/backend:app-${CI_COMMIT_REF_NAME}
+          image: ${AWS_DOCKER_REGISTRY}/eventizer/backend:app-${CI_COMMIT_REF_NAME}
           envFrom:
             - secretRef:
                 name: backend-config
@@ -88,11 +88,10 @@ spec:
               port: 9000
           resources:
             limits:
-              cpu: 3
-              memory: 4G
+              cpu: 2
             requests:
               cpu: 1
-              memory: 2G
+              memory: 500Mi
           volumeMounts:
             - name: shared-files
               mountPath: /app
@@ -119,9 +118,11 @@ spec:
             tcpSocket:
               port: 80
           resources:
+            limits:
+              cpu: 1
             requests:
-              memory: 1G
-              cpu: 300m
+              memory: 500Mi
+              cpu: 500m
           volumeMounts:
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
@@ -165,8 +166,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: backend-${CI_COMMIT_REF_NAME}
-  minReplicas: 1
-  maxReplicas: 10
+  minReplicas: 3
+  maxReplicas: 16
   metrics:
     - type: Resource
       resource:

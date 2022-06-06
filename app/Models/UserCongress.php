@@ -9,7 +9,7 @@ class UserCongress extends Model
     public $timestamps = true;
     protected $table = 'User_Congress';
     protected $primaryKey = 'user_congress_id';
-    protected $fillable = ['user_id', 'congress_id', 'isPresent', 'globale_score' ,'token_jitsi', 'organization_accepted', 'privilege_id', 'organization_id', 'pack_id', 'pack_admin_id'];
+    protected $fillable = ['user_id', 'congress_id', 'isPresent', 'globale_score' ,'token_jitsi', 'organization_accepted', 'privilege_id', 'organization_id', 'pack_id', 'pack_admin_id','will_be_present'];
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
     public function user()
