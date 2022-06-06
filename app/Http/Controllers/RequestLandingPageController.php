@@ -33,7 +33,7 @@ class RequestLandingPageController extends Controller
         if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
             return response()->json(['error' => 'admin_not_found'], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->getCongressDetailsById($congress_id)) {
             return response()->json(['message' => 'congress not found'], 404);
         }
 
@@ -72,7 +72,7 @@ class RequestLandingPageController extends Controller
         }
         if($mailTypeAdmin){
         $mailAdmin = $this->mailServices->getMailAdmin($mailTypeAdmin->mail_type_admin_id);
-        $this->adminServices->sendMAil($this->adminServices->renderMail($mailAdmin->template,  $landingPage->admin, null, null, $linkBackOffice), null, $mailAdmin->object,  $landingPage->admin, null, null);
+        $this->mailServices->sendMAil($this->adminServices->renderMail($mailAdmin->template,  $admin, null, null, $linkBackOffice), $admin->email, null,  $mailAdmin->object, false, null, $landingPage->admin->email, null);
         }
         return response()->json($landingPage, 200);
     }

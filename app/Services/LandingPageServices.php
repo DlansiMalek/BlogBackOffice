@@ -45,6 +45,6 @@ class LandingPageServices
 
     public function getOneLandingPage($request_landing_page_id)
     {
-        return RequestLandingPage::where('request_landing_page_id', '=', $request_landing_page_id)->first();
+        return RequestLandingPage::where('request_landing_page_id', '=', $request_landing_page_id)->with(['admin'])->first();
     }
 }
