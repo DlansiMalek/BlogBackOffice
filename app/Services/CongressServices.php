@@ -532,6 +532,7 @@ class CongressServices
             $configCongress->show_in_chat = $showInChat;
         }
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
+        $configCongress->email_signature = $configCongressRequest['email_signature'];
         $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
         $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
         $configCongress->location_link  = $configCongressRequest['location_link'];
@@ -785,7 +786,11 @@ class CongressServices
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
             $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
-            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ;
+            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ; 
+            $signature=$congress->config->email_signature;
+            if ($signature != null) {
+                $template = str_replace('{{$congress-&gt;config-&gt;email_signature}}', $signature . '', $template);
+            }
         }
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
