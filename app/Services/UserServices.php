@@ -1978,12 +1978,17 @@ class UserServices
                     $q->where('status', '=', 1);
                 });
             }])
-            ->whereHas('user_congresses.user.responses.values', function ($q) use ($filterBy) {
+            ->whereHas('user_congresses', function ($q) use ($filterBy) {
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
-                    $q->where('form_input_value_id', '=', $filterBy);
+                    $q->whereHas('user.responses.form_input.values', function ($qu) use ($filterBy) {
+                        $qu->where('form_input_value_id', '=', $filterBy);
+                    });
+                } else {
+                    $q->doesnthave('user.responses');
                 }
-            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
-            ->paginate($perPage);
+            })
+            ->doesnthave('table')
+            ->paginate($perPage); 
         return  $users;
     }
 
