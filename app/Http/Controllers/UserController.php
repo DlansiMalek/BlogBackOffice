@@ -1600,7 +1600,7 @@ class UserController extends Controller
         $congress = $this->congressServices->getCachedMinimalCongressById($congress_id);
          //get Payement Ligne
          $userPayment = null;
-         if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
+         if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3 || $congress->config_selection->selection_type == 0))) {
             $userPayment = $this->paymentServices->getPaymentByUserAndCongressID($congress_id, $user->user_id);
         }
         $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
