@@ -28,10 +28,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PDF;
+use function foo\func;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Kreait\Firebase\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
 
 
 
