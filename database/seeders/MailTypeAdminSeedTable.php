@@ -58,17 +58,5 @@ class MailTypeAdminSeedTable extends Seeder
             'name' => 'contact_us',
             'display_name' => 'Contacter nous'
         ]);
-        DB::table('Mail_Type_Admin')->insert([
-            'mail_type_admin_id' => 9,
-            'name' => 'accept_landing_page_demand',
-            'display_name' => 'Acceptation de la demande du Landing Page'
-        ]);
-        DB::table('Mail_Type_Admin')->insert([
-            'mail_type_admin_id' => 10,
-            'name' => 'refuse_landing_page_demand',
-            'display_name' => 'Refus de la demande de Landing Page'
-        ]);
-      
-
     }
 }
