@@ -1978,12 +1978,15 @@ class UserServices
                     $q->where('status', '=', 1);
                 });
             }])
-            ->whereHas('user_congresses.user.responses.values', function ($q) use ($filterBy) {
+            ->whereHas('user_congresses.user.responses', function ($q) use ($filterBy) {
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
-                    $q->where('form_input_value_id', '=', $filterBy);
-                }
-            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
-            ->paginate($perPage);
+                    $q->whereHas('values', function ($qu) use ($filterBy) {
+                        $qu->where('form_input_value_id', '=', $filterBy);
+                    });
+                }  
+            })
+            ->doesnthave('table')
+            ->paginate($perPage); 
         return  $users;
     }
 
@@ -2113,10 +2116,7 @@ class UserServices
             if ($congressTypeId == 1 || $congressTypeId == 2) {
                 $query->where('isSelected', '=', 1);
             }
-        })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
-            ->with(['user_congresses'=> function ($query) use ($congressId){
-                $query->where('congress_id', '=', $congressId);
-            }])
+        })->doesnthave('table')
             ->with('profile_img')
             ->get();
 
