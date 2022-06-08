@@ -35,10 +35,10 @@ class CreateRequestLandingPagesTable extends Migration
      */
     public function down()
     {
-        Schema::table('Config_Congress', function (Blueprint $table) {
+        Schema::table('Request_Landing_Page', function (Blueprint $table) {
             $table->dropForeign('congress_id');
             $table->dropForeign('admin_id');
         });
-        Schema::dropIfExists('request_landing_pages');
+        Schema::dropIfExists('Request_Landing_Page');
     }
 }
