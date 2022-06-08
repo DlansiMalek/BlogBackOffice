@@ -1978,7 +1978,7 @@ class UserServices
                     $q->where('status', '=', 1);
                 });
             }])
-            ->whereHas('responses', function ($q) use ($filterBy) {
+            ->whereHas('user_congresses.user.responses', function ($q) use ($filterBy) {
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
                     $q->whereHas('values', function ($qu) use ($filterBy) {
                         $qu->where('form_input_value_id', '=', $filterBy);
