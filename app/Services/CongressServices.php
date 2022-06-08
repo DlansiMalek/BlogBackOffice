@@ -1169,6 +1169,9 @@ class CongressServices
         $config_landing_page->live_title_btn_en = $request->has("live_title_btn_en") ? $request->input('live_title_btn_en') : null;
         $config_landing_page->live_title_btn = $request->has("live_title_btn") ? $request->input('live_title_btn') : null;
 
+        $config_landing_page->redirect_to_pwa = $request->has("redirect_to_pwa") ? $request->input('redirect_to_pwa') : null;
+
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
