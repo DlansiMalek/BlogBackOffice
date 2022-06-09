@@ -61,6 +61,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'MeetingController@getUserMeetingById');
         Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
+        Route::get('total-meetings', 'MeetingController@getTotalNumberOfMeetingsByCongress');
         Route::get('number-meetings', 'MeetingController@getNumberOfMeetings');
         Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
         Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
@@ -704,6 +705,25 @@ Route::group(['prefix' => 'menu'], function () {
     Route::post('/add/{show_after_reload}', 'MenuController@setMenus');
 });
 
+// LandingPage
+Route::group(['prefix' => 'request-landing-page'], function () {
+    Route::group(["middleware" => ['marketing']], function () {    
+    Route::get('/list', 'RequestLandingPageController@getLandingPages');
+    Route::put('{request_landing_page_id}', 'RequestLandingPageController@upadteStatusLandingPage');
+    });
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::get('/LandingPage/{request_landing_page_id}', 'RequestLandingPageController@getOneLandingPage');
+        Route::post('{congress_id}/add', 'RequestLandingPageController@addRequestLandingPage');
+        Route::get('{congress_id}', 'RequestLandingPageController@getLandingPagewithCongressId');
+     });
+});
+// LandingPageFront
+Route::group(['prefix' => '{congressId}/landing-page'], function () { 
+    Route::get('get-config', 'RequestLandingPageController@getConfigLandingPage');
+    Route::get('get-speakers', 'RequestLandingPageController@getLandingPageSpeakers');
+    
+ 
+});
 // 3D API
 Route::group(["prefix" => "3D"], function () {
     Route::group(['middleware' => ['assign.guard:users']], function () {

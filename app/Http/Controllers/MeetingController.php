@@ -559,4 +559,9 @@ class MeetingController extends Controller
     $meetingDates = $this->meetingServices->getMeetingsDatesByStartDate($congress_id,$startDate);
     return response()->json($meetingDates, 200);
   }
+
+  public function getTotalNumberOfMeetingsByCongress($congress_id)
+  {
+    return $this->meetingServices->getTotalNumberOfMeetingsByCongress($congress_id);
+  }
 }
