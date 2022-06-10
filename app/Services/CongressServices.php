@@ -1164,6 +1164,31 @@ class CongressServices
         $config_landing_page->live_title_btn_en = $request->has("live_title_btn_en") ? $request->input('live_title_btn_en') : null;
         $config_landing_page->live_title_btn = $request->has("live_title_btn") ? $request->input('live_title_btn') : null;
 
+        $config_landing_page->home_title_ar = $request->has("home_title_ar") ? $request->input('home_title_ar') : null;
+        $config_landing_page->home_description_ar = $request->has("home_description_ar") ? $request->input('home_description_ar') : null;
+        $config_landing_page->prp_title_ar = $request->has("prp_title_ar") ? $request->input('prp_title_ar') : null;
+        $config_landing_page->prp_description_ar = $request->has("prp_description_ar") ? $request->input('prp_description_ar') : null;
+        $config_landing_page->speaker_title_ar = $request->has("speaker_title_ar") ? $request->input('speaker_title_ar') : null;
+        $config_landing_page->speaker_description_ar = $request->has("speaker_description_ar") ? $request->input('speaker_description_ar') : null;
+        $config_landing_page->sponsor_title_ar = $request->has("sponsor_title_ar") ? $request->input('sponsor_title_ar') : null;
+        $config_landing_page->sponsor_description_ar = $request->has("sponsor_description_ar") ? $request->input('sponsor_description_ar') : null;
+        $config_landing_page->prg_title_ar = $request->has("prg_title_ar") ? $request->input('prg_title_ar') : null;
+        $config_landing_page->prg_description_ar = $request->has("prg_description_ar") ? $request->input('prg_description_ar') : null;
+        $config_landing_page->contact_title_ar = $request->has("contact_title_ar") ? $request->input('contact_title_ar') : null;
+        $config_landing_page->contact_description_ar = $request->has("contact_description_ar") ? $request->input('contact_description_ar') : null;
+        $config_landing_page->home_sub_title_ar = $request->has("home_sub_title_ar") ? $request->input('home_sub_title_ar') : null;
+        $config_landing_page->organizers_title_ar = $request->has("organizers_title_ar") ? $request->input('organizers_title_ar') : null;
+        $config_landing_page->organizers_description_ar = $request->has("organizers_description_ar") ? $request->input('organizers_description_ar') : null;
+        $config_landing_page->partners_title_ar = $request->has("partners_title_ar") ? $request->input('partners_title_ar') : null;
+        $config_landing_page->partners_description_ar = $request->has("partners_description_ar") ? $request->input('partners_description_ar') : null;
+        $config_landing_page->waiting_title_ar = $request->has("waiting_title_ar") ? $request->input('waiting_title_ar') : null;
+        $config_landing_page->waiting_description_ar = $request->has("waiting_description_ar") ? $request->input('waiting_description_ar') : null;
+        $config_landing_page->prp_btn_text_ar = $request->has("prp_btn_text_ar") ? $request->input('prp_btn_text_ar') : null;
+        $config_landing_page->live_title_btn_ar = $request->has("live_title_btn_ar") ? $request->input('live_title_btn_ar') : null;
+        $config_landing_page->live_title_ar = $request->has("live_title_ar") ? $request->input('live_title_ar') : null;
+
+
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
