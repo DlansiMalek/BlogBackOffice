@@ -33,6 +33,7 @@ class MeetingTest extends TestCase
     public function testAddUserMeeting()
     {
         $congress = factory(Congress::class)->create();
+        $configCongress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
         $userSender = factory(User::class)->create();
         $userReceiver = factory(User::class)->create();
         $meeting = $this->getFakeMeeting();
@@ -47,6 +48,7 @@ class MeetingTest extends TestCase
     public function testUpdateUserMeetingStatus()
     {
         $congress = factory(Congress::class)->create();
+        $configCongress = factory(ConfigCongress::class)->create(['congress_id' => $congress->congress_id]);
         $meetingtable = factory(MeetingTable::class)->create([
             'congress_id' => $congress->congress_id,
         ]);
