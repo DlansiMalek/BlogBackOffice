@@ -34,6 +34,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Kreait\Firebase\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 
 
@@ -2159,6 +2160,10 @@ class UserServices
         return $userCongress;
     }
 
+    public function clearCache()
+    {
+        return Artisan::call('cache:clear');
+    }
     public function editShowInChat($show_in_chat, $congress_id)
     {
         $usersCongress = UserCongress::where('congress_id', '=', $congress_id)
