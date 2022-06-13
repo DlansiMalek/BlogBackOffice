@@ -14,7 +14,7 @@ class AddDnsPwaToRequestLandingPage extends Migration
     public function up()
     {
         Schema::table('Request_Landing_Page', function (Blueprint $table) {
-            $table->text('dns_pwa')->nullable()->default(null);
+            $table->string('dns_pwa')->nullable()->default(null);
         });
     }
 
