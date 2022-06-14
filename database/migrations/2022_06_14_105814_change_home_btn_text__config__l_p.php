@@ -27,8 +27,8 @@ class ChangeHomeBtnTextConfigLP extends Migration
     public function down()
     {
         Schema::table('Config_LP', function (Blueprint $table) {
-            $table->removeColumn('home_btn_text');
-            $table->removeColumn('home_btn_link');
+            $table->string('home_btn_text')->default('LOGIN')->change();
+            $table->string('home_btn_link')->default('/landingpage/{congressId}/login')->change();
         });
     }
 }
