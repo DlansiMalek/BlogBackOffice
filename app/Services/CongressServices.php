@@ -1186,6 +1186,8 @@ class CongressServices
         $config_landing_page->prp_btn_text_ar = $request->has("prp_btn_text_ar") ? $request->input('prp_btn_text_ar') : null;
         $config_landing_page->live_title_btn_ar = $request->has("live_title_btn_ar") ? $request->input('live_title_btn_ar') : null;
         $config_landing_page->live_title_ar = $request->has("live_title_ar") ? $request->input('live_title_ar') : null;
+        $config_landing_page->page_title_ar = $request->has("page_title_ar") ? $request->input('page_title_ar') : null;
+        $config_landing_page->live_link_ar = $request->has("live_link_ar") ? $request->input('live_link_ar') : null;
 
 
 
