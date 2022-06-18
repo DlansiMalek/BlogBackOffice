@@ -91,7 +91,7 @@ class SubmissionServices
     public function getSubmissionById($submission_id)
     {
         return Submission::where('submission_id', '=', $submission_id)
-            ->with(['congress', 'user', 'theme'])
+            ->with(['congress', 'user', 'theme','authors'])
             ->first();
     }
 
