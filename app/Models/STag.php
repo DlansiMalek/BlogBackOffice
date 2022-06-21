@@ -10,7 +10,7 @@ class STag extends Model
     protected $table = 'STag';
     protected $primaryKey = 'stag_id';
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
-    protected $fillable = ['label', 'congress_id'];
+    protected $fillable = ['label', 'congress_id','color'];
 
     function stand() {
         return $this->belongsToMany(Stand::class ,'Stand_Tag' , 'stag_id', 'stand_id');
