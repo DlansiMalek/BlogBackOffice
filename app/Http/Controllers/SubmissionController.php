@@ -132,7 +132,8 @@ class SubmissionController extends Controller
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null, null, null, null, null, null, null, null, $submission->title), $user, $congress, $mail->object, null, $userMail
                 );
             }
-            return response()->json(['response' => 'Enregistrement avec succes'], 200);
+            $submission = $this->submissionServices->getSubmissionById($submission->submission_id);
+            return response()->json(['response' => 'Enregistrement avec succes', 'submission' =>  $submission], 200);
         } catch (Exception $e) {
             $submission->delete();
             return response()->json(['response' => $e->getMessage()], 400);
@@ -219,7 +220,8 @@ class SubmissionController extends Controller
                     $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null), $user, $congress, $mail->object, null, $userMail
                 );
             }
-            return response()->json(['response' => 'modification avec success'], 200);
+            $submission = $this->submissionServices->getSubmissionById($submission_id);
+            return response()->json(['response' => 'modification avec success', 'submission' =>  $submission], 200);
         } catch (Exception $e) {
             return response()->json(['response' => $e->getMessage()], 400);
         }

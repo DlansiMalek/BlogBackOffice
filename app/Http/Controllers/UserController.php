@@ -2472,6 +2472,10 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function clearCache() {
+        return $this->userServices->clearCache();
+    }
+
     public function updateAllResponses($congressId)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
