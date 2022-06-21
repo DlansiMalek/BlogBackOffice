@@ -435,8 +435,8 @@ class CongressServices
         $congress->private = $congressRequest->input('private');
         $congress->description_en = $congressRequest->input('description_en');
         $congress->name_en = $congressRequest->input('name_en');
-        $congress->name_en = $congressRequest->input('name_ar');
-        $congress->name_en = $congressRequest->input('description_ar');
+        $congress->name_ar = $congressRequest->input('name_ar');
+        $congress->description_ar = $congressRequest->input('description_ar');
         $congress->save();
 
         $config = new ConfigCongress();

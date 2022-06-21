@@ -15,7 +15,7 @@ class AddNameArAndDescriptionArColumnsToCongressTable extends Migration
     {
         Schema::table('Congress', function (Blueprint $table) {
             $table->string('name_ar')->nullable()->default(null);
-            $table->string('description_ar')->nullable()->default(null);
+            $table->text('description_ar')->nullable()->default(null);
         });
     }
 
