@@ -91,6 +91,7 @@ class RegistrationFormServices
                     $value->value = $valueRequest['value'];
                     $value->value_en = $valueRequest['value_en'];
                     $value->form_input_id = $input->form_input_id;
+                    $value->price = $valueRequest['price'];
                     if ($value->form_input_value_id) $value->update();
                     else $value->save();
                 }

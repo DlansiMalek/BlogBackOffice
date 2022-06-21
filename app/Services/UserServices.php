@@ -1982,12 +1982,15 @@ class UserServices
                     $q->where('status', '=', 1);
                 });
             }])
-            ->whereHas('user_congresses.user.responses.values', function ($q) use ($filterBy) {
+            ->whereHas('user_congresses.user.responses', function ($q) use ($filterBy) {
                 if ($filterBy != null && $filterBy != 0 && $filterBy != 'null') {
-                    $q->where('form_input_value_id', '=', $filterBy);
-                }
-            })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
-            ->paginate($perPage);
+                    $q->whereHas('values', function ($qu) use ($filterBy) {
+                        $qu->where('form_input_value_id', '=', $filterBy);
+                    });
+                }  
+            })
+            ->doesnthave('table')
+            ->paginate($perPage); 
         return  $users;
     }
 
@@ -2117,10 +2120,7 @@ class UserServices
             if ($congressTypeId == 1 || $congressTypeId == 2) {
                 $query->where('isSelected', '=', 1);
             }
-        })->whereNotIn('user_id', MeetingTable::select('user_id')->where('congress_id', $congressId)->get())
-            ->with(['user_congresses'=> function ($query) use ($congressId){
-                $query->where('congress_id', '=', $congressId);
-            }])
+        })->doesnthave('table')
             ->with('profile_img')
             ->get();
 
@@ -2190,8 +2190,10 @@ class UserServices
                             if ($form_input->form_input_type_id == 6 ||  $form_input->form_input_type_id == 7 || $form_input->form_input_type_id == 8 || $form_input->form_input_type_id == 9) {
                                 $chat_info = $this->getValueResponse($userCongress->user->user_id, $form_input->form_input_id);
                                 if (count($chat_info) > 0) {
-                                    $userCongress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $userCongress->chat_info;
-                                    $userCongress->update();
+                                    if (isset($chat_info['values']) && sizeof($chat_info['values']) > 0) {
+                                        $userCongress->chat_info = $chat_info[0]['values'][0]['val']['value'] . ";" . $userCongress->chat_info;
+                                        $userCongress->update();
+                                    }
                                 }
                             } else {
                                 $chat_info = $this->getResponseFormInput($userCongress->user->user_id, $form_input->form_input_id);
