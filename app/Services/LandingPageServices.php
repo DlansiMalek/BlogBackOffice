@@ -20,6 +20,7 @@ class LandingPageServices
         $LandingPage->dns = $LandingPageRequest->input('dns');
         $LandingPage->congress_id = $congress_id;
         $LandingPage->admin_id = $admin_id;
+        $LandingPage->dns_pwa = $LandingPageRequest->input('dns_pwa');
         !$exists ? $LandingPage->save():  $LandingPage->update();
         return $LandingPage;
     }
