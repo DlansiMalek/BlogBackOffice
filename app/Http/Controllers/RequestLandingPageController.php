@@ -7,6 +7,7 @@ use App\Services\AdminServices;
 use App\Services\CongressServices;
 use App\Services\LandingPageServices;
 use App\Services\MailServices;
+use Illuminate\Support\Facades\Log;
 
 class RequestLandingPageController extends Controller
 {
@@ -88,5 +89,12 @@ class RequestLandingPageController extends Controller
         
         $speakers = $this->congressServices->getLandingPageSpeakers($congress_id);
         return response()->json($speakers, 200);
+    }
+
+    public function getLandingPagewithDnsName(Request $request)
+    {
+        $dns = $request->query('nameDns');
+        $landingPage = $this->landingPageServices->getLandingPagewithDnsName($dns);
+        return response()->json($landingPage, 200);
     }
 }

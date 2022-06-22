@@ -712,6 +712,7 @@ Route::group(['prefix' => 'request-landing-page'], function () {
     Route::get('/list', 'RequestLandingPageController@getLandingPages');
     Route::put('{request_landing_page_id}', 'RequestLandingPageController@upadteStatusLandingPage');
     });
+    Route::get('dns', 'RequestLandingPageController@getLandingPagewithDnsName');
     Route::group(["middleware" => ['assign.guard:admins']], function () {
         Route::get('/LandingPage/{request_landing_page_id}', 'RequestLandingPageController@getOneLandingPage');
         Route::post('{congress_id}/add', 'RequestLandingPageController@addRequestLandingPage');
