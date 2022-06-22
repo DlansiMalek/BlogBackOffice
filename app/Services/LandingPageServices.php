@@ -48,4 +48,11 @@ class LandingPageServices
     {
         return RequestLandingPage::where('request_landing_page_id', '=', $request_landing_page_id)->with(['admin'])->first();
     }
+
+    public function getLandingPagewithDnsName($dns)
+    {
+        return RequestLandingPage::where('status', '=', 1)
+        ->where('dns', $dns)
+        ->first();
+    }
 }
