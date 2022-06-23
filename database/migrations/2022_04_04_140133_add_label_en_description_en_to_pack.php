@@ -15,7 +15,7 @@ class AddLabelEnDescriptionEnToPack extends Migration
     {
         Schema::table('Pack', function (Blueprint $table) {
             $table->string('label_en')->nullable()->default(null);
-            $table->string('description_en')->nullable()->default(null);
+            $table->text('description_en')->nullable()->default(null);
             $table->string('label')->default(null)->nullable()->change();
             $table->text('description')->default(null)->nullable()->change();
         });
