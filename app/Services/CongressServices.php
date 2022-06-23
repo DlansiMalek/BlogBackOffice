@@ -1157,6 +1157,8 @@ class CongressServices
         $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
         $config_landing_page->waiting_title_en = $request->has("waiting_title_en") ? $request->input('waiting_title_en') : null;
         $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
+        $config_landing_page->waiting_color = $request->has("waiting_color") ? $request->input('waiting_color') : null;
+        $config_landing_page->waiting_opacity = $request->has("waiting_opacity") ? $request->input('waiting_opacity') : null;
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
         $config_landing_page->prp_link = $request->has("prp_link") ? $request->input('prp_link') : null;
