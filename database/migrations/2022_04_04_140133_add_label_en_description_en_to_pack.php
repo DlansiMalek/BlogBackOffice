@@ -32,7 +32,7 @@ class AddLabelEnDescriptionEnToPack extends Migration
             $table->removeColumn('label_en');
             $table->removeColumn('description_en');
             $table->string('label')->change();
-            $table->string('description')->change();
+            $table->text('description')->change();
         });
     }
 }
