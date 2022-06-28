@@ -1198,8 +1198,14 @@ class CongressServices
         $config_landing_page->live_title_ar = $request->has("live_title_ar") ? $request->input('live_title_ar') : null;
         $config_landing_page->page_title_ar = $request->has("page_title_ar") ? $request->input('page_title_ar') : null;
         $config_landing_page->live_link_ar = $request->has("live_link_ar") ? $request->input('live_link_ar') : null;
-
         
+        $config_landing_page->companies_title = $request->has("companies_title") ? $request->input('companies_title') : null;
+        $config_landing_page->companies_description = $request->has("companies_description") ? $request->input('companies_description') : null;
+        $config_landing_page->companies_title_en = $request->has("companies_title_en") ? $request->input('companies_title_en') : null;
+        $config_landing_page->companies_description_en = $request->has("companies_description_en") ? $request->input('companies_description_en') : null;
+        $config_landing_page->companies_title_ar = $request->has("companies_title_ar") ? $request->input('companies_title_ar') : null;
+        $config_landing_page->companies_description_ar = $request->has("companies_description_ar") ? $request->input('companies_description_ar') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
