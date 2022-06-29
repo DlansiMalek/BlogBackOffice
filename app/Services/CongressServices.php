@@ -1198,7 +1198,16 @@ class CongressServices
         $config_landing_page->live_title_ar = $request->has("live_title_ar") ? $request->input('live_title_ar') : null;
         $config_landing_page->page_title_ar = $request->has("page_title_ar") ? $request->input('page_title_ar') : null;
         $config_landing_page->live_link_ar = $request->has("live_link_ar") ? $request->input('live_link_ar') : null;
-        
+
+        $config_landing_page->specific_bnr = $request->has("specific_bnr") ? $request->input('specific_bnr') : null;
+        $config_landing_page->specific_bnr_title = $request->has("specific_bnr_title") ? $request->input('specific_bnr_title') : null;
+        $config_landing_page->specific_bnr_description = $request->has("specific_bnr_description") ? $request->input('specific_bnr_description') : null;
+        $config_landing_page->specific_bnr_title_en = $request->has("specific_bnr_title_en") ? $request->input('specific_bnr_title_en') : null;
+        $config_landing_page->specific_bnr_description_en = $request->has("specific_bnr_description_en") ? $request->input('specific_bnr_description_en') : null;
+        $config_landing_page->specific_bnr_ar = $request->has("specific_bnr_ar") ? $request->input('specific_bnr_ar') : null;
+        $config_landing_page->specific_bnr_title_ar = $request->has("specific_bnr_title_ar") ? $request->input('specific_bnr_title_ar') : null;
+        $config_landing_page->specific_bnr_description_ar = $request->has("specific_bnr_description_ar") ? $request->input('specific_bnr_description_ar') : null;
+
         $config_landing_page->companies_title = $request->has("companies_title") ? $request->input('companies_title') : null;
         $config_landing_page->companies_description = $request->has("companies_description") ? $request->input('companies_description') : null;
         $config_landing_page->companies_title_en = $request->has("companies_title_en") ? $request->input('companies_title_en') : null;
