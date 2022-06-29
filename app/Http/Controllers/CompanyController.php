@@ -44,9 +44,6 @@ class CompanyController extends Controller
         if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json('no congress found', 404);
         }
-        if (!$admin = $this->adminServices->retrieveAdminFromToken()) {
-            return response()->json('no admin found', 404);
-        }
         $companies = $this->companyServices->getAllCompaniesByCongress($congressId);
         return response()->json($companies);
     }

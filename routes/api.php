@@ -727,8 +727,8 @@ Route::group(['prefix' => '{congressId}/landing-page'], function () {
  
 });
 Route::group(['prefix' => 'companies'], function () {
+    Route::get('{congress_id}', 'CompanyController@getAllCompanies');
     Route::group(["middleware" => ['assign.guard:admins']], function () {
-        Route::get('{congress_id}', 'CompanyController@getAllCompanies');
         Route::post('{congress_id}', 'CompanyController@addCompany');
         Route::delete('{company_id}', 'CompanyController@deleteCompany');
      });
