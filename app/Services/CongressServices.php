@@ -1232,6 +1232,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->save();
         return $lp_speaker;
     }
@@ -1258,6 +1264,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->update();
         return $lp_speaker;
     }
