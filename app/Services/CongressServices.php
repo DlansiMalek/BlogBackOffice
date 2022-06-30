@@ -1215,6 +1215,15 @@ class CongressServices
         $config_landing_page->companies_title_ar = $request->has("companies_title_ar") ? $request->input('companies_title_ar') : null;
         $config_landing_page->companies_description_ar = $request->has("companies_description_ar") ? $request->input('companies_description_ar') : null;
 
+        $config_landing_page->specific_bnr_two = $request->has("specific_bnr_two") ? $request->input('specific_bnr_two') : null;
+        $config_landing_page->specific_bnr_two_title = $request->has("specific_bnr_two_title") ? $request->input('specific_bnr_two_title') : null;
+        $config_landing_page->specific_bnr_two_description = $request->has("specific_bnr_two_description") ? $request->input('specific_bnr_two_description') : null;
+        $config_landing_page->specific_bnr_two_title_en = $request->has("specific_bnr_two_title_en") ? $request->input('specific_bnr_two_title_en') : null;
+        $config_landing_page->specific_bnr_two_description_en = $request->has("specific_bnr_two_description_en") ? $request->input('specific_bnr_two_description_en') : null;
+        $config_landing_page->specific_bnr_two_ar = $request->has("specific_bnr_two_ar") ? $request->input('specific_bnr_two_ar') : null;
+        $config_landing_page->specific_bnr_two_title_ar = $request->has("specific_bnr_two_title_ar") ? $request->input('specific_bnr_two_title_ar') : null;
+        $config_landing_page->specific_bnr_two_description_ar = $request->has("specific_bnr_two_description_ar") ? $request->input('specific_bnr_two_description_ar') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
