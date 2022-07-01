@@ -10,7 +10,9 @@ class LPSponsorPack extends Model
     protected $primaryKey = 'lp_sponsor_pack_id';
     protected $fillable = [
         'congress_id',
-        'description'
+        'description',
+        'description_en',
+        'description_ar'
     ];
 
     protected $dates = ['created_at', 'updated_at', 'deleted_at'];
