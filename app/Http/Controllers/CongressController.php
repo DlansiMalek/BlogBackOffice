@@ -1286,4 +1286,33 @@ class CongressController extends Controller
     public function countWillBePresentUserCongress($congress_id) {
         return $this->congressServices->countWillBePresentUserCongress($congress_id);
     }
+
+    public function addLandingPageSponsorPack($congress_id, Request $request)
+    {
+        if (!($request->has(['description']) || $request->has(['description_ar']) || $request->has(['description_en'])))
+            return response()->json(['message' => 'bad request: description is required '], 400);
+        if (!$this->adminServices->retrieveAdminFromToken())
+            return response()->json(['error' => 'admin_not_found'], 404);
+        $oldSponsorPack = $request->has('lp_sponsor_pack_id') ? $this->congressServices->getLandingPageSponsorPack($request->input('lp_sponsor_pack_id')) : null;
+        $lpSponsorPack = $this->congressServices->addLandingPageSponsorPack($congress_id, $request, $oldSponsorPack);
+
+        return response()->json($lpSponsorPack, 200);
+    }
+
+    public function getAllLandingPageSponsorPack($congressId)
+    {
+        if (!$congress = $this->congressServices->isExistCongress($congressId))
+            return response()->json('no congress found', 404);
+        $sponsorPacks = $this->congressServices->getAllLandingPageSponsorPack($congressId);
+        return response()->json($sponsorPacks);
+    }
+
+    public function deleteLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        if (!$this->congressServices->getLandingPageSponsorPack($lp_sponsor_pack_id)) {
+            return response()->json(['error' => 'sponsor pack not found'], 404);
+        }
+        $this->congressServices->deleteLandingPageSponsorPack($lp_sponsor_pack_id);
+        return response()->json('deleted successfully', 200);
+    }
 }

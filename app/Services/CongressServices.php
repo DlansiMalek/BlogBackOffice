@@ -24,6 +24,7 @@ use App\Models\Stand;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\LPSponsorPack;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -1223,6 +1224,12 @@ class CongressServices
         $config_landing_page->specific_bnr_two_ar = $request->has("specific_bnr_two_ar") ? $request->input('specific_bnr_two_ar') : null;
         $config_landing_page->specific_bnr_two_title_ar = $request->has("specific_bnr_two_title_ar") ? $request->input('specific_bnr_two_title_ar') : null;
         $config_landing_page->specific_bnr_two_description_ar = $request->has("specific_bnr_two_description_ar") ? $request->input('specific_bnr_two_description_ar') : null;
+        $config_landing_page->sponsor_pack_title = $request->has("sponsor_pack_title") ? $request->input('sponsor_pack_title') : null;
+        $config_landing_page->sponsor_pack_description = $request->has("sponsor_pack_description") ? $request->input('sponsor_pack_description') : null;
+        $config_landing_page->sponsor_pack_title_en = $request->has("sponsor_pack_title_en") ? $request->input('sponsor_pack_title_en') : null;
+        $config_landing_page->sponsor_pack_description_en = $request->has("sponsor_pack_description_en") ? $request->input('sponsor_pack_description_en') : null;
+        $config_landing_page->sponsor_pack_title_ar = $request->has("sponsor_pack_title_ar") ? $request->input('sponsor_pack_title_ar') : null;
+        $config_landing_page->sponsor_pack_description_ar = $request->has("sponsor_pack_description_ar") ? $request->input('sponsor_pack_description_ar') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
@@ -1241,6 +1248,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->save();
         return $lp_speaker;
     }
@@ -1267,6 +1280,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->update();
         return $lp_speaker;
     }
@@ -1372,5 +1391,35 @@ class CongressServices
         return UserAccess::where('user_id', '=', $userId)
         ->where('access_id', '=', $accessId)
         ->first();
+    }
+
+    public function addLandingPageSponsorPack($congress_id, $request, $lpSponsorPack)
+    {
+        if (!$lpSponsorPack) {
+            $lpSponsorPack = new LPSponsorPack();
+        }
+        $lpSponsorPack->congress_id = $congress_id;
+        $lpSponsorPack->description = $request->input('description');
+        $lpSponsorPack->description_en = $request->input('description_en');
+        $lpSponsorPack->description_ar = $request->input('description_ar');
+        $lpSponsorPack->save();
+        return $lpSponsorPack;
+    }
+
+    public function getLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        return LPSponsorPack::where('lp_sponsor_pack_id', '=', $lp_sponsor_pack_id)
+        ->first();
+    }
+
+    public function getAllLandingPageSponsorPack($congressId)
+    {
+        return LPSponsorPack::where('congress_id', '=', $congressId)
+        ->get();
+    }
+
+    public function deleteLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        return LPSponsorPack::where('lp_sponsor_pack_id', '=', $lp_sponsor_pack_id)->delete();
     }
 }

@@ -733,6 +733,14 @@ Route::group(['prefix' => 'companies'], function () {
         Route::delete('{company_id}', 'CompanyController@deleteCompany');
      });
 });
+Route::group(['prefix' => 'sponsor-pack'], function () {
+    Route::get('{congress_id}', 'CongressController@getAllLandingPageSponsorPack');
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::post('{congress_id}', 'CongressController@addLandingPageSponsorPack');
+        Route::delete('{lp_sponsor_pack_id}', 'CongressController@deleteLandingPageSponsorPack');
+     });
+});
+
 // 3D API
 Route::group(["prefix" => "3D"], function () {
     Route::group(['middleware' => ['assign.guard:users']], function () {
