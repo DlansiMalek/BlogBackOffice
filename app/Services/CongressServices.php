@@ -544,6 +544,11 @@ class CongressServices
         $configCongress->networking_libre_msg = $configCongressRequest['networking_libre_msg'];
         $configCongress->networking_libre_msg_en = array_key_exists ('networking_libre_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_libre_msg_en']: null ;
         $configCongress->show_free_networking = array_key_exists ('show_free_networking' , $configCongressRequest ) ? $configCongressRequest['show_free_networking'] : 1;
+
+        $configCongress->banner_ar = array_key_exists ('banner_ar' , $configCongressRequest ) ? $configCongressRequest['banner_ar']: null;
+        $configCongress->banner_en = array_key_exists ('banner_en' , $configCongressRequest ) ? $configCongressRequest['banner_en']: null;
+        $configCongress->logo_en = array_key_exists ('logo_en' , $configCongressRequest ) ? $configCongressRequest['logo_en']: null;
+        $configCongress->logo_ar = array_key_exists ('logo_ar' , $configCongressRequest ) ? $configCongressRequest['logo_ar']: null;
         $configCongress->update();
 
         return $configCongress;
@@ -1222,6 +1227,13 @@ class CongressServices
         $config_landing_page->sponsor_pack_description_en = $request->has("sponsor_pack_description_en") ? $request->input('sponsor_pack_description_en') : null;
         $config_landing_page->sponsor_pack_title_ar = $request->has("sponsor_pack_title_ar") ? $request->input('sponsor_pack_title_ar') : null;
         $config_landing_page->sponsor_pack_description_ar = $request->has("sponsor_pack_description_ar") ? $request->input('sponsor_pack_description_ar') : null;
+
+        $config_landing_page->home_banner_event_en = $request->has("home_banner_event_en") ? $request->input('home_banner_event_en') : null;
+        $config_landing_page->home_banner_event_ar = $request->has("home_banner_event_ar") ? $request->input('home_banner_event_ar') : null;
+        $config_landing_page->prp_banner_event_en = $request->has("prp_banner_event_en") ? $request->input('prp_banner_event_en') : null;
+        $config_landing_page->prp_banner_event_ar = $request->has("prp_banner_event_ar") ? $request->input('prp_banner_event_ar') : null;
+        $config_landing_page->specific_bnr_en = $request->has("specific_bnr_en") ? $request->input('specific_bnr_en') : null;
+        $config_landing_page->specific_bnr_two_en = $request->has("specific_bnr_two_en") ? $request->input('specific_bnr_two_en') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
