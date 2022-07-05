@@ -37,7 +37,7 @@ class AccessServices
     public function addAccess($congress_id, Request $request)
     {
         $access = new Access();
-        $access->name = $request->input("name");
+        if ($request->has('name')) $access->name = $request->input("name");
         $access->start_date = $request->input("start_date");
         $access->end_date = $request->input("end_date");
         $access->access_type_id = $request->input('access_type_id');
@@ -52,6 +52,10 @@ class AccessServices
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         $access->show_in_program = (!$request->has('show_in_program') || $request->input('show_in_program')) ? 1 : 0;
         if ($request->has('banner')) $access->banner = $request->input("banner");
+        if ($request->has('name_en')) $access->name_en = $request->input("name_en");
+        if ($request->has('name_ar')) $access->name_ar = $request->input("name_ar");
+        if ($request->has('description_en')) $access->description_en = $request->input("description_en");
+        if ($request->has('description_ar')) $access->description_ar = $request->input("description_ar");
 
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
@@ -84,7 +88,12 @@ class AccessServices
         if ($request->has('url_streaming')) $access->url_streaming = $request->input("url_streaming");
         if ($request->has('lp_speaker_id')) $access->lp_speaker_id = $request->input('lp_speaker_id');
         if ($request->has('banner')) $access->banner = $request->input('banner');
-        $access->display_time = $request->input('display_time');
+        $access->display_time = $request->has('display_time') ? $request->input('display_time') : 1;
+        if ($request->has('name_en')) $access->name_en = $request->input("name_en");
+        if ($request->has('name_ar')) $access->name_ar = $request->input("name_ar");
+        if ($request->has('description_en')) $access->description_en = $request->input("description_en");
+        if ($request->has('description_ar')) $access->description_ar = $request->input("description_ar");
+
         if ($request->has('show_in_register'))
             $access->show_in_register = $request->input('show_in_register');
 
