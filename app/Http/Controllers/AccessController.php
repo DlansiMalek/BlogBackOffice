@@ -63,9 +63,9 @@ class AccessController extends Controller
 
     public function addAccess(Request $request, $congress_id)
     {
-        if (!$request->has(['name', 'start_date', 'end_date', 'access_type_id'])) {
+        if (!$request->has(['start_date', 'end_date', 'access_type_id']) && (!($request->has(['name']) || $request->has(['name_en']) || $request->has(['name_ar']) ))) {
             return response()->json(['response' => 'invalid request',
-                'required fields' => ['name', 'start_date', 'end_date', 'access_type_id']], 400);
+                'required fields' => ['name or name_en or name_ar', 'start_date', 'end_date', 'access_type_id']], 400);
         }
 
         if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
