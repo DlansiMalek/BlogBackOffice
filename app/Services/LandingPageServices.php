@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\RequestLandingPage;
+use Illuminate\Validation\Rules\Exists;
 
 class LandingPageServices
 {
@@ -12,6 +13,7 @@ class LandingPageServices
 
     public function addRequestLandingPage($LandingPageRequest, $congress_id, $admin_id)
     {
+        $exists = true;
         if (!$LandingPage = $this->getLandingPagewithCongressIdAndAdminID($congress_id, $admin_id)) {
             $LandingPage = new RequestLandingPage();
             $exists = false;
@@ -21,7 +23,12 @@ class LandingPageServices
         $LandingPage->congress_id = $congress_id;
         $LandingPage->admin_id = $admin_id;
         $LandingPage->dns_pwa = $LandingPageRequest->input('dns_pwa');
-        !$exists ? $LandingPage->save():  $LandingPage->update();
+        if(!$exists) {
+            $LandingPage->save();
+        } else {
+            $LandingPage->status = 0;
+            $LandingPage->update();
+        }
         return $LandingPage;
     }
     public function getLandingPages()
