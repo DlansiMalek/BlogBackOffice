@@ -19,7 +19,7 @@ class AddArabicColumnsToTableAccess extends Migration
             $table->string('description_en')->nullable()->default(null);
             $table->string('description_ar')->nullable()->default(null);
             $table->string('name')->nullable()->default(null)->change();
-            $table->string('description')->nullable()->default(null)->change();
+            $table->text('description')->nullable()->default(null)->change();
         });
     }
 
