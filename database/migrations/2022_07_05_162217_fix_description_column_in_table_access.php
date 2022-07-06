@@ -26,7 +26,7 @@ class FixDescriptionColumnInTableAccess extends Migration
     public function down()
     {
         Schema::table('Access', function (Blueprint $table) {
-            $table->text('description')->change();       
+            $table->string('description')->change();       
         });
     }
 }
