@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\RequestLandingPage;
-use Illuminate\Validation\Rules\Exists;
 
 class LandingPageServices
 {
