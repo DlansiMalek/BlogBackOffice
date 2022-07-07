@@ -14,13 +14,12 @@ class PwaHomePageBanner2 extends Migration
     public function up()
     {
         Schema::table('Config_LP', function (Blueprint $table) {
-            $table->text('home_banner_event_en')->nullable()->default(null);
-            $table->text('home_banner_event_ar')->nullable()->default(null);
-            $table->text('prp_banner_event_en')->nullable()->default(null);
-            $table->text('prp_banner_event_ar')->nullable()->default(null);
-            $table->text('specific_bnr_en')->nullable()->default(null);
-            $table->text('specific_bnr_two_en')->nullable()->default(null);
-
+            $table->string('home_banner_event_en')->nullable()->default(null);
+            $table->string('home_banner_event_ar')->nullable()->default(null);
+            $table->string('prp_banner_event_en')->nullable()->default(null);
+            $table->string('prp_banner_event_ar')->nullable()->default(null);
+            $table->string('specific_bnr_en')->nullable()->default(null);
+            $table->string('specific_bnr_two_en')->nullable()->default(null);
         });
     }
 
