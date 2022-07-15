@@ -1236,7 +1236,7 @@ class UserController extends Controller
 
                         if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8 || $input->form_input_type_id == 7 || $input->form_input_type_id == 9) {
                             $formInputValues = $this->userServices->getFormInputValues($input->form_input_id);
-                            if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8) {
+                            if ($input->form_input_type_id == 6 || $input->form_input_type_id == 8 || $input->form_input_type_id == 7) {
                                 $reponse->response = '';
                                 $reponse->save();
                                 $user_responses = explode(";", $user[$key]);
@@ -1311,104 +1311,106 @@ class UserController extends Controller
         $congress = $this->congressServices->getCachedMinimalCongressById($congressId);
         $mailtype = $this->congressServices->getMailType('attestation');
         $mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id);
-        $mailId = $mail->mail_id;
-        /* Meme Block Of Send Attestation */
-        if (!$user = $this->userServices->getUserByIdWithRelations($userId, [
-            'accesses' => function ($query) use ($congressId) {
-                $query->where("congress_id", "=", $congressId);
-                $query->where('with_attestation', "=", 1);
-            }, 'payments' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            }, 'user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
-            'user_mails' => function ($query) use ($mailId) {
-                $query->where('mail_id', '=', $mailId);
+        if ($mail) {
+            $mailId = $mail->mail_id;
+            /* Meme Block Of Send Attestation */
+            if (!$user = $this->userServices->getUserByIdWithRelations($userId, [
+                'accesses' => function ($query) use ($congressId) {
+                    $query->where("congress_id", "=", $congressId);
+                    $query->where('with_attestation', "=", 1);
+                }, 'payments' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                }, 'user_congresses' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                'user_mails' => function ($query) use ($mailId) {
+                    $query->where('mail_id', '=', $mailId);
+                }
+            ])) {
+                return response()->json(['error' => 'user not found'], 404);
             }
-        ])) {
-            return response()->json(['error' => 'user not found'], 404);
-        }
 
-        $request = array();
-        if (Utils::isValidSendMail($congress, $user)) {
-            if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isPresent == 1 && $congress->attestation) {
-                array_push(
-                    $request,
-                    array(
-                        'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
-                        'name' => Utils::getFullName($user->first_name, $user->last_name),
-                        'qrCode' => false,
-                    )
-                );
-            }
-            foreach ($user->accesses as $access) {
-                if ($access->pivot->isPresent == 1) {
-                    if (sizeof($access->attestations) > 0) {
-                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
-                        if ($attestationId) {
-                            array_push(
-                                $request,
-                                array(
-                                    'badgeIdGenerator' => $attestationId,
-                                    'name' => Utils::getFullName($user->first_name, $user->last_name),
-                                    'qrCode' => false,
-                                )
-                            );
-                        }
-                    }
-                }
-                $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $userId);
-                $privilegeId = null;
-                if ($chairPerson) {
-                    $privilegeId = config('privilege.Moderateur');
-                }
-                $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $userId);
-                if ($speakerPerson) {
-                    $privilegeId = config('privilege.Conferencier_Orateur');
-                }
-                $attestationId = null;
-                if ($privilegeId) {
-                    $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, $privilegeId);
-                }
-
-                if ($attestationId) {
+            $request = array();
+            if (Utils::isValidSendMail($congress, $user)) {
+                if (sizeof($user->user_congresses) > 0 && $user->user_congresses[0]->isPresent == 1 && $congress->attestation) {
                     array_push(
                         $request,
                         array(
-                            'badgeIdGenerator' => $attestationId,
+                            'badgeIdGenerator' => $congress->attestation->attestation_generator_id,
                             'name' => Utils::getFullName($user->first_name, $user->last_name),
                             'qrCode' => false,
                         )
                     );
                 }
-            }
+                foreach ($user->accesses as $access) {
+                    if ($access->pivot->isPresent == 1) {
+                        if (sizeof($access->attestations) > 0) {
+                            $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, config('privilege.Participant'));
+                            if ($attestationId) {
+                                array_push(
+                                    $request,
+                                    array(
+                                        'badgeIdGenerator' => $attestationId,
+                                        'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                        'qrCode' => false,
+                                    )
+                                );
+                            }
+                        }
+                    }
+                    $chairPerson = $this->accessServices->getChairAccessByAccessAndUser($access->access_id, $userId);
+                    $privilegeId = null;
+                    if ($chairPerson) {
+                        $privilegeId = config('privilege.Moderateur');
+                    }
+                    $speakerPerson = $this->accessServices->getSpeakerAccessByAccessAndUser($access->access_id, $userId);
+                    if ($speakerPerson) {
+                        $privilegeId = config('privilege.Conferencier_Orateur');
+                    }
+                    $attestationId = null;
+                    if ($privilegeId) {
+                        $attestationId = Utils::getAttestationByPrivilegeId($access->attestations, $privilegeId);
+                    }
 
-            if ($mail) {
-                $userMail = null;
-                if (sizeof($user->user_mails) == 0) {
-                    $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
-                } else {
-                    $userMail = $user->user_mails[0];
+                    if ($attestationId) {
+                        array_push(
+                            $request,
+                            array(
+                                'badgeIdGenerator' => $attestationId,
+                                'name' => Utils::getFullName($user->first_name, $user->last_name),
+                                'qrCode' => false,
+                            )
+                        );
+                    }
                 }
-                if (Utils::isValidStatus($userMail)) {
-                    $fileName = 'attestations.zip';
-                    $this->badgeServices->saveAttestationsInPublic($request);
-                    $this->mailServices->sendMail(
-                        $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
-                        $user,
-                        $congress,
-                        $mail->object,
-                        true,
-                        $userMail,
-                        null,
-                        $fileName
-                    );
+
+                if ($mail) {
+                    $userMail = null;
+                    if (sizeof($user->user_mails) == 0) {
+                        $userMail = $this->mailServices->addingMailUser($mail->mail_id, $user->user_id);
+                    } else {
+                        $userMail = $user->user_mails[0];
+                    }
+                    if (Utils::isValidStatus($userMail)) {
+                        $fileName = 'attestations.zip';
+                        $this->badgeServices->saveAttestationsInPublic($request);
+                        $this->mailServices->sendMail(
+                            $this->congressServices->renderMail($mail->template, $congress, $user, null, null, null),
+                            $user,
+                            $congress,
+                            $mail->object,
+                            true,
+                            $userMail,
+                            null,
+                            $fileName
+                        );
+                    }
                 }
+            } else {
+                return response()->json(['error' => 'user not present or empty email'], 501);
             }
-        } else {
-            return response()->json(['error' => 'user not present or empty email'], 501);
         }
-
+        
         /* Block Sending Sondage */
         $linkForm = $congress->config->link_sondage;
 
@@ -1602,7 +1604,7 @@ class UserController extends Controller
         $congress = $this->congressServices->getCachedMinimalCongressById($congress_id);
          //get Payement Ligne
          $userPayment = null;
-         if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
+         if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3 || $congress->config_selection->selection_type == 0))) {
             $userPayment = $this->paymentServices->getPaymentByUserAndCongressID($congress_id, $user->user_id);
         }
         $link = $link = UrlUtils::getBaseUrl() . "/users/" . $user->user_id . '/congress/' . $congress_id . '/validate/' . $user->verification_code;
@@ -1976,7 +1978,12 @@ class UserController extends Controller
         } else {
             //PreInscription First (Payment Required)
             //Add Payement Ligne
-            if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3))) {
+            if (($congress->congress_type_id == 1 && (!$congress->config_selection)) || ($congress->congress_type_id == 1 && $congress->config_selection && ($congress->config_selection->selection_type == 2 || $congress->config_selection->selection_type == 3 || $congress->config_selection->selection_type == 0))) {
+                    if ($request->has('responses')) {
+                        $responses = $request->input('responses');
+                        $questionResponsePrices = $this->caculQuestionPrice($responses);
+                        $totalPrice = $totalPrice + $questionResponsePrices;
+                    }
                 $userPayment = $this->paymentServices->affectPaymentToUser($user->user_id, $congress_id, $totalPrice, false);
             }
 
@@ -2002,7 +2009,7 @@ class UserController extends Controller
             $mail = $congress->config->replyto_mail; // Mail To Send with every inscription
             $template = Utils::getDefaultMailNotifNewRegister();
             $objectMail = "Nouvelle Inscription";
-            $this->adminServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), $congress, $objectMail, null, false, $mail);
+            $this->mailServices->sendMail($this->congressServices->renderMail($template, $congress, $user, null, null, $userPayment), null, $congress, $objectMail, false, null, $mail);
         }
         $privilege = $this->sharedServices->getPrivilegeById($privilegeId);
         $this->trackingServices->sendUserInfo($congress->congress_id, $congress->form_inputs, $user);
@@ -2474,6 +2481,10 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function clearCache() {
+        return $this->userServices->clearCache();
+    }
+
     public function updateAllResponses($congressId)
     {
         if (!$loggedadmin = $this->adminServices->retrieveAdminFromToken()) {
@@ -2499,19 +2510,25 @@ class UserController extends Controller
                     if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 7 || $formInputs[$i]->form_input_type_id == 8 || $formInputs[$i]->form_input_type_id == 9) {
                         $info = $this->userServices->getValueResponse($user->user_id, $formInputs[$i]->form_input_id);
                         if ($formInputs[$i]->form_input_type_id == 6 ||  $formInputs[$i]->form_input_type_id == 8) {
-                            foreach ($info as $inf) {
-                                if (isset($inf['values']) && sizeof($inf['values']) > 0) {
-                                    $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                            if (sizeof($info) > 0) {
+                                foreach ($info as $inf) {
+                                    if (isset($inf['values']) && sizeof($inf['values']) > 0) {
+                                        $responses = $inf['values'][0]['val']['value'] . " " . $responses;
+                                    }
                                 }
-                            }
+                            }                            
                         } else {
                             if (isset($info) && sizeof($info) > 0) {
-                                $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                                if (isset($info[0]['values']) && sizeof($info[0]['values']) > 0) {
+                                    $responses = $info[0]['values'][0]['val']['value'] . " " . $responses;
+                                }
                             }
                         }
                     } else {
                         $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
-                        $responses = $info[0]['response'] . " " . $responses;
+                        if (isset($info) && sizeof($info) > 0) {
+                            $responses = $info[0]['response'] . " " . $responses;
+                        }
                     }
                 }
             }
@@ -2545,12 +2562,41 @@ class UserController extends Controller
                 }
             } else {
                 $info = $this->userServices->getResponseFormInput($user->user_id, $formInputs[$i]->form_input_id);
-                $userResponses = $info[0]['response'] . " " .  $userResponses;    
+                if (isset($info) && sizeof($info) > 0) {
+                    $userResponses = $info[0]['response'] . " " .  $userResponses;    
+                }
             }
         }  
            }
 
         return $userResponses;
         }
+
+    function caculQuestionPrice($userResponses)
+    {
+        $questionPriceSum = 0;
+        if (!$userResponses) {
+            return 0;
+        }
+        foreach ($userResponses as $response) {
+            if (isset($response['response'])) {
+
+                foreach ($response['values'] as $value) {
+                    if (is_array($response['response'])) {
+                        foreach ($response['response'] as $resp) {
+                            if ($resp == $value['form_input_value_id']) {
+                                $questionPriceSum += $value['price'];
+                            }
+                        }
+                    } else {
+                        if ($response['response'] == $value['form_input_value_id']) {
+                            $questionPriceSum += $value['price'];
+                        }
+                    }
+                }
+            }
+        }
+        return $questionPriceSum;
+    }
 
 }

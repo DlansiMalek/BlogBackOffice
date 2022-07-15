@@ -58,6 +58,5 @@ class MailTypeAdminSeedTable extends Seeder
             'name' => 'contact_us',
             'display_name' => 'Contacter nous'
         ]);
-
     }
 }

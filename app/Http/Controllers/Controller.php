@@ -296,3 +296,14 @@ SET Meeting.meeting_table_id = 1930 , -- TF29
 WHERE User.email = 'roumyi@afd.fr' AND User_Meeting.status = 1;
 
 */
+
+/*
+
+Get presence in each workshop
+
+SELECT Access.access_id, Access.name, User.user_id , User.first_name, User.last_name, User.email, User.mobile FROM User_Access
+INNER JOIN Access ON Access.access_id = User_Access.access_id
+INNER JOIN User ON User.user_id = User_Access.user_id
+WHERE User_Access.isPresent = 1 AND Access.congress_id = 437;
+
+*/

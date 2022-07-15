@@ -6,6 +6,7 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
+use App\Models\UserAccess;
 use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
@@ -23,7 +24,6 @@ use App\Models\Stand;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
-use App\Models\UserAccess;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -207,6 +207,9 @@ class CongressServices
                 "attestation",
                 "form_inputs.type",
                 "form_inputs.values",
+                'ConfigSubmission' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
                 "form_inputs.question_reference"=> function ($query) {
                     $query->with(['reference', 
                     'response_reference'  => function ($q) {
@@ -432,6 +435,8 @@ class CongressServices
         $congress->private = $congressRequest->input('private');
         $congress->description_en = $congressRequest->input('description_en');
         $congress->name_en = $congressRequest->input('name_en');
+        $congress->name_ar = $congressRequest->input('name_ar');
+        $congress->description_ar = $congressRequest->input('description_ar');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -529,6 +534,7 @@ class CongressServices
             $configCongress->show_in_chat = $showInChat;
         }
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
+        $configCongress->email_signature = $configCongressRequest['email_signature'];
         $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
         $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
         $configCongress->location_link  = $configCongressRequest['location_link'];
@@ -536,6 +542,7 @@ class CongressServices
         $configCongress->networking_fixe_msg_en = array_key_exists ('networking_fixe_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_fixe_msg_en']: null ;
         $configCongress->networking_libre_msg = $configCongressRequest['networking_libre_msg'];
         $configCongress->networking_libre_msg_en = array_key_exists ('networking_libre_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_libre_msg_en']: null ;
+        $configCongress->show_free_networking = array_key_exists ('show_free_networking' , $configCongressRequest ) ? $configCongressRequest['show_free_networking'] : 1;
         $configCongress->update();
 
         return $configCongress;
@@ -664,6 +671,8 @@ class CongressServices
         $congress->private = $request->input('private');
         $congress->description_en = $request->input('description_en');
         $congress->name_en = $request->input('name_en');
+        $congress->name_ar = $request->input('name_ar');
+        $congress->description_ar = $request->input('description_ar');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
@@ -782,7 +791,11 @@ class CongressServices
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
             $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
-            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ;
+            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ; 
+            $signature=$congress->config->email_signature;
+            if ($signature != null) {
+                $template = str_replace('{{$congress-&gt;config-&gt;email_signature}}', $signature . '', $template);
+            }
         }
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
@@ -1144,22 +1157,51 @@ class CongressServices
         $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
         $config_landing_page->waiting_title_en = $request->has("waiting_title_en") ? $request->input('waiting_title_en') : null;
         $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
+        $config_landing_page->waiting_color = $request->has("waiting_color") ? $request->input('waiting_color') : null;
+        $config_landing_page->waiting_opacity = $request->has("waiting_opacity") ? $request->input('waiting_opacity') : null;
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
         $config_landing_page->prp_link = $request->has("prp_link") ? $request->input('prp_link') : null;
         $config_landing_page->prp_btn_text = $request->has("prp_btn_text") ? $request->input('prp_btn_text') : null;
         $config_landing_page->prp_btn_text_en = $request->has("prp_btn_text_en") ? $request->input('prp_btn_text_en') : null;
 
+        $config_landing_page->prg_file = $request->has("prg_file") ? $request->input('prg_file') : null;
         $config_landing_page->is_b2b_btn = $request->has("is_b2b_btn") ? $request->input('is_b2b_btn') : 0;
         $config_landing_page->home_btn_text = $request->has("home_btn_text") ? $request->input('home_btn_text') : 'LOGIN';
         $config_landing_page->home_btn_link = $request->has("home_btn_link") ? $request->input('home_btn_link') : '/landingpage/{congressId}/login';
-
         $config_landing_page->live_link = $request->has("live_link") ? $request->input('live_link') : null;
         $config_landing_page->live_title_en = $request->has("live_title_en") ? $request->input('live_title_en') : null;
         $config_landing_page->live_title = $request->has("live_title") ? $request->input('live_title') : null;
         $config_landing_page->live_title_btn_en = $request->has("live_title_btn_en") ? $request->input('live_title_btn_en') : null;
         $config_landing_page->live_title_btn = $request->has("live_title_btn") ? $request->input('live_title_btn') : null;
+        $config_landing_page->redirect_to_pwa = $request->has("redirect_to_pwa") ? $request->input('redirect_to_pwa') : null;
 
+        $config_landing_page->home_title_ar = $request->has("home_title_ar") ? $request->input('home_title_ar') : null;
+        $config_landing_page->home_description_ar = $request->has("home_description_ar") ? $request->input('home_description_ar') : null;
+        $config_landing_page->prp_title_ar = $request->has("prp_title_ar") ? $request->input('prp_title_ar') : null;
+        $config_landing_page->prp_description_ar = $request->has("prp_description_ar") ? $request->input('prp_description_ar') : null;
+        $config_landing_page->speaker_title_ar = $request->has("speaker_title_ar") ? $request->input('speaker_title_ar') : null;
+        $config_landing_page->speaker_description_ar = $request->has("speaker_description_ar") ? $request->input('speaker_description_ar') : null;
+        $config_landing_page->sponsor_title_ar = $request->has("sponsor_title_ar") ? $request->input('sponsor_title_ar') : null;
+        $config_landing_page->sponsor_description_ar = $request->has("sponsor_description_ar") ? $request->input('sponsor_description_ar') : null;
+        $config_landing_page->prg_title_ar = $request->has("prg_title_ar") ? $request->input('prg_title_ar') : null;
+        $config_landing_page->prg_description_ar = $request->has("prg_description_ar") ? $request->input('prg_description_ar') : null;
+        $config_landing_page->contact_title_ar = $request->has("contact_title_ar") ? $request->input('contact_title_ar') : null;
+        $config_landing_page->contact_description_ar = $request->has("contact_description_ar") ? $request->input('contact_description_ar') : null;
+        $config_landing_page->home_sub_title_ar = $request->has("home_sub_title_ar") ? $request->input('home_sub_title_ar') : null;
+        $config_landing_page->organizers_title_ar = $request->has("organizers_title_ar") ? $request->input('organizers_title_ar') : null;
+        $config_landing_page->organizers_description_ar = $request->has("organizers_description_ar") ? $request->input('organizers_description_ar') : null;
+        $config_landing_page->partners_title_ar = $request->has("partners_title_ar") ? $request->input('partners_title_ar') : null;
+        $config_landing_page->partners_description_ar = $request->has("partners_description_ar") ? $request->input('partners_description_ar') : null;
+        $config_landing_page->waiting_title_ar = $request->has("waiting_title_ar") ? $request->input('waiting_title_ar') : null;
+        $config_landing_page->waiting_description_ar = $request->has("waiting_description_ar") ? $request->input('waiting_description_ar') : null;
+        $config_landing_page->prp_btn_text_ar = $request->has("prp_btn_text_ar") ? $request->input('prp_btn_text_ar') : null;
+        $config_landing_page->live_title_btn_ar = $request->has("live_title_btn_ar") ? $request->input('live_title_btn_ar') : null;
+        $config_landing_page->live_title_ar = $request->has("live_title_ar") ? $request->input('live_title_ar') : null;
+        $config_landing_page->page_title_ar = $request->has("page_title_ar") ? $request->input('page_title_ar') : null;
+        $config_landing_page->live_link_ar = $request->has("live_link_ar") ? $request->input('live_link_ar') : null;
+
+        
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;

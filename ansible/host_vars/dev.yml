@@ -1,4 +1,5 @@
 # Docker
 
 host_name: dev.api.eventizer.io
+primary_host_name: dev.api.eventizer.io
 env_file: "{{ lookup('env','ENV_DEV') }}"
