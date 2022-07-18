@@ -1234,6 +1234,7 @@ class CongressServices
         $config_landing_page->prp_banner_event_ar = $request->has("prp_banner_event_ar") ? $request->input('prp_banner_event_ar') : null;
         $config_landing_page->specific_bnr_en = $request->has("specific_bnr_en") ? $request->input('specific_bnr_en') : null;
         $config_landing_page->specific_bnr_two_en = $request->has("specific_bnr_two_en") ? $request->input('specific_bnr_two_en') : null;
+        $config_landing_page->is_background_white = $request->has("is_background_white") ? $request->input('is_background_white') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
