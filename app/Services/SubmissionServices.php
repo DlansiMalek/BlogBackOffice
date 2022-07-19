@@ -28,7 +28,7 @@ class SubmissionServices
         $submission->theme_id = $theme_id;
         $submission->user_id = $user_id;
         if ($status !== null) {
-            $submission->status = $status;
+            $submission->status = $status?$status:0;
         }
         if ($eligible !== null) {
             $submission->eligible = $eligible;
