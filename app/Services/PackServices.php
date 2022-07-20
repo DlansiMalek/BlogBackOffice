@@ -28,7 +28,7 @@ class PackServices
             ->first();
     }
 
-    public function addPack($congressId, $label, $description, $price, $accessIds)
+    public function addPack($congressId, $label, $description, $price, $accessIds, $label_en, $description_en)
     {
 
         $pack = new Pack();
@@ -36,6 +36,8 @@ class PackServices
         $pack->description = $description;
         $pack->price = $price;
         $pack->congress_id = $congressId;
+        $pack->label_en = $label_en;
+        $pack->description_en = $description_en;
         $pack->save();
         if ($accessIds) {
             $this->addAccessPack($pack->pack_id, $accessIds);
@@ -109,6 +111,8 @@ class PackServices
             $pack->label = $p["label"];
             $pack->description = $p["description"];
             $pack->price = $p["price"];
+            $pack->label_en = $p["label_en"];
+            $pack->description_en = $p["description_en"];
             $pack->congress_id = $congress->congress_id;
             $pack->save();
             foreach ($p["accessIds"] as $access_front_id) {
@@ -150,6 +154,8 @@ class PackServices
 
         if ($request->has('label')) $pack->label = $request->input("label");
         if ($request->has('description')) $pack->description = $request->input("description");
+        if ($request->has('label_en')) $pack->label_en = $request->input("label_en");
+        if ($request->has('description_en')) $pack->description_en = $request->input("description_en");
         $user_packs = $this->getUserPacksByPackId($pack->pack_id);
         if (count($user_packs) == 0) {
             if ($request->has('price')) {
