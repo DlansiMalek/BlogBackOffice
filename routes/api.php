@@ -712,6 +712,7 @@ Route::group(['prefix' => 'request-landing-page'], function () {
     Route::get('/list', 'RequestLandingPageController@getLandingPages');
     Route::put('{request_landing_page_id}', 'RequestLandingPageController@upadteStatusLandingPage');
     });
+    Route::get('dns', 'RequestLandingPageController@getLandingPagewithDnsName');
     Route::group(["middleware" => ['assign.guard:admins']], function () {
         Route::get('/LandingPage/{request_landing_page_id}', 'RequestLandingPageController@getOneLandingPage');
         Route::post('{congress_id}/add', 'RequestLandingPageController@addRequestLandingPage');
@@ -725,6 +726,21 @@ Route::group(['prefix' => '{congressId}/landing-page'], function () {
     
  
 });
+Route::group(['prefix' => 'companies'], function () {
+    Route::get('{congress_id}', 'CompanyController@getAllCompanies');
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::post('{congress_id}', 'CompanyController@addCompany');
+        Route::delete('{company_id}', 'CompanyController@deleteCompany');
+     });
+});
+Route::group(['prefix' => 'sponsor-pack'], function () {
+    Route::get('{congress_id}', 'CongressController@getAllLandingPageSponsorPack');
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::post('{congress_id}', 'CongressController@addLandingPageSponsorPack');
+        Route::delete('{lp_sponsor_pack_id}', 'CongressController@deleteLandingPageSponsorPack');
+     });
+});
+
 // 3D API
 Route::group(["prefix" => "3D"], function () {
     Route::group(['middleware' => ['assign.guard:users']], function () {

@@ -24,6 +24,7 @@ use App\Models\Stand;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\LPSponsorPack;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -543,6 +544,11 @@ class CongressServices
         $configCongress->networking_libre_msg = $configCongressRequest['networking_libre_msg'];
         $configCongress->networking_libre_msg_en = array_key_exists ('networking_libre_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_libre_msg_en']: null ;
         $configCongress->show_free_networking = array_key_exists ('show_free_networking' , $configCongressRequest ) ? $configCongressRequest['show_free_networking'] : 1;
+
+        $configCongress->banner_ar = array_key_exists ('banner_ar' , $configCongressRequest ) ? $configCongressRequest['banner_ar']: null;
+        $configCongress->banner_en = array_key_exists ('banner_en' , $configCongressRequest ) ? $configCongressRequest['banner_en']: null;
+        $configCongress->logo_en = array_key_exists ('logo_en' , $configCongressRequest ) ? $configCongressRequest['logo_en']: null;
+        $configCongress->logo_ar = array_key_exists ('logo_ar' , $configCongressRequest ) ? $configCongressRequest['logo_ar']: null;
         $configCongress->update();
 
         return $configCongress;
@@ -1201,7 +1207,37 @@ class CongressServices
         $config_landing_page->page_title_ar = $request->has("page_title_ar") ? $request->input('page_title_ar') : null;
         $config_landing_page->live_link_ar = $request->has("live_link_ar") ? $request->input('live_link_ar') : null;
 
-        
+        $config_landing_page->specific_bnr = $request->has("specific_bnr") ? $request->input('specific_bnr') : null;
+        $config_landing_page->specific_bnr_title = $request->has("specific_bnr_title") ? $request->input('specific_bnr_title') : null;
+        $config_landing_page->specific_bnr_description = $request->has("specific_bnr_description") ? $request->input('specific_bnr_description') : null;
+        $config_landing_page->specific_bnr_title_en = $request->has("specific_bnr_title_en") ? $request->input('specific_bnr_title_en') : null;
+        $config_landing_page->specific_bnr_description_en = $request->has("specific_bnr_description_en") ? $request->input('specific_bnr_description_en') : null;
+        $config_landing_page->specific_bnr_ar = $request->has("specific_bnr_ar") ? $request->input('specific_bnr_ar') : null;
+        $config_landing_page->specific_bnr_title_ar = $request->has("specific_bnr_title_ar") ? $request->input('specific_bnr_title_ar') : null;
+        $config_landing_page->specific_bnr_description_ar = $request->has("specific_bnr_description_ar") ? $request->input('specific_bnr_description_ar') : null;
+
+        $config_landing_page->companies_title = $request->has("companies_title") ? $request->input('companies_title') : null;
+        $config_landing_page->companies_description = $request->has("companies_description") ? $request->input('companies_description') : null;
+        $config_landing_page->companies_title_en = $request->has("companies_title_en") ? $request->input('companies_title_en') : null;
+        $config_landing_page->companies_description_en = $request->has("companies_description_en") ? $request->input('companies_description_en') : null;
+        $config_landing_page->companies_title_ar = $request->has("companies_title_ar") ? $request->input('companies_title_ar') : null;
+        $config_landing_page->companies_description_ar = $request->has("companies_description_ar") ? $request->input('companies_description_ar') : null;
+
+        $config_landing_page->sponsor_pack_title = $request->has("sponsor_pack_title") ? $request->input('sponsor_pack_title') : null;
+        $config_landing_page->sponsor_pack_description = $request->has("sponsor_pack_description") ? $request->input('sponsor_pack_description') : null;
+        $config_landing_page->sponsor_pack_title_en = $request->has("sponsor_pack_title_en") ? $request->input('sponsor_pack_title_en') : null;
+        $config_landing_page->sponsor_pack_description_en = $request->has("sponsor_pack_description_en") ? $request->input('sponsor_pack_description_en') : null;
+        $config_landing_page->sponsor_pack_title_ar = $request->has("sponsor_pack_title_ar") ? $request->input('sponsor_pack_title_ar') : null;
+        $config_landing_page->sponsor_pack_description_ar = $request->has("sponsor_pack_description_ar") ? $request->input('sponsor_pack_description_ar') : null;
+
+        $config_landing_page->home_banner_event_en = $request->has("home_banner_event_en") ? $request->input('home_banner_event_en') : null;
+        $config_landing_page->home_banner_event_ar = $request->has("home_banner_event_ar") ? $request->input('home_banner_event_ar') : null;
+        $config_landing_page->prp_banner_event_en = $request->has("prp_banner_event_en") ? $request->input('prp_banner_event_en') : null;
+        $config_landing_page->prp_banner_event_ar = $request->has("prp_banner_event_ar") ? $request->input('prp_banner_event_ar') : null;
+        $config_landing_page->specific_bnr_en = $request->has("specific_bnr_en") ? $request->input('specific_bnr_en') : null;
+        $config_landing_page->specific_bnr_two_en = $request->has("specific_bnr_two_en") ? $request->input('specific_bnr_two_en') : null;
+        $config_landing_page->is_background_white = $request->has("is_background_white") ? $request->input('is_background_white') : null;
+
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
         return $config_landing_page;
@@ -1219,6 +1255,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->save();
         return $lp_speaker;
     }
@@ -1245,6 +1287,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->update();
         return $lp_speaker;
     }
@@ -1350,5 +1398,35 @@ class CongressServices
         return UserAccess::where('user_id', '=', $userId)
         ->where('access_id', '=', $accessId)
         ->first();
+    }
+
+    public function addLandingPageSponsorPack($congress_id, $request, $lpSponsorPack)
+    {
+        if (!$lpSponsorPack) {
+            $lpSponsorPack = new LPSponsorPack();
+        }
+        $lpSponsorPack->congress_id = $congress_id;
+        $lpSponsorPack->description = $request->input('description');
+        $lpSponsorPack->description_en = $request->input('description_en');
+        $lpSponsorPack->description_ar = $request->input('description_ar');
+        $lpSponsorPack->save();
+        return $lpSponsorPack;
+    }
+
+    public function getLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        return LPSponsorPack::where('lp_sponsor_pack_id', '=', $lp_sponsor_pack_id)
+        ->first();
+    }
+
+    public function getAllLandingPageSponsorPack($congressId)
+    {
+        return LPSponsorPack::where('congress_id', '=', $congressId)
+        ->get();
+    }
+
+    public function deleteLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        return LPSponsorPack::where('lp_sponsor_pack_id', '=', $lp_sponsor_pack_id)->delete();
     }
 }

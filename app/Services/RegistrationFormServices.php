@@ -56,9 +56,11 @@ class RegistrationFormServices
             $input->congress_id = $congressId;
             $input->label = $new["label"];
             $input->label_en = $new["label_en"];
+            $input->label_ar = $new["label_ar"];
             $input->required = $new["required"];
             $input->public_label = $new["public_label"];
             $input->public_label_en = $new["public_label_en"];
+            $input->public_label_ar = $new["public_label_ar"];
             $input->key = $new["key"] ? $new["key"] : substr($new["label"], 180);
             $input->save();
             $val = $newInputs[$key];
@@ -90,6 +92,7 @@ class RegistrationFormServices
                     $value->form_input_value_id = $valueRequest['form_input_value_id'];
                     $value->value = $valueRequest['value'];
                     $value->value_en = $valueRequest['value_en'];
+                    $value->value_ar = $valueRequest['value_ar'];
                     $value->form_input_id = $input->form_input_id;
                     $value->price = $valueRequest['price'];
                     if ($value->form_input_value_id) $value->update();
