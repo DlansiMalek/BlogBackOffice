@@ -123,11 +123,11 @@ class SubmissionTest extends TestCase
             'access_title_en' => "Choose Ticket",
             'prise_charge_title' => "Prise en charge",
             'prise_charge_title_en' => "Supported by",
-            'auto_presence' => 0,
+            'auto_presence' => $this->faker->numberBetween(0, 1),
             'access_system' => 'Ateliers',
-            'status' => 1,
-            'application' => 0,
-            'is_visible_price' => 1,
+            'status' => $this->faker->numberBetween(0, 1),
+            'application' => $this->faker->numberBetween(0, 1),
+            'is_visible_price' => $this->faker->numberBetween(0, 1),
             'show_free_networking' => $this->faker->numberBetween(0, 1)
         ]);
         $config['privileges'] = [3];
