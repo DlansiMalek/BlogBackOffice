@@ -46,8 +46,10 @@ class ConfigCongress extends Model
         'default_country',
         'nb_meeting_table',
         'is_visible_price',
+        'email_signature',
         'registration_description',
-        'registration_description_en'
+        'registration_description_en',
+        'location_link'
 
         
     ];

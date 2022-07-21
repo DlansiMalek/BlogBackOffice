@@ -11,6 +11,8 @@ use App\Services\RoomServices;
 use App\Services\UserServices;
 use App\Services\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\ProcessAccessDuration;
 
 class AccessController extends Controller
 {
@@ -47,18 +49,12 @@ class AccessController extends Controller
             return response()->json(['error' => 'access not found'], 404);
         }
 
-        //DENTAIRE SHIT
-        if ($accessId == 8) {
-            $accessShit = $this->accessServices->getById(25);
-            if ($accessShit->start_date == null) {
-                $accessShit->start_date = date('Y-m-d H:i:s');
-                $accessShit->update();
-            }
-        }
-
         if ($access->start_date == null) {
             $access->start_date = date('Y-m-d H:i:s');
             $access->update();
+        } else if ($access->duration_set != 1) {
+            $processAccessDuration = new ProcessAccessDuration($access);
+            dispatch($processAccessDuration);
         }
 
         return response()->json($access);
@@ -67,12 +63,12 @@ class AccessController extends Controller
 
     public function addAccess(Request $request, $congress_id)
     {
-        if (!$request->has(['name', 'start_date', 'end_date', 'access_type_id'])) {
+        if (!$request->has(['start_date', 'end_date', 'access_type_id']) && (!($request->has(['name']) || $request->has(['name_en']) || $request->has(['name_ar']) ))) {
             return response()->json(['response' => 'invalid request',
-                'required fields' => ['name', 'start_date', 'end_date', 'access_type_id']], 400);
+                'required fields' => ['name or name_en or name_ar', 'start_date', 'end_date', 'access_type_id']], 400);
         }
 
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'congress not found'], 404);
         }
 
@@ -124,7 +120,7 @@ class AccessController extends Controller
 
     public function getByCongressId($congressId)
     {
-        return $this->accessServices->getByCongressId($congressId);
+        return $this->accessServices->getCachedByCongressId($congressId);
     }
 
     public function deleteAccess($access_id)
@@ -228,7 +224,7 @@ class AccessController extends Controller
 
     public function editAccessStatus($congress_id, Request $request)
     {
-        if (!$this->congressServices->getCongressById($congress_id)) {
+        if (!$this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['response' => 'Congress not found', 404]);
         }
 
@@ -381,7 +377,7 @@ class AccessController extends Controller
 
     public function getUserAccessesByCongressId($congress_id)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
         $user = $this->userServices->retrieveUserFromToken();

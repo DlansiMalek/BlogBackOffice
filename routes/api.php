@@ -61,6 +61,7 @@ Route::group(['prefix' => 'meetings'], function () {
     Route::group(['prefix' => '{congress_id}'], function () {
         Route::get('', 'MeetingController@getUserMeetingById');
         Route::get('meetings-accepted', 'MeetingController@getTotalNumberOfMeetings');
+        Route::get('total-meetings', 'MeetingController@getTotalNumberOfMeetingsByCongress');
         Route::get('number-meetings', 'MeetingController@getNumberOfMeetings');
         Route::get('request-details', 'MeetingController@getRequestDetailsPagination');
         Route::get('available-timeslots', 'MeetingController@getAvailableTimeslots');
@@ -174,6 +175,8 @@ Route::group(['prefix' => 'users'], function () {
 
     //API PER CONGRESS
     Route::group(['prefix' => 'congress/{congress_id}'], function () {
+
+        Route::get('/count-present', 'CongressController@countWillBePresentUserCongress');
         Route::group(['prefix' => 'privilege'], function () {
             Route::post('', 'UserController@getUserByTypeAndCongressId');
         });
@@ -198,7 +201,8 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
     });
     Route::post('/custom-mail/send-to-all/{mail_id}', 'CongressController@sendCustomMailToAllUsers');
     Route::group(['prefix' => '{congress_id}'], function () {
-        Route::get('', 'CongressController@getCongressById');
+        Route::get('', 'CongressController@getMinimalCongressById');
+        Route::get('update-reponses', 'UserController@updateAllResponses');
         Route::get('/details', 'CongressController@getCongressDetailsById');
         Route::post('switchRoom', 'CongressController@switchUsersRoom');
         Route::post('addItemsEvaluation', 'CongressController@addItemsEvaluation')->middleware('assign.guard:admins');
@@ -220,6 +224,7 @@ Route::group(['prefix' => 'congress', "middleware" => ['assign.guard:admins']], 
         Route::post('/tracking', 'CongressController@getListTrackingByCongress');
         Route::get('badge/list', 'BadgeController@getBadgesByCongress');
         Route::post('badge/activate', 'BadgeController@activateBadgeByCongressByPrivilege');
+        Route::post('badge/catalogues', 'PDFController@generateBadgePDF');
         Route::get('attestation-submission/list', 'SubmissionController@getAttestationSubmissionByCongress')->middleware("admin");
         Route::post('attestation-submission/activate', 'SubmissionController@activateAttestationByCongressByType')->middleware("admin");
         Route::post('attestation-submission/delete', 'SubmissionController@deleteAttestationByCongress')->middleware("admin");
@@ -370,6 +375,7 @@ Route::group(['prefix' => 'user', "middleware" => ['assign.guard:admins']], func
 
     Route::group(['prefix' => 'congress'], function () {
         Route::get('getMinimalCongress', 'CongressController@getMinimalCongress');
+        Route::get('clear-cache','UserController@clearCache');
         Route::group(['prefix' => '{congress_id}'], function () {
             Route::post('{user_id}/changeScore', 'UserController@affectScoreToUser');
             Route::get('list-all', 'UserController@getAllUsersByCongress');
@@ -701,6 +707,41 @@ Route::group(['prefix' => 'menu'], function () {
     Route::post('/add/{show_after_reload}', 'MenuController@setMenus');
 });
 
+// LandingPage
+Route::group(['prefix' => 'request-landing-page'], function () {
+    Route::group(["middleware" => ['marketing']], function () {    
+    Route::get('/list', 'RequestLandingPageController@getLandingPages');
+    Route::put('{request_landing_page_id}', 'RequestLandingPageController@upadteStatusLandingPage');
+    });
+    Route::get('dns', 'RequestLandingPageController@getLandingPagewithDnsName');
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::get('/LandingPage/{request_landing_page_id}', 'RequestLandingPageController@getOneLandingPage');
+        Route::post('{congress_id}/add', 'RequestLandingPageController@addRequestLandingPage');
+        Route::get('{congress_id}', 'RequestLandingPageController@getLandingPagewithCongressId');
+     });
+});
+// LandingPageFront
+Route::group(['prefix' => '{congressId}/landing-page'], function () { 
+    Route::get('get-config', 'RequestLandingPageController@getConfigLandingPage');
+    Route::get('get-speakers', 'RequestLandingPageController@getLandingPageSpeakers');
+    
+ 
+});
+Route::group(['prefix' => 'companies'], function () {
+    Route::get('{congress_id}', 'CompanyController@getAllCompanies');
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::post('{congress_id}', 'CompanyController@addCompany');
+        Route::delete('{company_id}', 'CompanyController@deleteCompany');
+     });
+});
+Route::group(['prefix' => 'sponsor-pack'], function () {
+    Route::get('{congress_id}', 'CongressController@getAllLandingPageSponsorPack');
+    Route::group(["middleware" => ['assign.guard:admins']], function () {
+        Route::post('{congress_id}', 'CongressController@addLandingPageSponsorPack');
+        Route::delete('{lp_sponsor_pack_id}', 'CongressController@deleteLandingPageSponsorPack');
+     });
+});
+
 // 3D API
 Route::group(["prefix" => "3D"], function () {
     Route::group(['middleware' => ['assign.guard:users']], function () {
@@ -713,4 +754,3 @@ Route::group(["prefix" => "3D"], function () {
         });
     });
 }); 
-

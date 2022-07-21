@@ -31,7 +31,7 @@ class TrackingController extends Controller
 
     function migrateUsers($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->getCachedMinimalCongressById($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 
@@ -46,7 +46,7 @@ class TrackingController extends Controller
 
     function migrateTracking($congressId)
     {
-        if (!$congress = $this->congressServices->getCongressById($congressId)) {
+        if (!$congress = $this->congressServices->isExistCongress($congressId)) {
             return response()->json(['error' => 'congress not found'], 404);
         }
 

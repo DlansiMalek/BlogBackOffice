@@ -58,7 +58,7 @@ class OrganizationController extends Controller
         if (!$request->has(['name'])) {
             return response()->json(["message" => "invalid request", "required inputs" => ['name']], 404);
         }
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
 
@@ -70,15 +70,18 @@ class OrganizationController extends Controller
         $stand = null;
         $request['organization_id'] = $organization->organization_id;
         if ($request->has('stand')) {
-            if ($request->input('stands')['0']['stand_id']) {
-                $stand = $this->standServices->getStandById($request->input('stands')['0']['stand_id']);
-            } else {
-                $stand = $this->standServices->addStand(null, $congress_id, $request);
-            } 
+            if ($request->has('stands') && count($request->input('stands'))) {
+                if ($request->input('stands')['0']['stand_id']) {
+                    $stand = $this->standServices->getStandById($request->input('stands')['0']['stand_id']);
+                } else {
+                    $stand = $this->standServices->addStand(null, $congress_id, $request);
+                } 
+            }
             if ($stand) {
                 $standDocs = $request->input('stand')['docs'];
                 $this->standServices->saveResourceStand($standDocs, $stand->stand_id);
             }
+                       
         } 
         $privilegeId = 7;
         $password = Str::random(8);
@@ -104,10 +107,10 @@ class OrganizationController extends Controller
         $linkBackOffice = UrlUtils::getUrlEventizerWeb();
         if ($mailtype = $this->congressServices->getMailType('organization')) {
             if ($mail = $this->congressServices->getMail($congress->congress_id, $mailtype->mail_type_id)) {
-                $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
+                $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $admin, $congress, $mail->object, false);
             } else {
                 if ($mail = $this->congressServices->getMailOutOfCongress($mailtype->mail_type_id)) {
-                    $this->adminServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $congress, $mail->object, $admin, null);
+                    $this->mailServices->sendMail($this->adminServices->renderMail($mail->template, $admin, null, null, $linkBackOffice), $admin, $congress, $mail->object, false);
                 }
             }
         }
@@ -128,7 +131,7 @@ class OrganizationController extends Controller
     public function getCongressOrganizations($congress_id , Request $request)
     {
         $admin = $this->adminServices->retrieveAdminFromToken();
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
         if ($admin) {
@@ -143,7 +146,7 @@ class OrganizationController extends Controller
     public function getCongress($admin_id)
     {
         $organization = $this->organizationServices->getOrganizationByAdminId($admin_id);
-        return $this->congressServices->getCongressById($organization->congress_organization->congress_id);
+        return $this->congressServices->getCongressDetailsById($organization->congress_organization->congress_id);
     }
 
     public function getOrganizationByAdminId($admin_id)
@@ -160,7 +163,7 @@ class OrganizationController extends Controller
     {
         $organization = $this->organizationServices->getOrganizationById($organization_id);
         $organization->congress_organization->montant = 0;
-        $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
+        $congress = $this->congressServices->getCachedMinimalCongressById($organization->congress_organization->congress_id);
         foreach ($organization->users as $user) {
             $organization->congress_organization->montant += $user->price;
             if (!$user->organization_accepted || !$user->isPaid) {
@@ -193,7 +196,7 @@ class OrganizationController extends Controller
         $user->isPaid = 1;
         $user->update();
         $organization->congress_organization->update();
-        $congress = $this->congressServices->getCongressById($organization->congress_organization->congress_id);
+        $congress = $this->congressServices->getCachedMinimalCongressById($organization->congress_organization->congress_id);
         $this->sendMail($congress, $user);
         return $this->organizationServices->getOrganizationById($organization->organization_id);
     }
@@ -250,7 +253,7 @@ class OrganizationController extends Controller
 
     public function getSponsorsByCongressId($congress_id, Request $request)
     {
-        if (!$congress = $this->congressServices->getCongressById($congress_id)) {
+        if (!$congress = $this->congressServices->isExistCongress($congress_id)) {
             return response()->json(["message" => "congress not found"], 404);
         }
         if (!$request->has(['isSponsor'])) {

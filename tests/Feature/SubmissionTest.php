@@ -10,8 +10,6 @@ use App\Models\Submission;
 use App\Models\User;
 use App\Models\ConfigSubmission;
 use App\Models\ConfigCongress;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class SubmissionTest extends TestCase
@@ -79,7 +77,8 @@ class SubmissionTest extends TestCase
             'access_title' => "Veuillez sélectionner un (des) ticket(s)",
             'access_title_en' => "Choose Ticket",
             'prise_charge_title' => "Prise en charge",
-            'prise_charge_title_en' => "Supported by"
+            'prise_charge_title_en' => "Supported by",
+            'show_free_networking' => $this->faker->numberBetween(0, 1)
         ]);
         $config['privileges'] = [3];
         $submission = $this->getDataSubmission();
@@ -129,9 +128,7 @@ class SubmissionTest extends TestCase
             'status' => 1,
             'application' => 0,
             'is_visible_price' => 1,
-            
-
-
+            'show_free_networking' => $this->faker->numberBetween(0, 1)
         ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);

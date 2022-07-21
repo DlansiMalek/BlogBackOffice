@@ -32,11 +32,12 @@ class Controller extends BaseController
 /* Affecte aux tous les utilisateur un accées spécifique
  *
  *
-INSERT INTO `User_Access`( `isPresent`, `user_id`, `access_id`)
-SELECT 0 , U.user_id , 14 FROM User as U
-     WHERE U.congress_id = 6 AND U.user_id NOT IN
+INSERT IGNORE INTO `User_Access`( `isPresent`, `user_id`, `access_id`)
+SELECT 0 , U.user_id , 1141 FROM User as U
+     INNER JOIN User_Congress ON User_Congress.user_id = U.user_id
+     WHERE User_Congress.congress_id = 457 AND U.user_id NOT IN
         (SELECT UA.user_id FROM User_Access AS UA
-         WHERE UA.access_id = 14)
+         WHERE UA.access_id = 1141);
  *
  *
  */
@@ -249,4 +250,60 @@ WHERE congress_id = 384
 
 /*
 SELECT * FROM Author WHERE email <> '' AND email NOT LIKE '%_@__%.__%'
+*/
+
+/*
+
+Make rank badge generation
+
+SET @code=0
+SELECT 
+  user_id,
+  @code:=@code+1 AS rank
+ FROM user_congress
+ WHERE congress_id = 381
+ ORDER BY user_id
+
+SET @code=0;
+ UPDATE User_Congress
+ SET rank = @code:=@code+1
+ WHERE congress_id = 410
+ ORDER BY privilege_id, user_id
+
+ */
+
+
+/*
+
+SELECT Submission.submission_id , Submission.code, CONCAT(User.first_name, ' ', User.last_name) as "User", Submission.title , CONCAT('https://eventizer-prod.s3.eu-west-3.amazonaws.com/', Resource.path) AS "Fichier"
+FROM Resource_Submission
+inner join Submission ON Submission.submission_id = Resource_Submission.submission_id
+inner join Resource ON Resource.resource_id = Resource_Submission.resource_id
+inner join User On User.user_id = Submission.user_id
+
+WHERE Submission.congress_id = 437 AND Submission.status = 1
+*/
+
+/*
+
+Fusion meeting user table fixe
+
+UPDATE Meeting
+INNER JOIN User_Meeting ON Meeting.meeting_id = User_Meeting.meeting_id
+INNER JOIN User ON User.user_id = User_Meeting.user_receiver_id
+SET Meeting.meeting_table_id = 1930 , -- TF29
+    User_Meeting.user_receiver_id = 17463 -- afdtunis@afd.fr
+WHERE User.email = 'roumyi@afd.fr' AND User_Meeting.status = 1;
+
+*/
+
+/*
+
+Get presence in each workshop
+
+SELECT Access.access_id, Access.name, User.user_id , User.first_name, User.last_name, User.email, User.mobile FROM User_Access
+INNER JOIN Access ON Access.access_id = User_Access.access_id
+INNER JOIN User ON User.user_id = User_Access.user_id
+WHERE User_Access.isPresent = 1 AND Access.congress_id = 437;
+
 */

@@ -182,7 +182,8 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Madnest\Madzipper\MadzipperServiceProvider::class
+        Madnest\Madzipper\MadzipperServiceProvider::class,
+        ZanySoft\Zip\ZipServiceProvider::class
     ],
 
     /*
@@ -236,7 +237,8 @@ return [
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
         'PDF' => niklasravnsborg\LaravelPdf\Facades\Pdf::class,
-        'Madzipper' => Madnest\Madzipper\Madzipper::class
+        'Madzipper' => Madnest\Madzipper\Madzipper::class,
+        'Zip' => ZanySoft\Zip\ZipFacade::class,
     ],
 
 ];

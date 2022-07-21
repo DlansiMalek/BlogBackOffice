@@ -6,6 +6,7 @@ use App\Models\Access;
 use App\Models\AdminCongress;
 use App\Models\AllowedOnlineAccess;
 use App\Models\ConfigCongress;
+use App\Models\UserAccess;
 use App\Models\ConfigLP;
 use App\Models\ConfigSelection;
 use App\Models\ConfigSubmission;
@@ -23,6 +24,7 @@ use App\Models\Stand;
 use App\Models\Tracking;
 use App\Models\User;
 use App\Models\UserCongress;
+use App\Models\LPSponsorPack;
 use DateTime;
 use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -40,6 +42,12 @@ class CongressServices
     {
         $this->organizationServices = $organizationServices;
         $this->geoServices = $geoServices;
+    }
+
+    public function isExistCongress($congressId) {
+        // WARNING : DO NOT ADD ANY FIELD/Relationship to this method
+        return Congress::where('congress_id', '=', $congressId)
+            ->first();
     }
 
     public function getById($congressId)
@@ -179,80 +187,55 @@ class CongressServices
             ->get();
     }
 
-    public function getMinimalCongressById($congressId)
-    {
+    public function getCachedMinimalCongressById ($congressId, $only_access_register = null) {
+        $cacheKey = 'congress-min' . $congressId . $only_access_register;
 
-        return Congress::with([
-            "mails.type",
-            "attestation",
-            "form_inputs.type",
-            "form_inputs.values",
-            "form_inputs.question_reference"=> function ($query) {
-                $query->with(['reference', 
-                'response_reference'  => function ($q) {
-                    $q->with(['value']);
-                } ]);
-            },
-            "config",
-            "config_selection",
-            "badges" => function ($query) use ($congressId) {
-                $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
-            },
-            "packs",
-            "accesss.packs" => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-            },
-            "accesss" => function ($query) use ($congressId) {
-                $query->where('show_in_register', '=', 1);
-                $query->whereNull('parent_id');
-            },
-            'accesss.participants.user_congresses' => function ($query) use ($congressId) {
-                $query->where('congress_id', '=', $congressId);
-                $query->where('privilege_id', '=', config('privilege.Participant'));
-            }
-        ])
-            ->where("congress_id", "=", $congressId)
-            ->first();
+        if (Cache::has($cacheKey)) {
+            $congress = Cache::get($cacheKey);
+        } else {
+            $congress = $this->getMinimalCongressById($congressId, $only_access_register);
+            Utils::putCacheData($cacheKey, $congress);
+        }
+
+        return $congress;
     }
 
-    public function getCongressById($id_Congress)
+    public function getMinimalCongressById($congressId, $only_access_register = null)
     {
-        $congress = Congress::withCount('users')
-            ->with([
-                'users.responses.form_input',
-                'users.accesses' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
-                },
-                'config',
-                'config_selection',
-                "badges",
+        // WARNING : DO NOT ADD ANY NEW FIELD relationship
+        return Congress::with([
+                "mails.type",
                 "attestation",
-                "packs.accesses",
                 "form_inputs.type",
                 "form_inputs.values",
-                "mails.type",
-                'accesss.attestations',
-                'accesss.participants.payments' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
+                'ConfigSubmission' => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
                 },
-                'accesss.participants.user_congresses' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
+                "form_inputs.question_reference"=> function ($query) {
+                    $query->with(['reference', 
+                    'response_reference'  => function ($q) {
+                        $q->with(['value']);
+                    } ]);
                 },
-                'ConfigSubmission' => function ($query) use ($id_Congress) {
-                    $query->where('congress_id', '=', $id_Congress);
+                "config",
+                "config_selection",
+                "badges" => function ($query) use ($congressId) {
+                    $query->where('enable', '=', 1)->with(['badge_param:badge_id,key']);
                 },
-                'location.city.country',
-                'accesss.speakers',
-                'accesss.chairs',
-                'accesss.sub_accesses',
-                'accesss.topic',
-                'accesss.type',
-                'accesss.votes',
-                'attestation',
+                "packs",
+                "accesss.packs" => function ($query) use ($congressId) {
+                    $query->where('congress_id', '=', $congressId);
+                },
+                "accesss" => function ($query) use ($congressId, $only_access_register) {
+                    if($only_access_register==1) {
+                        $query->where('show_in_register', '=', 1);
+                    }
+                    $query->whereNull('parent_id');
+                },
+                "theme"
             ])
-            ->where("congress_id", "=", $id_Congress)
-            ->first();
-        return $congress;
+                ->where("congress_id", "=", $congressId)
+                ->first();
     }
 
     public function getCongressDetailsById($congressId)
@@ -260,7 +243,7 @@ class CongressServices
         $congress = Congress::withCount('users')
             ->with([
                 'config',
-            'config_landing',
+                'config_landing',
                 'config_selection',
                 "packs.accesses",
                 'ConfigSubmission' => function ($query) use ($congressId) {
@@ -453,6 +436,8 @@ class CongressServices
         $congress->private = $congressRequest->input('private');
         $congress->description_en = $congressRequest->input('description_en');
         $congress->name_en = $congressRequest->input('name_en');
+        $congress->name_ar = $congressRequest->input('name_ar');
+        $congress->description_ar = $congressRequest->input('description_ar');
         $congress->save();
 
         $config = new ConfigCongress();
@@ -549,12 +534,20 @@ class CongressServices
             $configCongress->show_in_chat = $showInChat;
         }
         $configCongress->show_in_fix_table = $configCongressRequest['show_in_fix_table'];
+        $configCongress->email_signature = $configCongressRequest['email_signature'];
         $configCongress->registration_description = array_key_exists ('registration_description' , $configCongressRequest ) ? $configCongressRequest['registration_description']: null ;
         $configCongress->registration_description_en = array_key_exists ('registration_description_en' , $configCongressRequest ) ? $configCongressRequest['registration_description_en']: null ;
+        $configCongress->location_link  = $configCongressRequest['location_link'];
         $configCongress->networking_fixe_msg = $configCongressRequest['networking_fixe_msg'];
         $configCongress->networking_fixe_msg_en = array_key_exists ('networking_fixe_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_fixe_msg_en']: null ;
         $configCongress->networking_libre_msg = $configCongressRequest['networking_libre_msg'];
         $configCongress->networking_libre_msg_en = array_key_exists ('networking_libre_msg_en' , $configCongressRequest ) ? $configCongressRequest['networking_libre_msg_en']: null ;
+        $configCongress->show_free_networking = array_key_exists ('show_free_networking' , $configCongressRequest ) ? $configCongressRequest['show_free_networking'] : 1;
+
+        $configCongress->banner_ar = array_key_exists ('banner_ar' , $configCongressRequest ) ? $configCongressRequest['banner_ar']: null;
+        $configCongress->banner_en = array_key_exists ('banner_en' , $configCongressRequest ) ? $configCongressRequest['banner_en']: null;
+        $configCongress->logo_en = array_key_exists ('logo_en' , $configCongressRequest ) ? $configCongressRequest['logo_en']: null;
+        $configCongress->logo_ar = array_key_exists ('logo_ar' , $configCongressRequest ) ? $configCongressRequest['logo_ar']: null;
         $configCongress->update();
 
         return $configCongress;
@@ -683,6 +676,8 @@ class CongressServices
         $congress->private = $request->input('private');
         $congress->description_en = $request->input('description_en');
         $congress->name_en = $request->input('name_en');
+        $congress->name_ar = $request->input('name_ar');
+        $congress->description_ar = $request->input('description_ar');
         $congress->update();
 
         $config->free = $request->input('config')['free'] ? $request->input('config')['free'] : 0;
@@ -707,7 +702,7 @@ class CongressServices
         $config_selection->congress_id = $congress->congress_id;
         $config_selection->update();
 
-        return $this->getCongressById($congress->congress_id);
+        return $this->getMinimalCongressById($congress->congress_id);
     }
 
     public function getUsersByStatus($congressId, int $status)
@@ -755,7 +750,7 @@ class CongressServices
         return Mail::find($id);
     }
     
-    function renderMail($template, $congress, $participant,$link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
+    function renderMail($template, $congress, $participant, $link, $organization, $userPayment, $linkSondage = null, $linkFrontOffice = null, $linkModerateur = null, $linkInvitees = null, $room = null, $linkFiles = null, $submissionCode = null,
                         $submissionTitle = null, $communication_type = null, $submissions = [],$submissionComment=null,$linkSubmission=null,$linkPrincipalRoom = null, $meeting=null, $user_receiver=null, $user_sender=null,$verification_code = null, $meetingtable = null, $submissionTheme = null)
     { 
         $accesses = "";
@@ -801,7 +796,11 @@ class CongressServices
             $template = str_replace('{{$congress-&gt;start_date}}', $startDate . '', $template);
             $template = str_replace('{{$congress-&gt;end_date}}', $endDate . '', $template);
             $congressStartDate=date('d-m-Y', strtotime($congress->start_date)) ;
-            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ;
+            $congressEndDate=date('d-m-Y', strtotime($congress->end_date)) ; 
+            $signature=$congress->config->email_signature;
+            if ($signature != null) {
+                $template = str_replace('{{$congress-&gt;config-&gt;email_signature}}', $signature . '', $template);
+            }
         }
         $template = str_replace('{{$congress-&gt;name}}', '{{$congress->name}}', $template);
         $template = str_replace('{{$congress-&gt;price}}', '{{$congress->price}}', $template);
@@ -1163,12 +1162,80 @@ class CongressServices
         $config_landing_page->waiting_banner = $request->has("waiting_banner") ? $request->input('waiting_banner') : null;
         $config_landing_page->waiting_title_en = $request->has("waiting_title_en") ? $request->input('waiting_title_en') : null;
         $config_landing_page->waiting_desription_en = $request->has("waiting_desription_en") ? $request->input('waiting_desription_en') : null;
+        $config_landing_page->waiting_color = $request->has("waiting_color") ? $request->input('waiting_color') : null;
+        $config_landing_page->waiting_opacity = $request->has("waiting_opacity") ? $request->input('waiting_opacity') : null;
 
         $config_landing_page->is_submission = $request->has("is_submission") ? $request->input('is_submission') : null;
+        $config_landing_page->prp_link = $request->has("prp_link") ? $request->input('prp_link') : null;
+        $config_landing_page->prp_btn_text = $request->has("prp_btn_text") ? $request->input('prp_btn_text') : null;
+        $config_landing_page->prp_btn_text_en = $request->has("prp_btn_text_en") ? $request->input('prp_btn_text_en') : null;
 
+        $config_landing_page->prg_file = $request->has("prg_file") ? $request->input('prg_file') : null;
         $config_landing_page->is_b2b_btn = $request->has("is_b2b_btn") ? $request->input('is_b2b_btn') : 0;
         $config_landing_page->home_btn_text = $request->has("home_btn_text") ? $request->input('home_btn_text') : 'LOGIN';
         $config_landing_page->home_btn_link = $request->has("home_btn_link") ? $request->input('home_btn_link') : '/landingpage/{congressId}/login';
+        $config_landing_page->live_link = $request->has("live_link") ? $request->input('live_link') : null;
+        $config_landing_page->live_title_en = $request->has("live_title_en") ? $request->input('live_title_en') : null;
+        $config_landing_page->live_title = $request->has("live_title") ? $request->input('live_title') : null;
+        $config_landing_page->live_title_btn_en = $request->has("live_title_btn_en") ? $request->input('live_title_btn_en') : null;
+        $config_landing_page->live_title_btn = $request->has("live_title_btn") ? $request->input('live_title_btn') : null;
+        $config_landing_page->redirect_to_pwa = $request->has("redirect_to_pwa") ? $request->input('redirect_to_pwa') : null;
+
+        $config_landing_page->home_title_ar = $request->has("home_title_ar") ? $request->input('home_title_ar') : null;
+        $config_landing_page->home_description_ar = $request->has("home_description_ar") ? $request->input('home_description_ar') : null;
+        $config_landing_page->prp_title_ar = $request->has("prp_title_ar") ? $request->input('prp_title_ar') : null;
+        $config_landing_page->prp_description_ar = $request->has("prp_description_ar") ? $request->input('prp_description_ar') : null;
+        $config_landing_page->speaker_title_ar = $request->has("speaker_title_ar") ? $request->input('speaker_title_ar') : null;
+        $config_landing_page->speaker_description_ar = $request->has("speaker_description_ar") ? $request->input('speaker_description_ar') : null;
+        $config_landing_page->sponsor_title_ar = $request->has("sponsor_title_ar") ? $request->input('sponsor_title_ar') : null;
+        $config_landing_page->sponsor_description_ar = $request->has("sponsor_description_ar") ? $request->input('sponsor_description_ar') : null;
+        $config_landing_page->prg_title_ar = $request->has("prg_title_ar") ? $request->input('prg_title_ar') : null;
+        $config_landing_page->prg_description_ar = $request->has("prg_description_ar") ? $request->input('prg_description_ar') : null;
+        $config_landing_page->contact_title_ar = $request->has("contact_title_ar") ? $request->input('contact_title_ar') : null;
+        $config_landing_page->contact_description_ar = $request->has("contact_description_ar") ? $request->input('contact_description_ar') : null;
+        $config_landing_page->home_sub_title_ar = $request->has("home_sub_title_ar") ? $request->input('home_sub_title_ar') : null;
+        $config_landing_page->organizers_title_ar = $request->has("organizers_title_ar") ? $request->input('organizers_title_ar') : null;
+        $config_landing_page->organizers_description_ar = $request->has("organizers_description_ar") ? $request->input('organizers_description_ar') : null;
+        $config_landing_page->partners_title_ar = $request->has("partners_title_ar") ? $request->input('partners_title_ar') : null;
+        $config_landing_page->partners_description_ar = $request->has("partners_description_ar") ? $request->input('partners_description_ar') : null;
+        $config_landing_page->waiting_title_ar = $request->has("waiting_title_ar") ? $request->input('waiting_title_ar') : null;
+        $config_landing_page->waiting_description_ar = $request->has("waiting_description_ar") ? $request->input('waiting_description_ar') : null;
+        $config_landing_page->prp_btn_text_ar = $request->has("prp_btn_text_ar") ? $request->input('prp_btn_text_ar') : null;
+        $config_landing_page->live_title_btn_ar = $request->has("live_title_btn_ar") ? $request->input('live_title_btn_ar') : null;
+        $config_landing_page->live_title_ar = $request->has("live_title_ar") ? $request->input('live_title_ar') : null;
+        $config_landing_page->page_title_ar = $request->has("page_title_ar") ? $request->input('page_title_ar') : null;
+        $config_landing_page->live_link_ar = $request->has("live_link_ar") ? $request->input('live_link_ar') : null;
+
+        $config_landing_page->specific_bnr = $request->has("specific_bnr") ? $request->input('specific_bnr') : null;
+        $config_landing_page->specific_bnr_title = $request->has("specific_bnr_title") ? $request->input('specific_bnr_title') : null;
+        $config_landing_page->specific_bnr_description = $request->has("specific_bnr_description") ? $request->input('specific_bnr_description') : null;
+        $config_landing_page->specific_bnr_title_en = $request->has("specific_bnr_title_en") ? $request->input('specific_bnr_title_en') : null;
+        $config_landing_page->specific_bnr_description_en = $request->has("specific_bnr_description_en") ? $request->input('specific_bnr_description_en') : null;
+        $config_landing_page->specific_bnr_ar = $request->has("specific_bnr_ar") ? $request->input('specific_bnr_ar') : null;
+        $config_landing_page->specific_bnr_title_ar = $request->has("specific_bnr_title_ar") ? $request->input('specific_bnr_title_ar') : null;
+        $config_landing_page->specific_bnr_description_ar = $request->has("specific_bnr_description_ar") ? $request->input('specific_bnr_description_ar') : null;
+
+        $config_landing_page->companies_title = $request->has("companies_title") ? $request->input('companies_title') : null;
+        $config_landing_page->companies_description = $request->has("companies_description") ? $request->input('companies_description') : null;
+        $config_landing_page->companies_title_en = $request->has("companies_title_en") ? $request->input('companies_title_en') : null;
+        $config_landing_page->companies_description_en = $request->has("companies_description_en") ? $request->input('companies_description_en') : null;
+        $config_landing_page->companies_title_ar = $request->has("companies_title_ar") ? $request->input('companies_title_ar') : null;
+        $config_landing_page->companies_description_ar = $request->has("companies_description_ar") ? $request->input('companies_description_ar') : null;
+
+        $config_landing_page->sponsor_pack_title = $request->has("sponsor_pack_title") ? $request->input('sponsor_pack_title') : null;
+        $config_landing_page->sponsor_pack_description = $request->has("sponsor_pack_description") ? $request->input('sponsor_pack_description') : null;
+        $config_landing_page->sponsor_pack_title_en = $request->has("sponsor_pack_title_en") ? $request->input('sponsor_pack_title_en') : null;
+        $config_landing_page->sponsor_pack_description_en = $request->has("sponsor_pack_description_en") ? $request->input('sponsor_pack_description_en') : null;
+        $config_landing_page->sponsor_pack_title_ar = $request->has("sponsor_pack_title_ar") ? $request->input('sponsor_pack_title_ar') : null;
+        $config_landing_page->sponsor_pack_description_ar = $request->has("sponsor_pack_description_ar") ? $request->input('sponsor_pack_description_ar') : null;
+
+        $config_landing_page->home_banner_event_en = $request->has("home_banner_event_en") ? $request->input('home_banner_event_en') : null;
+        $config_landing_page->home_banner_event_ar = $request->has("home_banner_event_ar") ? $request->input('home_banner_event_ar') : null;
+        $config_landing_page->prp_banner_event_en = $request->has("prp_banner_event_en") ? $request->input('prp_banner_event_en') : null;
+        $config_landing_page->prp_banner_event_ar = $request->has("prp_banner_event_ar") ? $request->input('prp_banner_event_ar') : null;
+        $config_landing_page->specific_bnr_en = $request->has("specific_bnr_en") ? $request->input('specific_bnr_en') : null;
+        $config_landing_page->specific_bnr_two_en = $request->has("specific_bnr_two_en") ? $request->input('specific_bnr_two_en') : null;
+        $config_landing_page->is_background_white = $request->has("is_background_white") ? $request->input('is_background_white') : null;
 
         $no_config ? $config_landing_page->save() : $config_landing_page->update();
 
@@ -1187,6 +1254,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->save();
         return $lp_speaker;
     }
@@ -1213,6 +1286,12 @@ class CongressServices
         $lp_speaker->linkedin_link = $request->input('linkedin_link');
         $lp_speaker->instagram_link = $request->input('instagram_link');
         $lp_speaker->twitter_link = $request->input('twitter_link');
+        $lp_speaker->first_name_en = $request->input('first_name_en');
+        $lp_speaker->last_name_en = $request->input('last_name_en');
+        $lp_speaker->role_en = $request->input('role_en');
+        $lp_speaker->first_name_ar = $request->input('first_name_ar');
+        $lp_speaker->last_name_ar = $request->input('last_name_ar');
+        $lp_speaker->role_ar = $request->input('role_ar');
         $lp_speaker->update();
         return $lp_speaker;
     }
@@ -1285,5 +1364,68 @@ class CongressServices
         Cache::put($cacheKey, $participants, env('CACHE_EXPIRATION_TIMOUT', 300)); // 5 minutes;
         
         return $participants;
+    }
+
+    public function countWillBePresentUserCongress($congress_id) {
+        return UserCongress::where('congress_id', $congress_id)->where('will_be_present', 1)->count();
+    }
+
+    public function getAllUserCongressByCongressIdAndAccessId($congressId, $accessId)
+    {
+        return UserCongress::where('congress_id', '=', $congressId)
+        ->whereHas('user', function ($query) use ($accessId) {
+            $query->whereHas('user_access', function ($q) use ($accessId) {
+                $q->where('access_id', '=', $accessId)->where('isPresent', '=', 1);
+            });
+        })->get();
+    }
+
+    public function updateUserCongressDuration($congressId, $access)
+    {
+        $userCongresses = $this->getAllUserCongressByCongressIdAndAccessId($congressId, $access->access_id);
+        foreach($userCongresses as $userCongress) {
+            $userAccess  = $this->getUserAccess($userCongress->user_id, $access->access_id);
+            $userCongress->duration = $userCongress->duration + $userAccess->duration;
+            $userCongress->update();
+        }
+        $access->duration_set = 1;
+        $access->update();
+    }
+
+    public function getUserAccess($userId, $accessId)
+    {
+        return UserAccess::where('user_id', '=', $userId)
+        ->where('access_id', '=', $accessId)
+        ->first();
+    }
+
+    public function addLandingPageSponsorPack($congress_id, $request, $lpSponsorPack)
+    {
+        if (!$lpSponsorPack) {
+            $lpSponsorPack = new LPSponsorPack();
+        }
+        $lpSponsorPack->congress_id = $congress_id;
+        $lpSponsorPack->description = $request->input('description');
+        $lpSponsorPack->description_en = $request->input('description_en');
+        $lpSponsorPack->description_ar = $request->input('description_ar');
+        $lpSponsorPack->save();
+        return $lpSponsorPack;
+    }
+
+    public function getLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        return LPSponsorPack::where('lp_sponsor_pack_id', '=', $lp_sponsor_pack_id)
+        ->first();
+    }
+
+    public function getAllLandingPageSponsorPack($congressId)
+    {
+        return LPSponsorPack::where('congress_id', '=', $congressId)
+        ->get();
+    }
+
+    public function deleteLandingPageSponsorPack($lp_sponsor_pack_id)
+    {
+        return LPSponsorPack::where('lp_sponsor_pack_id', '=', $lp_sponsor_pack_id)->delete();
     }
 }
