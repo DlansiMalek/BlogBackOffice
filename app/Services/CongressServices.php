@@ -1235,6 +1235,7 @@ class CongressServices
         $config_landing_page->sponsor_pack_description_en = $request->has("sponsor_pack_description_en") ? $request->input('sponsor_pack_description_en') : null;
         $config_landing_page->sponsor_pack_title_ar = $request->has("sponsor_pack_title_ar") ? $request->input('sponsor_pack_title_ar') : null;
         $config_landing_page->sponsor_pack_description_ar = $request->has("sponsor_pack_description_ar") ? $request->input('sponsor_pack_description_ar') : null;
+        $config_landing_page->specific_bnr_two_description_en = $request->has("specific_bnr_two_description_en") ? $request->input('specific_bnr_two_description_en') : null;
 
         $config_landing_page->home_banner_event_en = $request->has("home_banner_event_en") ? $request->input('home_banner_event_en') : null;
         $config_landing_page->home_banner_event_ar = $request->has("home_banner_event_ar") ? $request->input('home_banner_event_ar') : null;

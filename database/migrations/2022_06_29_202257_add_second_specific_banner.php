@@ -22,6 +22,7 @@ class AddSecondSpecificBanner extends Migration
             $table->string('specific_bnr_two_ar')->nullable()->default(null);
             $table->string('specific_bnr_two_title_ar')->nullable()->default(null);
             $table->text('specific_bnr_two_description_ar')->nullable()->default(null);
+            $table->string('specific_bnr_two_en')->nullable()->default(null);
         });
     }
 
@@ -41,6 +42,7 @@ class AddSecondSpecificBanner extends Migration
             $table->removeColumn('specific_bnr_two_ar');
             $table->removeColumn('specific_bnr_two_title_ar');
             $table->removeColumn('specific_bnr_two_description_ar');
+            $table->removeColumn('specific_bnr_two_description_en');
         });
     }
 }
