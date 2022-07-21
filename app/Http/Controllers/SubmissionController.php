@@ -141,9 +141,9 @@ class SubmissionController extends Controller
 
     public function deleteSubmission($submission_id)
     {
-        if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
-            return response()->json(['response' => 'no submission found'], 400);
-        }
+        //if (!$submission = $this->submissionServices->getSubmissionById($submission_id)) {
+            //return response()->json(['response' => 'no submission found'], 400);
+        //}
         $this->submissionServices->deleteSubmission($submission_id);
 
         return response()->json(['response' => 'submssion deleted successfully']);
