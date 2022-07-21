@@ -649,4 +649,8 @@ class SubmissionServices
         return $res;
     }
 
+    public function deleteSubmission($submission_id) {
+        return Submission::where('submission_id', $submission_id)->delete();
+    }
+
 }
