@@ -123,7 +123,15 @@ class SubmissionTest extends TestCase
             'access_title' => "Veuillez sélectionner un (des) ticket(s)",
             'access_title_en' => "Choose Ticket",
             'prise_charge_title' => "Prise en charge",
-            'prise_charge_title_en' => "Supported by"
+            'prise_charge_title_en' => "Supported by",
+            'auto_presence' => 0,
+            'access_system' => 'Ateliers',
+            'status' => 1,
+            'application' => 0,
+            'is_visible_price' => 1,
+            
+
+
         ]);
         $config['privileges'] = [3];
         $submission = factory(ConfigSubmission::class)->create(['congress_id' => $congress->congress_id]);
